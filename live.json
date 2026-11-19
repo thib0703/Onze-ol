@@ -1,0 +1,17 @@
+{
+  "updated": "19/11/2026",
+  "matches": "OL 2-0 Angers (01/11), Brest 2-0 OL (08/11) — notes Maxifoot",
+  "rules": "Blessé -3 à -6 selon la durée, suspendu -2 ; moyenne des 2 derniers matchs : >=7.5 +3, >=7 +2, >=6.5 +1, <=4 -2, <=5 -1",
+  "players": {
+    "pavel-sulc": {"st": "inj", "mod": -5, "note": "Ménisque du genou droit opéré, retour prévu fin février-début mars 2027"},
+    "lois-openda": {"st": "inj", "mod": -3, "note": "Fissure du péroné (09/10), retour attendu fin novembre"},
+    "ernest-nuamah": {"st": "up", "mod": 2, "note": "Homme du match contre Angers (8/10, buteur)"},
+    "dominik-greif": {"st": "down", "mod": -2, "note": "4/10 de moyenne sur les 2 derniers matchs"},
+    "tanner-tessmann": {"st": "down", "mod": -1, "note": "4,5/10 de moyenne sur les 2 derniers matchs"},
+    "zachary-athekame": {"st": "down", "mod": -1, "note": "Penalty concédé à Brest, 5,25/10 de moyenne"},
+    "kail-boudache": {"st": "down", "mod": -1, "note": "3/10 à Brest"},
+    "noah-nartey": {"st": "down", "mod": -1, "note": "4/10 à Brest"},
+    "julien-duranville": {"st": "down", "mod": -1, "note": "4/10 contre Angers"},
+    "mads-bidstrup": {"st": "down", "mod": -1, "note": "4,5/10 contre Angers"}
+  }
+}

@@ -399,6 +399,8 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
 .fcard.v-ml .fc-shine{background:linear-gradient(115deg,transparent 30%,#fff1b8cc 48%,transparent 62%)}
 .fc-vmini{position:absolute;right:4%;top:3%;font-size:calc(var(--w)/4);line-height:1;z-index:3}
 .evban.tfban{background:linear-gradient(120deg,#5a0d06,#b3200e,#ff7a1a);margin-top:8px}
+.fc-ovr{position:relative}.fc-live{position:absolute;left:100%;top:0;font-style:normal;font-size:.42em;margin-left:2px}
+.livel{margin:6px 0;padding:6px 8px;border-radius:8px;background:rgba(31,138,76,.22);font-size:13px}.livel.neg{background:rgba(180,67,43,.25)}
 </style>
 </head>
 <body>
@@ -1209,15 +1211,23 @@ function cardTier(p){ return rarity(p); }
 const TIER_TAG={myth:"MYTHIQUE",icon:"LÉGENDAIRE",gold:"ÉPIQUE",silver:"RARE",bronze:"COMMUNE"};
 const TIER_NAME={myth:"Mythique",icon:"Légendaire",gold:"Épique",silver:"Rare",bronze:"Commune"};
 function initials(n){return n.replace(/[^A-Za-zÀ-ÿ \-']/g,"").split(/[\s\-]+/).filter(Boolean).map(w=>w[0]).slice(0,2).join("").toUpperCase();}
+// ---------- 📡 Forme réelle (synchro avec la vraie vie, fichier live.json mis à jour 2×/semaine) ----------
+let LIVE={players:{}};
+const liveOf=id=>{ const b=(BY_ID[id]&&BY_ID[id].base)||id; return (LIVE.players||{})[b]||null; };
+const liveMod=id=>{ const x=liveOf(id); return x?Math.max(-6,Math.min(3,x.mod|0)):0; };
+const LIVE_IC={inj:"🤕",sus:"🟥",up:"📈",down:"📉"};
+const liveIcon=id=>{ const x=liveOf(id); if(!x) return ""; return LIVE_IC[x.st]||(x.mod>0?"📈":x.mod<0?"📉":""); };
+async function loadLive(){ try{ const r=await fetch("live.json?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const d=await r.json(); if(d&&d.players){ LIVE=d; try{ render(); }catch(e){} } }catch(e){} }
+loadLive(); setInterval(loadLive,30*60000);
 function cardHTML(pid,opts={}){
   const p=BY_ID[pid]; if(!p) return "";
   const t=cardTier(p); const st=cardStats(p); const w=opts.w||160; const mini=!!opts.mini; const cls=(p.pos[0]==="COACH"?"coach r-"+t:t)+(p.v?" v-"+p.v:"");
   const pos=opts.role&&p.pos[0]!=="COACH"?opts.role:(p.pos[0]==="COACH"?"COA":p.pos[0]);
   const shortN=p.name.split(" ").length>1&&p.name.length>11?p.name.split(" ").slice(1).join(" "):p.name;
-  const ovr=opts.ovr!=null?opts.ovr:p.ovr;
+  const lm=liveMod(pid), lic=liveIcon(pid); const ovr=(opts.ovr!=null?opts.ovr:p.ovr)+lm;
   return `<div class="fcard ${cls}${mini?" mini":""}${opts.cls?" "+opts.cls:""}" style="--w:${w}px">
    <div class="fc-shine"></div>
-   <div class="fc-top"><div class="fc-ovr">${ovr}</div><div class="fc-pos">${esc(pos)}</div>${mini?"":`<div class="fc-club">OL</div>${w>=140?`<div class="fc-flag">${flag(NAT[p.id])}</div>`:""}`}</div>
+   <div class="fc-top"><div class="fc-ovr">${ovr}${lic?`<i class="fc-live${lm<0?" neg":""}">${lic}</i>`:""}</div><div class="fc-pos">${esc(pos)}</div>${mini?"":`<div class="fc-club">OL</div>${w>=140?`<div class="fc-flag">${flag(NAT[p.id])}</div>`:""}`}</div>
    <div class="fc-face">${PORTRAITS.has(p.base||p.id)?`<img class="fc-img" src="img/cartes/${p.base||p.id}.webp?v=${IMGV}" alt="" loading="lazy">`:`<svg viewBox="0 0 100 100"><circle cx="50" cy="36" r="19" fill="currentColor" opacity=".28"/><path d="M12 100c2-24 18-36 38-36s36 12 38 36z" fill="currentColor" opacity=".28"/>${mini?"":`<text x="50" y="43" text-anchor="middle" font-size="18" font-weight="900" fill="currentColor" opacity=".55">${esc(initials(p.name))}</text>`}</svg>`}</div>
    ${mini?"":`<div class="fc-name">${esc(shortN)}</div>`}
    ${mini||!st?(!mini&&p.pos[0]==="COACH"?`<div class="fc-coach">${esc(p.name)}<small>Entraîneur de l'OL</small></div>`:""):`<div class="fc-stats">${[0,3,1,4,2,5].map(i=>`<span><b>${st.vals[i]}</b>${st.labels[i]}</span>`).join("")}</div>`}
@@ -1231,9 +1241,10 @@ function showCard(pid,act,lv){
     `<div>${p.pos.join(" · ")} · arrivé à l'OL ${p.year<2000?"avant 2000":"en "+p.year}</div>${p.m!=null?`<div><b>${p.m}</b> matchs · <b>${p.g}</b> but${p.g>1?"s":""} à l'OL</div>`:`<div class="mute">Moins de 30 matchs à l'OL : pas de stats officielles</div>`}`;
   const pt=palmText(p); const rt=cardTier(p);
   const palm=`<div class="cm-palm"><div class="rar r-${rt}">${TIER_NAME[rt]}</div>${p.v?`<div style="color:#ffd970;font-weight:700">${VAR_INFO[p.v].ic} Carte spéciale « ${VAR_INFO[p.v].n} » : ${esc(p.title)}<br><small class="mute">Version boostée de la carte de base (${BY_ID[p.base].ovr}). Impossible d’aligner les deux versions ensemble.</small></div>`:""}${pt.ol.length?`<div>🏆 Avec l'OL : ${pt.ol.join(" · ")}</div>`:`<div class="mute">Pas de titre avec l'OL</div>`}${pt.ext.length?`<div>🌍 ${pt.ext.join(" · ")}</div>`:""}</div>`;
+  const lv_=liveOf(pid); const liveLine=lv_?`<div class="livel${(lv_.mod|0)<0?" neg":""}">${liveIcon(pid)} <b>Forme réelle ${(lv_.mod|0)>0?"+":""}${lv_.mod|0}</b> · ${esc(lv_.note||"")}<br><small class="mute">Mis à jour le ${esc(LIVE.updated||"?")}</small></div>`:"";
   const ps=priceStats(pid);
   const extra=(lv?`<div style="color:#7ee2a0">⬆️ Évoluée +${lv}</div>`:"")+(ps?`<div>💹 Prix moyen ${ps.avg} 🪙 ${ps.trend} · dernier ${ps.last} 🪙 (${ps.n} vente${ps.n>1?"s":""})</div>`:"");
-  M.innerHTML=`<div class="cm-box"><div class="cm-card">${cardHTML(pid,{w:230,cls:"flip-in",ovr:p.ovr+(lv||0)})}</div><div class="cm-info">${info}${extra}${palm}</div><div class="mbtns" id="cmBtns"></div><div class="cm-note">Stats inspirées des jeux FIFA/FC (note, poste, profil). Rareté selon le palmarès : titres avec l'OL et grands trophées en carrière.</div></div>`;
+  M.innerHTML=`<div class="cm-box"><div class="cm-card">${cardHTML(pid,{w:230,cls:"flip-in",ovr:p.ovr+(lv||0)})}</div><div class="cm-info">${info}${liveLine}${extra}${palm}</div><div class="mbtns" id="cmBtns"></div><div class="cm-note">Stats inspirées des jeux FIFA/FC (note, poste, profil). Rareté selon le palmarès : titres avec l'OL et grands trophées en carrière.</div></div>`;
   const B=$("#cmBtns");
   const mk=(t,fn,ghost)=>{const b=document.createElement("button");b.className="btn"+(ghost?" ghost":"");b.textContent=t;b.onclick=()=>{M.classList.remove("open");fn&&fn();};B.appendChild(b);};
   if(act&&act.change) mk("🔁 Changer de joueur",act.change);
@@ -1318,7 +1329,7 @@ function chemistry(ps){
 function strength(c,w,club){
   const form=F[c.formation]||F["4-3-3"];
   const own=w&&club?(C(w).coll||{}):null;
-  const lineup=form.map(([role],i)=>{ let p=BY_ID[(c.slots||{})[i]]; if(p&&own&&!own[p.id]) p=null; const ev=p&&w?evoOf(w,p.id):0;
+  const lineup=form.map(([role],i)=>{ let p=BY_ID[(c.slots||{})[i]]; if(p&&own&&!own[p.id]) p=null; const ev=(p&&w?evoOf(w,p.id):0)+(p?liveMod(p.id):0);
     return {role,pid:p?p.id:null,eff:p?(p.ovr+ev+Math.min(3,(p.m||0)/150))*fit(p,role):35,fin:p?finOf(p,role):0}; });
   const acc={gk:[],def:[],mid:[],att:[]};
   for(const l of lineup){ const g=LINE[l.role]||"mid"; if(g==="mo"){acc.mid.push(l.eff);acc.att.push(l.eff);} else acc[g].push(l.eff); }
@@ -2911,7 +2922,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-19e";
+const APP_V="2026-11-19f";
 let updShown=false;
 async function checkUpdate(){ if(updShown) return; try{ const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const APP_V="([^"]+)"/); if(m&&m[1]!==APP_V){ updShown=true;
