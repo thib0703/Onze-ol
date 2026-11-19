@@ -209,6 +209,33 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
 .pk-row{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:12px}
 .pk-mini{position:relative;animation:slideIn .4s both}
 .pk-mini i{position:absolute;top:-6px;right:-4px;background:#1f8a4c;color:#fff;font-style:normal;font-weight:900;font-size:10px;border-radius:6px;padding:2px 5px}
+.modes button{position:relative}
+.modes button[data-badge]:not([data-badge=""])::after{content:attr(data-badge);position:absolute;top:2px;right:4px;background:#ffd970;color:#111;font-size:10px;font-weight:900;border-radius:999px;padding:1px 5px}
+#cTrades h4{margin:12px 0 6px;font-size:13px;color:var(--mute)}
+.trow{display:grid;grid-template-columns:1fr auto 1fr;gap:6px;align-items:center;background:#0f1d40;border-radius:10px;padding:10px;margin-bottom:8px;font-size:13px}
+.trow small{display:block;color:var(--mute);font-size:11px}
+.tarrow{font-size:20px;color:#ffd970}
+.tpts{grid-column:1/-1;font-size:11px;color:var(--mute)}
+.tbtns{grid-column:1/-1;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.tradeui{position:fixed;inset:0;z-index:45;background:#000c;display:none;align-items:flex-end;justify-content:center}
+.tradeui.open{display:flex}
+.tui-box{background:#101c3d;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;border-radius:18px 18px 0 0;padding:14px 14px calc(18px + env(safe-area-inset-bottom))}
+.tui-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:17px}
+.tbal{display:flex;align-items:center;justify-content:space-around;background:#0f1d40;border-radius:12px;padding:10px;margin-top:6px;text-align:center;font-size:12px;color:var(--mute)}
+.tbal b{display:block;font-size:26px;color:var(--txt)}
+.tbal.ok{background:#1f8a4c33;outline:2px solid #1f8a4c}
+.tsym{font-size:28px;font-weight:900;color:#ffd970}
+.tmsg{text-align:center;font-size:13px;margin:6px 0 4px;color:#c8d6ff}
+.tui-box h4{margin:12px 0 6px;font-size:13px;color:var(--mute)}
+.tline{display:flex;align-items:center;gap:8px;padding:6px;border-radius:10px}
+.tline.on{background:#1d4aa033}
+.tname{flex:1;font-size:14px;font-weight:600}
+.tname small{display:block;font-weight:400;font-size:11px;color:var(--mute);margin-top:2px}
+.tname .rar{font-size:9.5px;padding:1px 6px;margin:0}
+.step{display:flex;align-items:center;gap:8px}
+.step button{width:30px;height:30px;border-radius:8px;border:1px solid #2b3c6e;background:var(--carte);color:#fff;font-size:18px;font-weight:800;cursor:pointer}
+.step button:disabled{opacity:.3}
+.step b{min-width:16px;text-align:center}
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#1f8a4c;color:#fff;padding:12px 18px;border-radius:12px;font-weight:700;z-index:30;box-shadow:0 6px 20px #0008;display:none}
 .count{font-size:13px;color:var(--mute);margin:8px 4px}
 .section{margin-top:14px;background:var(--carte);border-radius:14px;padding:12px}
@@ -366,9 +393,11 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
 </div>
 <div id="viewCollec" class="wrap" style="display:none">
   <div class="section" id="cShop"></div>
+  <div class="section" id="cTrades"></div>
   <div class="section" id="cAlbum"></div>
 </div>
 <div class="packfx" id="packfx"></div>
+<div class="tradeui" id="tradeUI"></div>
 <div class="toast" id="toast"></div>
 <div class="modal cardm" id="cardModal"></div>
 <div class="fx" id="fx"></div>
@@ -628,7 +657,7 @@ let me=null, viewing=null, editing=null, chip=null;
 let compos={};
 const C = w => compos[w]||(compos[w]=blank());
 function blank(){return {formation:"4-3-3",slots:{},bench:{},coach:null,savedAt:null,library:[],loadedId:null,coins:0,coll:{},claimed:[],daily:null,opened:0};}
-function norm(c){c=c||{};return {formation:F[c.formation]?c.formation:"4-3-3",slots:c.slots||{},bench:c.bench||{},coach:c.coach||null,savedAt:c.savedAt||null,library:Array.isArray(c.library)?c.library:[],loadedId:c.loadedId||null,coins:+c.coins||0,coll:c.coll||{},claimed:Array.isArray(c.claimed)?c.claimed:[],daily:c.daily||null,opened:+c.opened||0};}
+function norm(c){c=c||{};return {formation:F[c.formation]?c.formation:"4-3-3",slots:c.slots||{},bench:c.bench||{},coach:c.coach||null,savedAt:c.savedAt||null,library:Array.isArray(c.library)?c.library:[],loadedId:c.loadedId||null,coins:+c.coins||0,coll:c.coll||{},claimed:Array.isArray(c.claimed)?c.claimed:[],daily:c.daily||null,opened:+c.opened||0,mday:c.mday||null};}
 try{ const l=JSON.parse(localStorage.getItem("onze-ol-cache2")||"null"); if(l){ for(const k in l) compos[k]=norm(l[k]); } const n=JSON.parse(localStorage.getItem("onze-ol-names2")||"null"); if(n) NAMES=Object.assign(NAMES,n); }catch(e){}
 
 // ---------- Accueil ----------
@@ -1493,11 +1522,11 @@ function renderBoard(){
 // ---------- Récompenses, packs et collection ----------
 const PACKS={
   jour:{name:"Pack du jour",price:0,n:2,w:{bronze:72,silver:24,gold:3.6,icon:.4,myth:0},color:"#7ee2a0"},
-  bronze:{name:"Pack Classique",price:250,n:3,w:{bronze:66,silver:27,gold:6,icon:.9,myth:.1},color:"#c98a52"},
-  or:{name:"Pack Épique",price:800,n:3,w:{bronze:35,silver:40,gold:20,icon:4.5,myth:.5},guarantee:"gold",color:"#e7c45a"},
+  bronze:{name:"Pack Classique",price:300,n:3,w:{bronze:66,silver:27,gold:6,icon:.9,myth:.1},color:"#c98a52"},
+  or:{name:"Pack Épique",price:900,n:3,w:{bronze:35,silver:40,gold:20,icon:4.5,myth:.5},guarantee:"gold",color:"#e7c45a"},
   legende:{name:"Pack Légende",price:2500,n:3,w:{bronze:15,silver:35,gold:34,icon:13,myth:3},guarantee:"icon",color:"#f4ecd2"}
 };
-const SELL={bronze:5,silver:12,gold:30,icon:100,myth:300};
+const SELL={bronze:4,silver:12,gold:32,icon:100,myth:300};
 const ALL_CARDS=[...PLAYERS.slice().sort((a,b)=>a.year-b.year||a.name.localeCompare(b.name,"fr")),...COACHES];
 const CARD_NO=Object.fromEntries(ALL_CARDS.map((p,i)=>[p.id,i+1]));
 const poolTier=p=>cardTier(p);
@@ -1505,13 +1534,15 @@ const POOL={bronze:[],silver:[],gold:[],icon:[],myth:[]}; for(const p of ALL_CAR
 const W=()=>C(me);
 function addCoins(n,why){ const c=W(); c.coins=(c.coins||0)+n; save(); renderCoins(); if(why) toast(`${n>0?"+":""}${n} 🪙 ${why}`); }
 function renderCoins(){ const el=$("#coins"); if(!el) return; if(!me){el.style.display="none";return;} el.style.display=""; el.textContent=`🪙 ${(W().coins||0).toLocaleString("fr-FR")}`; }
-function rewardFor(h,i){ const [a,b]=i===0?h.score:[h.score[1],h.score[0]]; const base=a>b?120:a===b?60:30; return {coins:base+10*a,res:a>b?"victoire":a===b?"nul":"défaite",a,b}; }
+function rewardFor(h,i){ const [a,b]=i===0?h.score:[h.score[1],h.score[0]]; const base=a>b?100:a===b?50:25; return {coins:base+10*a,res:a>b?"victoire":a===b?"nul":"défaite",a,b}; }
 function claimRewards(){
   if(!me||!C(me)) return; const c=W(); c.claimed=c.claimed||[]; let got=0, lines=[];
   for(const h of matches){ if(!h.owners||c.claimed.includes(h.id)) continue; const i=h.owners.indexOf(me); if(i<0) continue;
     if((Date.now()-h.at)/MSPEED<100) continue; // match pas encore fini
     if(h.owners[0]===h.owners[1]){ c.claimed.push(h.id); continue; }
-    const r=rewardFor(h,i); got+=r.coins; lines.push(`${r.res} ${r.a}-${r.b}`); c.claimed.push(h.id); }
+    const r=rewardFor(h,i); const day=new Date(h.at).toLocaleDateString("fr-CA");
+    if(!c.mday||c.mday.d!==day) c.mday={d:day,n:0}; c.mday.n++;
+    const k=c.mday.n<=5?1:.25; got+=Math.round(r.coins*k); lines.push(`${r.res} ${r.a}-${r.b}${k<1?" (gains réduits après 5 matchs/jour)":""}`); c.claimed.push(h.id); }
   if(got){ c.claimed=c.claimed.slice(-120); addCoins(got,`match : ${lines.join(", ")}`); }
 }
 const today=()=>new Date().toLocaleDateString("fr-CA");
@@ -1573,13 +1604,13 @@ function packFx(pack,ids,isNew){
 }
 let colFilter="all";
 function renderCollec(){
-  if(!me) return; const c=W(); const coll=c.coll||{};
+  if(!me) return; renderTrades(); const c=W(); const coll=c.coll||{};
   const owned=ALL_CARDS.filter(p=>coll[p.id]).length;
   const dupes=Object.entries(coll).reduce((s,[id,n])=>s+(n>1?(n-1)*SELL[cardTier(BY_ID[id])]:0),0);
   $("#cShop").innerHTML=`<h3>🎴 Boutique <small>🪙 ${(c.coins||0).toLocaleString("fr-FR")}</small></h3>
     ${c.daily!==today()?`<button class="pkbtn daily" data-pk="jour" style="--pc:#7ee2a0"><b>🎁 Pack du jour gratuit</b><span>2 cartes · 1 par jour</span><em>Ouvrir</em></button>`:`<div class="mute" style="font-size:12.5px;margin-bottom:8px">🎁 Pack du jour ouvert, le prochain demain.</div>`}
     <div class="shop">${Object.entries(PACKS).filter(([k])=>k!=="jour").map(([k,P])=>`<button class="pkbtn" data-pk="${k}" style="--pc:${P.color}"><b>${P.name}</b><span>${P.n} cartes${P.guarantee==="gold"?" · 1 Épique min.":P.guarantee==="icon"?" · 1 Légendaire min.":""}</span><em>🪙 ${P.price}</em></button>`).join("")}</div>
-    <div class="rules" style="font-size:12.5px">Gagne des pièces en jouant : <b>victoire 120</b>, nul 60, défaite 30, <b>+10 par but</b> marqué, et <b>1 pack gratuit par jour</b>. Rareté selon le palmarès : Commune, Rare, Épique, Légendaire, Mythique. Doublons revendables : 5 / 12 / 30 / 100 / 300 🪙.</div>
+    <div class="rules" style="font-size:12.5px">Gagne des pièces en jouant : <b>victoire 100</b>, nul 50, défaite 25, <b>+10 par but</b> (gains pleins sur tes 5 premiers matchs du jour, ¼ ensuite) et <b>1 pack gratuit par jour</b>. Doublons : revente 4 / 12 / 32 / 100 / 300 🪙 (Commune → Mythique), ou échange avec les autres pour plus de valeur.</div>
     ${dupes?`<button class="btn ghost big" id="sellBtn">Vendre mes doublons (+${dupes} 🪙)</button>`:""}`;
   document.querySelectorAll(".pkbtn").forEach(b=>b.onclick=()=>openPack(b.dataset.pk));
   const sb=$("#sellBtn"); if(sb) sb.onclick=()=>openModal(`Vendre tous tes doublons pour ${dupes} 🪙 ?`,null,[["Vendre",()=>{ for(const id in coll) if(coll[id]>1) coll[id]=1; addCoins(dupes,"doublons vendus"); renderCollec(); }],["Annuler",null,true]]);
@@ -1593,6 +1624,95 @@ function renderCollec(){
   document.querySelectorAll("#cAlbum .slotc").forEach(d=>d.onclick=()=>{ const id=d.dataset.id; if(coll[id]) showCard(id,coll[id]>1?{sell:{label:`Vendre 1 doublon (+${SELL[cardTier(BY_ID[id])]} 🪙)`,fn:()=>{ coll[id]--; addCoins(SELL[cardTier(BY_ID[id])],"doublon vendu"); renderCollec(); }}}:null); else toast(`${BY_ID[id].name} : pas encore dans ta collection`); });
 }
 setInterval(()=>{ if(me) claimRewards(); },5000);
+// ---------- Échanges de cartes ----------
+const TPTS={bronze:1,silver:3,gold:8,icon:25,myth:75};
+let trades={}, tradeSeen=null, tdraft=null;
+const ptsOf=m=>Object.entries(m||{}).reduce((s,[id,n])=>s+(BY_ID[id]?TPTS[cardTier(BY_ID[id])]*n:0),0);
+function dupesOf(w){ const c=C(w).coll||{}; return Object.entries(c).filter(([id,n])=>n>1&&BY_ID[id]).map(([id,n])=>({id,n:n-1})).sort((a,b)=>TPTS[cardTier(BY_ID[b.id])]-TPTS[cardTier(BY_ID[a.id])]||BY_ID[a.id].name.localeCompare(BY_ID[b.id].name,"fr")); }
+const listTxt=m=>Object.entries(m).map(([id,n])=>`${n>1?n+"× ":""}${BY_ID[id]?.name||"?"}`).join(", ");
+function onTrades(all){
+  trades=all; const mine=Object.entries(trades);
+  // réglement côté proposeur
+  const c=W(); let changed=false;
+  for(const [id,t] of mine){ if(t.from!==me||t.settledFrom) continue;
+    if(t.status==="accepted"){ for(const [pid,n] of Object.entries(t.want)) c.coll[pid]=(c.coll[pid]||0)+n; changed=true; toast(`🔄 ${NAMES[t.to]||"?"} a accepté ton échange !`); }
+    else if(t.status==="refused"||t.status==="cancelled"){ for(const [pid,n] of Object.entries(t.give)) c.coll[pid]=(c.coll[pid]||0)+n; changed=true; if(t.status==="refused") toast(`${NAMES[t.to]||"?"} a refusé ton échange, tes cartes te sont rendues`,true); }
+    else continue;
+    db.collection("onzeol_trades").doc(id).update({settledFrom:true}).catch(()=>{}); }
+  if(changed){ save(); }
+  const incoming=mine.filter(([id,t])=>t.to===me&&t.status==="pending");
+  if(tradeSeen!==null){ for(const [id,t] of incoming) if(!tradeSeen.has(id)) toast(`🔄 ${NAMES[t.from]||"?"} te propose un échange !`); }
+  tradeSeen=new Set(incoming.map(([id])=>id));
+  const b=$("#mCollec"); if(b) b.dataset.badge=incoming.length||"";
+  if(mode==="collec"&&!$("#packfx").classList.contains("open")) renderCollec();
+}
+function renderTrades(){
+  const el=$("#cTrades"); if(!el) return;
+  const mine=Object.entries(trades).filter(([id,t])=>t.from===me||t.to===me).sort((a,b)=>b[1].at-a[1].at);
+  const inc=mine.filter(([i,t])=>t.to===me&&t.status==="pending"), out=mine.filter(([i,t])=>t.from===me&&t.status==="pending"), done=mine.filter(([i,t])=>t.status!=="pending").slice(0,6);
+  const row=(id,t,btns)=>`<div class="trow"><div class="tcol"><small>${t.from===me?"Tu donnes":esc(NAMES[t.from]||"?")+" donne"}</small>${esc(listTxt(t.give))}</div><div class="tarrow">⇄</div><div class="tcol"><small>${t.from===me?"Tu reçois":"Tu donnes"}</small>${esc(listTxt(t.want))}</div><div class="tpts">${ptsOf(t.give)} pts ⇄ ${ptsOf(t.want)} pts${ptsOf(t.give)===ptsOf(t.want)?" · équilibré":t.to===me&&ptsOf(t.want)>ptsOf(t.give)?` · <b style="color:#ffb38a">tu donnerais ${ptsOf(t.want)-ptsOf(t.give)} pts de plus</b>`:t.to===me?` · <b style="color:#7ee2a0">tu gagnes ${ptsOf(t.give)-ptsOf(t.want)} pts</b>`:""}</div>${btns}</div>`;
+  el.innerHTML=`<h3>🔄 Échanges <small>doublons uniquement</small></h3>
+   <button class="btn big" id="tNew" style="margin-top:0">Proposer un échange</button>
+   <div class="rules" style="font-size:12px">Valeur : Commune 1 · Rare 3 · Épique 8 · Légendaire 25 · Mythique 75. Un échange équilibré a le même total des deux côtés ; sinon, celui qui donne le plus de points doit l\'accepter.</div>
+   ${inc.length?`<h4>Reçus</h4>`+inc.map(([id,t])=>row(id,t,`<div class="tbtns"><button class="btn sm" data-acc="${id}">Accepter</button><button class="btn sm ghost" data-ref="${id}">Refuser</button><button class="btn sm ghost" data-ctr="${id}">Contre-proposer</button></div>`)).join(""):""}
+   ${out.length?`<h4>Envoyés · en attente</h4>`+out.map(([id,t])=>row(id,t,`<div class="tbtns"><span class="mute" style="font-size:12px">vers ${esc(NAMES[t.to]||"?")}</span><button class="btn sm ghost" data-can="${id}">Annuler</button></div>`)).join(""):""}
+   ${done.length?`<h4>Historique</h4>`+done.map(([id,t])=>`<div class="mute" style="font-size:12px;padding:4px 0">${t.status==="accepted"?"✅":t.status==="refused"?"❌":"↩️"} ${esc(NAMES[t.from]||"?")} ⇄ ${esc(NAMES[t.to]||"?")} : ${esc(listTxt(t.give))} contre ${esc(listTxt(t.want))}</div>`).join(""):""}`;
+  $("#tNew").onclick=()=>openTradeUI(null);
+  el.querySelectorAll("[data-acc]").forEach(b=>b.onclick=()=>acceptTrade(b.dataset.acc));
+  el.querySelectorAll("[data-ref]").forEach(b=>b.onclick=()=>setTradeStatus(b.dataset.ref,"refused"));
+  el.querySelectorAll("[data-can]").forEach(b=>b.onclick=()=>setTradeStatus(b.dataset.can,"cancelled"));
+  el.querySelectorAll("[data-ctr]").forEach(b=>b.onclick=async()=>{ const t=trades[b.dataset.ctr]; await setTradeStatus(b.dataset.ctr,"refused"); openTradeUI(t.from,{give:{...t.want},want:{...t.give}}); });
+}
+async function setTradeStatus(id,status){
+  const ref=db.collection("onzeol_trades").doc(id);
+  try{ await firebase.firestore().runTransaction(async tx=>{ const s=await tx.get(ref); const t=s.data(); if(!t||t.status!=="pending") throw new Error("Échange déjà traité"); tx.update(ref,{status,doneAt:Date.now()}); }); }
+  catch(e){ toast(e.message||"Raté, réessaie",true); }
+}
+async function acceptTrade(id){
+  const t=trades[id]; const c=W();
+  for(const [pid,n] of Object.entries(t.want)) if((c.coll[pid]||0)<n+1){ toast(`Tu n'as plus assez de doublons de ${BY_ID[pid]?.name}`,true); return; }
+  const ref=db.collection("onzeol_trades").doc(id);
+  try{ await firebase.firestore().runTransaction(async tx=>{ const s=await tx.get(ref); const x=s.data(); if(!x||x.status!=="pending") throw new Error("Échange plus disponible"); tx.update(ref,{status:"accepted",doneAt:Date.now()}); }); }
+  catch(e){ toast(e.message||"Raté, réessaie",true); return; }
+  for(const [pid,n] of Object.entries(t.want)) c.coll[pid]-=n;
+  for(const [pid,n] of Object.entries(t.give)) c.coll[pid]=(c.coll[pid]||0)+n;
+  save(); toast("Échange accepté ✓ les cartes sont dans ta collection"); renderCollec();
+}
+function openTradeUI(to,pre){
+  const others_=others(); if(!others_.length){ toast("Personne d'autre n'a de compte pour l'instant",true); return; }
+  tdraft={to:to||tdraft?.to||others_[0],give:pre?.give||{},want:pre?.want||{}};
+  // ne garder que ce qui est disponible
+  const ok=(m,w)=>{ const d=Object.fromEntries(dupesOf(w).map(x=>[x.id,x.n])); for(const k of Object.keys(m)) m[k]=Math.min(m[k],d[k]||0); for(const k of Object.keys(m)) if(!m[k]) delete m[k]; };
+  ok(tdraft.give,me); ok(tdraft.want,tdraft.to);
+  $("#tradeUI").classList.add("open"); renderTradeUI();
+}
+function renderTradeUI(){
+  const T=$("#tradeUI"); const d=tdraft; const pg=ptsOf(d.give), pw=ptsOf(d.want); const eq=pg>0&&pg===pw; const can=pg>0&&pw>0;
+  const side=(w,m,key)=>{ const L=dupesOf(w); if(!L.length) return `<div class="mute" style="font-size:13px;padding:8px">Aucun doublon.</div>`;
+    return L.map(x=>{ const p=BY_ID[x.id], t=cardTier(p), n=m[x.id]||0; return `<div class="tline${n?" on":""}"><span class="tmini">${cardHTML(x.id,{w:34,mini:true})}</span><span class="tname">${esc(p.name)}<small><span class="rar r-${t}">${TIER_NAME[t]}</span> ${TPTS[t]} pt${TPTS[t]>1?"s":""} · ${x.n} dispo</small></span><span class="step"><button data-k="${key}" data-id="${x.id}" data-d="-1">−</button><b>${n}</b><button data-k="${key}" data-id="${x.id}" data-d="1"${n>=x.n?" disabled":""}>+</button></span></div>`; }).join(""); };
+  T.innerHTML=`<div class="tui-box">
+    <div class="tui-head"><b>Nouvel échange</b><button class="btn sm ghost" id="tClose">Fermer</button></div>
+    <div class="field"><span>Avec</span><select id="tTo">${others().map(x=>`<option value="${esc(x)}" ${x===d.to?"selected":""}>${esc(NAMES[x])}</option>`).join("")}</select></div>
+    <div class="tbal ${eq?"ok":""}"><div>Tu donnes<b>${pg}</b>pts</div><div class="tsym">${eq?"=":pg>pw?">":"<"}</div><div>Tu reçois<b>${pw}</b>pts</div></div>
+    <div class="tmsg">${!can?"Choisis au moins une carte de chaque côté":eq?"✅ Échange équilibré":pg>pw?`⚠️ Tu donnes ${pg-pw} pt${pg-pw>1?"s":""} de plus : c'est ton choix, ${esc(NAMES[d.to])} sera gagnant`:`⚠️ Tu demandes ${pw-pg} pt${pw-pg>1?"s":""} de plus : ${esc(NAMES[d.to])} devra accepter de donner plus`}</div>
+    <h4>Tu donnes (tes doublons)</h4><div class="tlist">${side(me,d.give,"give")}</div>
+    <h4>Tu reçois (doublons de ${esc(NAMES[d.to])})</h4><div class="tlist">${side(d.to,d.want,"want")}</div>
+    <button class="btn big" id="tSend" ${can?"":"disabled"}>Envoyer la proposition</button></div>`;
+  $("#tClose").onclick=()=>T.classList.remove("open");
+  $("#tTo").onchange=e=>{ d.to=e.target.value; d.want={}; renderTradeUI(); };
+  T.querySelectorAll(".step button").forEach(b=>b.onclick=()=>{ const m=d[b.dataset.k]; const v=(m[b.dataset.id]||0)+(+b.dataset.d); if(v<=0) delete m[b.dataset.id]; else m[b.dataset.id]=v; const sc=T.querySelector(".tui-box").scrollTop; renderTradeUI(); T.querySelector(".tui-box").scrollTop=sc; });
+  $("#tSend").onclick=sendTrade;
+}
+async function sendTrade(){
+  const d=tdraft; const c=W();
+  if(!ptsOf(d.give)||!ptsOf(d.want)) return;
+  for(const [pid,n] of Object.entries(d.give)) if((c.coll[pid]||0)<n+1){ toast("Tu n'as plus ces doublons",true); return; }
+  const id=Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+  try{ await db.collection("onzeol_trades").doc(id).set({from:me,to:d.to,give:d.give,want:d.want,status:"pending",at:Date.now(),settledFrom:false}); }
+  catch(e){ toast("Impossible d'envoyer (règles Firebase à jour ?)",true); return; }
+  for(const [pid,n] of Object.entries(d.give)) c.coll[pid]-=n; // mises de côté
+  save(); $("#tradeUI").classList.remove("open"); toast(`Proposition envoyée à ${NAMES[d.to]} ✓`); renderCollec();
+}
 // ---------- Synchro Firebase (comptes) ----------
 let db=null, saveT=null, dirty=false, unsubs=[];
 function setSync(t,cls){ const s=$("#sync"); s.textContent=t; s.className="sync "+(cls||""); }
@@ -1627,6 +1747,7 @@ function startListeners(){
     if(dirty) push();
   },()=>setSync("⚠️ Synchro coupée — recharge la page","err")));
   unsubs.push(db.collection("onzeol_drafts").onSnapshot(qs=>{ const all={}; qs.forEach(doc=>all[doc.id]=doc.data()); onDraftData(all); },()=>{}));
+  unsubs.push(db.collection("onzeol_trades").onSnapshot(qs=>{ const all={}; qs.forEach(doc=>{ const t=doc.data(); if(t&&(t.from===me||t.to===me)) all[doc.id]=t; }); onTrades(all); },()=>{}));
   unsubs.push(db.collection("onzeol_meta").doc("main").onSnapshot(snap=>{ const d=snap.exists?snap.data():{}; onMatchData(d.match,d.matches); },()=>{}));
 }
 try{

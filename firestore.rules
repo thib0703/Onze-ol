@@ -28,6 +28,15 @@ service cloud.firestore {
                     && request.resource.data.players == resource.data.players;
       allow delete: if false;
     }
+    // Échanges de cartes : créés par le proposeur, modifiables seulement par les 2 joueurs concernés
+    match /onzeol_trades/{id} {
+      allow read: if joueurConnecte();
+      allow create: if joueurConnecte() && request.resource.data.from == request.auth.uid;
+      allow update: if joueurConnecte() && request.auth.uid in [resource.data.from, resource.data.to]
+                    && request.resource.data.from == resource.data.from && request.resource.data.to == resource.data.to
+                    && request.resource.data.give == resource.data.give && request.resource.data.want == resource.data.want;
+      allow delete: if false;
+    }
     // Match en direct + historique : n'importe quel joueur connecté
     match /onzeol_meta/{doc} {
       allow read, write: if joueurConnecte();
