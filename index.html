@@ -410,6 +410,7 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
 .mini-pitch{position:relative;height:380px;margin:4px 0;border-radius:12px;background:linear-gradient(#1f7a3a,#18662f);overflow:hidden}
 .mp-slot{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:1px}.mp-slot small{font-size:9px;font-weight:800;background:#0009;padding:0 4px;border-radius:4px;white-space:nowrap}
 .mp-empty{display:inline-flex;width:34px;height:42px;align-items:center;justify-content:center;border:1px dashed #fff6;border-radius:8px;font-size:10px;color:#fffa}
+.xiavg{color:#ffd970}.vsavg{display:flex;align-items:center;justify-content:center;gap:16px;margin:8px 0 2px}.vsavg div{display:flex;flex-direction:column;align-items:center;background:rgba(255,255,255,.06);border-radius:12px;padding:6px 16px;min-width:90px}.vsavg b{font-size:26px}.vsavg small{opacity:.7;font-size:11px}.vsavg span{color:var(--rouge);font-weight:900}
 </style>
 </head>
 <body>
@@ -813,6 +814,9 @@ $("#shareBtn").onclick=async()=>{ const url=location.origin+location.pathname; t
 $("#who").onclick=()=>openModal(`Connecté en tant que ${NAMES[me]||"?"}`,null,[[notifState()==="granted"?"🔔 Notifications activées":"🔔 Activer les notifications",()=>{ enableNotifs(); }],["📲 Installer l'appli",()=>{ setTimeout(()=>installGuide(true),200); }],["💡 Revoir les explications",()=>{ resetTips(); }],["Se déconnecter",()=>{ firebase.auth().signOut(); }],["Inviter quelqu'un",()=>$("#shareBtn").click(),true],["Fermer",null,true]]);
 
 // ---------- Rendu ----------
+// Note moyenne du 11 (cartes possédées, évolutions et forme réelle comprises)
+function xiAvg(w){ const c=C(w)||{}; const own=c.coll||{}; const v=Object.values(c.slots||{}).filter(id=>id&&own[id]&&BY_ID[id]).map(id=>BY_ID[id].ovr+evoOf(w,id)+liveMod(id)); return v.length?{avg:Math.round(v.reduce((a,b)=>a+b,0)/v.length),n:v.length}:{avg:0,n:0}; }
+const cmpTag=(a,b)=>a>b?`<b style="color:#7ee2a0">tu es au-dessus (+${a-b})</b>`:a<b?`<b style="color:#ff8a7a">tu es en dessous (${a-b})</b>`:`<b>à égalité</b>`;
 function filled(c){return Object.values(c.slots).filter(Boolean).length;}
 function renderTabs(){
   viewing=me; $("#tabs").innerHTML=""; $("#tabs").style.display="none"; $("#who").textContent=(NAMES[me]||"?")+" · compte"; return; // les 11 des autres se voient depuis leur profil (Ligue → Joueurs)
@@ -847,7 +851,7 @@ function render(){
   const pitch=$("#pitch"); pitch.querySelectorAll(".slot").forEach(e=>e.remove());
   F[c.formation].forEach(([role,x,y],i)=>{ const b=slotBtn("xi",i,role,c.slots[i],mine); b.style.left=x+"%"; b.style.top=y+"%"; pitch.appendChild(b); });
   const n=filled(c);
-  $("#count").textContent= n===11 ? "✅ 11 complet !" : `${n}/11 titulaires`+(mine?" — touche une case pour choisir":"");
+  const xa=xiAvg(me); $("#count").innerHTML= (n===11 ? "✅ 11 complet !" : `${n}/11 titulaires`+(mine?" — touche une case pour choisir":""))+(xa.n?` · <span class="xiavg">⭐ Note moyenne : <b>${xa.avg}</b></span>`:"");
   const bench=$("#bench"); bench.innerHTML="";
   for(let i=0;i<BENCH_N;i++){ const pid=c.bench[i]; const p=pid&&BY_ID[pid]; bench.appendChild(slotBtn("bench",i,p?p.pos[0]:String(12+i),pid,mine)); }
   $("#benchCount").textContent=`${Object.values(c.bench).filter(Boolean).length}/${BENCH_N}`;
@@ -2497,7 +2501,7 @@ function onLeagues(all){ leagues=all; if(me){ claimLeague(); autoPlay(); if(mode
 const fmtWhen=t=>{ const d=new Date(t); return d.toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"short"})+" "+d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}); };
 function leagueHTML(id,L){
   const mine=(L.members||[]).includes(me), st=L.status||"open", S=standings(L);
-  const tbl=`<div class="rk head"><span>#</span><span>Joueur</span><span>J</span><span>V</span><span>D</span><span>Pts</span></div>`+S.map((r,i)=>`<div class="rk${r.id===me?" me":""}"><span>${r.j?(["🥇","🥈","🥉"][i]||i+1):"–"}</span><span>${esc(NAMES[r.id]||"?")}</span><span>${r.j}</span><span>${r.v}</span><span>${r.d}</span><b>${r.v*3+r.n}</b></div>`).join("");
+  const tbl=`<div class="rk head"><span>#</span><span>Joueur</span><span>J</span><span>V</span><span>D</span><span>Pts</span></div>`+S.map((r,i)=>`<div class="rk${r.id===me?" me":""}"><span>${r.j?(["🥇","🥈","🥉"][i]||i+1):"–"}</span><span>${esc(NAMES[r.id]||"?")} <small class="mute">⭐${xiAvg(r.id).avg||"–"}</small></span><span>${r.j}</span><span>${r.v}</span><span>${r.d}</span><b>${r.v*3+r.n}</b></div>`).join("");
   const F=L.fix||[]; const rounds=[...new Set(F.map(f=>f.r))];
   const nextR=(F.find(f=>!f.s)||{}).r; const lastR=[...F].reverse().find(f=>f.s)?.r;
   const fx=r=>`<div class="fixr"><h5>Journée ${r}${F.find(f=>f.r===r&&!f.s)?` · ${fmtWhen(F.find(f=>f.r===r).t)}`:""}</h5>${F.filter(f=>f.r===r).map(f=>`<div class="fixm${f.a===me||f.b===me?" me":""}"><span>${esc(NAMES[f.a]||"?")}</span><b>${f.s?f.s.join(" - "):"–"}</b><span>${esc(NAMES[f.b]||"?")}</span>${f.mid?`<button class="btn sm ghost" data-rp="${f.mid}">▶️</button>`:""}</div>`).join("")}</div>`;
@@ -2743,9 +2747,9 @@ function careerHTML(){
   const comps=[...new Set(CAREER.map(x=>x.comp))];
   return `<h3>🧗 Carrière solo <small>${Math.min(i,CAREER.length)}/${CAREER.length}</small></h3>
   <div class="rules" style="font-size:12px;margin-top:0">Ton 11 type (cartes possédées) affronte le vrai 11 de clubs de plus en plus forts. Gagne pour passer au suivant (nul ou défaite : tu rejoues). Pièces à chaque première victoire, pack à la fin de chaque compétition.</div>
-  ${comps.map(cp=>`<h4>${cp}</h4><div class="car">${CAREER.map((x,j)=>x.comp!==cp?"":`<span class="${j<i?"ok":j===i?"cur":""}" title="${esc(x.n)}">${j<i?"✅":j===i?"⚔️":"🔒"} ${esc(x.n)}</span>`).join("")}</div>`).join("")}
+  ${comps.map(cp=>`<h4>${cp}</h4><div class="car">${CAREER.map((x,j)=>x.comp!==cp?"":`<span class="${j<i?"ok":j===i?"cur":""}" title="${esc(x.n)}">${j<i?"✅":j===i?"⚔️":"🔒"} ${esc(x.n)} <small style="opacity:.75">${clubAvg(x.n)}</small></span>`).join("")}</div>`).join("")}
   ${fin?`<div class="motm">🏆 Carrière terminée ! Tu as battu le Real Madrid.</div><button class="btn ghost big" id="jCarReset">🔁 Recommencer (sans récompenses déjà gagnées)</button>`
-   :`<button class="btn big" id="jCarGo">▶️ Affronter ${esc(CAREER[i].n)}</button><div class="mute" style="font-size:12px;text-align:center">Note moyenne de leur 11 : ${clubAvg(CAREER[i].n)||CAREER[i].r[0]+"–"+CAREER[i].r[1]}</div>`}`;
+   :`<button class="btn big" id="jCarGo">▶️ Affronter ${esc(CAREER[i].n)}</button>${(()=>{ const ta=xiAvg(me).avg, oa=clubAvg(CAREER[i].n); return `<div class="vsavg"><div><small>Ton 11</small><b>${ta||"–"}</b></div><span>VS</span><div><small>${esc(CAREER[i].n)}</small><b>${oa}</b></div></div><div class="mute" style="font-size:12px;text-align:center">${ta?cmpTag(ta,oa):"Complète ton 11 type"}</div>`; })()}`}`;
 }
 
 // ---------- 🏆 Coupe à élimination ----------
@@ -2858,6 +2862,7 @@ function defiHTML(){
    <div class="field"><span>Formation</span><select id="dfForm">${Object.keys(F).map(f=>`<option ${f===D.formation?"selected":""}>${f}</option>`).join("")}</select></div>
    <div class="dslots">${form.map(([role],i)=>{ const p=BY_ID[D.slots[i]]; return `<button class="dslot${p?" on "+cardTier(p):""}" data-ds="${i}|${role}"><small>${role}</small><b>${p?esc(short(p.name)):"+"}</b>${p?`<i>${Math.round(p.ovr*fit(p,role))}</i>`:""}</button>`; }).join("")}</div>
    ${df.budget?`<div class="mute" style="font-size:12px;text-align:center">Budget : ${bCost(ids)}/${df.budget}</div>`:""}
+   ${ids.length?(()=>{ const a=Math.round(ids.reduce((t,id)=>t+BY_ID[id].ovr,0)/ids.length), oa=clubAvg(defiClub(D.day)); return `<div class="vsavg"><div><small>Ton équipe</small><b>${a}</b></div><span>VS</span><div><small>${esc(defiClub(D.day))}</small><b>${oa}</b></div></div>`; })():""}
    <button class="btn big" id="dfGo" ${ids.length<11?"disabled":""}>▶️ Jouer le défi (${ids.length}/11)</button>`}
   <h4>Classement du jour</h4>${B.length?B.map((r,i)=>`<div class="rk${r.id===me?" me":""}" style="grid-template-columns:30px 1fr 60px"><span>${["🥇","🥈","🥉"][i]||i+1}</span><span>${esc(NAMES[r.id]||"?")}</span><b>${r.s[0]}-${r.s[1]}</b></div>`).join(""):`<div class="mute" style="font-size:13px">Personne n'a encore joué.</div>`}
   <div class="rules" style="font-size:12px">40 🪙 pour participer, +60 si victoire. Le meilleur score du jour (écart de buts) gagne un Pack Épique le lendemain.</div>`;
@@ -3086,7 +3091,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-19o";
+const APP_V="2026-11-19p";
 let updShown=false;
 async function checkUpdate(){ if(updShown) return; try{ const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const APP_V="([^"]+)"/); if(m&&m[1]!==APP_V){ updShown=true;
