@@ -1596,7 +1596,7 @@ async function enableNotifs(){
   if(notifState()==="unsupported"){ toast("Ce navigateur ne gère pas les notifications",true); return; }
   try{
     const perm=await Notification.requestPermission(); if(perm!=="granted"){ toast("Notifications refusées dans les réglages",true); return; }
-    const reg=await navigator.serviceWorker.register("firebase-messaging-sw.js");
+    const reg=await navigator.serviceWorker.register("firebase-messaging-sw.js?v=2",{updateViaCache:"none"}); try{ await reg.update(); }catch(_){} await navigator.serviceWorker.ready;
     const token=await firebase.messaging().getToken({vapidKey:VAPID_KEY,serviceWorkerRegistration:reg});
     const c=W(); c.fcm=[...new Set([...(c.fcm||[]),token])].slice(-5); save(); toast("🔔 Notifications activées !");
   }catch(e){ toast("Impossible d'activer les notifications : "+(e.code||e.message),true); }
@@ -2942,7 +2942,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-19h";
+const APP_V="2026-11-19i";
 let updShown=false;
 async function checkUpdate(){ if(updShown) return; try{ const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const APP_V="([^"]+)"/); if(m&&m[1]!==APP_V){ updShown=true;
