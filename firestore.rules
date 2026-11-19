@@ -89,6 +89,12 @@ service cloud.firestore {
       allow read, create: if joueurConnecte();
       allow update, delete: if false;
     }
+    // Historique des drafts terminés
+    match /onzeol_drafthist/{id} {
+      allow read: if joueurConnecte();
+      allow create: if joueurConnecte() && request.auth.uid in request.resource.data.players;
+      allow update, delete: if false;
+    }
     // Match en direct + historique : n'importe quel joueur connecté
     match /onzeol_meta/{doc} {
       allow read, write: if joueurConnecte();
