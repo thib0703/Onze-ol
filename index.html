@@ -84,6 +84,68 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
 .tally{display:flex;gap:8px;margin-bottom:8px}
 .tally div{flex:1;text-align:center;background:#0f1d40;border-radius:10px;padding:8px;font-size:12px;color:var(--mute)}
 .tally b{display:block;font-size:24px;color:var(--txt)}
+.fcard{--w:160px;width:var(--w);height:calc(var(--w)*1.42);position:relative;font-size:calc(var(--w)/10);color:#4a3606;clip-path:polygon(50% 0,100% 7%,100% 85%,50% 100%,0 85%,0 7%);background:linear-gradient(155deg,#fff6c2 0%,#ecc95f 30%,#c39531 62%,#f3d77a 100%);overflow:hidden;flex:none;font-family:system-ui,-apple-system,sans-serif;text-align:left}
+.fcard.silver{background:linear-gradient(155deg,#ffffff,#d5dae1 35%,#97a1ad 70%,#e6eaef);color:#263038}
+.fcard.bronze{background:linear-gradient(155deg,#f9d6b3,#cf915a 40%,#8d5627 75%,#e2a774);color:#2f1806}
+.fcard.icon{background:linear-gradient(155deg,#fffdf5,#f0e5c4 35%,#cdb67c 70%,#fff4d2);color:#3d2d06}
+.fcard.icon::before{content:"";position:absolute;inset:4%;clip-path:inherit;border:calc(var(--w)/70) solid #b8954166}
+.fcard.coach{background:linear-gradient(155deg,#2b3f78,#13306b 50%,#0b1a3d);color:#ffd970}
+.fc-shine{position:absolute;inset:0;background:linear-gradient(115deg,transparent 35%,#ffffff70 48%,transparent 60%);transform:translateX(-120%);animation:shine 4.5s ease-in-out infinite}
+.mini .fc-shine{display:none}
+@keyframes shine{0%,60%{transform:translateX(-120%)}85%,100%{transform:translateX(120%)}}
+.fc-top{position:absolute;left:11%;top:12%;text-align:center;line-height:1;z-index:1}
+.fc-ovr{font-size:2.4em;font-weight:900;letter-spacing:-.04em}
+.fc-pos{font-size:.95em;font-weight:800;margin-top:.1em}
+.fc-club{margin-top:.5em;font-size:.68em;font-weight:900;border:.13em solid currentColor;border-radius:.35em;padding:.15em .25em}
+.fc-face{position:absolute;right:6%;top:8%;width:60%;height:48%}
+.fc-face svg{width:100%;height:100%}
+.fc-name{position:absolute;top:52.5%;left:8%;right:8%;text-align:center;font-weight:900;font-size:1.08em;text-transform:uppercase;letter-spacing:.02em;padding-bottom:.25em;border-bottom:.07em solid currentColor;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fc-stats{position:absolute;top:63.5%;left:15%;right:11%;display:grid;grid-template-columns:1fr 1fr;column-gap:.6em;row-gap:.05em;font-size:.8em}
+.fc-stats span{display:flex;gap:.35em;align-items:baseline}
+.fc-stats b{font-weight:900;font-size:1.12em;min-width:1.3em}
+.fc-coach{position:absolute;top:66%;left:8%;right:8%;text-align:center;font-weight:800;font-size:.85em}
+.fc-coach small{display:block;font-weight:500;font-size:.8em;opacity:.8;margin-top:.3em}
+.fc-tag{position:absolute;bottom:5.2%;width:100%;text-align:center;font-size:.52em;font-weight:900;letter-spacing:.15em;opacity:.6}
+.mini .fc-top{left:9%;top:11%}
+.mini .fc-ovr{font-size:2.6em}
+.mini .fc-pos{font-size:1.15em}
+.mini .fc-face{top:30%;right:0;width:100%;height:60%}
+.slot.has{width:auto}
+.slot.has .fcard{margin:0 auto;filter:drop-shadow(0 3px 4px #0009)}
+.slot.has .nm{margin-top:2px}
+.cardbtn{border:0;background:none;padding:0;margin-right:4px;cursor:pointer}
+.cardm{background:#000000e6}
+.cardm .cm-box{display:flex;flex-direction:column;align-items:center;max-width:320px;width:100%}
+.cm-card{filter:drop-shadow(0 10px 30px #000c)}
+.cm-info{text-align:center;font-size:14px;line-height:1.6;margin:14px 0 4px;color:#dfe7ff}
+.cm-box .mbtns{width:100%}
+.cm-note{font-size:11px;color:var(--mute);text-align:center;margin-top:10px}
+.flip-in{animation:flipIn .7s cubic-bezier(.2,.9,.3,1.2) both}
+@keyframes flipIn{0%{transform:perspective(600px) rotateY(100deg) scale(.4);opacity:0}100%{transform:none;opacity:1}}
+.slide-in{animation:slideIn .45s ease-out both}
+@keyframes slideIn{0%{transform:translateX(-120%) rotate(-12deg)}100%{transform:none}}
+.glow{animation:flipIn .7s cubic-bezier(.2,.9,.3,1.2) both,glow 1.2s ease-in-out .7s infinite alternate}
+@keyframes glow{to{filter:brightness(1.18) drop-shadow(0 0 14px #ffe48a)}}
+.fx{position:fixed;inset:0;z-index:50;display:none;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;cursor:pointer}
+.fx.open{display:flex}
+.fx-bg{position:absolute;inset:0;background:radial-gradient(circle at 50% 45%,color-mix(in srgb,var(--c) 70%,transparent),#000d 70%);animation:fade .3s both}
+@keyframes fade{from{opacity:0}}
+.fx-label{position:relative;font-size:46px;font-weight:900;font-style:italic;color:#fff;text-shadow:0 0 18px var(--c),0 4px 0 #0008;letter-spacing:2px;animation:pop .5s cubic-bezier(.2,1.6,.4,1) both;margin-bottom:10px}
+.fx-label.save{font-size:38px}
+.fx-label.motm{font-size:26px;color:#ffd970;text-shadow:0 0 16px #c9a227}
+@keyframes pop{0%{transform:scale(3);opacity:0}100%{transform:scale(1);opacity:1}}
+.fx-card{position:relative;filter:drop-shadow(0 12px 30px #000)}
+.fx-sub{position:relative;color:#fff;font-weight:700;margin-top:12px;font-size:15px;animation:fade .5s .4s both}
+.fx-assist{position:relative;display:flex;align-items:center;gap:10px;margin-top:12px;color:#fff;font-size:13px;animation:slideIn .5s .6s both}
+.stamp{position:absolute;top:40%;left:50%;transform:translate(-50%,-50%) rotate(-18deg);border:5px solid #ff2a2a;color:#ff2a2a;font-weight:900;font-size:30px;padding:4px 12px;border-radius:8px;background:#fff9;animation:stamp .4s .5s cubic-bezier(.2,1.8,.4,1) both}
+@keyframes stamp{0%{transform:translate(-50%,-50%) rotate(-18deg) scale(3);opacity:0}100%{opacity:1}}
+.shake{animation:shake .5s .9s both}
+@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.confetti i{position:absolute;top:-10px;width:8px;height:14px;border-radius:2px;animation:fall 2.4s linear both}
+@keyframes fall{to{transform:translate(var(--dx),110vh) rotate(720deg)}}
+.rays{position:absolute;width:160vmax;height:160vmax;background:repeating-conic-gradient(#ffd97022 0 6deg,transparent 6deg 18deg);animation:spin 10s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.nr{cursor:pointer}
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#1f8a4c;color:#fff;padding:12px 18px;border-radius:12px;font-weight:700;z-index:30;box-shadow:0 6px 20px #0008;display:none}
 .count{font-size:13px;color:var(--mute);margin:8px 4px}
 .section{margin-top:14px;background:var(--carte);border-radius:14px;padding:12px}
@@ -218,6 +280,8 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
   <div class="section" id="mHist"></div>
 </div>
 <div class="toast" id="toast"></div>
+<div class="modal cardm" id="cardModal"></div>
+<div class="fx" id="fx"></div>
 <div class="modal" id="modal"><div class="mbox"><h3 id="mTitle"></h3><input id="mInput" maxlength="40" autocomplete="off"><div class="mbtns" id="mBtns"></div></div></div>
 <div class="veil" id="veil"></div>
 <div class="sheet" id="sheet">
@@ -497,9 +561,14 @@ function renderTabs(){
 }
 function slotBtn(kind,i,role,pid,mine,onclick){
   const p=pid&&BY_ID[pid]; const b=document.createElement("button");
-  b.className="slot"+(p?"":" empty")+(mine?"":" ro");
-  b.innerHTML=`<div class="shirt"><b>${esc(role)}</b></div>`+(p?`<div class="nm">${esc(kind==="coach"?p.name:short(p.name))}</div>`:(mine?`<div class="nm">+ Choisir</div>`:`<div class="nm">—</div>`));
-  if(mine) b.onclick=onclick||(()=>openSheet(kind,i,role));
+  b.className="slot"+(p?" has":" empty")+(mine||p?"":" ro");
+  if(p){
+    b.innerHTML=cardHTML(p.id,{w:kind==="coach"?54:42,mini:true,role:kind==="xi"?role:null})+`<div class="nm">${esc(kind==="coach"?p.name:short(p.name))}</div>`;
+    b.onclick=()=>showCard(p.id,(mine&&!onclick)?{change:()=>openSheet(kind,i,role),remove:()=>{editing={kind,i,role,mode:"compo"};setPick(null);}}:null);
+  } else {
+    b.innerHTML=`<div class="shirt"><b>${esc(role)}</b></div>`+(mine?`<div class="nm">+ Choisir</div>`:`<div class="nm">—</div>`);
+    if(mine) b.onclick=onclick||(()=>openSheet(kind,i,role));
+  }
   return b;
 }
 function render(){
@@ -584,6 +653,8 @@ function renderList(){
   for(const p of ps){
     const d=document.createElement("div"); d.className="pl"+(used.has(p.id)?" used":"");
     d.innerHTML=`<span class="n">${esc(p.name)}<span class="yr">${isCoach?"":`arrivé en ${p.year<2000?"avant 2000":p.year} · ${p.m!=null?`${p.m} matchs · ${p.g} but${p.g>1?"s":""} · `:""}`}note <b style="color:${p.ovr>=85?"#ffd970":p.ovr>=80?"#7ee2a0":"#c8d6ff"}">${p.ovr}</b></span>${used.has(p.id)?`<span class="tk">${takenMap?(takenMap[p.id]===me?"dans ton équipe":"pris par "+NAMES[takenMap[p.id]]):"déjà dans ta compo"}</span>`:""}</span>`+(isCoach?"":`<span class="tags">${p.pos.map(x=>`<span class="tag ${ok.includes(x)?"cur":""}">${x}</span>`).join("")}</span>`);
+    const cb=document.createElement("button"); cb.className="cardbtn"; cb.innerHTML=cardHTML(p.id,{w:30,mini:true}); cb.onclick=ev=>{ev.stopPropagation(); showCard(p.id,null);};
+    d.prepend(cb);
     d.onclick=()=>{ if(!used.has(p.id)) setPick(p.id); };
     L.appendChild(d);
   }
@@ -622,6 +693,7 @@ function openModal(title,value,buttons){
     x.onclick=()=>{ const v=inp.value.trim(); if(fn&&fn(v)===false) return; $("#modal").classList.remove("open"); }; B.appendChild(x); }
   $("#modal").classList.add("open"); if(value!==null) setTimeout(()=>inp.focus(),50);
 }
+$("#cardModal").onclick=e=>{ if(e.target.id==="cardModal") e.target.classList.remove("open"); };
 $("#modal").onclick=e=>{ if(e.target.id==="modal") $("#modal").classList.remove("open"); };
 function snapshotOf(c,id,name){ return {id,name,formation:c.formation,slots:{...c.slots},bench:{...c.bench},coach:c.coach||null,savedAt:Date.now()}; }
 function storeNamed(name,replaceId){
@@ -757,6 +829,99 @@ function renderDraft(){
   $("#dReset").style.display=d.status==="done"?"none":"block";
 }
 
+// ---------- Cartes joueurs ----------
+const STYLE={
+ rapide:"sidney-govou florent-malouda sylvain-wiltord hatem-ben-arfa jimmy-briand bradley-barcola malick-fofana ernest-nuamah ferland-mendy malo-gusto maxwel-cornet bertrand-traore memphis-depay eric-abidal aly-cissokho karl-toko-ekambi tino-kadewere clinton-n-jie anthony-reveillere michel-bastos abdul-kader-keita julien-duranville keito-nakamura mama-balde said-benrahma lois-openda nilmar steve-marlet cesar-delgado leo-dubois kenny-tete moussa-dembele rachid-ghezzal afonso-moreira tete",
+ frappe:"juninho fred lisandro-lopez karim-benzema alexandre-lacazette sonny-anderson bafetimbi-gomis nabil-fekir memphis-depay moussa-dembele michel-bastos georges-mikautadze lois-openda mariano-diaz john-carew giovane-elber pavel-sulc corentin-tolisso houssem-aouar alain-caveglia peguy-luyindula milan-baros",
+ technique:"hatem-ben-arfa nabil-fekir rayan-cherki lucas-paqueta houssem-aouar yoann-gourcuff miralem-pjanic mathieu-valbuena ederson cesar-delgado juninho thiago-almada memphis-depay eric-carriere karim-benzema bruno-guimaraes tanguy-ndombele lisandro-lopez florent-malouda clement-grenier jeff-reine-adelaide",
+ passeur:"juninho miralem-pjanic mathieu-valbuena yoann-gourcuff kim-kallstrom lucas-paqueta bruno-guimaraes corentin-tolisso clement-grenier eric-carriere rayan-cherki thiago-almada maxime-gonalons houssem-aouar tiago vikash-dhorasoo sergi-darder benoit-pedretti nemanja-matic",
+ physique:"michael-essien mahamadou-diarra cris john-carew bafetimbi-gomis jeremy-toulalan tanguy-ndombele jerome-boateng islam-slimani lucas-tousart dejan-lovren samuel-umtiti marc-vivien-foe nemanja-matic orel-mangala corentin-tolisso jean-ii-makoun claudio-cacapa moussa-niakhate jean-alain-boumsong mouctar-diakhaby martin-satriano",
+ defense:"jeremy-toulalan mahamadou-diarra michael-essien maxime-gonalons nemanja-matic thiago-mendes marc-vivien-foe gueida-fofana lucas-tousart edmilson cris tanner-tessmann tyler-morton",
+ lent:"nemanja-matic jerome-boateng claudio-cacapa juninho john-carew kim-kallstrom patrick-muller philippe-violeau sebastien-squillaci jean-alain-boumsong"
+};
+const STYLE_OF={}; for(const [k,v] of Object.entries(STYLE)) for(const id of v.split(" ")) (STYLE_OF[id]=STYLE_OF[id]||[]).push(k);
+const ARCH={ // VIT TIR PAS DRI DEF PHY (écart à la note)
+ BU:[0,5,-12,-1,-48,0], AG:[8,-4,-5,4,-48,-12], AD:[8,-4,-5,4,-48,-12], MOC:[-2,-2,4,4,-42,-18],
+ MC:[-8,-9,3,0,-18,-10], MG:[2,-8,0,2,-25,-8], MD:[2,-8,0,2,-25,-8], MDC:[-12,-18,-3,-8,2,3],
+ DD:[3,-30,-8,-6,-1,-5], DG:[3,-30,-8,-6,-1,-5], PG:[5,-25,-5,-3,-6,-5], PD:[5,-25,-5,-3,-6,-5], DC:[-15,-42,-20,-22,3,3]};
+const BUMP={rapide:[9,0,0,2,0,0],frappe:[0,7,0,0,0,0],technique:[0,0,1,6,0,0],passeur:[0,0,6,1,0,0],physique:[-2,0,0,0,2,8],defense:[0,0,0,0,7,2],lent:[-10,0,0,-2,0,2]};
+const OUT_L=["VIT","TIR","PAS","DRI","DEF","PHY"], GK_L=["PLO","MAI","DÉG","RÉF","VIT","PLA"];
+function hashN(s){let h=7;for(const c of s)h=(h*31+c.charCodeAt(0))%9973;return h;}
+function cardStats(p){
+  if(p.pos[0]==="COACH") return null;
+  const o=p.ovr, h=hashN(p.id);
+  const jit=k=>((h>>k)%5)-2;
+  if(p.pos[0]==="GB") return {labels:GK_L,vals:[o+1+jit(1),o-2+jit(2),o-11+jit(3),o+3+jit(4),Math.max(35,o-32+jit(5)*3),o+jit(6)].map(v=>Math.max(25,Math.min(99,Math.round(v))))};
+  const base=ARCH[p.pos[0]]||ARCH.MC; const v=base.map(x=>o+x);
+  for(const st of (STYLE_OF[p.id]||[])) BUMP[st].forEach((b,i)=>v[i]+=b);
+  return {labels:OUT_L,vals:v.map((x,i)=>Math.max(22,Math.min(99,i===0?99:o+6,Math.round(x+jit(i+1)))))};
+}
+const CURRENT=new Set("dominik-greif remy-descamps nicolas-tagliafico zachary-athekame abner-vinicius moussa-niakhate felix-bacher ruben-kluivert clinton-mata mads-bidstrup tanner-tessmann corentin-tolisso pavel-sulc khalis-merah tyler-morton julien-duranville noah-nartey ernest-nuamah keito-nakamura lois-openda kail-boudache alejandro-rodriguez remi-himbert carlos-vicens".split(" "));
+function cardTier(p){
+  if(p.pos[0]==="COACH") return "coach";
+  if(p.ovr>=84 && p.year<2014 && !CURRENT.has(p.id)) return "icon";
+  return p.ovr>=75?"gold":p.ovr>=65?"silver":"bronze";
+}
+const TIER_TAG={icon:"ICÔNE OL",gold:"OR",silver:"ARGENT",bronze:"BRONZE",coach:"ENTRAÎNEUR"};
+function initials(n){return n.replace(/[^A-Za-zÀ-ÿ \-']/g,"").split(/[\s\-]+/).filter(Boolean).map(w=>w[0]).slice(0,2).join("").toUpperCase();}
+function cardHTML(pid,opts={}){
+  const p=BY_ID[pid]; if(!p) return "";
+  const t=cardTier(p); const st=cardStats(p); const w=opts.w||160; const mini=!!opts.mini;
+  const pos=opts.role&&p.pos[0]!=="COACH"?opts.role:(p.pos[0]==="COACH"?"COA":p.pos[0]);
+  const shortN=p.name.split(" ").length>1&&p.name.length>12?p.name.split(" ").slice(-1)[0]:p.name;
+  const ovr=opts.ovr!=null?opts.ovr:p.ovr;
+  return `<div class="fcard ${t}${mini?" mini":""}${opts.cls?" "+opts.cls:""}" style="--w:${w}px">
+   <div class="fc-shine"></div>
+   <div class="fc-top"><div class="fc-ovr">${ovr}</div><div class="fc-pos">${esc(pos)}</div>${mini?"":`<div class="fc-club">OL</div>`}</div>
+   <div class="fc-face"><svg viewBox="0 0 100 100"><circle cx="50" cy="36" r="19" fill="currentColor" opacity=".28"/><path d="M12 100c2-24 18-36 38-36s36 12 38 36z" fill="currentColor" opacity=".28"/>${mini?"":`<text x="50" y="43" text-anchor="middle" font-size="18" font-weight="900" fill="currentColor" opacity=".55">${esc(initials(p.name))}</text>`}</svg></div>
+   ${mini?"":`<div class="fc-name">${esc(shortN)}</div>`}
+   ${mini||!st?(!mini&&p.pos[0]==="COACH"?`<div class="fc-coach">${esc(p.name)}<small>Entraîneur de l'OL</small></div>`:""):`<div class="fc-stats">${[0,3,1,4,2,5].map(i=>`<span><b>${st.vals[i]}</b>${st.labels[i]}</span>`).join("")}</div>`}
+   ${mini?"":`<div class="fc-tag">${TIER_TAG[t]}</div>`}
+  </div>`;
+}
+function showCard(pid,act){
+  const p=BY_ID[pid]; if(!p) return;
+  const M=$("#cardModal");
+  const info=p.pos[0]==="COACH"?`<div>Entraîneur de l'OL · note ${p.ovr}</div>`:
+    `<div>${p.pos.join(" · ")} · arrivé à l'OL ${p.year<2000?"avant 2000":"en "+p.year}</div>${p.m!=null?`<div><b>${p.m}</b> matchs · <b>${p.g}</b> but${p.g>1?"s":""} à l'OL</div>`:`<div class="mute">Moins de 30 matchs à l'OL : pas de stats officielles</div>`}`;
+  M.innerHTML=`<div class="cm-box"><div class="cm-card">${cardHTML(pid,{w:230,cls:"flip-in"})}</div><div class="cm-info">${info}</div><div class="mbtns" id="cmBtns"></div><div class="cm-note">Stats de carte inspirées des jeux FIFA/FC, calculées d'après la note, le poste et le profil du joueur.</div></div>`;
+  const B=$("#cmBtns");
+  const mk=(t,fn,ghost)=>{const b=document.createElement("button");b.className="btn"+(ghost?" ghost":"");b.textContent=t;b.onclick=()=>{M.classList.remove("open");fn&&fn();};B.appendChild(b);};
+  if(act&&act.change) mk("🔁 Changer de joueur",act.change);
+  if(act&&act.remove) mk("Retirer",act.remove,true);
+  mk("Fermer",null,true);
+  M.classList.add("open");
+}
+// ---------- Animations pendant le match ----------
+let fxQ=[], fxBusy=false, fxSeen={};
+function queueFx(e,m){ if(fxQ.length>4&&e.k==="save") return; fxQ.push({e,m}); if(!fxBusy) nextFx(); }
+function nextFx(){
+  const it=fxQ.shift(); if(!it){fxBusy=false;return;} fxBusy=true;
+  const {e,m}=it; const F=$("#fx"); const col=e.t===0?"var(--rouge)":"var(--bleu2)";
+  const role=pid=>{for(const tm of m.teams) for(const l of tm.lineup) if(l.pid===pid) return l.role; return null;};
+  let html="",dur=1500;
+  if(e.k==="goal"){
+    dur=2600;
+    const conf=Array.from({length:26},(_,i)=>`<i style="left:${(i*37)%100}%;background:${i%3?col:"#fff"};animation-delay:${(i%7)*.08}s;--dx:${((i*53)%60)-30}px"></i>`).join("");
+    html=`<div class="fx-bg" style="--c:${col}"></div><div class="confetti">${conf}</div>
+      <div class="fx-label goal" style="--c:${col}">BUUUT !</div>
+      <div class="fx-card">${cardHTML(e.p,{w:190,role:role(e.p),cls:"flip-in glow"})}</div>
+      <div class="fx-sub">${e.m|0}' · ${TEAMN[e.t]} ${e.fk?"· coup franc 🎯":""}</div>
+      ${e.a?`<div class="fx-assist">${cardHTML(e.a,{w:70,mini:true,role:role(e.a)})}<span>Passe décisive<br><b>${esc(pn(e.a))}</b></span></div>`:""}`;
+  } else if(e.k==="red"){
+    dur=2000;
+    html=`<div class="fx-bg" style="--c:#b4432b"></div><div class="fx-card shake">${cardHTML(e.p,{w:170,role:role(e.p),cls:"flip-in"})}<div class="stamp">EXPULSÉ</div></div><div class="fx-sub">${e.m|0}' · 🟥 ${esc(pn(e.p))}</div>`;
+  } else if(e.k==="save"){
+    dur=1400;
+    html=`<div class="fx-bg" style="--c:${col}"></div><div class="fx-label save" style="--c:${col}">ARRÊT !</div><div class="fx-card">${cardHTML(e.p,{w:150,role:"GB",cls:"slide-in"})}</div>`;
+  } else if(e.k==="motm"){
+    dur=3200;
+    html=`<div class="fx-bg" style="--c:#c9a227"></div><div class="rays"></div><div class="fx-label motm">HOMME DU MATCH</div><div class="fx-card">${cardHTML(e.p,{w:210,role:role(e.p),ovr:Math.round(BY_ID[e.p].ovr+(e.note-6)*1.5),cls:"flip-in glow"})}</div><div class="fx-sub">${TEAMN[e.t]} · ${e.note}/10</div>`;
+  }
+  F.innerHTML=html; F.className="fx open";
+  F.onclick=()=>{clearTimeout(F._t);F.className="fx";setTimeout(nextFx,150);};
+  F._t=setTimeout(()=>{F.className="fx";setTimeout(nextFx,250);},dur);
+}
 // ---------- Simulation de match ----------
 const LINE={GB:"gk",DC:"def",DD:"def",DG:"def",PG:"def",PD:"def",MDC:"mid",MC:"mid",MG:"mid",MD:"mid",MOC:"mo",AG:"att",AD:"att",BU:"att"};
 let match=null, matches=[], selA="cur", selB="cur", mTimer=null, mSkip=null, lastMatchId=null;
@@ -840,7 +1005,7 @@ function simulate(A,B){
   let motm=null,best=-1; for(const t of [0,1]) for(const [pid,n] of Object.entries(notes[t])) if(n>best){best=n;motm={t,pid};}
   return {ev,score,shots,onT,poss,notes,motm,len:90+extra,xg:xg.map(x=>Math.round(x*100)/100)};
 }
-const MSPEED=280; // ms par minute de match
+const MSPEED=420; // ms par minute de match
 function matchMinute(){ if(!match) return 0; if(mSkip===match.id) return 999; return (Date.now()-match.at)/MSPEED; }
 async function launchMatch(){
   if(!ref){toast("Pas connecté",true);return;}
@@ -906,6 +1071,12 @@ function renderBoard(){
   el.style.display="";
   const cur=matchMinute(); const done=cur>=match.len+.5;
   const shown=match.ev.filter(e=>e.m<=cur);
+  if(mSkip!==match.id){
+    if(fxSeen[match.id]==null) fxSeen[match.id]= cur>2 ? shown.length : 0;
+    while(fxSeen[match.id]<shown.length){ const e=shown[fxSeen[match.id]++]; if(mode!=="match") continue;
+      if(e.k==="goal"||e.k==="red"||(e.k==="save"&&Math.random()<.6)) queueFx(e,match);
+      if(e.k==="ft"&&match.motm) queueFx({k:"motm",p:match.motm.pid,t:match.motm.t,note:match.notes[match.motm.t][match.motm.pid]},match); }
+  }
   const sc=[0,0]; shown.forEach(e=>{if(e.k==="goal")sc[e.t]++;});
   const clock= cur<0?"Coup d'envoi…": done?"Terminé": cur>=45&&cur<45.5?"45'":`${Math.min(Math.floor(cur)||1,match.len)}'`;
   let h=`<div class="score"><div class="tm">Thib<small>${esc(match.teams[0].label)}</small></div><div class="sc">${sc[0]} - ${sc[1]}<small>${clock}</small></div><div class="tm">Val<small>${esc(match.teams[1].label)}</small></div></div>`;
@@ -915,10 +1086,10 @@ function renderBoard(){
     const M=match;
     h+=`<div class="vs" style="margin-top:12px"><b>Thib</b><span>Stats</span><b>Val</b></div>`+bar("Possession %",M.poss,100-M.poss,1)+bar("Tirs",M.shots[0],M.shots[1],1)+bar("Tirs cadrés",M.onT[0],M.onT[1],1);
     const mo=M.motm; if(mo) h+=`<div class="motm">⭐ Homme du match : <b>${esc(BY_ID[mo.pid]?.name||"?")}</b> (${TEAMN[mo.t]}) · ${M.notes[mo.t][mo.pid]}/10</div>`;
-    h+=`<div class="notes">${[0,1].map(t=>`<div><h4>Notes ${TEAMN[t]}</h4>${M.teams[t].lineup.filter(l=>l.pid).map(l=>`<div class="nr"><span>${l.role} ${esc(pn(l.pid))}</span><b class="${M.notes[t][l.pid]>=7.5?"hi":M.notes[t][l.pid]<5.5?"lo":""}">${M.notes[t][l.pid]}</b></div>`).join("")}</div>`).join("")}</div>`;
+    h+=`<div class="notes">${[0,1].map(t=>`<div><h4>Notes ${TEAMN[t]}</h4>${M.teams[t].lineup.filter(l=>l.pid).map(l=>`<div class="nr" onclick="showCard('${l.pid}')"><span>${l.role} ${esc(pn(l.pid))}</span><b class="${M.notes[t][l.pid]>=7.5?"hi":M.notes[t][l.pid]<5.5?"lo":""}">${M.notes[t][l.pid]}</b></div>`).join("")}</div>`).join("")}</div>`;
   }
   el.innerHTML=h;
-  const sk=$("#mSkipBtn"); if(sk) sk.onclick=()=>{mSkip=match.id;renderMatch();};
+  const sk=$("#mSkipBtn"); if(sk) sk.onclick=()=>{mSkip=match.id;fxQ=[];renderMatch();};
   if(!done&&!mTimer) mTimer=setInterval(()=>{ if(mode!=="match") return; const d=matchMinute()>=match.len+.5; renderBoard(); if(d){clearInterval(mTimer);mTimer=null;renderMatch();} },MSPEED);
   if(done&&mTimer){clearInterval(mTimer);mTimer=null;}
 }
