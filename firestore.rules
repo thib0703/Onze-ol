@@ -76,6 +76,21 @@ service cloud.firestore {
                            .hasOnly([request.auth.uid])));
       allow delete: if joueurConnecte() && resource.data.owner == request.auth.uid;
     }
+    // Coupes à élimination : le créateur gère, inscription libre, les participants jouent leurs matchs
+    match /onzeol_cups/{id} {
+      allow read: if joueurConnecte();
+      allow create: if joueurConnecte() && request.resource.data.owner == request.auth.uid
+                    && request.resource.data.members == [request.auth.uid] && request.resource.data.status == 'open';
+      allow update: if joueurConnecte() && (resource.data.owner == request.auth.uid
+                    || (resource.data.status == 'open'
+                        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['members'])
+                        && request.resource.data.members.toSet().difference(resource.data.members.toSet()).union(
+                           resource.data.members.toSet().difference(request.resource.data.members.toSet()))
+                           .hasOnly([request.auth.uid]))
+                    || (resource.data.status == 'running' && request.auth.uid in resource.data.members
+                        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['rounds','status','winner','finalist'])));
+      allow delete: if joueurConnecte() && resource.data.owner == request.auth.uid;
+    }
     // Match en direct + historique : n'importe quel joueur connecté
     match /onzeol_meta/{doc} {
       allow read, write: if joueurConnecte();
