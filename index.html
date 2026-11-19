@@ -1694,40 +1694,13 @@ const fmtv=v=>raw2(v); function raw2(v){ return Number.isInteger(v)?v:(Math.abs(
 function bar(label,a,b,raw){ const w=raw?(a/((a+b)||1)*100):Math.min(92,Math.max(8,50+(a-b)*2.5)); return `<div class="sbar"><div class="sv">${raw?fmtv(a):Math.round(a)}</div><div class="sl"><span>${label}</span><div class="track"><i style="width:${w}%"></i></div></div><div class="sv">${raw?fmtv(b):Math.round(b)}</div></div>`; }
 function renderMatch(){
   if(!me) return;
-  // setup
-  const ids=[...Object.keys(NAMES),CPU];
-  if(!pA||(!NAMES[pA]&&pA!==CPU)) pA=me; if(!pB||(!NAMES[pB]&&pB!==CPU)||pB===pA) pB=ids.find(x=>x!==pA)||CPU;
-  const oa=teamOptions(pA), ob=teamOptions(pB);
-  if(!oa.some(o=>o.key===selA)) selA="cur"; if(!ob.some(o=>o.key===selB)) selB="cur";
-  if(pA===CPU&&!selA.startsWith("cpu")) selA="cpu:moyen"; if(pB===CPU&&!selB.startsWith("cpu")) selB="cpu:moyen";
-  const A=strength(pickTeam(pA,selA).get(),pA,pA!==CPU&&!selA.startsWith("draft")), B=strength(pickTeam(pB,selB).get(),pB,pB!==CPU&&!selB.startsWith("draft"));
-  const pSel=(id,v)=>`<select id="${id}" class="psel">${ids.map(x=>`<option value="${esc(x)}" ${x===v?"selected":""}>${esc(pName(x))}</option>`).join("")}</select>`;
-  const live=match&&matchMinute()<match.len+1&&matchMinute()>=-6;
-  $("#mSetup").innerHTML=`<h3>🏟️ Simulation de match</h3>
-   <div class="field">${pSel("pA",pA)}<select id="selA">${oa.map(o=>`<option value="${esc(o.key)}" ${o.key===selA?"selected":""}>${esc(o.label)}</option>`).join("")}</select></div>
-   <div class="vsmid">VS</div>
-   <div class="field">${pSel("pB",pB)}<select id="selB">${ob.map(o=>`<option value="${esc(o.key)}" ${o.key===selB?"selected":""}>${esc(o.label)}</option>`).join("")}</select></div>
-   <div class="vs"><b>${esc(pName(pA))}</b><span>Force</span><b>${esc(pName(pB))}</b></div>
-   ${bar("Global",A.global,B.global)}${bar("Attaque",A.att,B.att)}${bar("Milieu",A.mid,B.mid)}${bar("Défense",A.def,B.def)}${bar("Gardien",A.gk,B.gk)}${bar("Coach",A.coach,B.coach)}${bar("Collectif",A.chem,B.chem)}
-   <div class="rules" style="font-size:12px">🤖 Personne de dispo ? Choisis « Ordinateur » comme adversaire (4 niveaux, gains divisés par 2, hors championnats).<br>🔒 Avec un 11 type ou une compo enregistrée, seules les cartes possédées jouent. Une équipe de Draft joue avec tous ses joueurs.</div>
-   <button class="btn big" id="mGo" ${live?"disabled":""}>${live?"Match en cours…":"▶️ Lancer le match"}</button>
-   <div class="rules" style="font-size:12px;margin-bottom:0">Le résultat dépend des notes des joueurs, de leurs vraies stats à l'OL (matchs joués = expérience, ratio buts/match = efficacité devant le but), de leur placement (un joueur hors de son poste perd du niveau), du collectif (même nationalité ou même époque), des évolutions de cartes et de l'entraîneur… avec une part de hasard, comme au vrai foot.</div>`;
-  $("#pA").onchange=e=>{pA=e.target.value;selA="cur";renderMatch();};
-  $("#pB").onchange=e=>{pB=e.target.value;selB="cur";renderMatch();};
-  $("#selA").onchange=e=>{selA=e.target.value;renderMatch();};
-  $("#selB").onchange=e=>{selB=e.target.value;renderMatch();};
-  $("#mGo").onclick=launchMatch;
+  $("#mSetup").innerHTML=`<h3>🏟️ Matchs</h3><div class="rules" style="font-size:13px;margin-top:0">Les matchs se lancent depuis :<br>⚡ <b>Draft</b> (Draft, Budget) · 🎮 <b>Jeux</b> (Carrière, Coupes, Défi du jour, Canapé) · 🏆 <b>Ligue</b> (Championnats).<br>Ils s'affichent ici en direct, et tu peux revoir les derniers avec ▶️.</div>`;
   renderBoard();
-  // historique
-  const own=h=>h.owners||["thib","val"];
-  const T={}; const row=id=>T[id]||(T[id]={v:0,n:0,d:0,bp:0,bc:0});
-  for(const h of matches){ const [x,y]=own(h); if(x===y||isCpuH(h)) continue; const [a,b]=h.score; const X=row(x),Y=row(y); X.bp+=a;X.bc+=b;Y.bp+=b;Y.bc+=a; if(a>b){X.v++;Y.d++;} else if(b>a){Y.v++;X.d++;} else {X.n++;Y.n++;} }
-  const rank=Object.entries(T).sort((p,q)=>(q[1].v*3+q[1].n)-(p[1].v*3+p[1].n)||(q[1].bp-q[1].bc)-(p[1].bp-p[1].bc));
-  const nm=(h,i)=>(h.names&&h.names[i])||pName(own(h)[i]);
-  $("#mHist").innerHTML=`<h3>Classement <small>${matches.length} match${matches.length>1?"s":""}</small></h3>
-    ${rank.length?`<div class="rk head"><span>#</span><span>Joueur</span><span>V</span><span>N</span><span>D</span><span>Pts</span></div>`+rank.map(([id,r],i)=>`<div class="rk${id===me?" me":""}"><span>${i+1}</span><span>${esc(NAMES[id]||"?")}</span><span>${r.v}</span><span>${r.n}</span><span>${r.d}</span><b>${r.v*3+r.n}</b></div>`).join(""):`<div class="mute" style="font-size:13px">Aucun match pour l'instant.</div>`}
-    <h3 style="margin-top:14px">Derniers matchs</h3>
-    ${matches.slice(0,10).map(h=>`<div class="logrow"><span style="flex:1">${esc(nm(h,0))}<br><small class="mute">${esc(h.labels[0])}</small></span><b style="min-width:auto;align-self:center">${h.score[0]} - ${h.score[1]}</b><span style="flex:1;text-align:right">${esc(nm(h,1))}<br><small class="mute">${esc(h.labels[1])}</small></span></div>`).join("")}`;
+  const mine=matches.filter(h=>h.owners&&h.owners.includes(me)).slice(0,15);
+  const nm=(h,i)=>(h.names&&h.names[i])||pName((h.owners||[])[i]);
+  $("#mHist").innerHTML=`<h3>Mes derniers matchs</h3>${mine.length?mine.map(h=>{ const i=h.owners.indexOf(me), a=h.score[i], b=h.score[1-i];
+    return `<div class="dh"><div><b>${esc(nm(h,0))} – ${esc(nm(h,1))}</b><small>${esc(h.labels[0]||"")} · ${fmtWhen(h.at)}</small></div><b class="${a>b?"win":a<b?"lose":""}">${h.score[0]} - ${h.score[1]}</b><span></span><button class="btn sm ghost" data-rp="${h.id}">▶️</button></div>`; }).join(""):`<div class="mute" style="font-size:13px">Aucun match pour l'instant.</div>`}`;
+  $("#mHist").querySelectorAll("[data-rp]").forEach(x=>x.onclick=()=>openReplay(x.dataset.rp));
 }
 function renderBoard(){
   const el=$("#mBoard");
@@ -2740,7 +2713,7 @@ async function careerPlay(){
   const m=buildMatch([{c:mine,S:A,label:"11 type",owner:me,name:NAMES[me]},{c:oc,S:B,label:O.comp,owner:CPU,name:O.n}]);
   const [a,b]=m.score;
   if(a>b){ k.lvl=i+1; if(i+1>k.best){ k.best=i+1; later({coins:40+15*i},`Carrière : victoire contre ${O.n}`,m); if(CAREER_END[i]) later(CAREER_END[i],`🏆 ${O.comp} remportée`,m); if(i===CAREER.length-1) post(`🧗 ${NAMES[me]} a terminé la Carrière en battant le Real Madrid !`); } }
-  save(); addHist(histOf(m,{nr:1,mode:"carriere"})); playLocal(m);
+  save(); saveReplay(m); addHist(histOf(m,{nr:1,mode:"carriere"})); playLocal(m);
 }
 function careerHTML(){
   const k=careerState(); const i=k.lvl; const fin=i>=CAREER.length;
@@ -2852,7 +2825,7 @@ async function defiPlay(){
   const mine={formation:D.formation,slots:D.slots,bench:{},coach:null}, A=strength(mine,null,false), oc=defiOpp(D.day), B=strength(oc,null,false);
   const m=buildMatch([{c:mine,S:A,label:"🎯 Défi du jour",owner:me,name:NAMES[me]},{c:oc,S:B,label:"Adversaire du jour",owner:CPU,name:defiClub(D.day)}]);
   D.done=true; D.score=m.score; const [a,b]=m.score; later({coins:40+(a>b?60:a===b?20:0)},`Défi du jour ${a}-${b}`,m); save();
-  addHist(histOf(m,{nr:1,mode:"defi"})); playLocal(m);
+  saveReplay(m); addHist(histOf(m,{nr:1,mode:"defi"})); playLocal(m);
 }
 function defiHTML(){
   const D=defiState(), df=defiOf(D.day); const ids=Object.values(D.slots); const B=defiBoard(D.day);
@@ -3000,9 +2973,9 @@ const TIPS={
  tab_draft:{t:"⚡ Draft",x:`Un mode à deux, chacun son tour, avec <b>tous les joueurs du jeu</b> (pas besoin de les posséder).<br><br>
   <b>Draft classique</b> : à chaque poste, 5 joueurs te sont proposés, tu en choisis un.<br><b>Mode Budget</b> : vous partagez les mêmes 5 propositions et chaque carte coûte des crédits.<br><br>
   Une fois les équipes finies, faites-les s'affronter dans l'onglet Match.`},
- tab_match:{t:"🏟️ Match",x:`Choisis les deux équipes et lance la simulation. Le match se joue <b>en direct en ~1 minute</b> : buts, cartons, penalties, VAR…<br><br>
-  La force dépend des notes, des vraies stats OL, des postes, du collectif et de l'entraîneur, avec une part de chance.<br><br>
-  🪙 Victoire 100, nul 50, défaite 25, +10 par but (pleins gains sur 5 matchs par jour). Contre 🤖 l'ordi, c'est divisé par 2.`},
+ tab_match:{t:"🏟️ Match",x:`C'est ici que les matchs s'affichent <b>en direct en ~1 minute</b> : buts, cartons, penalties, VAR…<br><br>
+  Ils se lancent depuis ⚡ Draft, 🎮 Jeux (Carrière, Coupes, Défi) et 🏆 Ligue (Championnats). En bas, tes derniers matchs se revoient avec ▶️.<br><br>
+  🪙 Victoire 100, nul 50, défaite 25, +10 par but (pleins gains sur 5 matchs par jour).`},
  tab_collec:{t:"🎴 Collection",x:`Ici tu gères tes cartes :<br><br>🎁 <b>Pack du jour</b> gratuit, et d'autres packs à acheter avec tes pièces.<br>
   📒 <b>Album</b> façon Panini, avec des récompenses par collection complète.<br>🔄 <b>Échanges</b>, 🏪 <b>marché</b> et 🔨 <b>enchères</b> de doublons entre joueurs.<br>
   🧩 <b>Défis SBC</b> : donne des cartes en échange de récompenses.<br><br>Touche une carte pour voir ses stats et son palmarès.`},
@@ -3091,7 +3064,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-19p";
+const APP_V="2026-11-19q";
 let updShown=false;
 async function checkUpdate(){ if(updShown) return; try{ const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const APP_V="([^"]+)"/); if(m&&m[1]!==APP_V){ updShown=true;
