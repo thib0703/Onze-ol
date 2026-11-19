@@ -412,6 +412,7 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
 .mp-empty{display:inline-flex;width:34px;height:42px;align-items:center;justify-content:center;border:1px dashed #fff6;border-radius:8px;font-size:10px;color:#fffa}
 .xiavg{color:#ffd970}.vsavg{display:flex;align-items:center;justify-content:center;gap:16px;margin:8px 0 2px}.vsavg div{display:flex;flex-direction:column;align-items:center;background:rgba(255,255,255,.06);border-radius:12px;padding:6px 16px;min-width:90px}.vsavg b{font-size:26px}.vsavg small{opacity:.7;font-size:11px}.vsavg span{color:var(--rouge);font-weight:900}
 .dbtns{display:flex;gap:8px;justify-content:center;margin-top:10px}.dbtns .btn{flex:1}
+.readyrow{display:flex;justify-content:space-around;gap:8px;margin:10px 0 6px;font-size:13px;font-weight:700}
 </style>
 </head>
 <body>
@@ -886,13 +887,17 @@ function renderCompare(){
 
 // ---------- Sélection ----------
 // ---------- Draft : 5 propositions aléatoires par case, raretés variées ----------
+// Postes regroupés en 4 zones pour les propositions de draft : gardiens, défenseurs, milieux, attaquants
+const ZONE={GB:"gk",DC:"def",DD:"def",DG:"def",PG:"def",PD:"def",MDC:"mid",MC:"mid",MOC:"mid",MG:"mid",MD:"mid",AG:"att",AD:"att",BU:"att"};
+const zoneOK=(p,role)=>ZONE[p.pos[0]]===ZONE[role];
 const OFFER_TIERS=[["bronze"],["silver"],["gold"],["icon","gold"],["myth","icon","gold","silver"]];
 function draftOffer(kind,i,role){
   const key=kind+i; const d=draft; const mine=((d&&d.offers)||{})[me]||{};
   const taken=dTaken(d);
   if(mine[key]&&mine[key].some(id=>!taken[id])) return mine[key];
   const okR=kind==="xi"?(ROLE_OK[role]||[]):null;
-  const base=(kind==="coach"?COACHES:PLAYERS).filter(p=>!taken[p.id]&&(!okR||p.pos.some(x=>okR.includes(x))));
+  let base=(kind==="coach"?COACHES:PLAYERS).filter(p=>!taken[p.id]&&(!okR||zoneOK(p,role)));
+  if(okR&&base.length<5) base=PLAYERS.filter(p=>!taken[p.id]&&p.pos.some(x=>okR.includes(x)));
   const used=new Set(), ids=[];
   const pickT=tiers=>{ for(const t of tiers){ const L=base.filter(p=>cardTier(p)===t&&!used.has(p.id)); if(L.length) return L[Math.floor(Math.random()*L.length)]; } return null; };
   for(const tiers of OFFER_TIERS){
@@ -1124,7 +1129,7 @@ function renderDraft(){
   B.className="dbanner"+(d.status==="running"&&d.turn===me?" me":"");
   if(d.status==="lobby") B.innerHTML=`Préparez le draft<small>Réglez vos systèmes, puis lancez</small>`;
   else if(d.status==="running") B.innerHTML= d.turn===me?`⚡ À toi de choisir !<small>Touche une case vide de ton équipe</small>`:`⏳ ${esc(NAMES[d.turn]||"?")} choisit…<small>Tour ${d.picks.length+1} · tu verras son choix en direct</small>`;
-  else{ B.innerHTML=`🏁 Draft terminé !<small>Lance le match ou repars sur un nouveau draft</small><div class="dbtns"><button class="btn" id="dPlay2">▶️ Lancer le match</button><button class="btn ghost" id="dNew2">🆕 Nouveau draft</button></div>`; $("#dPlay2").onclick=()=>playDraftMatch("classic"); $("#dNew2").onclick=dRestart; }
+  else{ B.innerHTML=`🏁 Draft terminé !<small>Le match se lance quand vous êtes prêts tous les deux</small>${readyHTML(d,"dPlay2")}<div class="dbtns"><button class="btn ghost" id="dNew2">🆕 Nouveau draft</button></div>`; const rb=$("#dPlay2"); if(rb) rb.onclick=()=>setReady("classic"); $("#dNew2").onclick=dRestart; }
   $("#dLobby").style.display=d.status==="lobby"?"":"none";
   $("#dGame").style.display=d.status==="lobby"?"none":"";
   if(d.status==="lobby"){
@@ -1161,7 +1166,7 @@ function renderDraft(){
   const lg=d.picks.slice().reverse().slice(0,10);
   $("#dLog").innerHTML= lg.length? lg.map((p,k)=>`<div class="logrow"><b>#${d.picks.length-k}</b><span>${esc(NAMES[p.by]||"?")} → ${esc(BY_ID[p.pid]?.name||"?")}</span></div>`).join("") : `<div style="font-size:13px;color:var(--mute)">Aucun choix pour l'instant.</div>`;
   $("#dNew").style.display=d.status==="done"?"block":"none";
-  $("#dPlay").style.display=d.status==="done"?"block":"none";
+  $("#dPlay").style.display="none";
   $("#dReset").style.display=d.status==="done"?"none":"block";
 }
 
@@ -1656,6 +1661,7 @@ async function launchMatch(){
 function onMatchData(m,h){
   matches=Array.isArray(h)?h:[]; setTimeout(claimRewards,0);
   const isNew=m&&m.id!==lastMatchId;
+  if(isNew&&lastMatchId!==null&&m.by!==me&&m.teams&&m.teams.some(t=>t.owner===me)&&Date.now()-m.at<60000){ mClosed=null; setTimeout(()=>{ setMode("match"); window.scrollTo(0,0); },300); }
   if(isNew&&lastMatchId!==null&&m.by!==me){ toast(`🏟️ ${NAMES[m.by]||"Quelqu'un"} a lancé un match : ${tn(m,0)} vs ${tn(m,1)} !`); }
   if(m) lastMatchId=m.id; else lastMatchId=lastMatchId||"";
   match = (cpuMatch&&Date.now()-cpuMatch.at<(cpuMatch.len+20)*MSPEED) ? cpuMatch : (m||null);
@@ -2100,7 +2106,7 @@ let budgets={}, dSub="classic", bView=null, bLast={};
 const bKey=()=>"budget__"+pairKey(me,dOpp);
 function bNorm(x,a,b){
   const pl=(x&&Array.isArray(x.players))?x.players:[a,b].sort();
-  const d=Object.assign({mode:"budget",status:"lobby",budget:100,formation:"4-3-3",turn:null,teams:{},offers:{},opener:{},picks:[]},x||{}); d.players=pl;
+  const d=Object.assign({mode:"budget",status:"lobby",budget:100,formation:"4-3-3",turn:null,teams:{},offers:{},opener:{},picks:[],cur:null,ready:{}},x||{}); d.players=pl; d.ready=d.ready||{};
   for(const w of pl){ d.teams[w]=Object.assign({slots:{},coach:null,spent:0},d.teams[w]||{}); d.teams[w].slots=d.teams[w].slots||{}; }
   d.offers=d.offers||{}; d.opener=d.opener||{}; d.picks=Array.isArray(d.picks)?d.picks:[]; if(!F[d.formation]) d.formation="4-3-3";
   return d;
@@ -2108,9 +2114,11 @@ function bNorm(x,a,b){
 const bSlots=d=>[...F[d.formation].map(([r],i)=>({key:"s"+i,i,role:r})),{key:"coach",i:-1,role:"COACH"}];
 const bFilled=(d,w)=>Object.values(d.teams[w].slots).filter(Boolean).length+(d.teams[w].coach?1:0);
 const bMinNeeded=(d,w,except)=>{ const left=bSlots(d).filter(s=>s.key!==except&&!(s.key==="coach"?d.teams[w].coach:d.teams[w].slots[s.i])).length; return left*BPRICE.bronze; };
+const bTaken=d=>{ const t=new Set(); for(const w of d.players){ const T=d.teams[w]; Object.values(T.slots||{}).forEach(x=>x&&t.add(x)); if(T.coach) t.add(T.coach); } return t; };
 function bGenOffer(d,s){
-  const okR=s.role==="COACH"?null:(ROLE_OK[s.role]||[]);
-  const base=(s.role==="COACH"?COACHES:PLAYERS).filter(p=>!okR||p.pos.some(x=>okR.includes(x)));
+  const tk=bTaken(d);
+  let base=(s.role==="COACH"?COACHES:PLAYERS).filter(p=>!tk.has(p.id)&&(s.role==="COACH"||zoneOK(p,s.role)));
+  if(s.role!=="COACH"&&base.length<5) base=PLAYERS.filter(p=>!tk.has(p.id)&&p.pos.some(x=>(ROLE_OK[s.role]||[]).includes(x)));
   const used=new Set(), ids=[];
   const pickT=tiers=>{ for(const t of tiers){ const L=base.filter(p=>cardTier(p)===t&&!used.has(p.id)); if(L.length) return L[Math.floor(Math.random()*L.length)]; } return null; };
   for(const tiers of BOFFER_TIERS){
@@ -2127,21 +2135,28 @@ function bPick(s,pid){
     if(d.turn!==me) throw new Error("Ce n'est pas ton tour");
     const tm=d.teams[me]; if(s.key==="coach"?tm.coach:tm.slots[s.i]) throw new Error("Case déjà remplie");
     const offer=d.offers[s.key]; if(!offer||!offer.includes(pid)) throw new Error("Joueur non proposé");
+    if(bTaken(d).has(pid)) throw new Error("Ce joueur est déjà pris");
+    if(d.v===2&&(!d.cur||d.cur.key!==s.key)) throw new Error("Choisis d'abord pour le poste en cours");
     const o=d.players.find(x=>x!==me); const otherPick=s.key==="coach"?d.teams[o].coach:d.teams[o].slots[s.i]; if(otherPick===pid) throw new Error("Déjà pris par l'adversaire");
     const price=priceOf(pid); if(tm.spent+price>d.budget) throw new Error("Budget insuffisant");
     if(d.budget-tm.spent-price<bMinNeeded(d,me,s.key)) throw new Error("Trop cher : il ne te resterait pas assez pour compléter l'équipe");
     if(s.key==="coach") tm.coach=pid; else tm.slots[s.i]=pid; tm.spent+=price;
     d.picks.push({by:me,pid,slot:s.key,price,at:Date.now()});
     const N=bSlots(d).length;
-    if(bFilled(d,o)<N) d.turn=o; else if(bFilled(d,me)<N) d.turn=me; else { d.status="done"; d.turn=null; }
+    if(d.v===2){ if(d.cur.first===me) d.turn=o; else { d.cur=null; d.turn=me; } if(bFilled(d,o)>=N&&bFilled(d,me)>=N){ d.status="done"; d.turn=null; d.cur=null; } }
+    else if(bFilled(d,o)<N) d.turn=o; else if(bFilled(d,me)<N) d.turn=me; else { d.status="done"; d.turn=null; }
     tx.set(ref,d);
   }).catch(e=>toast(e.message||"Raté",true));
 }
 async function bOpen(s){
   // ouvre le poste : tire 5 joueurs partagés (si pas déjà ouvert)
   const d=bView; if(d.offers[s.key]) return d.offers[s.key];
-  const ids=bGenOffer(d,s); const ref=db.collection("onzeol_drafts").doc(bKey());
-  try{ await firebase.firestore().runTransaction(async tx=>{ const snap=await tx.get(ref); const x=bNorm(snap.data(),me,dOpp); if(x.offers[s.key]) return; x.offers[s.key]=ids; x.opener[s.key]=me; tx.set(ref,x); }); }catch(e){}
+  const ref=db.collection("onzeol_drafts").doc(bKey()); let ids=null;
+  try{ await firebase.firestore().runTransaction(async tx=>{ const snap=await tx.get(ref); const x=bNorm(snap.data(),me,dOpp);
+      if(x.offers[s.key]){ ids=x.offers[s.key]; return; }
+      if(x.v===2&&(x.turn!==me||x.cur)) throw new Error("Ce n'est pas à toi d'ouvrir un poste");
+      ids=bGenOffer(x,s); x.offers[s.key]=ids; x.opener[s.key]=me; if(x.v===2) x.cur={key:s.key,first:me}; tx.set(ref,x); }); }
+  catch(e){ toast(e.message||"Raté",true); return null; }
   return ids;
 }
 function onBudgetData(all){
@@ -2172,33 +2187,34 @@ function renderBudget(){
     const base=()=>bNorm(budgets[bKey()],me,dOpp); bindOppPick(el);
     $("#bBud").onchange=e=>{ const x=base(); x.budget=+e.target.value; bWrite(x,true); };
     $("#bForm").onchange=e=>{ const x=base(); x.formation=e.target.value; bWrite(x,true); };
-    $("#bStart").onclick=()=>{ const x=base(); const pl=x.players; bWrite({...x,status:"running",turn:Math.random()<.5?pl[0]:pl[1],teams:{[pl[0]]:{slots:{},coach:null,spent:0},[pl[1]]:{slots:{},coach:null,spent:0}},offers:{},opener:{},picks:[],budget:+$("#bBud").value,formation:$("#bForm").value,started:Date.now()},true); };
+    $("#bStart").onclick=()=>{ const x=base(); const pl=x.players; bWrite({...x,v:2,cur:null,ready:{},status:"running",turn:Math.random()<.5?pl[0]:pl[1],teams:{[pl[0]]:{slots:{},coach:null,spent:0},[pl[1]]:{slots:{},coach:null,spent:0}},offers:{},opener:{},picks:[],budget:+$("#bBud").value,formation:$("#bForm").value,started:Date.now()},true); };
     return;
   }
   const N=bSlots(d).length, can=d.status==="running"&&d.turn===me;
   const left=d.budget-myT.spent;
   const slotHTML=(w)=>{ const t=d.teams[w]; const P=`<div class="pitch bp">${$("#pitch .lines").outerHTML}${F[d.formation].map(([r,x,y],i)=>{ const pid=t.slots[i]; const s={key:"s"+i,i,role:r}; const opened=d.offers[s.key];
-        return `<button class="slot ${pid?"has":"empty"}" style="left:${x}%;top:${y}%" ${w===me&&can&&!pid?`data-bs="${i}"`:pid?`data-card="${pid}"`:""}>${pid?cardHTML(pid,{w:42,mini:true,role:r})+`<div class="nm">${esc(short(BY_ID[pid].name))} · ${priceOf(pid)}</div>`:`<div class="shirt"><b>${r}</b></div><div class="nm">${opened?(d.opener[s.key]===me?"ouvert":"🎯 4 restants"):w===me&&can?"+ Ouvrir":"—"}</div>`}</button>`; }).join("")}</div>`;
+        return `<button class="slot ${pid?"has":"empty"}" style="left:${x}%;top:${y}%" ${w===me&&can&&!pid&&(d.v!==2||!d.cur||d.cur.key===s.key)?`data-bs="${i}"`:pid?`data-card="${pid}"`:""}>${pid?cardHTML(pid,{w:42,mini:true,role:r})+`<div class="nm">${esc(short(BY_ID[pid].name))} · ${priceOf(pid)}</div>`:`<div class="shirt"><b>${r}</b></div><div class="nm">${opened?(d.opener[s.key]===me?"ouvert":"🎯 4 restants"):w===me&&can?"+ Ouvrir":"—"}</div>`}</button>`; }).join("")}</div>`;
       const co=t.coach; return P+`<div class="bcoach">${co?`<button class="slot has" data-card="${co}" style="position:static;transform:none">${cardHTML(co,{w:54,mini:true})}<div class="nm">${esc(BY_ID[co].name)} · ${priceOf(co)}</div></button><div class="skl">🧠 ${esc(skillOf(co).n||"")}<small>${esc(skillOf(co).d||"")}</small></div>`:`<button class="slot empty" style="position:static;transform:none" ${w===me&&can?`data-bs="coach"`:""}><div class="shirt"><b>COA</b></div><div class="nm">${d.offers.coach?(d.opener.coach===me?"ouvert":"🎯 restants"):w===me&&can?"+ Ouvrir":"—"}</div></button><div class="skl mute">Entraîneur à choisir</div>`}</div>`; };
   const view=bViewSel&&d.players.includes(bViewSel)?bViewSel:me;
-  el.innerHTML=`<div class="dbanner${can?" me":""}">${d.status==="done"?"🏁 Équipes complètes !":can?"💰 À toi de choisir !":`⏳ ${esc(NAMES[d.turn]||"?")} choisit…`}<small>${d.status==="done"?"Lance le match !":`Budget restant : ${left} / ${d.budget} pts · ${bFilled(d,me)}/${N} choisis`}</small></div>
+  el.innerHTML=`<div class="dbanner${can?" me":""}">${d.status==="done"?"🏁 Équipes complètes !":can?(d.v===2?(d.cur?`💰 À toi : choisis ton ${esc(bRoleName(d,d.cur.key))} parmi les 4 restants`:"💰 À toi d'ouvrir un poste et de choisir en premier"):"💰 À toi de choisir !"):`⏳ ${esc(NAMES[d.turn]||"?")} ${d.v===2&&!d.cur?"ouvre un poste…":"choisit…"}`}<small>${d.status==="done"?"Lance le match !":`Budget restant : ${left} / ${d.budget} pts · ${bFilled(d,me)}/${N} choisis`}</small></div>
     <div class="bbar"><div><b>${esc(NAMES[me])}</b><div class="track"><i style="width:${myT.spent/d.budget*100}%"></i></div><small>${myT.spent}/${d.budget} pts · ${bFilled(d,me)}/${N}</small></div><div><b>${esc(NAMES[o])}</b><div class="track"><i style="width:${oT.spent/d.budget*100}%"></i></div><small>${oT.spent}/${d.budget} pts · ${bFilled(d,o)}/${N}</small></div></div>
     <div class="tabs" style="padding:8px 0"><button class="tab${view===me?" on":""}" data-bv="${me}">Mon équipe</button><button class="tab${view===o?" on":""}" data-bv="${o}">Équipe de ${esc(NAMES[o])}</button></div>
     ${slotHTML(view)}
-    ${d.status==="done"?`<button class="btn big" id="bPlay">▶️ Lancer le match</button>`:""}
+    ${d.status==="done"?readyHTML(d,"bPlay"):""}
     <div class="section"><h3>Derniers choix</h3>${d.picks.slice().reverse().slice(0,8).map(p=>`<div class="logrow"><span>${esc(NAMES[p.by]||"?")} → ${esc(BY_ID[p.pid]?.name||"?")} <span class="mute">(${p.price} pts)</span></span></div>`).join("")||`<div class="mute" style="font-size:13px">Aucun choix.</div>`}</div>
     <button class="btn ghost big" id="bReset">${d.status==="done"?"🆕 Nouvelle partie (contre qui tu veux)":"Recommencer la partie"}</button>`;
   el.querySelectorAll("[data-bv]").forEach(b=>b.onclick=()=>renderBudgetKeepView(b.dataset.bv));
   el.querySelectorAll("[data-card]").forEach(b=>b.onclick=()=>showCard(b.dataset.card,null));
   el.querySelectorAll("[data-bs]").forEach(b=>b.onclick=()=>openBudgetSlot(b.dataset.bs));
   let arm=false; $("#bReset").onclick=e=>{ if(d.status!=="done"&&!arm){arm=true;e.target.textContent="Sûr ? (re-touche)";return;} bWrite({...bNorm(null,me,dOpp),players:d.players,budget:d.budget,formation:d.formation},true); };
-  const pb=$("#bPlay"); if(pb) pb.onclick=()=>playDraftMatch("budget");
+  const pb=$("#bPlay"); if(pb) pb.onclick=()=>setReady("budget");
 }
 let bViewSel=null;
+const bRoleName=(d,key)=>{ const s=bSlots(d).find(x=>x.key===key); return !s?"":s.role==="COACH"?"entraîneur":(ROLE_LABEL[s.role]||s.role); };
 function renderBudgetKeepView(v){ bViewSel=v; renderBudget(); }
 async function openBudgetSlot(k){
   const d=bView; const s=bSlots(d).find(x=>String(x.key)===(k==="coach"?"coach":"s"+k));
-  const ids=await bOpen(s); const o=d.players.find(x=>x!==me); const otherPick=s.key==="coach"?d.teams[o].coach:d.teams[o].slots[s.i];
+  const ids=await bOpen(s); if(!ids) return; const o=d.players.find(x=>x!==me); const otherPick=s.key==="coach"?d.teams[o].coach:d.teams[o].slots[s.i];
   const left=d.budget-d.teams[me].spent, minN=bMinNeeded(d,me,s.key);
   const T=$("#tradeUI"); T.classList.add("open");
   T.innerHTML=`<div class="tui-box"><div class="tui-head"><b>${s.role==="COACH"?"Entraîneur":ROLE_LABEL[s.role]||s.role}</b><button class="btn sm ghost" id="tClose">Fermer</button></div>
@@ -2486,10 +2502,21 @@ function leagueHTML(id,L){
     <div class="lgb">${st==="open"?(mine?(L.owner===me?`<button class="btn sm" data-ls="${id}">🚀 Lancer (${(L.members||[]).length} joueurs)</button>`:`<button class="btn sm ghost" data-lq="${id}">Quitter</button>`):`<button class="btn sm" data-lj="${id}">Rejoindre</button>`):""}${L.owner===me?`<button class="btn sm ghost" data-ld="${id}">Supprimer</button>`:""}</div></div>`;
 }
 
+// ---------- ✅ Les deux joueurs « prêts » → le match se lance en direct chez les deux ----------
+function readyHTML(d,id){ const o=d.players.find(x=>x!==me); const R=d.ready||{};
+  return `<div class="readyrow"><span>${esc(NAMES[me]||"Toi")} : ${R[me]?"prêt ✅":"en attente ⏳"}</span><span>${esc(NAMES[o]||"?")} : ${R[o]?"prêt ✅":"en attente ⏳"}</span></div>${R[me]?`<div class="mute" style="text-align:center;font-size:13px">En attente de ${esc(NAMES[o]||"l'adversaire")}…</div>`:`<button class="btn big" id="${id}">✅ Je suis prêt</button>`}`; }
+async function setReady(kind){
+  const ref=db.collection("onzeol_drafts").doc(kind==="budget"?bKey():dKey()); let go=false;
+  try{ await db.runTransaction(async tx=>{ const sn=await tx.get(ref); if(!sn.exists) throw new Error("Draft introuvable"); const x=sn.data(); if(x.status!=="done") throw new Error("Le draft n'est pas terminé");
+      const R=Object.assign({},x.ready||{}); R[me]=true; const both=x.players.every(w=>R[w]); go=both&&!x.launched; tx.update(ref,go?{ready:R,launched:true}:{ready:R}); }); }
+  catch(e){ toast(e.message||"Raté",true); return; }
+  if(go) playDraftMatch(kind,true); else toast("✅ Prêt ! Le match démarre dès que l'autre est prêt.");
+}
+
 // ---------- ⚡ Fin de draft : match direct, puis l'équipe part dans l'historique ----------
 let draftHist=[];
-async function playDraftMatch(kind){
-  if(sharedLive()){ toast("Un match est déjà en cours, attends la fin",true); return; }
+async function playDraftMatch(kind,force){
+  if(sharedLive()&&!force){ toast("Un match est déjà en cours, attends la fin",true); return; }
   const o=dOpp; let teams;
   if(kind==="budget"){ const d=bNorm(budgets[bKey()],me,o); if(d.status!=="done") return;
     teams=d.players.map(w=>({w,c:{formation:d.formation,slots:d.teams[w].slots,bench:{},coach:d.teams[w].coach}})); }
@@ -2891,7 +2918,7 @@ function offer5(pool){ const used=new Set(), ids=[]; const pickT=ts=>{ for(const
   return ids.sort(()=>Math.random()-.5); }
 function sofaOffer(){ const S=sofa; if(S.step>11) return null; if(S.offer&&S.offer.step===S.step) return S.offer;
   const taken=new Set([...S.t[0].ids,...S.t[1].ids]);
-  const pool=S.step===11?COACHES.filter(c=>!taken.has(c.id)):PLAYERS.filter(p=>!taken.has(p.id)&&p.pos.some(x=>(ROLE_OK[F[SOFA_FORM][S.step][0]]||[]).includes(x)));
+  const pool=S.step===11?COACHES.filter(c=>!taken.has(c.id)):PLAYERS.filter(p=>!taken.has(p.id)&&zoneOK(p,F[SOFA_FORM][S.step][0]));
   S.offer={step:S.step,ids:offer5(pool),phase:0,taken:null}; sofaSave(); return S.offer; }
 function sofaPick(id){ const S=sofa, O=sofaOffer(); const who=(S.step%2+O.phase)%2; const t=S.t[who];
   if(S.step===11) t.coach=id; else t.slots[S.step]=id; t.ids.push(id);
@@ -3065,7 +3092,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-19s";
+const APP_V="2026-11-19t";
 let updShown=false;
 async function checkUpdate(){ if(updShown) return; try{ const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const APP_V="([^"]+)"/); if(m&&m[1]!==APP_V){ updShown=true;
