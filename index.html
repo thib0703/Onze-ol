@@ -433,7 +433,7 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
   <button class="who" id="who">Changer</button><button class="coins" id="coins" style="display:none"></button>
   <h1>Les Gones <span>Legends</span></h1>
   <div class="sub">Tous les joueurs passés par Lyon depuis 2000</div>
-  <div class="sync" id="sync">Connexion…</div>
+  <div class="sync" id="sync">Connexion…</div><div id="appV" style="text-align:center;font-size:10px;opacity:.45;margin-top:2px"></div>
 </header>
 <div class="modes"><button id="mCompo" class="on">11 type</button><button id="mDraft">⚡ Draft</button><button id="mMatch">🏟️ Match</button><button id="mCollec">🎴 Collec</button><button id="mLigue">🏆 Ligue</button><button id="mJeux">🎮 Jeux</button></div>
 <div id="viewCompo">
@@ -3092,13 +3092,24 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-19t";
+const APP_V="2026-11-19u";
 let updShown=false;
 async function checkUpdate(){ if(updShown) return; try{ const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
-  const m=t.match(/const APP_V="([^"]+)"/); if(m&&m[1]!==APP_V){ updShown=true;
+  const m=t.match(/const APP_V="([^"]+)"/); if(m&&m[1]!==APP_V){
+    // Mise à jour automatique et silencieuse si rien d'important n'est en cours (une seule tentative par version)
+    let tried=""; try{ tried=localStorage.getItem("gl_upd_try")||""; }catch(_){}
+    const busy=(typeof sharedLive==="function"&&sharedLive())||document.querySelector(".modal.open,.tradeui.open,.tipov");
+    if(tried!==m[1]&&!busy){ try{ localStorage.setItem("gl_upd_try",m[1]); }catch(_){} try{ if(typeof dirty!=="undefined"&&dirty) await push(); }catch(_){}
+      try{ const ks=await caches.keys(); await Promise.all(ks.map(k=>caches.delete(k))); }catch(_){}
+      try{ const r=await navigator.serviceWorker?.getRegistration(); await r?.update(); }catch(_){}
+      location.replace(location.pathname+"?v="+m[1]+"&t="+Date.now()); return; }
+    if(busy&&tried!==m[1]) return; // on réessaiera au prochain contrôle, quand ce sera calme
+    updShown=true;
     const el=document.createElement("div"); el.className="tipov"; el.style.zIndex=140; el.innerHTML=`<div class="tipbox"><h3>🆕 Nouvelle version disponible</h3><div class="tipx">L'appli a été mise à jour avec des nouveautés ou des corrections.</div><button class="btn big" id="updGo">Mettre à jour</button></div>`;
     document.body.appendChild(el); el.querySelector("#updGo").onclick=()=>{ location.replace(location.pathname+"?v="+m[1]); }; } }catch(e){} }
-setTimeout(checkUpdate,4000); setInterval(checkUpdate,5*60000);
+try{ document.getElementById("appV").textContent="version "+APP_V; }catch(_){}
+setTimeout(checkUpdate,1500); setInterval(checkUpdate,2*60000);
+window.addEventListener("pageshow",()=>setTimeout(checkUpdate,500)); window.addEventListener("focus",()=>checkUpdate()); window.addEventListener("online",()=>checkUpdate());
 // service worker toujours enregistré : il force le chargement de la dernière version (et sert aux notifications)
 try{ if("serviceWorker" in navigator) navigator.serviceWorker.register("firebase-messaging-sw.js?v=2",{updateViaCache:"none"}).then(r=>r.update()).catch(()=>{}); }catch(e){}
 document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") checkUpdate(); });

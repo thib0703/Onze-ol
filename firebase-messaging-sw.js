@@ -5,7 +5,7 @@ self.addEventListener("activate", e => e.waitUntil(self.clients.claim()));
 self.addEventListener("fetch", e => {
   const r = e.request;
   if (r.mode === "navigate" || (r.method === "GET" && /\/(index\.html|live\.json)?(\?.*)?$/.test(new URL(r.url).pathname + new URL(r.url).search) && new URL(r.url).origin === location.origin)) {
-    e.respondWith(fetch(r, { cache: "no-store" }).then(res => { const cp = res.clone(); caches.open("gl-v1").then(c => c.put(r, cp)).catch(() => {}); return res; }).catch(() => caches.match(r)));
+    e.respondWith(fetch(r, { cache: "no-store" }).then(res => { const cp = res.clone(); caches.open("gl-v2").then(c => c.put(r, cp)).catch(() => {}); return res; }).catch(() => caches.match(r)));
   }
 });
 self.addEventListener("push", e => {
