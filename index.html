@@ -1684,6 +1684,9 @@ function undoStarter2(){ if(me!=="EMx6WLN3DtazTVDRozJmdvUHnVE2"||!compos[me]) re
     if(!c.coll[id]){ for(const k in c.slots) if(c.slots[k]===id) delete c.slots[k]; for(const k in c.bench) if(c.bench[k]===id) delete c.bench[k]; } }
   c.opened=Math.max(0,(c.opened||0)-1); c.fixStarter2=1; save(); render(); toast("Cartes du 2ᵉ Pack de départ retirées"); }
 setInterval(undoStarter2,3000);
+function undoStarter2Coach(){ if(me!=="EMx6WLN3DtazTVDRozJmdvUHnVE2"||!compos[me]) return; const c=W(); if(c.fixStarter2c) return; const id="coach-hubert-fournier";
+  const n=(c.coll[id]||0)-1; if(n>0) c.coll[id]=n; else { delete c.coll[id]; if(c.coach===id) c.coach=null; } c.fixStarter2c=1; save(); render(); }
+setInterval(undoStarter2Coach,3000);
 function onMatchData(m,h){
   matches=Array.isArray(h)?h:[]; setTimeout(claimRewards,0);
   const isNew=m&&m.id!==lastMatchId;
@@ -3148,7 +3151,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-20c";
+const APP_V="2026-11-20d";
 let updShown=false;
 async function checkUpdate(){ if(updShown) return; try{ const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const APP_V="([^"]+)"/); if(m&&m[1]!==APP_V){
