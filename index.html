@@ -1597,7 +1597,7 @@ async function launchMatch(){
   if(pA===CPU&&pB===CPU){ toast("Choisis au moins un joueur humain",true); return; }
   if(A.lineup.filter(l=>l.pid).length<7||B.lineup.filter(l=>l.pid).length<7){ toast("Il faut au moins 7 joueurs dans chaque équipe",true); return; }
   const r=simulate2(cA,A,cB,B);
-  const snap=(c,s,label,w,i)=>({label,owner:w,ownerName:pName(w)+(w===CPU?" "+(w===pA?tA:tB).label.replace("🤖 ",""):""),formation:c.formation,lineup:s.lineup.map(l=>({role:l.role,pid:l.pid})),played:r.played[i],coach:s.coachId,global:s.global});
+  const snap=(c,s,label,w,i)=>({label,owner:w,ownerName:pName(w),formation:c.formation,lineup:s.lineup.map(l=>({role:l.role,pid:l.pid})),played:r.played[i],coach:s.coachId,global:s.global});
   const m={id:Date.now().toString(36),at:Date.now()+1500,by:me,teams:[snap(cA,A,tA.label,pA,0),snap(cB,B,tB.label,pB,1)],...r};
   delete m.played;
   if(pA===CPU||pB===CPU){ // match solo : joué seulement sur ton téléphone
