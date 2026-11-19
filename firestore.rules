@@ -37,6 +37,16 @@ service cloud.firestore {
                     && request.resource.data.give == resource.data.give && request.resource.data.want == resource.data.want;
       allow delete: if false;
     }
+    // Marché : le vendeur crée/retire ; un autre joueur peut seulement passer une annonce ouverte en « vendue » à son nom
+    match /onzeol_market/{id} {
+      allow read: if joueurConnecte();
+      allow create: if joueurConnecte() && request.resource.data.seller == request.auth.uid && request.resource.data.status == 'open';
+      allow update: if joueurConnecte()
+        && request.resource.data.seller == resource.data.seller && request.resource.data.pid == resource.data.pid
+        && ( (request.auth.uid == resource.data.seller && (resource.data.status == 'open' || request.resource.data.price == resource.data.price) && (resource.data.status != 'sold' || request.resource.data.status == 'sold'))
+          || (request.auth.uid != resource.data.seller && request.resource.data.price == resource.data.price && resource.data.status == 'open' && request.resource.data.status == 'sold' && request.resource.data.buyer == request.auth.uid) );
+      allow delete: if false;
+    }
     // Match en direct + historique : n'importe quel joueur connecté
     match /onzeol_meta/{doc} {
       allow read, write: if joueurConnecte();

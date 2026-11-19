@@ -211,6 +211,9 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
 .pk-mini i{position:absolute;top:-6px;right:-4px;background:#1f8a4c;color:#fff;font-style:normal;font-weight:900;font-size:10px;border-radius:6px;padding:2px 5px}
 .modes button{position:relative}
 .modes button[data-badge]:not([data-badge=""])::after{content:attr(data-badge);position:absolute;top:2px;right:4px;background:#ffd970;color:#111;font-size:10px;font-weight:900;border-radius:999px;padding:1px 5px}
+#cMarket h4{margin:12px 0 6px;font-size:13px;color:var(--mute)}
+.mk{display:flex;align-items:center;gap:8px;padding:7px 4px;border-bottom:1px solid #1d2b55}
+.mkp{font-weight:900;color:#ffd970;font-size:14px;white-space:nowrap}
 #cTrades h4{margin:12px 0 6px;font-size:13px;color:var(--mute)}
 .trow{display:grid;grid-template-columns:1fr auto 1fr;gap:6px;align-items:center;background:#0f1d40;border-radius:10px;padding:10px;margin-bottom:8px;font-size:13px}
 .trow small{display:block;color:var(--mute);font-size:11px}
@@ -393,6 +396,7 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
 </div>
 <div id="viewCollec" class="wrap" style="display:none">
   <div class="section" id="cShop"></div>
+  <div class="section" id="cMarket"></div>
   <div class="section" id="cTrades"></div>
   <div class="section" id="cAlbum"></div>
 </div>
@@ -1604,7 +1608,7 @@ function packFx(pack,ids,isNew){
 }
 let colFilter="all";
 function renderCollec(){
-  if(!me) return; renderTrades(); const c=W(); const coll=c.coll||{};
+  if(!me) return; renderTrades(); renderMarket(); const c=W(); const coll=c.coll||{};
   const owned=ALL_CARDS.filter(p=>coll[p.id]).length;
   const dupes=Object.entries(coll).reduce((s,[id,n])=>s+(n>1?(n-1)*SELL[cardTier(BY_ID[id])]:0),0);
   $("#cShop").innerHTML=`<h3>🎴 Boutique <small>🪙 ${(c.coins||0).toLocaleString("fr-FR")}</small></h3>
@@ -1674,8 +1678,8 @@ async function acceptTrade(id){
   const ref=db.collection("onzeol_trades").doc(id);
   try{ await firebase.firestore().runTransaction(async tx=>{ const s=await tx.get(ref); const x=s.data(); if(!x||x.status!=="pending") throw new Error("Échange plus disponible"); tx.update(ref,{status:"accepted",doneAt:Date.now()}); }); }
   catch(e){ toast(e.message||"Raté, réessaie",true); return; }
-  for(const [pid,n] of Object.entries(t.want)) c.coll[pid]-=n;
-  for(const [pid,n] of Object.entries(t.give)) c.coll[pid]=(c.coll[pid]||0)+n;
+  { const c=W(); for(const [pid,n] of Object.entries(t.want)) c.coll[pid]-=n;
+  for(const [pid,n] of Object.entries(t.give)) c.coll[pid]=(c.coll[pid]||0)+n; }
   save(); toast("Échange accepté ✓ les cartes sont dans ta collection"); renderCollec();
 }
 function openTradeUI(to,pre){
@@ -1710,8 +1714,89 @@ async function sendTrade(){
   const id=Date.now().toString(36)+Math.random().toString(36).slice(2,6);
   try{ await db.collection("onzeol_trades").doc(id).set({from:me,to:d.to,give:d.give,want:d.want,status:"pending",at:Date.now(),settledFrom:false}); }
   catch(e){ toast("Impossible d'envoyer (règles Firebase à jour ?)",true); return; }
-  for(const [pid,n] of Object.entries(d.give)) c.coll[pid]-=n; // mises de côté
+  { const c=W(); for(const [pid,n] of Object.entries(d.give)) c.coll[pid]-=n; } // mises de côté
   save(); $("#tradeUI").classList.remove("open"); toast(`Proposition envoyée à ${NAMES[d.to]} ✓`); renderCollec();
+}
+// ---------- Marché de doublons entre joueurs ----------
+const TAX=.05, PMAX=20;
+let market={}, mkFilter="all", mkSeen=null;
+function onMarket(all){
+  market=all; const c=W(); let changed=false;
+  for(const [id,l] of Object.entries(market)){
+    if(l.seller!==me||l.settled) continue;
+    if(l.status==="sold"){ const gain=Math.round(l.price*(1-TAX)); c.coins=(c.coins||0)+gain; changed=true; toast(`🏪 ${NAMES[l.buyer]||"?"} a acheté ${BY_ID[l.pid]?.name} : +${gain} 🪙`); }
+    else if(l.status==="cancelled"){ c.coll[l.pid]=(c.coll[l.pid]||0)+1; changed=true; }
+    else continue;
+    db.collection("onzeol_market").doc(id).update({settled:true}).catch(()=>{});
+  }
+  if(changed){ save(); renderCoins(); }
+  if(mode==="collec"&&!$("#packfx").classList.contains("open")) renderMarket();
+}
+function renderMarket(){
+  const el=$("#cMarket"); if(!el||!me) return; const c=W();
+  const rk={bronze:0,silver:1,gold:2,icon:3,myth:4};
+  const open=Object.entries(market).filter(([i,l])=>l.status==="open"&&BY_ID[l.pid]);
+  const others_=open.filter(([i,l])=>l.seller!==me&&(mkFilter==="all"||(mkFilter==="new"?!c.coll[l.pid]:cardTier(BY_ID[l.pid])===mkFilter))).sort((a,b)=>rk[cardTier(BY_ID[b[1].pid])]-rk[cardTier(BY_ID[a[1].pid])]||a[1].price-b[1].price);
+  const mine=open.filter(([i,l])=>l.seller===me);
+  const sold=Object.entries(market).filter(([i,l])=>l.status==="sold"&&(l.seller===me||l.buyer===me)).sort((a,b)=>(b[1].soldAt||0)-(a[1].soldAt||0)).slice(0,5);
+  const card=(l,btn)=>{ const p=BY_ID[l.pid], t=cardTier(p); return `<div class="mk"><span class="tmini">${cardHTML(l.pid,{w:40,mini:true})}</span><span class="tname">${esc(p.name)}<small><span class="rar r-${t}">${TIER_NAME[t]}</span> ${l.seller===me?"":"par "+esc(NAMES[l.seller]||"?")}${!c.coll[l.pid]&&l.seller!==me?' · <b style="color:#7ee2a0">manque à ton album</b>':""}</small></span><span class="mkp">🪙 ${l.price}</span>${btn}</div>`; };
+  const F=[["all","Tout"],["new","Manquantes"],["myth","Myth."],["icon","Légend."],["gold","Épiques"],["silver","Rares"],["bronze","Communes"]];
+  el.innerHTML=`<h3>🏪 Marché <small>doublons entre joueurs</small></h3>
+    <button class="btn big" id="mkSell" style="margin-top:0">Mettre un doublon en vente</button>
+    <div class="rules" style="font-size:12px">Un prix est conseillé pour chaque joueur (rareté, note, palmarès et ventes récentes) : tu peux le modifier, même une fois en vente. Le marché prend ${TAX*100} % de taxe sur chaque vente.</div>
+    <div class="chips" style="margin:8px 0">${F.map(([k,l])=>`<button class="chip${mkFilter===k?" on":""}" data-mf="${k}">${l}</button>`).join("")}</div>
+    ${others_.length?others_.map(([id,l])=>card(l,`<button class="btn sm" data-buy="${id}" ${(c.coins||0)<l.price?"disabled":""}>Acheter</button>`)).join(""):`<div class="mute" style="font-size:13px">Aucune carte en vente${mkFilter!=="all"?" dans ce filtre":""}.</div>`}
+    ${mine.length?`<h4>Mes ventes en cours</h4>`+mine.map(([id,l])=>card(l,`<span class="tbtns" style="flex-direction:column;gap:4px"><button class="btn sm ghost" data-edit="${id}">Prix</button><button class="btn sm ghost" data-unl="${id}">Retirer</button></span>`)).join(""):""}
+    ${sold.length?`<h4>Dernières transactions</h4>`+sold.map(([id,l])=>`<div class="mute" style="font-size:12px;padding:3px 0">${l.seller===me?`💰 Vendu ${esc(BY_ID[l.pid].name)} à ${esc(NAMES[l.buyer]||"?")} : +${Math.round(l.price*(1-TAX))} 🪙`:`🛒 Acheté ${esc(BY_ID[l.pid].name)} à ${esc(NAMES[l.seller]||"?")} : −${l.price} 🪙`}</div>`).join(""):""}`;
+  $("#mkSell").onclick=openSellUI;
+  el.querySelectorAll("[data-mf]").forEach(b=>b.onclick=()=>{mkFilter=b.dataset.mf;renderMarket();});
+  el.querySelectorAll("[data-buy]").forEach(b=>b.onclick=()=>{ const l=market[b.dataset.buy]; openModal(`Acheter ${BY_ID[l.pid].name} pour ${l.price} 🪙 ?`,null,[["Acheter",()=>buyListing(b.dataset.buy)],["Annuler",null,true]]); });
+  el.querySelectorAll("[data-unl]").forEach(b=>b.onclick=()=>unlist(b.dataset.unl));
+  el.querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>{ const id=b.dataset.edit, l=market[id]; priceModal(l.pid,l.price,async pr=>{ const ref=db.collection("onzeol_market").doc(id);
+    try{ await firebase.firestore().runTransaction(async tx=>{ const s=await tx.get(ref); const x=s.data(); if(!x||x.status!=="open") throw new Error("Déjà vendue !"); tx.update(ref,{price:pr}); }); toast(`Nouveau prix : ${pr} 🪙`); }catch(e){ toast(e.message||"Raté",true); } }); });
+}
+function suggestPrice(pid){
+  const p=BY_ID[pid], t=cardTier(p); const min=SELL[t], max=SELL[t]*PMAX;
+  // base : rareté × note × palmarès
+  let v=SELL[t]*3*(1+(p.ovr-70)/40)*(1+Math.min(palmScore(p),60)/80);
+  // ajusté par les ventes récentes de ce joueur
+  const past=Object.values(market).filter(l=>l.pid===pid&&l.status==="sold").map(l=>l.price);
+  if(past.length) v=(v+past.reduce((a,b)=>a+b,0)/past.length)/2;
+  return Math.max(min,Math.min(max,Math.round(v/5)*5||min));
+}
+function priceModal(pid,cur,onOk){
+  const t=cardTier(BY_ID[pid]); const min=SELL[t], max=SELL[t]*PMAX, sug=suggestPrice(pid);
+  openModal(`${BY_ID[pid].name} · prix conseillé ${sug} 🪙 (de ${min} à ${max})`,String(cur||sug),[[cur?"Modifier le prix":"Mettre en vente",v=>{ const pr=Math.round(+v); if(!(pr>=min&&pr<=max)){ toast(`Prix entre ${min} et ${max} 🪙`,true); return false; } onOk(pr); }],["Annuler",null,true]]);
+  $("#mInput").type="number"; $("#mInput").inputMode="numeric";
+}
+function openSellUI(){
+  const L=dupesOf(me); if(!L.length){ toast("Tu n'as aucun doublon à vendre",true); return; }
+  const T=$("#tradeUI"); T.classList.add("open");
+  T.innerHTML=`<div class="tui-box"><div class="tui-head"><b>Mettre en vente</b><button class="btn sm ghost" id="tClose">Fermer</button></div>
+    <div class="tlist">${L.map(x=>{ const p=BY_ID[x.id], t=cardTier(p); return `<div class="tline" data-pick="${x.id}"><span class="tmini">${cardHTML(x.id,{w:34,mini:true})}</span><span class="tname">${esc(p.name)}<small><span class="rar r-${t}">${TIER_NAME[t]}</span> ${x.n} dispo · conseillé ${suggestPrice(x.id)} 🪙</small></span><button class="btn sm">Vendre</button></div>`; }).join("")}</div></div>`;
+  $("#tClose").onclick=()=>T.classList.remove("open");
+  T.querySelectorAll("[data-pick]").forEach(r=>r.onclick=()=>{ const id=r.dataset.pick; T.classList.remove("open"); priceModal(id,null,pr=>listCard(id,pr)); });
+}
+async function listCard(pid,price){
+  const c=W(); if((c.coll[pid]||0)<2){ toast("Plus de doublon de cette carte",true); return; }
+  const id=Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+  try{ await db.collection("onzeol_market").doc(id).set({seller:me,pid,price,status:"open",at:Date.now(),settled:false}); }
+  catch(e){ toast("Impossible de mettre en vente (règles Firebase à jour ?)",true); return; }
+  W().coll[pid]--; save(); toast(`${BY_ID[pid].name} mis en vente à ${price} 🪙`); renderCollec();
+}
+async function unlist(id){
+  const ref=db.collection("onzeol_market").doc(id);
+  try{ await firebase.firestore().runTransaction(async tx=>{ const s=await tx.get(ref); const l=s.data(); if(!l||l.status!=="open") throw new Error("Déjà vendue !"); tx.update(ref,{status:"cancelled"}); }); toast("Carte retirée du marché"); }
+  catch(e){ toast(e.message||"Raté",true); }
+}
+async function buyListing(id){
+  const c=W(); const l=market[id]; if(!l) return;
+  if((c.coins||0)<l.price){ toast("Pas assez de pièces",true); return; }
+  const ref=db.collection("onzeol_market").doc(id);
+  try{ await firebase.firestore().runTransaction(async tx=>{ const s=await tx.get(ref); const x=s.data(); if(!x||x.status!=="open") throw new Error("Trop tard, déjà vendue !"); tx.update(ref,{status:"sold",buyer:me,soldAt:Date.now()}); }); }
+  catch(e){ toast(e.message||"Raté, réessaie",true); return; }
+  { const c=W(); c.coins-=l.price; c.coll[l.pid]=(c.coll[l.pid]||0)+1; } save(); renderCoins();
+  toast(`${BY_ID[l.pid].name} ajouté à ta collection ✓`); renderCollec();
 }
 // ---------- Synchro Firebase (comptes) ----------
 let db=null, saveT=null, dirty=false, unsubs=[];
@@ -1748,6 +1833,7 @@ function startListeners(){
   },()=>setSync("⚠️ Synchro coupée — recharge la page","err")));
   unsubs.push(db.collection("onzeol_drafts").onSnapshot(qs=>{ const all={}; qs.forEach(doc=>all[doc.id]=doc.data()); onDraftData(all); },()=>{}));
   unsubs.push(db.collection("onzeol_trades").onSnapshot(qs=>{ const all={}; qs.forEach(doc=>{ const t=doc.data(); if(t&&(t.from===me||t.to===me)) all[doc.id]=t; }); onTrades(all); },()=>{}));
+  unsubs.push(db.collection("onzeol_market").onSnapshot(qs=>{ const all={}; qs.forEach(doc=>{ const l=doc.data(); if(l&&(l.status==="open"||l.seller===me||l.buyer===me)) all[doc.id]=l; }); onMarket(all); },()=>{}));
   unsubs.push(db.collection("onzeol_meta").doc("main").onSnapshot(snap=>{ const d=snap.exists?snap.data():{}; onMatchData(d.match,d.matches); },()=>{}));
 }
 try{
