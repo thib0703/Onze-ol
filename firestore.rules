@@ -95,6 +95,17 @@ service cloud.firestore {
       allow create: if joueurConnecte() && request.auth.uid in request.resource.data.players;
       allow update, delete: if false;
     }
+    // Admin (Thib) : opérations sur les comptes (appliquées par le joueur concerné) + sauvegardes
+    function estAdmin() { return joueurConnecte() && request.auth.uid == 'EMx6WLN3DtazTVDRozJmdvUHnVE2'; }
+    match /onzeol_admin/{id} {
+      allow read: if joueurConnecte() && (estAdmin() || resource.data.to == request.auth.uid);
+      allow create, delete: if estAdmin();
+      allow update: if estAdmin() || (joueurConnecte() && resource.data.to == request.auth.uid
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['done', 'doneAt']));
+    }
+    match /onzeol_backups/{day} {
+      allow read, write: if estAdmin();
+    }
     // Match en direct + historique : n'importe quel joueur connecté
     match /onzeol_meta/{doc} {
       allow read, write: if joueurConnecte();

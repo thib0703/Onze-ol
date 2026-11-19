@@ -422,6 +422,11 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
 .pin{display:flex;align-items:center;gap:6px;margin:6px 0}.pin input{width:52px;text-align:center;padding:9px 4px;border-radius:10px;border:1px solid #2a3b6b;background:#0b1530;color:#fff;font-size:17px;font-weight:800}
 .plist{display:flex;flex-wrap:wrap;gap:6px;margin-top:5px}.plist span{background:#1d2b55;border-radius:999px;padding:3px 9px;font-size:12px}.plist .exact{background:#1f8a4c}.plist .res{background:#2a5a8a}
 .mentrow{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.mentrow .btn{padding:8px 4px;font-size:12.5px}
+.rk{width:100%;border-collapse:collapse;font-size:13px}.rk th{color:var(--mute);font-weight:600;font-size:11.5px;text-align:left;padding:4px}.rk td{padding:6px 4px;border-top:1px solid #1d2b55}.rk tr.me td{background:#1d2b5580}
+.lnk{background:none;border:0;color:#fff;font-weight:700;padding:0;font-size:13px}
+.h2h{margin:10px 0;font-size:13px}.h2hb{display:flex;gap:6px;justify-content:center;margin-top:6px}.h2hb span{border-radius:10px;padding:6px 12px;font-weight:800}.h2hb .v{background:#1f8a4c}.h2hb .n{background:#2a3b6b}.h2hb .d{background:#a33}
+.bdg{margin:10px 0;text-align:left}.bdgl{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}.bdgl span{background:#0f1d40;border:1px solid #1d2b55;border-radius:10px;padding:6px 8px;font-size:12px;font-weight:700;opacity:.5}.bdgl span.ok{opacity:1;border-color:#ffd970}.bdgl small{display:block;font-weight:500;color:var(--mute);font-size:10.5px}
+.duog{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin:6px 0}.duog small{display:block;color:var(--mute);font-size:11px;margin-bottom:2px}.duog select{width:100%;padding:8px 4px;border-radius:10px;border:1px solid #2a3b6b;background:#0b1530;color:#fff;font-size:13px}
 .readyrow{display:flex;justify-content:space-around;gap:8px;margin:10px 0 6px;font-size:13px;font-weight:700}
 .chatfab{position:fixed;right:14px;bottom:calc(76px + env(safe-area-inset-bottom));z-index:30;width:54px;height:54px;border-radius:50%;border:0;background:var(--rouge);color:#fff;font-size:25px;box-shadow:0 6px 18px #0008;display:none}
 .chatfab b{position:absolute;top:-4px;right:-4px;background:#ffd970;color:#111;font-size:11px;font-weight:900;border-radius:999px;padding:2px 6px;display:none}
@@ -535,11 +540,13 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
   <div class="section" id="jDefi"></div>
   <div class="section" id="jQuizS"></div>
   <div class="section" id="jSofa"></div>
+  <div class="section" id="jDuo"></div>
   <div class="section" id="jStats"></div>
 </div>
 <div id="viewLigue" class="wrap" style="display:none">
   <div id="lEvent"></div>
   <div class="section" id="lObj"></div>
+  <div class="section" id="lRank"></div>
   <div class="section" id="lLeague"></div>
   <div class="section" id="lFeed"></div>
   <div class="section" id="lPlayers"></div>
@@ -1742,7 +1749,7 @@ setInterval(restoreStarter2,3000);
 function onMatchData(m,h){
   matches=Array.isArray(h)?h:[]; setTimeout(claimRewards,0);
   const isNew=m&&m.id!==lastMatchId;
-  if(isNew&&lastMatchId!==null&&m.by!==me&&m.teams&&m.teams.some(t=>t.owner===me)&&Date.now()-m.at<60000){ mClosed=null; setTimeout(()=>{ setMode("match"); window.scrollTo(0,0); },300); }
+  if(isNew&&lastMatchId!==null&&m.by!==me&&m.teams&&m.teams.some(t=>t.owner===me||(t.owners||[]).includes(me))&&Date.now()-m.at<60000){ mClosed=null; setTimeout(()=>{ setMode("match"); window.scrollTo(0,0); },300); }
   if(isNew&&lastMatchId!==null&&m.by!==me){ toast(`🏟️ ${NAMES[m.by]||"Quelqu'un"} a lancé un match : ${tn(m,0)} vs ${tn(m,1)} !`); }
   if(m) lastMatchId=m.id; else lastMatchId=lastMatchId||"";
   match = (cpuMatch&&Date.now()-cpuMatch.at<(cpuMatch.len+20)*MSPEED) ? cpuMatch : (m||null);
@@ -2310,6 +2317,70 @@ async function openBudgetSlot(k){
 
 // =================== EXTRAS (suite) ===================
 
+// =================== 👥 Duo : 2 contre 2 ===================
+function duoTeam(u1,u2){ const pool=new Map();
+  for(const u of [u1,u2]){ const c=C(u)||{}, own=c.coll||{}; for(const id of [...Object.values(c.slots||{}),...Object.values(c.bench||{})]) if(id&&own[id]&&BY_ID[id]){ const v=BY_ID[id].ovr+evoOf(u,id)+liveMod(id); if(!pool.has(id)||pool.get(id).v<v) pool.set(id,{v,u}); } }
+  const form=(C(u1)||{}).formation||"4-3-3"; const roles=F[form]||F["4-3-3"]; const pairs=[];
+  roles.forEach(([r],i)=>pool.forEach((x,id)=>{ const p=BY_ID[id]; if(fitsRole(p,r)) pairs.push([x.v+(ROLE_OK[r].includes(p.pos[0])?.5:0),id,i]); }));
+  pairs.sort((a,b)=>b[0]-a[0]); const slots={}, bases=new Set(); for(const [,id,i] of pairs){ if(slots[i]||bases.has(baseOf(id))) continue; slots[i]=id; bases.add(baseOf(id)); }
+  const bench={}; [...pool.entries()].filter(([id])=>!bases.has(baseOf(id))).sort((a,b)=>b[1].v-a[1].v).slice(0,BENCH_N).forEach(([id],k)=>{ bench[k]=id; bases.add(baseOf(id)); });
+  const co=[u1,u2].map(u=>{ const c=C(u)||{}; return c.coach&&(c.coll||{})[c.coach]?BY_ID[c.coach]:null; }).filter(Boolean).sort((a,b)=>b.ovr-a.ovr)[0];
+  return {formation:form,slots,bench,coach:co?co.id:null}; }
+let duoSel={a:null,b:null,c:null};
+function duoHTML(){ const us=Object.keys(NAMES).filter(u=>u!==me&&u!==CPU&&compos[u]); const opt=(k,lab)=>`<select data-du="${k}"><option value="">${lab}</option>${us.map(u=>`<option value="${u}"${duoSel[k]===u?" selected":""}>${esc(NAMES[u])}</option>`).join("")}</select>`;
+  const ok=duoSel.a&&duoSel.b&&duoSel.c&&new Set([me,duoSel.a,duoSel.b,duoSel.c]).size===4;
+  let pre=""; if(ok){ const A=strength(duoTeam(me,duoSel.a),null,false), B=strength(duoTeam(duoSel.b,duoSel.c),null,false); pre=`<div class="vsavg"><div><small>${esc(NAMES[me])} & ${esc(NAMES[duoSel.a])}</small><b>${A.global}</b></div><span>VS</span><div><small>${esc(NAMES[duoSel.b])} & ${esc(NAMES[duoSel.c])}</small><b>${B.global}</b></div></div>`; }
+  return `<h3>👥 Duo · 2 contre 2</h3><div class="rules" style="font-size:12px;margin-top:0">Choisis ton coéquipier et vos 2 adversaires : chaque duo aligne <b>le meilleur 11 possible en mélangeant les 11 types et bancs des deux joueurs</b> (meilleur entraîneur des deux). Le match se joue en direct chez les 4.</div>
+   <div class="duog"><div><small>Ton coéquipier</small>${opt("a","Choisir…")}</div><div><small>Adversaire 1</small>${opt("b","Choisir…")}</div><div><small>Adversaire 2</small>${opt("c","Choisir…")}</div></div>
+   ${us.length<3?`<div class="mute" style="font-size:12.5px">Il faut au moins 4 joueurs inscrits pour jouer en duo.</div>`:""}${pre}
+   <button class="btn big" id="duoGo" ${ok?"":"disabled"}>▶️ Lancer le match en duo</button>`; }
+function bindDuo(){ document.querySelectorAll("[data-du]").forEach(x=>x.onchange=()=>{ duoSel[x.dataset.du]=x.value||null; renderJeux(); }); const g=$("#duoGo"); if(g) g.onclick=duoPlay; }
+async function duoPlay(){ const {a,b,c}=duoSel; if(!a||!b||!c||new Set([me,a,b,c]).size<4) return; if(sharedLive()){ toast("Un match est déjà en cours, attends la fin",true); return; }
+  const tA=duoTeam(me,a), tB=duoTeam(b,c); const SA=strength(tA,null,false), SB=strength(tB,null,false);
+  if(!enough(SA)||!enough(SB)){ toast("Un des duos n'a pas assez de joueurs (7 minimum)",true); return; }
+  const nA=`${NAMES[me]} & ${NAMES[a]}`, nB=`${NAMES[b]} & ${NAMES[c]}`;
+  const m=buildMatch([{c:tA,S:SA,label:"👥 Duo",owner:me,name:nA},{c:tB,S:SB,label:"👥 Duo",owner:b,name:nB}]);
+  m.teams[0].owners=[me,a]; m.teams[1].owners=[b,c]; m.duo=true;
+  await saveReplay(m);
+  if(!(await addHist(histOf(m,{duo:true,mode:"duo",owners4:[me,a,b,c]}),m))){ toast("Pas de connexion, réessaie",true); return; }
+  post(`👥 Duo : ${nA} ${m.score[0]}-${m.score[1]} ${nB}`); mClosed=null; setMode("match"); window.scrollTo(0,0); }
+
+
+// =================== 🏅 Classement du mois, confrontations, badges ===================
+let RANK={};
+const RANK_R=[{pack:"legende"},{pack:"or"},{pack:"bronze"}], RANK_MIN=3;
+const monthName=k=>{ const [y,m]=k.split("-"); return new Date(+y,+m-1,1).toLocaleDateString("fr-FR",{month:"long",year:"numeric"}); };
+function rankRows(mk){ const M=(RANK.months||{})[mk]||{}; return Object.entries(M).filter(([u])=>NAMES[u]).sort((a,b)=>b[1].p-a[1].p||(b[1].bp-b[1].bc)-(a[1].bp-a[1].bc)||b[1].bp-a[1].bp); }
+function prevMonth(){ const d=new Date(); d.setDate(1); d.setMonth(d.getMonth()-1); return MONTHK(d.getTime()); }
+function claimRank(){ if(!me||!compos[me]) return; const pm=prevMonth(); const c=W(); c.rankDone=c.rankDone||{}; if(c.rankDone[pm]) return;
+  const R=rankRows(pm).filter(([,r])=>r.j>=RANK_MIN); if(!R.length) return; const i=R.findIndex(([u])=>u===me); c.rankDone[pm]=i<0?"-":i+1; save();
+  if(i>=0&&i<3) setTimeout(()=>grant(RANK_R[i],`${["🥇","🥈","🥉"][i]} Classement de ${monthName(pm)}`),1500); }
+function rankHTML(){ const mk=MONTHK(); const R=rankRows(mk); const end=new Date(); end.setMonth(end.getMonth()+1,1); end.setHours(0,0,0,0); const dl=Math.ceil((end-Date.now())/86400000);
+  const pm=prevMonth(), P=rankRows(pm).filter(([,r])=>r.j>=RANK_MIN).slice(0,3);
+  return `<h3>🏅 Classement du mois <small>${monthName(mk)} · fin dans ${dl} j</small></h3>
+  <div class="rules" style="font-size:12px;margin-top:0">Tous les matchs contre d'autres joueurs comptent (match, draft, championnat, coupe) : victoire 3 pts, nul 1 pt. Le 1er du mois gagne un <b>Pack Légende</b>, le 2e un <b>Pack Épique</b>, le 3e un <b>Pack Classique</b> (${RANK_MIN} matchs minimum). Remise à zéro chaque mois.</div>
+  ${R.length?`<table class="rk"><tr><th></th><th>Joueur</th><th>Pts</th><th>J</th><th>V-N-D</th><th>Diff</th></tr>${R.map(([u,r],i)=>`<tr class="${u===me?"me":""}"><td>${["🥇","🥈","🥉"][i]||i+1}</td><td><button class="lnk" data-prof="${u}">${esc(NAMES[u])}</button></td><td><b>${r.p}</b></td><td>${r.j}</td><td>${r.w}-${r.d}-${r.l}</td><td>${r.bp-r.bc>0?"+":""}${r.bp-r.bc}</td></tr>`).join("")}</table>`:`<div class="mute" style="font-size:13px">Aucun match entre joueurs ce mois-ci. Lance un défi !</div>`}
+  ${P.length?`<div class="mute" style="font-size:12px;margin-top:8px">Podium de ${monthName(pm)} : ${P.map(([u,r],i)=>`${["🥇","🥈","🥉"][i]} ${esc(NAMES[u])} (${r.p} pts)`).join(" · ")}</div>`:""}`; }
+function h2hHTML(id){ if(id===me) return ""; const H=(RANK.h2h||{})[[me,id].sort().join("__")]; if(!H) return `<div class="h2h mute">⚔️ Jamais affrontés en match entre joueurs.</div>`;
+  const v=H[me]||0, d=H[id]||0, n=H.d||0; return `<div class="h2h"><b>⚔️ Toi contre ${esc(NAMES[id])}</b><div class="h2hb"><span class="v">${v} V</span><span class="n">${n} N</span><span class="d">${d} D</span></div></div>`; }
+const BADGES=[
+  {id:"car",ic:"🧗",n:"Carriériste",d:"Finir la Carrière solo",ok:c=>(c.career||{}).best>=CAREER.length},
+  {id:"car5",ic:"🥾",n:"En route",d:"Battre 5 clubs en Carrière",ok:c=>(c.career||{}).best>=5},
+  {id:"cup",ic:"🏆",n:"Vainqueur de coupe",d:"Gagner une coupe",ok:(c,u)=>Object.values(cups||{}).some(K=>K.winner===u)},
+  {id:"lg",ic:"👑",n:"Champion",d:"Gagner un championnat",ok:(c,u)=>Object.values(leagues||{}).some(L=>L.status==="done"&&standings(L)[0]&&standings(L)[0].id===u)},
+  {id:"alb50",ic:"📒",n:"Collectionneur",d:"50 cartes dans l'album",ok:c=>Object.keys(c.coll||{}).length>=50},
+  {id:"alb100",ic:"📚",n:"Archiviste",d:"100 cartes dans l'album",ok:c=>Object.keys(c.coll||{}).length>=100},
+  {id:"myth",ic:"🌈",n:"Mythique",d:"Avoir une carte Mythique",ok:c=>Object.keys(c.coll||{}).some(id=>BY_ID[id]&&cardTier(BY_ID[id])==="myth")},
+  {id:"pk",ic:"🎴",n:"Accro aux packs",d:"Ouvrir 30 packs",ok:c=>(c.opened||0)>=30},
+  {id:"rich",ic:"💰",n:"Riche",d:"Avoir 3000 pièces",ok:c=>(c.coins||0)>=3000},
+  {id:"str",ic:"🔥",n:"Fidèle",d:"7 jours de connexion d'affilée",ok:c=>(c.streak||{}).n>=7},
+  {id:"rk",ic:"🥇",n:"Roi du mois",d:"Finir 1er du classement mensuel",ok:(c,u)=>Object.values(RANK.months||{}).some((M,i,arr)=>{ const k=Object.keys(RANK.months)[i]; if(k===MONTHK()) return false; const R=Object.entries(M).filter(([,r])=>r.j>=RANK_MIN).sort((a,b)=>b[1].p-a[1].p); return R[0]&&R[0][0]===u; })},
+  {id:"pr",ic:"🔮",n:"Devin",d:"Trouver un score exact en pronostic",ok:(c,u)=>fxOf().some(f=>f.score&&predPts((PREDS[f.id]||{})[u],f.score)==="exact")},
+];
+function badgesHTML(id){ const c=C(id)||{}; const got=BADGES.filter(b=>{ try{ return b.ok(c,id); }catch(e){ return false; } });
+  return `<div class="bdg"><b>🎖️ Badges ${got.length}/${BADGES.length}</b><div class="bdgl">${BADGES.map(b=>{ const ok=got.includes(b); return `<span class="${ok?"ok":""}" title="${esc(b.d)}">${ok?b.ic:"🔒"} ${esc(b.n)}<small>${esc(b.d)}</small></span>`; }).join("")}</div></div>`; }
+
+
 // =================== 🔮 Pronostics sur les vrais matchs de l'OL ===================
 let PREDS={};
 const PRED_R={exact:150,res:50};
@@ -2797,6 +2868,7 @@ function renderLigue(){
   $("#lLeague").querySelectorAll("[data-ld]").forEach(b=>b.onclick=()=>deleteLeague(b.dataset.ld));
   $("#lLeague").querySelectorAll("[data-ls]").forEach(b=>b.onclick=()=>startLeague(b.dataset.ls));
   $("#lLeague").querySelectorAll("[data-rp]").forEach(b=>b.onclick=()=>openReplay(b.dataset.rp));
+  $("#lRank").innerHTML=rankHTML(); $("#lRank").querySelectorAll("[data-prof]").forEach(b=>b.onclick=()=>showProfile(b.dataset.prof));
   $("#lFeed").innerHTML=`<h3>📰 Fil d'actu</h3>${feed.length?feed.slice(0,25).map(f=>`<div class="fd"><span>${esc(f.text)}</span><small>${new Date(f.at).toLocaleDateString("fr-FR",{day:"numeric",month:"short"})} ${new Date(f.at).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})}</small></div>`).join(""):`<div class="mute" style="font-size:13px">Rien pour l'instant.</div>`}`;
   $("#lPlayers").innerHTML=`<h3>👥 Joueurs</h3><div class="plrs">${Object.keys(NAMES).map(id=>`<button class="plr${id===me?" me":""}" data-prof="${id}"><b>${esc(NAMES[id])}</b><small>${ALL_CARDS.filter(p=>(C(id).coll||{})[p.id]).length}/${ALL_CARDS.length}</small></button>`).join("")}</div>`;
   $("#lPlayers").querySelectorAll("[data-prof]").forEach(b=>b.onclick=()=>showProfile(b.dataset.prof));
@@ -2806,12 +2878,14 @@ function showProfile(id){
   const c=C(id); const coll=c.coll||{}; const own=ALL_CARDS.filter(p=>coll[p.id]);
   const rk={bronze:0,silver:1,gold:2,icon:3,myth:4};
   const best=own.slice().sort((a,b)=>rk[cardTier(b)]-rk[cardTier(a)]||(b.ovr+evoOf(id,b.id))-(a.ovr+evoOf(id,a.id)))[0];
-  let v=0,n=0,d=0; for(const h of matches){ if(!h.owners||isCpuH(h)) continue; const i=h.owners.indexOf(id); if(i<0||h.owners[0]===h.owners[1]) continue; const a=h.score[i],b=h.score[1-i]; if(a>b)v++; else if(a<b)d++; else n++; }
+  let v=0,n=0,d=0; for(const h of matches){ if(!h.owners||isCpuH(h)||h.duo) continue; const i=h.owners.indexOf(id); if(i<0||h.owners[0]===h.owners[1]) continue; const a=h.score[i],b=h.score[1-i]; if(a>b)v++; else if(a<b)d++; else n++; }
   const cnt=t=>own.filter(p=>cardTier(p)===t).length;
   const M=$("#cardModal");
   M.innerHTML=`<div class="cm-box"><h2 style="margin:0 0 10px">${esc(NAMES[id]||"?")}</h2>${best?`<div class="cm-card">${cardHTML(best.id,{w:170,ovr:best.ovr+evoOf(id,best.id),cls:"flip-in"})}</div><div class="mute" style="font-size:12px;margin-top:4px">Plus belle carte</div>`:""}
     <div class="pstats"><div><b>${own.length}/${ALL_CARDS.length}</b>album</div><div><b>${v}-${n}-${d}</b>V-N-D</div><div><b>${(c.heroes||[]).length}</b>héros</div><div><b>${c.opened||0}</b>packs</div><div><b>${c.goldPacks||0}</b>Gold Packs</div><div><b>🔥 ${c.streak?.n||0}</b>série</div></div>
     <div class="mute" style="font-size:12px">${cnt("myth")} Mythiques · ${cnt("icon")} Légendaires · ${cnt("gold")} Épiques · ${cnt("silver")} Rares · ${cnt("bronze")} Communes</div>
+    ${h2hHTML(id)}
+    ${badgesHTML(id)}
     ${id!==me?`<div class="mbtns"><button class="btn" id="pfXI">⚽ Voir son 11 type</button></div>`:""}<div id="pfXIbox"></div>
     <div class="mbtns"><button class="btn ghost" id="pfClose">Fermer</button></div></div>`;
   M.classList.add("open"); $("#pfClose").onclick=()=>M.classList.remove("open");
@@ -2849,7 +2923,15 @@ function buildMatch(sides){
   const m={id:Date.now().toString(36)+Math.random().toString(36).slice(2,4),at:Date.now()+1500,by:me,teams:sides.map(snap),...r}; delete m.played; return m;
 }
 function histOf(m,extra){ return Object.assign({id:m.id,at:m.at,score:m.score,labels:m.teams.map(t=>t.label),owners:m.teams.map(t=>t.owner),names:m.teams.map(t=>t.ownerName),motm:m.motm?{pid:m.motm.pid,t:m.motm.t,note:m.notes[m.motm.t][m.motm.pid]}:null,st:mStats(m)},extra||{}); }
-async function addHist(h,shared){ try{ const ref=db.collection("onzeol_meta").doc("main"); await db.runTransaction(async tx=>{ const d=await tx.get(ref); const cur=(d.exists&&d.data().matches)||[]; if(cur.some(x=>x.id===h.id)) return; const u={matches:[h,...cur].slice(0,200)}; if(shared) u.match=shared; tx.set(ref,u,{merge:true}); }); return true; }catch(e){ return false; } }
+const isPvP=h=>h&&h.owners&&h.owners.length===2&&h.owners[0]&&h.owners[1]&&h.owners[0]!==h.owners[1]&&!h.owners.includes(CPU)&&!h.duo;
+const MONTHK=t=>new Date(t||Date.now()).toLocaleDateString("fr-CA").slice(0,7);
+function rankApply(R,h){ R.months=R.months||{}; R.h2h=R.h2h||{}; const mk=MONTHK(h.at); const M=R.months[mk]=R.months[mk]||{};
+  const [a,b]=h.owners, [x,y]=h.score; for(const [u,gf,ga] of [[a,x,y],[b,y,x]]){ const r=M[u]=M[u]||{p:0,w:0,d:0,l:0,j:0,bp:0,bc:0}; r.j++; r.bp+=gf; r.bc+=ga; if(gf>ga){r.w++;r.p+=3;} else if(gf===ga){r.d++;r.p+=1;} else r.l++; }
+  const k=[a,b].sort().join("__"); const H=R.h2h[k]=R.h2h[k]||{d:0}; if(x>y) H[a]=(H[a]||0)+1; else if(y>x) H[b]=(H[b]||0)+1; else H.d++; }
+async function addHist(h,shared){ try{ const ref=db.collection("onzeol_meta").doc("main"), rref=db.collection("onzeol_meta").doc("rank");
+  await db.runTransaction(async tx=>{ const d=await tx.get(ref); const rd=isPvP(h)?await tx.get(rref):null; const cur=(d.exists&&d.data().matches)||[]; if(cur.some(x=>x.id===h.id)) return;
+    const u={matches:[h,...cur].slice(0,200)}; if(shared) u.match=shared; tx.set(ref,u,{merge:true});
+    if(rd){ const R=rd.exists?rd.data():{}; rankApply(R,h); tx.set(rref,R); } }); return true; }catch(e){ return false; } }
 
 // ---------- 🧠 Coaching à la mi-temps (matchs solo : carrière, défi) ----------
 let LCTX=null;
@@ -3169,7 +3251,7 @@ function sofaHTML(){
 // ---------- 📊 Stats de saison ----------
 function statsHTML(){
   const g={},a={},n={},nb={}; let mj=0,v=0,nu=0,d=0,bp=0,bc=0;
-  for(const h of matches){ if(!h.owners||!h.st) continue; const i=h.owners.indexOf(me); if(i<0||h.owners[0]===h.owners[1]) continue; mj++;
+  for(const h of matches){ if(!h.owners||!h.st) continue; const i=h.owners.indexOf(me); if(i<0||h.owners[0]===h.owners[1]||!h.st[i]||!h.st[i].g) continue; mj++;
     const [x,y]=i===0?h.score:[h.score[1],h.score[0]]; bp+=x; bc+=y; if(x>y)v++; else if(x<y)d++; else nu++;
     const s=h.st[i]; for(const [p,k] of Object.entries(s.g)) g[p]=(g[p]||0)+k; for(const [p,k] of Object.entries(s.a)) a[p]=(a[p]||0)+k; for(const [p,k] of Object.entries(s.n)){ n[p]=(n[p]||0)+k; nb[p]=(nb[p]||0)+1; } }
   const top=(o,f)=>Object.entries(o).sort((x,y)=>y[1]-x[1]).slice(0,5).map(([p,k],i)=>`<div class="nr" onclick="showCard('${p}')"><span>${i+1}. ${esc(BY_ID[p]?.name||"?")}</span><b>${f?f(k,p):k}</b></div>`).join("")||`<div class="mute" style="font-size:12px">—</div>`;
@@ -3223,7 +3305,7 @@ setInterval(chatTick,1000);
 // ---------- Onglet Jeux ----------
 function renderJeux(){
   if(!me) return; claimDefi();
-  $("#jPred").innerHTML=predHTML(); bindPred();
+  $("#jPred").innerHTML=predHTML(); bindPred(); $("#jDuo").innerHTML=duoHTML(); bindDuo();
   $("#jCareer").innerHTML=careerHTML(); $("#jCup").innerHTML=cupHTML(); $("#jDefi").innerHTML=defiHTML(); $("#jQuizS").innerHTML=quizHTML(); $("#jSofa").innerHTML=sofaHTML(); $("#jStats").innerHTML=statsHTML();
   const on=(s,f)=>{ const e=$(s); if(e) e.onclick=f; };
   on("#jCarGo",careerPlay); on("#jCarReset",()=>{ careerState().lvl=0; save(); renderJeux(); });
@@ -3345,7 +3427,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-20h";
+const APP_V="2026-11-20i";
 let updShown=false;
 async function checkUpdate(){ if(updShown) return; try{ const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const APP_V="([^"]+)"/); if(m&&m[1]!==APP_V){
@@ -3407,6 +3489,7 @@ function startListeners(){
   unsubs.push(db.collection("onzeol_leagues").onSnapshot(qs=>{ const all={}; const now=Date.now(); qs.forEach(doc=>{ const L=doc.data(); if(L&&L.end>now-30*86400000) all[doc.id]=L; }); onLeagues(all); },()=>{}));
   try{ unsubs.push(db.collection("onzeol_admin").where("to","==",me).onSnapshot(qs=>{ qs.forEach(doc=>applyAdminOp(doc.id,doc.data())); },()=>{})); }catch(e){}
   if(me===ADMIN) setTimeout(autoBackup,8000);
+  unsubs.push(db.collection("onzeol_meta").doc("rank").onSnapshot(sn=>{ RANK=sn.exists?sn.data():{}; claimRank(); if(mode==="ligue") renderLigue(); },()=>{}));
   unsubs.push(db.collection("onzeol_meta").doc("preds").onSnapshot(sn=>{ PREDS=sn.exists?sn.data():{}; settlePreds(); if(mode==="jeux") renderJeux(); },()=>{}));
   unsubs.push(db.collection("onzeol_cups").onSnapshot(qs=>{ const all={}; qs.forEach(doc=>{ const K=doc.data(); if(K&&K.name) all[doc.id]=K; }); onCups(all); },()=>{}));
   unsubs.push(db.collection("onzeol_meta").doc("react").onSnapshot(snap=>{ if(snap.exists) onReact(snap.data()); },()=>{}));

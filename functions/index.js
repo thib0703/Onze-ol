@@ -36,7 +36,8 @@ exports.matchLaunched = onDocumentWritten({ document: "onzeol_meta/main", region
   const before = ev.data.before.exists ? ev.data.before.data() : {}, after = ev.data.after.exists ? ev.data.after.data() : {};
   const m = after.match; if (!m || (before.match && before.match.id === m.id)) return;
   const by = await nameOf(m.by);
-  for (const t of m.teams || []) if (t.owner && t.owner !== m.by) await notify(t.owner, "🏟️ Match en direct !", `${by} a lancé un match contre toi. Viens voir !`);
+  const to = new Set(); for (const t of m.teams || []) for (const u of (t.owners || [t.owner])) if (u && u !== m.by) to.add(u);
+  for (const u of to) await notify(u, "🏟️ Match en direct !", m.duo ? `${by} a lancé un match en duo avec toi. Viens voir !` : `${by} a lancé un match contre toi. Viens voir !`);
 });
 // Proposition d'échange
 exports.tradeCreated = onDocumentCreated({ document: "onzeol_trades/{id}", region: REGION }, async ev => {
