@@ -800,19 +800,43 @@ function renderCompare(){
 }
 
 // ---------- Sélection ----------
+// ---------- Draft : 5 propositions aléatoires par case, raretés variées ----------
+const OFFER_TIERS=[["bronze"],["silver"],["gold"],["icon","gold"],["myth","icon","gold","silver"]];
+function draftOffer(kind,i,role){
+  const key=kind+i; const d=draft; const mine=((d&&d.offers)||{})[me]||{};
+  const taken=dTaken(d);
+  if(mine[key]&&mine[key].some(id=>!taken[id])) return mine[key];
+  const okR=kind==="xi"?(ROLE_OK[role]||[]):null;
+  const base=(kind==="coach"?COACHES:PLAYERS).filter(p=>!taken[p.id]&&(!okR||p.pos.some(x=>okR.includes(x))));
+  const used=new Set(), ids=[];
+  const pickT=tiers=>{ for(const t of tiers){ const L=base.filter(p=>cardTier(p)===t&&!used.has(p.id)); if(L.length) return L[Math.floor(Math.random()*L.length)]; } return null; };
+  for(const tiers of OFFER_TIERS){
+    let p=null;
+    if(tiers.length>1){ // dernières cases : tirage pondéré, chance de grosse carte
+      const r=Math.random(); const order=tiers[0]==="myth"?(r<.1?["myth","icon","gold"]:r<.35?["icon","gold"]:r<.65?["gold","silver"]:["silver","bronze"]):(r<.4?["icon","gold"]:["gold","silver"]);
+      p=pickT(order);
+    } else p=pickT(tiers);
+    if(!p) p=pickT(["bronze","silver","gold","icon","myth"]);
+    if(p){ used.add(p.id); ids.push(p.id); }
+  }
+  dWrite({[`offers.${me}.${key}`]:ids});
+  return ids;
+}
 function openSheet(kind,i,role,mode){
-  editing={kind,i,role,mode:mode||"compo"};
+  editing={kind,i,role,mode:mode||"compo"}; $("#q").style.display="";
   $("#clearSlot").style.display=editing.mode==="draft"?"none":"";
   $("#shTitle").textContent= kind==="coach"?"Entraîneur" : kind==="bench"?`Remplaçant n°${i+1}` : `${ROLE_LABEL[role]||role} (${role})`;
   $("#q").value=""; chip = kind==="xi" ? "poste" : "tous";
   $("#q").placeholder= kind==="coach"?"Rechercher un entraîneur…":"Rechercher un joueur…";
   $("#sheet").classList.add("open"); $("#veil").classList.add("open");
+  const isDraft=editing.mode==="draft"; $("#q").style.display=isDraft?"none":"";
+  if(isDraft) editing.offer=draftOffer(kind,i,role);
   renderChips(); renderList();
 }
 function closeSheet(){ $("#sheet").classList.remove("open"); $("#veil").classList.remove("open"); editing=null; }
 function renderChips(){
   const el=$("#chips"); el.innerHTML="";
-  if(editing.kind==="coach"){el.style.display="none";return;} el.style.display="flex";
+  if(editing.kind==="coach"||editing.mode==="draft"){el.style.display="none";return;} el.style.display="flex";
   const opts=(editing.kind==="xi"?["poste"]:[]).concat(["tous"],POS_CHIPS);
   for(const o of opts){ const b=document.createElement("button"); b.className="chip"+(chip===o?" on":""); b.textContent=o==="poste"?"Poste conseillé":o==="tous"?"Tous":o; b.onclick=()=>{chip=o;renderChips();renderList();}; el.appendChild(b); }
 }
@@ -835,16 +859,18 @@ function renderList(){
   });
   if(q) ps=ps.filter(p=>p.id.replace(/^coach-/,"").includes(q));
   const clubPick=editing.mode!=="draft";
+  if(editing.mode==="draft"&&editing.offer){ ps=editing.offer.map(id=>BY_ID[id]).filter(Boolean); }
   if(clubPick){ const own=C(me).coll||{}; ps=ps.filter(p=>own[p.id]); }
-  ps.sort((a,b)=>a.year-b.year||a.name.localeCompare(b.name,"fr"));
+  if(clubPick) ps.sort((a,b)=>a.year-b.year||a.name.localeCompare(b.name,"fr"));
   const takenMap = editing.mode==="draft" ? dTaken(draft) : null;
   const used = takenMap ? new Set(Object.keys(takenMap)) : (isCoach?new Set():usedIds());
   const L=$("#list"); L.innerHTML="";
+  if(!clubPick) L.insertAdjacentHTML("beforeend",`<div class="mute" style="font-size:12px;padding:6px 10px">🎲 5 joueurs tirés au sort pour ce poste, de raretés différentes. Choisis-en un !</div>`);
   if(clubPick) L.insertAdjacentHTML("beforeend",`<div class="mute" style="font-size:12px;padding:6px 10px">🔒 Mode Club : seules tes cartes apparaissent. Le Draft, lui, propose tous les joueurs.</div>`);
   if(!ps.length){L.insertAdjacentHTML("beforeend",`<div style="padding:16px;color:var(--mute)">${clubPick?"Aucune de tes cartes ici : ouvre des packs dans 🎴 Collec !":"Personne trouvé."}</div>`);return;}
   for(const p of ps){
     const d=document.createElement("div"); d.className="pl"+(used.has(p.id)?" used":"");
-    d.innerHTML=`<span class="n">${esc(p.name)}<span class="yr">${isCoach?"":`arrivé en ${p.year<2000?"avant 2000":p.year} · ${p.m!=null?`${p.m} matchs · ${p.g} but${p.g>1?"s":""} · `:""}`}note <b style="color:${p.ovr>=85?"#ffd970":p.ovr>=80?"#7ee2a0":"#c8d6ff"}">${p.ovr}</b></span>${used.has(p.id)?`<span class="tk">${takenMap?(takenMap[p.id]===me?"dans ton équipe":"pris par "+NAMES[takenMap[p.id]]):"déjà dans ta compo"}</span>`:""}</span>`+(isCoach?"":`<span class="tags">${p.pos.map(x=>`<span class="tag ${ok.includes(x)?"cur":""}">${x}</span>`).join("")}</span>`);
+    d.innerHTML=`<span class="n">${esc(p.name)}<span class="yr"><span class="rar r-${cardTier(p)}" style="font-size:9px;padding:0 5px;margin:0 4px 0 0">${TIER_NAME[cardTier(p)]}</span>${isCoach?"":`arrivé en ${p.year<2000?"avant 2000":p.year} · ${p.m!=null?`${p.m} matchs · ${p.g} but${p.g>1?"s":""} · `:""}`}note <b style="color:${p.ovr>=85?"#ffd970":p.ovr>=80?"#7ee2a0":"#c8d6ff"}">${p.ovr}</b></span>${used.has(p.id)?`<span class="tk">${takenMap?(takenMap[p.id]===me?"dans ton équipe":"pris par "+NAMES[takenMap[p.id]]):"déjà dans ta compo"}</span>`:""}</span>`+(isCoach?"":`<span class="tags">${p.pos.map(x=>`<span class="tag ${ok.includes(x)?"cur":""}">${x}</span>`).join("")}</span>`);
     const cb=document.createElement("button"); cb.className="cardbtn"; cb.innerHTML=cardHTML(p.id,{w:30,mini:true}); cb.onclick=ev=>{ev.stopPropagation(); showCard(p.id,null);};
     d.prepend(cb);
     d.onclick=()=>{ if(!used.has(p.id)) setPick(p.id); };
@@ -1022,7 +1048,7 @@ function renderDraft(){
     const ensure=()=> drafts[dKey()]?null:dNorm(null,me,dOpp);
     $("#dFormat").onchange=e=>{ const base=ensure(); base?dWrite({"":{...base,format:e.target.value}}):dWrite({"format":e.target.value,"status":"lobby"}); };
     $("#dForm").onchange=e=>{ const base=ensure(); if(base){ base.form[me]=e.target.value; dWrite({"":base}); } else dWrite({["form."+me]:e.target.value,"status":"lobby"}); };
-    $("#dStart").onclick=()=>{ const first=Math.random()<.5?me:dOpp; const cur=dNorm(draft,me,dOpp); dWrite({"":{...cur,status:"running",turn:first,teams:{[me]:dBlankTeam(),[dOpp]:dBlankTeam()},picks:[],started:Date.now()}}); };
+    $("#dStart").onclick=()=>{ const first=Math.random()<.5?me:dOpp; const cur=dNorm(draft,me,dOpp); dWrite({"":{...cur,status:"running",turn:first,teams:{[me]:dBlankTeam(),[dOpp]:dBlankTeam()},picks:[],offers:{},started:Date.now()}}); };
     return;
   }
   if(!dView) dView=me;
@@ -1159,7 +1185,7 @@ function nextFx(){
     dur=2600;
     const conf=Array.from({length:26},(_,i)=>`<i style="left:${(i*37)%100}%;background:${i%3?col:"#fff"};animation-delay:${(i%7)*.08}s;--dx:${((i*53)%60)-30}px"></i>`).join("");
     html=`<div class="fx-bg" style="--c:${col}"></div><div class="confetti">${conf}</div>
-      <div class="fx-label goal" style="--c:${col}">${e.gt==="pen"?"PENALTY… BUT !":e.gt==="fk"||e.fk?"COUP FRANC… BUT !":e.gt==="head"?"DE LA TÊTE !":"BUUUT !"}</div>
+      <div class="fx-label goal" style="--c:${col}">${e.gt==="csc"?"CONTRE SON CAMP !":e.gt==="lucky"||e.gt==="deflect"?"BUT CHANCEUX ! 🍀":e.gt==="pen"?"PENALTY… BUT !":e.gt==="fk"||e.fk?"COUP FRANC… BUT !":e.gt==="head"?"DE LA TÊTE !":"BUUUT !"}</div>
       <div class="fx-card">${cardHTML(e.p,{w:190,role:role(e.p),cls:"flip-in glow"})}</div>
       <div class="fx-sub">${e.m|0}' · ${esc(tn(m,e.t))} ${e.fk?"· coup franc 🎯":""}</div>
       ${e.a?`<div class="fx-assist">${cardHTML(e.a,{w:70,mini:true,role:role(e.a)})}<span>Passe décisive<br><b>${esc(pn(e.a))}</b></span></div>`:""}`;
@@ -1298,6 +1324,9 @@ function simulate2(cA,SA,cB,SB){
     const co=BY_ID[c.coach]; return {on,bench,subs:0,red:0,cb:co?(co.ovr-75)/4:-2,all:[...on]};
   };
   const T=[mkTeam(cA,SA),mkTeam(cB,SB)];
+  // 🍀 part de chance : forme du jour de chaque équipe (±8 %) et de chaque joueur (±6 %)
+  const formT=[0,1].map(()=>1+(rnd()-.5)*.16);
+  for(const t of [0,1]) for(const x of T[t].on){ x.form=formT[t]*(1+(rnd()-.5)*.12); x.eff*=x.form; x.a=attrs(BY_ID[x.pid],x.role,x.eff); }
   const ev=[], score=[0,0], shots=[0,0], onT=[0,0], corners=[0,0], fouls=[0,0], offs=[0,0], cardsY=[0,0], possN=[0,0], xgSum=[0,0];
   const live=t=>T[t].on.filter(x=>!x.out);
   const avg=(arr,f)=>arr.length?arr.reduce((s,x)=>s+f(x),0)/arr.length:30;
@@ -1309,14 +1338,17 @@ function simulate2(cA,SA,cB,SB){
   function shooterGoal(t,sh,xg,type,assist,m,extra={}){
     shots[t]++; xgSum[t]+=xg;
     const gk=gkOf(1-t); const ga=gk.a.gk?(gk.a.ref+gk.a.plo)/2:45;
-    if(type!=="pen"&&type!=="fk"&&rnd()<.2*(line(1-t,"def")/80)){ add({m,t,k:"block",p:sh.pid}); if(rnd()<.45) corner(t,m); return; }
+    if(type!=="pen"&&type!=="fk"&&rnd()<.2*(line(1-t,"def")/80)){
+      // 🍀 contre-son-camp : le ballon contré finit dans le but
+      if(rnd()<.035){ const d=pick(live(1-t).filter(x=>x.g==="def"),x=>1)||pick(live(1-t),x=>1); if(d){ score[t]++; onT[t]++; add({m,t,k:"goal",p:d.pid,gt:"csc",a:null}); return true; } }
+      add({m,t,k:"block",p:sh.pid}); if(rnd()<.45) corner(t,m); return; }
     const pg=clamp(.9*xg*Math.pow(sh.a.tir/78,1.3)/Math.pow(ga/78,1.1),.01,.8);
     const pOn=clamp(.36+sh.a.tir/250,.3,.8); const onTarget=rnd()<pOn;
     if(onTarget&&rnd()<pg/pOn){
       onT[t]++;
       if((type==="1v1"||type==="combo")&&rnd()<.05){ add({m,t,k:"var",p:sh.pid}); return; }
       score[t]++; sh.st.g++; if(assist){assist.st.a++;}
-      add({m,t,k:"goal",p:sh.pid,a:assist?assist.pid:null,gt:type,fk:type==="fk"});
+      add({m,t,k:"goal",p:sh.pid,a:assist?assist.pid:null,gt:type!=="fk"&&rnd()<.06?"deflect":type,fk:type==="fk"});
       return true;
     }
     if(onTarget){ onT[t]++; gk.st.sv++; const big=xg>.18||type==="fk";
@@ -1324,6 +1356,7 @@ function simulate2(cA,SA,cB,SB){
       add({m,t:1-t,k:"save",p:gk.pid,s:sh.pid,big,gt:type}); if(rnd()<.32) corner(t,m); return; }
     if(rnd()<.09){ add({m,t,k:"post",p:sh.pid,gt:type}); return; }
     if(type==="pen"){ add({m,t,k:"pen_miss",p:sh.pid}); return; }
+    if(type==="long"&&rnd()<.025){ score[t]++; onT[t]++; sh.st.g++; add({m,t,k:"goal",p:sh.pid,gt:"lucky",a:null}); return true; }
     if(xg>.12||type==="fk") add({m,t,k:"miss",p:sh.pid,gt:type});
   }
   function corner(t,m){
@@ -1487,11 +1520,11 @@ function onMatchData(m,h){
 }
 const pn=pid=>{const p=BY_ID[pid];return p?short(p.name):"?";};
 const tn=(m,t)=>(m&&m.teams&&m.teams[t]&&m.teams[t].ownerName)||["Thib","Val"][t];
-const GT_TXT={pen:" sur penalty",fk:" sur coup franc direct 🎯",head:" de la tête",long:" d'une frappe lointaine 🚀",solo:" après un super dribble",["1v1"]:" en face-à-face",combo:" au bout d'une belle combinaison",counter:" en contre-attaque"};
+const GT_TXT={deflect:" 🍀 frappe déviée qui trompe le gardien",lucky:" 🍀 d'une frappe improbable de 35 mètres",pen:" sur penalty",fk:" sur coup franc direct 🎯",head:" de la tête",long:" d'une frappe lointaine 🚀",solo:" après un super dribble",["1v1"]:" en face-à-face",combo:" au bout d'une belle combinaison",counter:" en contre-attaque"};
 function evText(e){
   const T=e.t>=0?esc(tn(match,e.t)):""; const N=x=>esc(pn(x));
   switch(e.k){
-  case "goal": return `⚽ <b>BUT pour ${T} !</b> ${N(e.p)}${GT_TXT[e.gt]||(e.fk?GT_TXT.fk:"")}${e.a?` <span class="mute">(passe de ${N(e.a)})</span>`:""}`;
+  case "goal": if(e.gt==="csc") return `⚽ <b>BUT pour ${T} !</b> 🍀 contre son camp de ${N(e.p)} 😬`; return `⚽ <b>BUT pour ${T} !</b> ${N(e.p)}${GT_TXT[e.gt]||(e.fk?GT_TXT.fk:"")}${e.a?` <span class="mute">(passe de ${N(e.a)})</span>`:""}`;
   case "save": return e.big?`🧤 <b>Parade de ${N(e.p)}</b> devant ${N(e.s)} !`:`🧤 Arrêt de ${N(e.p)} sur la frappe de ${N(e.s)}`;
   case "miss": return `😬 ${N(e.p)} (${T}) ${e.gt==="fk"?"envoie son coup franc au-dessus":"manque le cadre"}`;
   case "post": return `🥅 <b>POTEAU !</b> ${N(e.p)} (${T}) trouve le montant`;
