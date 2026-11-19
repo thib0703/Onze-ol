@@ -1564,7 +1564,7 @@ function simulate2(cA,SA,cB,SB){
 const MSPEED=600; // ms par minute de match
 function matchMinute(){ if(!match) return 0; if(mSkip===match.id) return 999; return (Date.now()-match.at)/MSPEED; }
 // ---------- 🔔 Notifications push ----------
-const VAPID_KEY=""; // clé « Web Push » de la console Firebase (Paramètres du projet → Cloud Messaging)
+const VAPID_KEY="BCuDIQgeaMS7JN7PwWH6mihLSnShnPtp_z5Cu5DHhqC7ZpunEHYKslKsOO0J4TROraWo6apN7cnQYkkoIhnUlZo"; // clé « Web Push » de la console Firebase (Paramètres du projet → Cloud Messaging)
 const isIOS=/iPhone|iPad|iPod/.test(navigator.userAgent), isStandalone=window.matchMedia&&matchMedia("(display-mode: standalone)").matches||navigator.standalone;
 function notifState(){ if(!("Notification" in window)||!("serviceWorker" in navigator)) return isIOS&&!isStandalone?"install":"unsupported"; return Notification.permission; }
 async function enableNotifs(){
