@@ -391,6 +391,14 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
 .igtabs{display:flex;gap:6px}.igtabs .chip{flex:1;padding:9px;font-size:14px}
 .igsteps{margin:0 0 14px;padding-left:22px;font-size:14px;line-height:1.5}.igsteps li{margin-bottom:8px}
 .igk{display:inline-block;background:rgba(255,255,255,.12);border-radius:6px;padding:0 6px;margin:0 2px}
+.fcard.v-fs{background:linear-gradient(155deg,#04261b,#0c6b45 35%,#20e3b2 68%,#8a3dff);color:#eafff6}
+.fcard.v-fs::before{content:"";position:absolute;inset:4%;clip-path:inherit;border:calc(var(--w)/70) solid #b9ffe866}
+.fcard.v-tf{background:linear-gradient(155deg,#2a0404,#b3200e 40%,#ff7a1a 75%,#ffd36a);color:#fff3e0}
+.fcard.v-tf::before{content:"";position:absolute;inset:4%;clip-path:inherit;border:calc(var(--w)/70) solid #ffd36a77}
+.fcard.v-ml{background:linear-gradient(155deg,#050505,#262626 35%,#b8901f 72%,#fff1b8);color:#fff1b8}
+.fcard.v-ml .fc-shine{background:linear-gradient(115deg,transparent 30%,#fff1b8cc 48%,transparent 62%)}
+.fc-vmini{position:absolute;right:4%;top:3%;font-size:calc(var(--w)/4);line-height:1;z-index:3}
+.evban.tfban{background:linear-gradient(120deg,#5a0d06,#b3200e,#ff7a1a);margin-top:8px}
 </style>
 </head>
 <body>
@@ -901,8 +909,8 @@ function renderChips(){
 }
 function usedIds(){
   const c=compos[me]; const s=new Set();
-  Object.entries(c.slots).forEach(([k,v])=>{ if(v && !(editing.kind==="xi"&&+k===editing.i)) s.add(v); });
-  Object.entries(c.bench).forEach(([k,v])=>{ if(v && !(editing.kind==="bench"&&+k===editing.i)) s.add(v); });
+  Object.entries(c.slots).forEach(([k,v])=>{ if(v && !(editing.kind==="xi"&&+k===editing.i)){ s.add(v); s.add(baseOf(v)); } });
+  Object.entries(c.bench).forEach(([k,v])=>{ if(v && !(editing.kind==="bench"&&+k===editing.i)){ s.add(v); s.add(baseOf(v)); } });
   return s;
 }
 function renderList(){
@@ -910,7 +918,7 @@ function renderList(){
   const q=slug($("#q").value.trim()).replace(/^-|-$/g,"");
   const isCoach=editing.kind==="coach";
   const ok = editing.kind==="xi" ? (ROLE_OK[editing.role]||[]) : [];
-  let ps = isCoach ? COACHES.slice() : PLAYERS.filter(p=>{
+  let ps = isCoach ? COACHES.slice() : (editing.mode!=="draft"?[...PLAYERS,...VARIANTS]:PLAYERS).filter(p=>{
     if(q) return true;
     if(chip==="poste") return p.pos.some(x=>ok.includes(x));
     if(chip==="tous") return true;
@@ -928,11 +936,11 @@ function renderList(){
   if(clubPick) L.insertAdjacentHTML("beforeend",`<div class="mute" style="font-size:12px;padding:6px 10px">🔒 Mode Club : seules tes cartes apparaissent. Le Draft, lui, propose tous les joueurs.</div>`);
   if(!ps.length){L.insertAdjacentHTML("beforeend",`<div style="padding:16px;color:var(--mute)">${clubPick?"Aucune de tes cartes ici : ouvre des packs dans 🎴 Collec !":"Personne trouvé."}</div>`);return;}
   for(const p of ps){
-    const d=document.createElement("div"); d.className="pl"+(used.has(p.id)?" used":"");
+    const isUsed=used.has(p.id)||used.has(baseOf(p.id)); const d=document.createElement("div"); d.className="pl"+(isUsed?" used":"");
     d.innerHTML=`<span class="n">${esc(p.name)}<span class="yr"><span class="rar r-${cardTier(p)}" style="font-size:9px;padding:0 5px;margin:0 4px 0 0">${TIER_NAME[cardTier(p)]}</span>${isCoach?"":`arrivé en ${p.year<2000?"avant 2000":p.year} · ${p.m!=null?`${p.m} matchs · ${p.g} but${p.g>1?"s":""} · `:""}`}note <b style="color:${p.ovr>=85?"#ffd970":p.ovr>=80?"#7ee2a0":"#c8d6ff"}">${p.ovr}</b></span>${used.has(p.id)?`<span class="tk">${takenMap?(takenMap[p.id]===me?"dans ton équipe":"pris par "+NAMES[takenMap[p.id]]):"déjà dans ta compo"}</span>`:""}</span>`+(isCoach?"":`<span class="tags">${p.pos.map(x=>`<span class="tag ${ok.includes(x)?"cur":""}">${x}</span>`).join("")}</span>`);
     const cb=document.createElement("button"); cb.className="cardbtn"; cb.innerHTML=cardHTML(p.id,{w:30,mini:true}); cb.onclick=ev=>{ev.stopPropagation(); showCard(p.id,null);};
     d.prepend(cb);
-    d.onclick=()=>{ if(!used.has(p.id)) setPick(p.id); };
+    d.onclick=()=>{ if(!isUsed) setPick(p.id); };
     L.appendChild(d);
   }
 }
@@ -1183,7 +1191,7 @@ function palmScore(p){
   if(p.pos[0]!=="COACH") sc+=Math.max(0,(p.ovr-75)/2)+(p.m||0)/80; else sc+=Math.max(0,(p.ovr-75)/3);
   return _rcache[p.id]=sc;
 }
-function rarity(p){ const s=palmScore(p); return s>=24?"myth":s>=12?"icon":s>=6?"gold":s>=2.5?"silver":"bronze"; }
+function rarity(p){ if(p.v) return p.v==="ml"?"myth":p.v==="fs"?"icon":(p.ovr>=85?"icon":"gold"); const s=palmScore(p); return s>=24?"myth":s>=12?"icon":s>=6?"gold":s>=2.5?"silver":"bronze"; }
 function palmText(p){
   const t=olTitles(p), M=MAJ[p.id]||{}; const L=[];
   if(t.l1) L.push(`${t.l1}× Champion de France`); if(t.cdf) L.push(`${t.cdf}× Coupe de France`); if(t.cdl) L.push(`${t.cdl}× Coupe de la Ligue`); if(t.tdc) L.push(`${t.tdc}× Trophée des champions`);
@@ -1203,17 +1211,17 @@ const TIER_NAME={myth:"Mythique",icon:"Légendaire",gold:"Épique",silver:"Rare"
 function initials(n){return n.replace(/[^A-Za-zÀ-ÿ \-']/g,"").split(/[\s\-]+/).filter(Boolean).map(w=>w[0]).slice(0,2).join("").toUpperCase();}
 function cardHTML(pid,opts={}){
   const p=BY_ID[pid]; if(!p) return "";
-  const t=cardTier(p); const st=cardStats(p); const w=opts.w||160; const mini=!!opts.mini; const cls=p.pos[0]==="COACH"?"coach r-"+t:t;
+  const t=cardTier(p); const st=cardStats(p); const w=opts.w||160; const mini=!!opts.mini; const cls=(p.pos[0]==="COACH"?"coach r-"+t:t)+(p.v?" v-"+p.v:"");
   const pos=opts.role&&p.pos[0]!=="COACH"?opts.role:(p.pos[0]==="COACH"?"COA":p.pos[0]);
   const shortN=p.name.split(" ").length>1&&p.name.length>11?p.name.split(" ").slice(1).join(" "):p.name;
   const ovr=opts.ovr!=null?opts.ovr:p.ovr;
   return `<div class="fcard ${cls}${mini?" mini":""}${opts.cls?" "+opts.cls:""}" style="--w:${w}px">
    <div class="fc-shine"></div>
    <div class="fc-top"><div class="fc-ovr">${ovr}</div><div class="fc-pos">${esc(pos)}</div>${mini?"":`<div class="fc-club">OL</div>${w>=140?`<div class="fc-flag">${flag(NAT[p.id])}</div>`:""}`}</div>
-   <div class="fc-face">${PORTRAITS.has(p.id)?`<img class="fc-img" src="img/cartes/${p.id}.webp?v=${IMGV}" alt="" loading="lazy">`:`<svg viewBox="0 0 100 100"><circle cx="50" cy="36" r="19" fill="currentColor" opacity=".28"/><path d="M12 100c2-24 18-36 38-36s36 12 38 36z" fill="currentColor" opacity=".28"/>${mini?"":`<text x="50" y="43" text-anchor="middle" font-size="18" font-weight="900" fill="currentColor" opacity=".55">${esc(initials(p.name))}</text>`}</svg>`}</div>
+   <div class="fc-face">${PORTRAITS.has(p.base||p.id)?`<img class="fc-img" src="img/cartes/${p.base||p.id}.webp?v=${IMGV}" alt="" loading="lazy">`:`<svg viewBox="0 0 100 100"><circle cx="50" cy="36" r="19" fill="currentColor" opacity=".28"/><path d="M12 100c2-24 18-36 38-36s36 12 38 36z" fill="currentColor" opacity=".28"/>${mini?"":`<text x="50" y="43" text-anchor="middle" font-size="18" font-weight="900" fill="currentColor" opacity=".55">${esc(initials(p.name))}</text>`}</svg>`}</div>
    ${mini?"":`<div class="fc-name">${esc(shortN)}</div>`}
    ${mini||!st?(!mini&&p.pos[0]==="COACH"?`<div class="fc-coach">${esc(p.name)}<small>Entraîneur de l'OL</small></div>`:""):`<div class="fc-stats">${[0,3,1,4,2,5].map(i=>`<span><b>${st.vals[i]}</b>${st.labels[i]}</span>`).join("")}</div>`}
-   ${mini?"":`<div class="fc-tag">${p.pos[0]==="COACH"?"COACH · ":""}${TIER_TAG[t]}</div>`}
+   ${mini?(p.v?`<div class="fc-vmini">${VAR_INFO[p.v].ic}</div>`:""):`<div class="fc-tag">${p.v?VAR_INFO[p.v].ic+" "+VAR_INFO[p.v].l:(p.pos[0]==="COACH"?"COACH · ":"")+TIER_TAG[t]}</div>`}
   </div>`;
 }
 function showCard(pid,act,lv){
@@ -1222,7 +1230,7 @@ function showCard(pid,act,lv){
   const info=p.pos[0]==="COACH"?`<div>Entraîneur de l'OL · note ${p.ovr}</div>${COACH_SKILL[p.id]?`<div style="color:#ffd970">🧠 ${esc(COACH_SKILL[p.id].n)} : ${esc(COACH_SKILL[p.id].d)}</div>`:""}`:
     `<div>${p.pos.join(" · ")} · arrivé à l'OL ${p.year<2000?"avant 2000":"en "+p.year}</div>${p.m!=null?`<div><b>${p.m}</b> matchs · <b>${p.g}</b> but${p.g>1?"s":""} à l'OL</div>`:`<div class="mute">Moins de 30 matchs à l'OL : pas de stats officielles</div>`}`;
   const pt=palmText(p); const rt=cardTier(p);
-  const palm=`<div class="cm-palm"><div class="rar r-${rt}">${TIER_NAME[rt]}</div>${pt.ol.length?`<div>🏆 Avec l'OL : ${pt.ol.join(" · ")}</div>`:`<div class="mute">Pas de titre avec l'OL</div>`}${pt.ext.length?`<div>🌍 ${pt.ext.join(" · ")}</div>`:""}</div>`;
+  const palm=`<div class="cm-palm"><div class="rar r-${rt}">${TIER_NAME[rt]}</div>${p.v?`<div style="color:#ffd970;font-weight:700">${VAR_INFO[p.v].ic} Carte spéciale « ${VAR_INFO[p.v].n} » : ${esc(p.title)}<br><small class="mute">Version boostée de la carte de base (${BY_ID[p.base].ovr}). Impossible d’aligner les deux versions ensemble.</small></div>`:""}${pt.ol.length?`<div>🏆 Avec l'OL : ${pt.ol.join(" · ")}</div>`:`<div class="mute">Pas de titre avec l'OL</div>`}${pt.ext.length?`<div>🌍 ${pt.ext.join(" · ")}</div>`:""}</div>`;
   const ps=priceStats(pid);
   const extra=(lv?`<div style="color:#7ee2a0">⬆️ Évoluée +${lv}</div>`:"")+(ps?`<div>💹 Prix moyen ${ps.avg} 🪙 ${ps.trend} · dernier ${ps.last} 🪙 (${ps.n} vente${ps.n>1?"s":""})</div>`:"");
   M.innerHTML=`<div class="cm-box"><div class="cm-card">${cardHTML(pid,{w:230,cls:"flip-in",ovr:p.ovr+(lv||0)})}</div><div class="cm-info">${info}${extra}${palm}</div><div class="mbtns" id="cmBtns"></div><div class="cm-note">Stats inspirées des jeux FIFA/FC (note, poste, profil). Rareté selon le palmarès : titres avec l'OL et grands trophées en carrière.</div></div>`;
@@ -1730,10 +1738,26 @@ const PACKS={
 };
 PACKS.starter={name:"Pack de départ",price:0,n:12,w:{bronze:100},color:"#7ec8ff"};
 const SELL={bronze:4,silver:12,gold:32,icon:100,myth:300};
-const ALL_CARDS=[...PLAYERS.slice().sort((a,b)=>a.year-b.year||a.name.localeCompare(b.name,"fr")),...COACHES];
+// ---------- ✨ Cartes spéciales (variantes plus fortes de certains joueurs) ----------
+const VAR_INFO={fs:{l:"PÉPITE",n:"Pépite",ic:"🌟"},tf:{l:"EN FORME",n:"Forme du moment",ic:"🔥"},ml:{l:"MOMENT",n:"Moment de légende",ic:"🏆"}};
+const FS_LIST=[["kail-boudache",84],["khalis-merah",82],["noah-nartey",82],["julien-duranville",81],["zachary-athekame",80],["remi-himbert",80]];
+const ML_LIST=[["juninho",97,"Roi du coup franc"],["karim-benzema",94,"Meilleur joueur de Ligue 1 en 2008"],["hugo-lloris",93,"Le mur de Gerland"],["michael-essien",92,"Le Bison"],["sonny-anderson",92,"Le buteur du premier titre"],
+  ["alexandre-lacazette",92,"Meilleur buteur de Ligue 1 en 2015"],["cris",91,"Le Policier"],["nabil-fekir",91,"Capitaine courage"],["bafetimbi-gomis",90,"Quadruplé à Zagreb (2011)"],["sidney-govou",89,"Héros du Septuplé"]];
+const VARIANTS=[];
+function mkVar(baseId,v,ovr,title){ const b=BY_ID[baseId]; if(!b) return; const id=baseId+"--"+v;
+  const p=Object.assign({},b,{id,base:baseId,v,ovr:Math.min(99,ovr),title}); VARIANTS.push(p); BY_ID[id]=p;
+  for(const T of [NAT,SPANS,MAJ,STYLE_OF]) if(T[baseId]!=null) T[id]=T[baseId]; }
+FS_LIST.forEach(([id,o])=>mkVar(id,"fs",o,"Pépite du centre de formation"));
+ML_LIST.forEach(([id,o,t])=>mkVar(id,"ml",o,t));
+[...CURRENT].forEach(id=>{ const b=BY_ID[id], fs=BY_ID[id+"--fs"]; if(b) mkVar(id,"tf",Math.min(92,Math.max(b.ovr+7,fs?fs.ovr+2:0)),"Forme du moment"); });
+const baseOf=id=>(BY_ID[id]&&BY_ID[id].base)||id;
+const TF_IDS=VARIANTS.filter(p=>p.v==="tf").map(p=>p.id);
+function tfWeek(w){ const R=rng(hashS("tf"+(w==null?WEEKN():w))); return TF_IDS.slice().sort(()=>R()-.5).slice(0,4); }
+const VORD={fs:0,tf:1,ml:2};
+const ALL_CARDS=[...PLAYERS.slice().sort((a,b)=>a.year-b.year||a.name.localeCompare(b.name,"fr")),...COACHES,...VARIANTS.slice().sort((a,b)=>VORD[a.v]-VORD[b.v]||a.name.localeCompare(b.name,"fr"))];
 const CARD_NO=Object.fromEntries(ALL_CARDS.map((p,i)=>[p.id,i+1]));
 const poolTier=p=>cardTier(p);
-const POOL={bronze:[],silver:[],gold:[],icon:[],myth:[]}; for(const p of ALL_CARDS) POOL[poolTier(p)].push(p.id);
+const POOL={bronze:[],silver:[],gold:[],icon:[],myth:[]}; for(const p of ALL_CARDS) if(p.v!=="tf") POOL[poolTier(p)].push(p.id);
 const W=()=>C(me);
 function addCoins(n,why){ const c=W(); c.coins=(c.coins||0)+n; save(); renderCoins(); if(why) toast(`${n>0?"+":""}${n} 🪙 ${why}`); }
 function renderCoins(){ const el=$("#coins"); if(!el) return; if(!me){el.style.display="none";return;} el.style.display=""; el.textContent=`🪙 ${(W().coins||0).toLocaleString("fr-FR")}`; }
@@ -1773,6 +1797,7 @@ function openPack(pack,free){
     if(!ids.some(id=>rank[cardTier(BY_ID[id])]>=rank[P.guarantee])) ids[ids.length-1]=drawFrom(f,P.w,P.guarantee); }
   else { for(let i=0;i<P.n;i++) ids.push(drawCard(pack));
     if(P.guarantee&&!ids.some(id=>rank[cardTier(BY_ID[id])]>=rank[P.guarantee])) ids[ids.length-1]=drawCard(pack,P.guarantee); }
+  if(!gold&&((pack==="event"&&Math.random()<.2)||(pack==="legende"&&Math.random()<.08))){ const L=tfWeek(); ids[ids.length-1]=L[Math.floor(Math.random()*L.length)]; }
   if(pack!=="starter") ids.sort((a,b)=>rank[cardTier(BY_ID[a])]-rank[cardTier(BY_ID[b])]||BY_ID[a].ovr-BY_ID[b].ovr);
   c.coll=c.coll||{}; const isNew=ids.map(id=>!c.coll[id]);
   for(const id of ids) c.coll[id]=(c.coll[id]||0)+1;
@@ -2294,7 +2319,7 @@ const SETS=[
   {id:"bresil",t:"Les Brésiliens",f:p=>NAT[p.id]==="BR",r:{pack:"or"}},
   {id:"septuple",t:"Les champions du septuplé",f:p=>p.pos[0]!=="COACH"&&olTitles(p).l1>0,r:{pack:"legende"}},
   {id:"actuel",t:"L'effectif actuel",f:p=>CURRENT.has(p.id)&&p.pos[0]!=="COACH",r:{pack:"or"}},
-  {id:"all",t:"L'album complet (205 cartes)",f:p=>true,r:{coins:10000,pack:"legende",n:3}},
+  {id:"all",t:`L'album complet (${ALL_CARDS.length} cartes)`,f:p=>true,r:{coins:10000,pack:"legende",n:3}},
 ];
 function setProg(s){ const coll=W().coll||{}; const L=ALL_CARDS.filter(s.f); return {have:L.filter(p=>coll[p.id]).length,tot:L.length}; }
 function claimSet(id){ const s=SETS.find(x=>x.id===id); const g=setProg(s); const c=W(); c.albumDone=c.albumDone||[]; if(g.have<g.tot||c.albumDone.includes(id)) return;
@@ -2452,7 +2477,7 @@ function renderLigue(){
     <div class="rules" style="font-size:12px">Connecte-toi chaque jour : petits bonus, et un <b>Pack Épique offert tous les 7 jours</b> d'affilée.</div>`;
   const ln=$("#lNotif"); if(ln) ln.onclick=enableNotifs;
   $("#lObj").querySelectorAll("[data-oc]").forEach(b=>b.onclick=()=>{ const [s,k]=b.dataset.oc.split(":"); claimObj(s,k); });
-  $("#lEvent").innerHTML=(notifState()!=="granted"?`<button class="btn ghost big" id="lNotif" style="margin:8px 0 0">🔔 Activer les notifications (ton tour, défis, échanges…)</button>`:"")+`<div class="evban"><b>${ev.name}</b><span>${ev.desc}</span><small>Pack Événement : 600 🪙 · 3 cartes du thème · 1 Rare min. — dans la Boutique</small></div>`;
+  $("#lEvent").innerHTML=(notifState()!=="granted"?`<button class="btn ghost big" id="lNotif" style="margin:8px 0 0">🔔 Activer les notifications (ton tour, défis, échanges…)</button>`:"")+`<div class="evban"><b>${ev.name}</b><span>${ev.desc}</span><small>Pack Événement : 600 🪙 · 3 cartes du thème · 1 Rare min. — dans la Boutique</small></div><div class="evban tfban"><b>🔥 Forme du moment cette semaine</b><span>${tfWeek().map(id=>esc(BY_ID[id].name)+" ("+BY_ID[id].ovr+")").join(" · ")}</span><small>Cartes boostées dispo seulement cette semaine : 1 chance sur 5 dans le Pack Événement, 8 % dans le Pack Légende</small></div>`;
   const now=Date.now(), LL=Object.entries(leagues).sort((x,y)=>y[1].created-x[1].created);
   const act=LL.filter(([,L])=>now<=L.end), done=LL.filter(([,L])=>now>L.end&&now-L.end<14*86400000);
   const mineA=act.filter(([,L])=>(L.members||[]).includes(me)), other=act.filter(([,L])=>!(L.members||[]).includes(me));
@@ -2468,7 +2493,7 @@ function renderLigue(){
   $("#lLeague").querySelectorAll("[data-lq]").forEach(b=>b.onclick=()=>joinLeague(b.dataset.lq,false));
   $("#lLeague").querySelectorAll("[data-ld]").forEach(b=>b.onclick=()=>deleteLeague(b.dataset.ld));
   $("#lFeed").innerHTML=`<h3>📰 Fil d'actu</h3>${feed.length?feed.slice(0,25).map(f=>`<div class="fd"><span>${esc(f.text)}</span><small>${new Date(f.at).toLocaleDateString("fr-FR",{day:"numeric",month:"short"})} ${new Date(f.at).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})}</small></div>`).join(""):`<div class="mute" style="font-size:13px">Rien pour l'instant.</div>`}`;
-  $("#lPlayers").innerHTML=`<h3>👥 Joueurs</h3><div class="plrs">${Object.keys(NAMES).map(id=>`<button class="plr${id===me?" me":""}" data-prof="${id}"><b>${esc(NAMES[id])}</b><small>${ALL_CARDS.filter(p=>(C(id).coll||{})[p.id]).length}/205</small></button>`).join("")}</div>`;
+  $("#lPlayers").innerHTML=`<h3>👥 Joueurs</h3><div class="plrs">${Object.keys(NAMES).map(id=>`<button class="plr${id===me?" me":""}" data-prof="${id}"><b>${esc(NAMES[id])}</b><small>${ALL_CARDS.filter(p=>(C(id).coll||{})[p.id]).length}/${ALL_CARDS.length}</small></button>`).join("")}</div>`;
   $("#lPlayers").querySelectorAll("[data-prof]").forEach(b=>b.onclick=()=>showProfile(b.dataset.prof));
   badgeLigue();
 }
@@ -2480,7 +2505,7 @@ function showProfile(id){
   const cnt=t=>own.filter(p=>cardTier(p)===t).length;
   const M=$("#cardModal");
   M.innerHTML=`<div class="cm-box"><h2 style="margin:0 0 10px">${esc(NAMES[id]||"?")}</h2>${best?`<div class="cm-card">${cardHTML(best.id,{w:170,ovr:best.ovr+evoOf(id,best.id),cls:"flip-in"})}</div><div class="mute" style="font-size:12px;margin-top:4px">Plus belle carte</div>`:""}
-    <div class="pstats"><div><b>${own.length}/205</b>album</div><div><b>${v}-${n}-${d}</b>V-N-D</div><div><b>${(c.heroes||[]).length}</b>héros</div><div><b>${c.opened||0}</b>packs</div><div><b>${c.goldPacks||0}</b>Gold Packs</div><div><b>🔥 ${c.streak?.n||0}</b>série</div></div>
+    <div class="pstats"><div><b>${own.length}/${ALL_CARDS.length}</b>album</div><div><b>${v}-${n}-${d}</b>V-N-D</div><div><b>${(c.heroes||[]).length}</b>héros</div><div><b>${c.opened||0}</b>packs</div><div><b>${c.goldPacks||0}</b>Gold Packs</div><div><b>🔥 ${c.streak?.n||0}</b>série</div></div>
     <div class="mute" style="font-size:12px">${cnt("myth")} Mythiques · ${cnt("icon")} Légendaires · ${cnt("gold")} Épiques · ${cnt("silver")} Rares · ${cnt("bronze")} Communes</div>
     <div class="mbtns"><button class="btn ghost" id="pfClose">Fermer</button></div></div>`;
   M.classList.add("open"); $("#pfClose").onclick=()=>M.classList.remove("open");
@@ -2886,7 +2911,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-19d";
+const APP_V="2026-11-19e";
 let updShown=false;
 async function checkUpdate(){ if(updShown) return; try{ const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const APP_V="([^"]+)"/); if(m&&m[1]!==APP_V){ updShown=true;
