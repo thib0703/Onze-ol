@@ -834,11 +834,14 @@ function renderList(){
     return p.pos.includes(chip);
   });
   if(q) ps=ps.filter(p=>p.id.replace(/^coach-/,"").includes(q));
+  const clubPick=editing.mode!=="draft";
+  if(clubPick){ const own=C(me).coll||{}; ps=ps.filter(p=>own[p.id]); }
   ps.sort((a,b)=>a.year-b.year||a.name.localeCompare(b.name,"fr"));
   const takenMap = editing.mode==="draft" ? dTaken(draft) : null;
   const used = takenMap ? new Set(Object.keys(takenMap)) : (isCoach?new Set():usedIds());
   const L=$("#list"); L.innerHTML="";
-  if(!ps.length){L.innerHTML=`<div style="padding:16px;color:var(--mute)">Personne trouvé.</div>`;return;}
+  if(clubPick) L.insertAdjacentHTML("beforeend",`<div class="mute" style="font-size:12px;padding:6px 10px">🔒 Mode Club : seules tes cartes apparaissent. Le Draft, lui, propose tous les joueurs.</div>`);
+  if(!ps.length){L.insertAdjacentHTML("beforeend",`<div style="padding:16px;color:var(--mute)">${clubPick?"Aucune de tes cartes ici : ouvre des packs dans 🎴 Collec !":"Personne trouvé."}</div>`);return;}
   for(const p of ps){
     const d=document.createElement("div"); d.className="pl"+(used.has(p.id)?" used":"");
     d.innerHTML=`<span class="n">${esc(p.name)}<span class="yr">${isCoach?"":`arrivé en ${p.year<2000?"avant 2000":p.year} · ${p.m!=null?`${p.m} matchs · ${p.g} but${p.g>1?"s":""} · `:""}`}note <b style="color:${p.ovr>=85?"#ffd970":p.ovr>=80?"#7ee2a0":"#c8d6ff"}">${p.ovr}</b></span>${used.has(p.id)?`<span class="tk">${takenMap?(takenMap[p.id]===me?"dans ton équipe":"pris par "+NAMES[takenMap[p.id]]):"déjà dans ta compo"}</span>`:""}</span>`+(isCoach?"":`<span class="tags">${p.pos.map(x=>`<span class="tag ${ok.includes(x)?"cur":""}">${x}</span>`).join("")}</span>`);
@@ -1465,10 +1468,10 @@ async function launchMatch(){
   if(!db||!me){toast("Pas connecté",true);return;}
   const tA=pickTeam(pA,selA), tB=pickTeam(pB,selB);
   const cA=tA.get(), cB=tB.get();
-  const A=strength(cA,pA,clubMode), B=strength(cB,pB,clubMode);
+  const A=strength(cA,pA,!selA.startsWith("draft")), B=strength(cB,pB,!selB.startsWith("draft"));
   if(A.lineup.filter(l=>l.pid).length<7||B.lineup.filter(l=>l.pid).length<7){ toast("Il faut au moins 7 joueurs dans chaque équipe",true); return; }
   const r=simulate2(cA,A,cB,B);
-  const snap=(c,s,label,w,i)=>({label:label+(clubMode?" · Club":""),owner:w,ownerName:NAMES[w]||"?",formation:c.formation,lineup:s.lineup.map(l=>({role:l.role,pid:l.pid})),played:r.played[i],coach:s.coachId,global:s.global});
+  const snap=(c,s,label,w,i)=>({label,owner:w,ownerName:NAMES[w]||"?",formation:c.formation,lineup:s.lineup.map(l=>({role:l.role,pid:l.pid})),played:r.played[i],coach:s.coachId,global:s.global});
   const m={id:Date.now().toString(36),at:Date.now()+1500,by:me,teams:[snap(cA,A,tA.label,pA,0),snap(cB,B,tB.label,pB,1)],...r};
   delete m.played;
   const hist=[{id:m.id,at:m.at,score:r.score,labels:[tA.label,tB.label],owners:[pA,pB],names:[NAMES[pA],NAMES[pB]],motm:r.motm?{pid:r.motm.pid,t:r.motm.t,note:r.notes[r.motm.t][r.motm.pid]}:null},...matches].slice(0,200);
@@ -1521,7 +1524,7 @@ function renderMatch(){
   if(!pA||!NAMES[pA]) pA=me; if(!pB||!NAMES[pB]||pB===pA) pB=ids.find(x=>x!==pA)||pA;
   const oa=teamOptions(pA), ob=teamOptions(pB);
   if(!oa.some(o=>o.key===selA)) selA="cur"; if(!ob.some(o=>o.key===selB)) selB="cur";
-  const A=strength(pickTeam(pA,selA).get(),pA,clubMode), B=strength(pickTeam(pB,selB).get(),pB,clubMode);
+  const A=strength(pickTeam(pA,selA).get(),pA,!selA.startsWith("draft")), B=strength(pickTeam(pB,selB).get(),pB,!selB.startsWith("draft"));
   const pSel=(id,v)=>`<select id="${id}" class="psel">${ids.map(x=>`<option value="${esc(x)}" ${x===v?"selected":""}>${esc(NAMES[x])}</option>`).join("")}</select>`;
   const live=match&&matchMinute()<match.len+1&&matchMinute()>=-6;
   $("#mSetup").innerHTML=`<h3>🏟️ Simulation de match</h3>
@@ -1530,10 +1533,9 @@ function renderMatch(){
    <div class="field">${pSel("pB",pB)}<select id="selB">${ob.map(o=>`<option value="${esc(o.key)}" ${o.key===selB?"selected":""}>${esc(o.label)}</option>`).join("")}</select></div>
    <div class="vs"><b>${esc(NAMES[pA])}</b><span>Force</span><b>${esc(NAMES[pB])}</b></div>
    ${bar("Global",A.global,B.global)}${bar("Attaque",A.att,B.att)}${bar("Milieu",A.mid,B.mid)}${bar("Défense",A.def,B.def)}${bar("Gardien",A.gk,B.gk)}${bar("Coach",A.coach,B.coach)}${bar("Collectif",A.chem,B.chem)}
-   <label class="chk2"><input type="checkbox" id="clubChk" ${clubMode?"checked":""}> 🔒 <b>Mode Club</b> : seules les cartes possédées jouent (les autres cases restent vides)</label>
+   <div class="rules" style="font-size:12px">🔒 Avec un 11 type ou une compo enregistrée, seules les cartes possédées jouent. Une équipe de Draft joue avec tous ses joueurs.</div>
    <button class="btn big" id="mGo" ${live?"disabled":""}>${live?"Match en cours…":"▶️ Lancer le match"}</button>
    <div class="rules" style="font-size:12px;margin-bottom:0">Le résultat dépend des notes des joueurs, de leurs vraies stats à l'OL (matchs joués = expérience, ratio buts/match = efficacité devant le but), de leur placement (un joueur hors de son poste perd du niveau), du collectif (même nationalité ou même époque), des évolutions de cartes et de l'entraîneur… avec une part de hasard, comme au vrai foot.</div>`;
-  $("#clubChk").onchange=e=>{clubMode=e.target.checked;renderMatch();};
   $("#pA").onchange=e=>{pA=e.target.value;selA="cur";renderMatch();};
   $("#pB").onchange=e=>{pB=e.target.value;selB="cur";renderMatch();};
   $("#selA").onchange=e=>{selA=e.target.value;renderMatch();};
@@ -1926,6 +1928,17 @@ function objClaimable(){ const o=objState(); return DAILY.filter(x=>(o.day.p[x.k
 function claimObj(scope,k){ const o=objState(); const s=o[scope]; const L=scope==="day"?DAILY:WEEKLY; const x=L.find(y=>y.k===k); if(!x||s.done.includes(k)||(s.p[k]||0)<x.n) return; s.done.push(k); grant(x.r,`Objectif « ${x.t} »`); renderLigue(); }
 
 // ---------- Série de connexions ----------
+function starterPack(){
+  const c=W(); if(c.starter) return; c.starter=true;
+  const pick=(f)=>{ const L=POOL.bronze.filter(id=>f(BY_ID[id])&&!Object.values(c.slots).includes(id)); return L.length?L[Math.floor(Math.random()*L.length)]:null; };
+  // l'ancienne compo (joueurs non possédés) est gardée dans les compos enregistrées
+  if(Object.values(c.slots||{}).filter(Boolean).length){ c.library=c.library||[]; c.library.unshift({id:"avant"+Date.now().toString(36),name:"Ma compo d'avant",formation:c.formation,slots:{...c.slots},bench:{...c.bench},coach:c.coach||null,savedAt:Date.now()}); }
+  c.formation="4-3-3"; c.slots={}; c.bench={}; c.coach=null; c.loadedId=null;
+  const roles=F["4-3-3"].map(([r])=>r); const ids=[];
+  roles.forEach((r,i)=>{ const id=pick(p=>p.pos[0]===r)||pick(p=>(ROLE_OK[r]||[]).includes(p.pos[0])); if(id){ ids.push(id); c.coll[id]=(c.coll[id]||0)+1; c.slots[i]=id; } });
+  const co=pick(p=>p.pos[0]==="COACH")||POOL.bronze.find(id=>BY_ID[id].pos[0]==="COACH")||"coach-hubert-fournier"; ids.push(co); c.coll[co]=(c.coll[co]||0)+1; if(!c.coach||!c.coll[c.coach]) c.coach=co;
+  save(); render(); setTimeout(()=>{ toast("🎒 Pack de départ : une équipe complète t'attend dans ton 11 type !"); },2200);
+}
 function loginStreak(){
   const c=W(); const t=DAYK(); c.streak=c.streak||{last:null,n:0};
   if(c.streak.last===t) return;
@@ -2197,7 +2210,7 @@ try{
       else { NAMES[me]=pendingName||($("#aName").value.trim())||user.email.split("@")[0]; compos[me]=blank(); compos[me].coins=300; await push(); await importLegacy(NAMES[me]); setTimeout(()=>toast("Bienvenue ! 300 🪙 offertes pour ton premier pack"),800); }
     }catch(e){ setSync("⚠️ Accès refusé : règles Firebase à mettre à jour","err"); }
     pendingName=null; $("#aPass").value="";
-    choose(me); startListeners(); setTimeout(()=>{ if(me){ loginStreak(); dailyBonus(); claimRewards(); renderCoins(); badgeLigue(); } },1500);
+    choose(me); startListeners(); setTimeout(()=>{ if(me){ starterPack(); loginStreak(); dailyBonus(); claimRewards(); renderCoins(); badgeLigue(); } },1500);
   });
 }catch(e){ setSync("⚠️ Synchro indisponible","err"); }
 </script>
