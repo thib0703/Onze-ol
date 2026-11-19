@@ -384,6 +384,10 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
 .rbub{position:fixed;bottom:110px;z-index:90;background:#1d4aa0;color:#fff;padding:7px 12px;border-radius:999px;font-weight:700;font-size:14px;animation:rup 3.2s ease-out forwards;pointer-events:none;max-width:70%}
 .rbub.me{background:#d3122d}
 @keyframes rup{0%{transform:translateY(20px);opacity:0}15%{opacity:1}100%{transform:translateY(-260px);opacity:0}}
+.tipov{position:fixed;inset:0;z-index:120;background:rgba(3,8,22,.72);display:flex;align-items:flex-end;justify-content:center;padding:14px;animation:tipf .25s}
+.tipbox{background:linear-gradient(160deg,#16295a,#0f1d40);border:1px solid rgba(255,217,112,.4);border-radius:18px;padding:18px 18px 14px;width:min(100%,440px);max-height:85vh;overflow:auto;box-shadow:0 10px 40px rgba(0,0,0,.5);animation:tipu .3s ease-out}
+.tipbox h3{margin:0 0 10px;font-size:19px}.tipx{font-size:14px;line-height:1.5;opacity:.92;margin-bottom:14px}
+@keyframes tipf{from{opacity:0}}@keyframes tipu{from{transform:translateY(40px);opacity:0}}
 </style>
 </head>
 <body>
@@ -782,7 +786,7 @@ $("#aSignup").onclick=async()=>{
   try{ $("#aSignup").disabled=true; await firebase.auth().createUserWithEmailAndPassword(pseudoEmail(n),pw); }catch(err){ pendingName=null; $("#aMsg").textContent=authErr(err); }
   $("#aSignup").disabled=false; };
 $("#shareBtn").onclick=async()=>{ const url=location.origin+location.pathname; try{ if(navigator.share){ await navigator.share({title:"Notre 11 type OL",text:"Crée ton compte, fais ton 11 type de l'OL et viens me défier !",url}); return; } }catch(e){ return; } try{ await navigator.clipboard.writeText(url); toast("Lien copié !"); }catch(e){ toast(url); } };
-$("#who").onclick=()=>openModal(`Connecté en tant que ${NAMES[me]||"?"}`,null,[[notifState()==="granted"?"🔔 Notifications activées":"🔔 Activer les notifications",()=>{ enableNotifs(); }],["Se déconnecter",()=>{ firebase.auth().signOut(); }],["Inviter quelqu'un",()=>$("#shareBtn").click(),true],["Fermer",null,true]]);
+$("#who").onclick=()=>openModal(`Connecté en tant que ${NAMES[me]||"?"}`,null,[[notifState()==="granted"?"🔔 Notifications activées":"🔔 Activer les notifications",()=>{ enableNotifs(); }],["💡 Revoir les explications",()=>{ resetTips(); }],["Se déconnecter",()=>{ firebase.auth().signOut(); }],["Inviter quelqu'un",()=>$("#shareBtn").click(),true],["Fermer",null,true]]);
 
 // ---------- Rendu ----------
 function filled(c){return Object.values(c.slots).filter(Boolean).length;}
@@ -1072,7 +1076,7 @@ function dRestart(){ const d=dNorm(draft,me,dOpp); dWrite({"":{...dDefault(me,dO
 let dResetArm=false;
 $("#dReset").onclick=e=>{ if(!dResetArm){dResetArm=true;e.target.textContent="Sûr ? Tout le draft sera effacé (re-touche)";setTimeout(()=>{dResetArm=false;e.target.textContent="Recommencer le draft";},3500);return;} dResetArm=false; e.target.textContent="Recommencer le draft"; dRestart(); };
 $("#dNew").onclick=dRestart;
-function setMode(m){ mode=m; for(const [b,v,k] of [["#mCompo","#viewCompo","compo"],["#mDraft","#viewDraft","draft"],["#mMatch","#viewMatch","match"],["#mCollec","#viewCollec","collec"],["#mLigue","#viewLigue","ligue"],["#mJeux","#viewJeux","jeux"]]){ $(b).classList.toggle("on",m===k); $(v).style.display=m===k?"":"none"; } if(m==="jeux") renderJeux(); else if(m==="draft") renderDraft(); else if(m==="match") renderMatch(); else if(m==="collec") renderCollec(); else if(m==="ligue") renderLigue(); else render(); window.scrollTo(0,0); }
+function setMode(m){ mode=m; setTimeout(()=>{ if(tipSeen("welcome")) tip("tab_"+m); },350); for(const [b,v,k] of [["#mCompo","#viewCompo","compo"],["#mDraft","#viewDraft","draft"],["#mMatch","#viewMatch","match"],["#mCollec","#viewCollec","collec"],["#mLigue","#viewLigue","ligue"],["#mJeux","#viewJeux","jeux"]]){ $(b).classList.toggle("on",m===k); $(v).style.display=m===k?"":"none"; } if(m==="jeux") renderJeux(); else if(m==="draft") renderDraft(); else if(m==="match") renderMatch(); else if(m==="collec") renderCollec(); else if(m==="ligue") renderLigue(); else render(); window.scrollTo(0,0); }
 $("#mCompo").onclick=()=>setMode("compo"); $("#mDraft").onclick=()=>setMode("draft"); $("#mMatch").onclick=()=>setMode("match"); $("#mCollec").onclick=()=>setMode("collec"); $("#mLigue").onclick=()=>setMode("ligue"); $("#mJeux").onclick=()=>setMode("jeux");
 function renderDraft(){
   if(!me) return;
@@ -2764,6 +2768,74 @@ function renderJeux(){
   on("#sfPlay",sofaPlay); on("#sfStop",()=>{ sofa=null; sofaSave(); renderJeux(); });
 }
 
+// ---------- 💡 Explications au premier contact ----------
+const TIPS={
+ welcome:{t:"👋 Bienvenue dans Notre 11 type OL !",x:`Construis l'équipe ultime de l'OL avec tous les joueurs passés par Lyon depuis 2000.<br><br>
+  🎴 <b>Collectionne</b> des cartes en ouvrant des packs (un gratuit chaque jour).<br>⚽ <b>Compose</b> ton 11 type avec les cartes que tu possèdes.<br>
+  🏟️ <b>Affronte</b> tes potes ou l'ordi dans des matchs simulés en direct.<br>🪙 <b>Gagne des pièces</b> à chaque match pour acheter d'autres packs.<br><br>
+  Tu as reçu un <b>pack de départ</b> : une équipe complète est déjà dans ton 11 type. À chaque nouvel écran, une petite explication s'affichera.`},
+ tab_compo:{t:"⚽ 11 type",x:`C'est ton équipe. Choisis un <b>système</b>, puis touche un poste sur le terrain pour y mettre un joueur.<br><br>
+  🔒 Seules les <b>cartes que tu possèdes</b> jouent en match. Ajoute aussi des remplaçants et un entraîneur (il compte dans la force de l'équipe).<br><br>
+  💾 « Sauvegarder la compo » la garde de côté pour la recharger plus tard. En haut, tu peux regarder la compo des autres.`},
+ tab_draft:{t:"⚡ Draft",x:`Un mode à deux, chacun son tour, avec <b>tous les joueurs du jeu</b> (pas besoin de les posséder).<br><br>
+  <b>Draft classique</b> : à chaque poste, 5 joueurs te sont proposés, tu en choisis un.<br><b>Mode Budget</b> : vous partagez les mêmes 5 propositions et chaque carte coûte des crédits.<br><br>
+  Une fois les équipes finies, faites-les s'affronter dans l'onglet Match.`},
+ tab_match:{t:"🏟️ Match",x:`Choisis les deux équipes et lance la simulation. Le match se joue <b>en direct en ~1 minute</b> : buts, cartons, penalties, VAR…<br><br>
+  La force dépend des notes, des vraies stats OL, des postes, du collectif et de l'entraîneur, avec une part de chance.<br><br>
+  🪙 Victoire 100, nul 50, défaite 25, +10 par but (pleins gains sur 5 matchs par jour). Contre 🤖 l'ordi, c'est divisé par 2.`},
+ tab_collec:{t:"🎴 Collection",x:`Ici tu gères tes cartes :<br><br>🎁 <b>Pack du jour</b> gratuit, et d'autres packs à acheter avec tes pièces.<br>
+  📒 <b>Album</b> façon Panini, avec des récompenses par collection complète.<br>🔄 <b>Échanges</b>, 🏪 <b>marché</b> et 🔨 <b>enchères</b> de doublons entre joueurs.<br>
+  🧩 <b>Défis SBC</b> : donne des cartes en échange de récompenses.<br><br>Touche une carte pour voir ses stats et son palmarès.`},
+ tab_ligue:{t:"🏆 Ligue",x:`🎯 <b>Objectifs</b> du jour et de la semaine à récupérer, et 🔥 bonus de connexion.<br>🏆 <b>Championnats</b> facultatifs : crée-en un ou rejoins celui d'un pote.<br>
+  📰 <b>Fil d'actu</b> de tout ce qui se passe, et la liste des joueurs (touche un pseudo pour voir son profil).`},
+ tab_jeux:{t:"🎮 Jeux",x:`D'autres façons de jouer :<br><br>🧗 <b>Carrière</b> solo contre des clubs de plus en plus forts.<br>🏆 <b>Coupes</b> à élimination en aller-retour.<br>
+  🎯 <b>Défi du jour</b> avec une contrainte, même adversaire pour tous.<br>🧠 <b>Quiz OL</b> pour gagner des pièces.<br>🛋️ <b>Canapé</b> : à deux sur un même téléphone.<br>📊 Tes <b>stats</b> de saison.`},
+ slot:{t:"👆 Choisir un joueur",x:`La liste montre les joueurs adaptés à ce poste. Les cartes avec 🔒 ne sont pas encore à toi : tu peux les placer, mais elles ne joueront pas en match tant que tu ne les as pas obtenues.<br><br>Un joueur placé hors de son poste perd du niveau.`},
+ save:{t:"💾 Compos enregistrées",x:`Donne un nom à ta compo pour la garder dans ta liste. Tu pourras la recharger, la renommer ou la choisir directement comme équipe dans l'onglet Match.`},
+ mgo:{t:"▶️ Lancer un match",x:`Le match apparaît en direct chez les deux joueurs. Le bouton « Voir le résultat » passe directement à la fin.<br><br>Les pièces arrivent automatiquement à la fin du match, et l'homme du match devient une carte ⭐ Héros dans ta collection.`},
+ budget:{t:"💰 Mode Budget",x:`Vous choisissez un budget à la création. Poste par poste, 5 joueurs sont proposés : le premier en prend un, l'autre choisit parmi les 4 restants, puis on inverse au poste suivant.<br><br>
+  Prix : Commune 4, Rare 7, Épique 10, Légendaire 14, Mythique 20. L'entraîneur est inclus et ses compétences jouent pendant le match.`},
+ pack:{t:"🎁 Les packs",x:`Chaque pack contient des cartes de raretés différentes : Commune, Rare, Épique, Légendaire, Mythique (selon le palmarès du joueur).<br><br>
+  Les grosses cartes ont droit à une animation spéciale. Et dans n'importe quel pack, 1 chance sur 1000 d'avoir un ✨ <b>Gold Pack</b> (une Épique, une Légendaire et une Mythique) !`},
+ trade:{t:"🔄 Échanges",x:`Propose tes doublons contre ceux d'un autre joueur. Chaque rareté vaut des points (Commune 1, Rare 3, Épique 8, Légendaire 25, Mythique 75).<br><br>
+  Si les totaux ne sont pas égaux, celui qui reçoit le plus peut quand même accepter, c'est son choix.`},
+ market:{t:"🏪 Marché",x:`Mets un doublon en vente au prix que tu veux (un prix conseillé est proposé). Quand quelqu'un l'achète, tu touches le prix moins 5 % de taxe.`},
+ auction:{t:"🔨 Enchères",x:`Mets un doublon aux enchères pour une durée choisie. Chaque offre doit dépasser la précédente, et la meilleure offre à la fin remporte la carte.`},
+ sell:{t:"💰 Vendre les doublons",x:`Tes doublons se revendent contre des pièces (Commune 4, Rare 12, Épique 32, Légendaire 100, Mythique 300).<br><br>Astuce : garde-en quelques-uns pour les échanges, le marché ou pour <b>faire évoluer</b> une carte (+1 à +3).`},
+ sbc:{t:"🧩 Défis SBC",x:`Donne un groupe de cartes qui respecte les conditions du défi, et reçois une récompense en échange. Les cartes données disparaissent de ta collection.`},
+ league:{t:"🏆 Créer un championnat",x:`Choisis un nom et une durée. Les autres le voient et décident de le rejoindre ou non. Seuls les matchs entre membres pendant la durée comptent.<br><br>À la fin : 1er Pack Légende, 2e Pack Épique, 3e Pack Classique.`},
+ career:{t:"🧗 Carrière",x:`Ton 11 type (cartes possédées) affronte 15 clubs, de Lorient jusqu'au Real Madrid. Gagne pour passer au suivant : un nul ou une défaite, et tu rejoues.<br><br>Des pièces à chaque première victoire, un pack à la fin de chaque compétition.`},
+ cup:{t:"🏆 Coupes",x:`Crée une coupe à 4 ou 8 joueurs. Quand tout le monde est inscrit, le créateur lance le tirage. Chaque tour se joue en aller-retour avec vos 11 types, et en cas d'égalité ce sont les tirs au but.`},
+ defi:{t:"🎯 Défi du jour",x:`Compose une équipe qui respecte la contrainte du jour, avec tous les joueurs du jeu. Tout le monde affronte le même adversaire et tu n'as <b>qu'un seul essai</b>.<br><br>Le meilleur écart de buts du jour gagne un Pack Épique le lendemain.`},
+ quiz:{t:"🧠 Quiz OL",x:`5 questions sur les joueurs de l'OL. 10 🪙 par bonne réponse, +30 pour un sans-faute, et 3 quiz récompensés par jour.`},
+ sofa:{t:"🛋️ Canapé",x:`Pour jouer à deux sur le même téléphone. À chaque poste, 5 joueurs sont proposés : le premier en choisit un, l'autre prend parmi les 4 restants, et on alterne qui commence.<br><br>Ensuite le match se joue directement ici (sans gains).`},
+ card:{t:"🃏 Fiche du joueur",x:`Note, poste, stats, nationalité, années à l'OL et palmarès. Selon la carte, tu peux aussi la vendre ou la faire évoluer (+1 à +3, avec 2 doublons par niveau).`},
+};
+const TIP_CLICK=[
+ ["#pitch .slot","slot"],["#saveBtn","save"],["#mGo","mgo"],['#dSwitch [data-ds="budget"]',"budget"],
+ [".pkbtn","pack"],["#tNew","trade"],["#mkSell","market"],["#aNew","auction"],["#sellBtn","sell"],["[data-sbc]","sbc"],
+ ["#lCreate","league"],["#jCarGo","career"],["#jCupNew","cup"],["[data-ct]","cup"],["#jDefi [data-ds]","defi"],["#jQuiz","quiz"],["#sfGo","sofa"],
+ [".slotc[data-id]","card"]];
+const tipSeen=k=>{ const c=me&&C(me); return !c||!!(c.seen||{})[k]; };
+let tipQ=[], tipOpen=false;
+function tip(k,then){
+  if(!me||!C(me)||!TIPS[k]||tipSeen(k)){ if(then) then(); return; }
+  if(tipOpen){ if(!tipQ.some(x=>x[0]===k)) tipQ.push([k,then]); return; }
+  const c=W(); c.seen=c.seen||{}; c.seen[k]=1; save(); tipOpen=true;
+  const el=document.createElement("div"); el.className="tipov"; el.innerHTML=`<div class="tipbox"><h3>${TIPS[k].t}</h3><div class="tipx">${TIPS[k].x}</div><button class="btn big" id="tipOk">Compris 👍</button>${k==="welcome"?`<button class="btn ghost" id="tipSkip" style="width:100%;margin-top:6px">Je connais déjà, ne plus rien expliquer</button>`:""}</div>`;
+  document.body.appendChild(el);
+  const close=()=>{ el.remove(); tipOpen=false; if(then) setTimeout(then,50); const nx=tipQ.shift(); if(nx) setTimeout(()=>tip(nx[0],nx[1]),250); };
+  el.querySelector("#tipOk").onclick=close;
+  const sk=el.querySelector("#tipSkip"); if(sk) sk.onclick=()=>{ for(const x in TIPS) c.seen[x]=1; save(); tipQ=[]; el.remove(); tipOpen=false; toast("OK, plus d'explications (réactivables dans ton compte)"); };
+}
+document.addEventListener("click",e=>{
+  if(!me||tipOpen||e.target.closest(".tipov")) return;
+  for(const [sel,k] of TIP_CLICK){ const t=e.target.closest(sel); if(!t||tipSeen(k)) continue;
+    e.preventDefault(); e.stopPropagation(); const id=t.id, ds=JSON.stringify({...t.dataset});
+    tip(k,()=>{ const x=document.body.contains(t)?t:(id?document.getElementById(id):[...document.querySelectorAll(sel)].find(y=>JSON.stringify({...y.dataset})===ds)); if(x) x.click(); }); return; }
+},true);
+function resetTips(){ const c=W(); c.seen={}; save(); toast("Les explications vont réapparaître"); setTimeout(()=>{ tip("welcome",()=>tip("tab_"+mode)); },300); }
+
 // ---------- Synchro Firebase (comptes) ----------
 let db=null, saveT=null, dirty=false, unsubs=[];
 function setSync(t,cls){ const s=$("#sync"); s.textContent=t; s.className="sync "+(cls||""); }
@@ -2824,7 +2896,7 @@ try{
       else { NAMES[me]=pendingName||($("#aName").value.trim())||user.email.split("@")[0]; compos[me]=blank(); compos[me].coins=300; await push(); await importLegacy(NAMES[me]); setTimeout(()=>toast("Bienvenue ! 300 🪙 offertes pour ton premier pack"),800); }
     }catch(e){ setSync("⚠️ Accès refusé : règles Firebase à mettre à jour","err"); }
     pendingName=null; $("#aPass").value="";
-    choose(me); startListeners(); setTimeout(()=>{ if(me){ starterPack(); loginStreak(); dailyBonus(); claimRewards(); renderCoins(); badgeLigue(); } },1500);
+    choose(me); startListeners(); setTimeout(()=>{ if(me){ starterPack(); loginStreak(); dailyBonus(); claimRewards(); renderCoins(); badgeLigue(); tip("welcome",()=>tip("tab_"+mode)); } },1500);
   });
 }catch(e){ setSync("⚠️ Synchro indisponible","err"); }
 </script>
