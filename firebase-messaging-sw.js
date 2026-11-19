@@ -1,6 +1,13 @@
 // Service worker des notifications — sans import externe (Safari/iPhone refuse les scripts d'un autre domaine ici)
 self.addEventListener("install", () => self.skipWaiting());
 self.addEventListener("activate", e => e.waitUntil(self.clients.claim()));
+// Toujours la dernière version de l'appli : la page est chargée depuis le réseau (sans cache), avec repli hors-ligne
+self.addEventListener("fetch", e => {
+  const r = e.request;
+  if (r.mode === "navigate" || (r.method === "GET" && /\/(index\.html|live\.json)?(\?.*)?$/.test(new URL(r.url).pathname + new URL(r.url).search) && new URL(r.url).origin === location.origin)) {
+    e.respondWith(fetch(r, { cache: "no-store" }).then(res => { const cp = res.clone(); caches.open("gl-v1").then(c => c.put(r, cp)).catch(() => {}); return res; }).catch(() => caches.match(r)));
+  }
+});
 self.addEventListener("push", e => {
   let p = {}; try { p = e.data ? e.data.json() : {}; } catch (_) { p = { notification: { body: e.data && e.data.text() } }; }
   const n = p.notification || {}, d = p.data || {};
