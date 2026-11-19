@@ -47,6 +47,23 @@ service cloud.firestore {
           || (request.auth.uid != resource.data.seller && request.resource.data.price == resource.data.price && resource.data.status == 'open' && request.resource.data.status == 'sold' && request.resource.data.buyer == request.auth.uid) );
       allow delete: if false;
     }
+    // Enchères (doublons) : le vendeur crée/annule ; les autres ne peuvent que surenchérir à leur nom
+    match /onzeol_auctions/{id} {
+      allow read: if joueurConnecte();
+      allow create: if joueurConnecte() && request.resource.data.seller == request.auth.uid && request.resource.data.bid == 0;
+      allow update: if joueurConnecte()
+        && request.resource.data.seller == resource.data.seller && request.resource.data.pid == resource.data.pid && request.resource.data.start == resource.data.start
+        && ( (request.auth.uid == resource.data.seller && request.resource.data.bid == resource.data.bid && request.resource.data.bidder == resource.data.bidder)
+          || (request.auth.uid != resource.data.seller && request.resource.data.bidder == request.auth.uid && request.resource.data.bid > resource.data.bid)
+          || (request.auth.uid == resource.data.bidder && request.resource.data.bid == resource.data.bid && request.resource.data.bidder == resource.data.bidder) );
+      allow delete: if false;
+    }
+    // Fil d'actu : chacun publie à son nom
+    match /onzeol_feed/{id} {
+      allow read: if joueurConnecte();
+      allow create: if joueurConnecte() && request.resource.data.who == request.auth.uid;
+      allow update, delete: if false;
+    }
     // Match en direct + historique : n'importe quel joueur connecté
     match /onzeol_meta/{doc} {
       allow read, write: if joueurConnecte();

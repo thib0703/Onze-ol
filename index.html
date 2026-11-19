@@ -248,6 +248,28 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
 .step button{width:30px;height:30px;border-radius:8px;border:1px solid #2b3c6e;background:var(--carte);color:#fff;font-size:18px;font-weight:800;cursor:pointer}
 .step button:disabled{opacity:.3}
 .step b{min-width:16px;text-align:center}
+.chk2{display:flex;gap:8px;align-items:flex-start;font-size:13px;margin:12px 2px 0;color:#dfe7ff}
+.chk2 input{margin-top:2px;width:18px;height:18px}
+.slot.unowned .fcard{filter:grayscale(.85) brightness(.75)}
+.lockb{position:absolute;top:-6px;right:14px;font-size:13px;z-index:3}
+.obj{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid #1d2b55}
+.obj .oinfo{flex:1}.obj .oinfo b{font-size:14px}.obj .oinfo small{display:block;color:var(--mute);font-size:12px;margin-top:1px}
+.obj .oact{font-size:13px;color:var(--mute);min-width:64px;text-align:right}
+.obj.done{opacity:.55}
+#lObj h4,#cAlbum h4{margin:10px 0 2px;font-size:13px;color:var(--mute)}
+.evban{margin:10px 0 4px;padding:14px;border-radius:14px;background:linear-gradient(120deg,#ff9a6a,#d3122d 60%,#1d4aa0);display:flex;flex-direction:column;gap:3px}
+.evban b{font-size:17px}.evban span{font-size:13px}.evban small{font-size:11.5px;opacity:.85}
+.fd{display:flex;justify-content:space-between;gap:8px;font-size:13px;padding:7px 0;border-top:1px solid #1d2b55}
+.fd small{color:var(--mute);white-space:nowrap;font-size:11px}
+.plrs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.plr{background:#0f1d40;border:1px solid #2b3c6e;border-radius:12px;padding:10px 6px;color:#fff;cursor:pointer;font-family:inherit}
+.plr.me{border-color:var(--rouge)}.plr b{display:block;font-size:14px}.plr small{color:var(--mute);font-size:11px}
+.pstats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;margin:12px 0 8px}
+.pstats div{background:#0f1d40;border-radius:10px;padding:8px;text-align:center;font-size:11px;color:var(--mute)}
+.pstats b{display:block;font-size:16px;color:var(--txt)}
+.fcard.hero{background:linear-gradient(155deg,#0f3d2a,#16794a 40%,#0b2a1c 70%,#ffd970 100%);color:#fff3c4}
+.fcard.hero::after{content:"⭐ HÉROS";position:absolute;bottom:5%;width:100%;text-align:center;font-size:.55em;font-weight:900;letter-spacing:.15em;color:#ffd970}
+.fcard.hero .fc-tag{display:none}
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#1f8a4c;color:#fff;padding:12px 18px;border-radius:12px;font-weight:700;z-index:30;box-shadow:0 6px 20px #0008;display:none}
 .count{font-size:13px;color:var(--mute);margin:8px 4px}
 .section{margin-top:14px;background:var(--carte);border-radius:14px;padding:12px}
@@ -346,7 +368,7 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
   <div class="sub">Tous les joueurs passés par Lyon depuis 2000</div>
   <div class="sync" id="sync">Connexion…</div>
 </header>
-<div class="modes"><button id="mCompo" class="on">11 type</button><button id="mDraft">⚡ Draft</button><button id="mMatch">🏟️ Match</button><button id="mCollec">🎴 Collec</button></div>
+<div class="modes"><button id="mCompo" class="on">11 type</button><button id="mDraft">⚡ Draft</button><button id="mMatch">🏟️ Match</button><button id="mCollec">🎴 Collec</button><button id="mLigue">🏆 Ligue</button></div>
 <div id="viewCompo">
 <div class="tabs" id="tabs"></div>
 <div class="wrap">
@@ -405,9 +427,18 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
 </div>
 <div id="viewCollec" class="wrap" style="display:none">
   <div class="section" id="cShop"></div>
+  <div class="section" id="cSbc"></div>
   <div class="section" id="cMarket"></div>
+  <div class="section" id="cAuct"></div>
   <div class="section" id="cTrades"></div>
   <div class="section" id="cAlbum"></div>
+</div>
+<div id="viewLigue" class="wrap" style="display:none">
+  <div id="lEvent"></div>
+  <div class="section" id="lObj"></div>
+  <div class="section" id="lLeague"></div>
+  <div class="section" id="lFeed"></div>
+  <div class="section" id="lPlayers"></div>
 </div>
 <div class="packfx" id="packfx"></div>
 <div class="tradeui" id="tradeUI"></div>
@@ -670,7 +701,7 @@ let me=null, viewing=null, editing=null, chip=null;
 let compos={};
 const C = w => compos[w]||(compos[w]=blank());
 function blank(){return {formation:"4-3-3",slots:{},bench:{},coach:null,savedAt:null,library:[],loadedId:null,coins:0,coll:{},claimed:[],daily:null,opened:0};}
-function norm(c){c=c||{};return {formation:F[c.formation]?c.formation:"4-3-3",slots:c.slots||{},bench:c.bench||{},coach:c.coach||null,savedAt:c.savedAt||null,library:Array.isArray(c.library)?c.library:[],loadedId:c.loadedId||null,coins:+c.coins||0,coll:c.coll||{},claimed:Array.isArray(c.claimed)?c.claimed:[],daily:c.daily||null,opened:+c.opened||0,mday:c.mday||null,goldPacks:+c.goldPacks||0};}
+function norm(c){c=c||{};return Object.assign({},c,{formation:F[c.formation]?c.formation:"4-3-3",slots:c.slots||{},bench:c.bench||{},coach:c.coach||null,savedAt:c.savedAt||null,library:Array.isArray(c.library)?c.library:[],loadedId:c.loadedId||null,coins:+c.coins||0,coll:c.coll||{},claimed:Array.isArray(c.claimed)?c.claimed:[],daily:c.daily||null,opened:+c.opened||0,mday:c.mday||null,goldPacks:+c.goldPacks||0});}
 try{ const l=JSON.parse(localStorage.getItem("onze-ol-cache2")||"null"); if(l){ for(const k in l) compos[k]=norm(l[k]); } const n=JSON.parse(localStorage.getItem("onze-ol-names2")||"null"); if(n) NAMES=Object.assign(NAMES,n); }catch(e){}
 
 // ---------- Accueil ----------
@@ -717,7 +748,9 @@ function slotBtn(kind,i,role,pid,mine,onclick){
   const p=pid&&BY_ID[pid]; const b=document.createElement("button");
   b.className="slot"+(p?" has":" empty")+(mine||p?"":" ro");
   if(p){
-    b.innerHTML=cardHTML(p.id,{w:kind==="coach"?54:42,mini:true,role:kind==="xi"?role:null})+`<div class="nm">${esc(kind==="coach"?p.name:short(p.name))}</div>`;
+    const lock=mode==="compo"&&viewing===me&&me&&!((C(me).coll||{})[p.id]);
+    if(lock) b.classList.add("unowned");
+    b.innerHTML=(lock?`<span class="lockb">🔒</span>`:"")+cardHTML(p.id,{w:kind==="coach"?54:42,mini:true,role:kind==="xi"?role:null,ovr:me&&mode==="compo"&&viewing===me?p.ovr+evoOf(me,p.id):undefined})+`<div class="nm">${esc(kind==="coach"?p.name:short(p.name))}</div>`;
     b.onclick=()=>showCard(p.id,(mine&&!onclick)?{change:()=>openSheet(kind,i,role),remove:()=>{editing={kind,i,role,mode:"compo"};setPick(null);}}:null);
   } else {
     b.innerHTML=`<div class="shirt"><b>${esc(role)}</b></div>`+(mine?`<div class="nm">+ Choisir</div>`:`<div class="nm">—</div>`);
@@ -956,8 +989,8 @@ function dRestart(){ const d=dNorm(draft,me,dOpp); dWrite({"":{...dDefault(me,dO
 let dResetArm=false;
 $("#dReset").onclick=e=>{ if(!dResetArm){dResetArm=true;e.target.textContent="Sûr ? Tout le draft sera effacé (re-touche)";setTimeout(()=>{dResetArm=false;e.target.textContent="Recommencer le draft";},3500);return;} dResetArm=false; e.target.textContent="Recommencer le draft"; dRestart(); };
 $("#dNew").onclick=dRestart;
-function setMode(m){ mode=m; for(const [b,v,k] of [["#mCompo","#viewCompo","compo"],["#mDraft","#viewDraft","draft"],["#mMatch","#viewMatch","match"],["#mCollec","#viewCollec","collec"]]){ $(b).classList.toggle("on",m===k); $(v).style.display=m===k?"":"none"; } if(m==="draft") renderDraft(); else if(m==="match") renderMatch(); else if(m==="collec") renderCollec(); else render(); window.scrollTo(0,0); }
-$("#mCompo").onclick=()=>setMode("compo"); $("#mDraft").onclick=()=>setMode("draft"); $("#mMatch").onclick=()=>setMode("match"); $("#mCollec").onclick=()=>setMode("collec");
+function setMode(m){ mode=m; for(const [b,v,k] of [["#mCompo","#viewCompo","compo"],["#mDraft","#viewDraft","draft"],["#mMatch","#viewMatch","match"],["#mCollec","#viewCollec","collec"],["#mLigue","#viewLigue","ligue"]]){ $(b).classList.toggle("on",m===k); $(v).style.display=m===k?"":"none"; } if(m==="draft") renderDraft(); else if(m==="match") renderMatch(); else if(m==="collec") renderCollec(); else if(m==="ligue") renderLigue(); else render(); window.scrollTo(0,0); }
+$("#mCompo").onclick=()=>setMode("compo"); $("#mDraft").onclick=()=>setMode("draft"); $("#mMatch").onclick=()=>setMode("match"); $("#mCollec").onclick=()=>setMode("collec"); $("#mLigue").onclick=()=>setMode("ligue");
 function renderDraft(){
   if(!me) return;
   const ops=others();
@@ -1092,17 +1125,20 @@ function cardHTML(pid,opts={}){
    ${mini?"":`<div class="fc-tag">${p.pos[0]==="COACH"?"COACH · ":""}${TIER_TAG[t]}</div>`}
   </div>`;
 }
-function showCard(pid,act){
+function showCard(pid,act,lv){
   const p=BY_ID[pid]; if(!p) return;
   const M=$("#cardModal");
   const info=p.pos[0]==="COACH"?`<div>Entraîneur de l'OL · note ${p.ovr}</div>`:
     `<div>${p.pos.join(" · ")} · arrivé à l'OL ${p.year<2000?"avant 2000":"en "+p.year}</div>${p.m!=null?`<div><b>${p.m}</b> matchs · <b>${p.g}</b> but${p.g>1?"s":""} à l'OL</div>`:`<div class="mute">Moins de 30 matchs à l'OL : pas de stats officielles</div>`}`;
   const pt=palmText(p); const rt=cardTier(p);
   const palm=`<div class="cm-palm"><div class="rar r-${rt}">${TIER_NAME[rt]}</div>${pt.ol.length?`<div>🏆 Avec l'OL : ${pt.ol.join(" · ")}</div>`:`<div class="mute">Pas de titre avec l'OL</div>`}${pt.ext.length?`<div>🌍 ${pt.ext.join(" · ")}</div>`:""}</div>`;
-  M.innerHTML=`<div class="cm-box"><div class="cm-card">${cardHTML(pid,{w:230,cls:"flip-in"})}</div><div class="cm-info">${info}${palm}</div><div class="mbtns" id="cmBtns"></div><div class="cm-note">Stats inspirées des jeux FIFA/FC (note, poste, profil). Rareté selon le palmarès : titres avec l'OL et grands trophées en carrière.</div></div>`;
+  const ps=priceStats(pid);
+  const extra=(lv?`<div style="color:#7ee2a0">⬆️ Évoluée +${lv}</div>`:"")+(ps?`<div>💹 Prix moyen ${ps.avg} 🪙 ${ps.trend} · dernier ${ps.last} 🪙 (${ps.n} vente${ps.n>1?"s":""})</div>`:"");
+  M.innerHTML=`<div class="cm-box"><div class="cm-card">${cardHTML(pid,{w:230,cls:"flip-in",ovr:p.ovr+(lv||0)})}</div><div class="cm-info">${info}${extra}${palm}</div><div class="mbtns" id="cmBtns"></div><div class="cm-note">Stats inspirées des jeux FIFA/FC (note, poste, profil). Rareté selon le palmarès : titres avec l'OL et grands trophées en carrière.</div></div>`;
   const B=$("#cmBtns");
   const mk=(t,fn,ghost)=>{const b=document.createElement("button");b.className="btn"+(ghost?" ghost":"");b.textContent=t;b.onclick=()=>{M.classList.remove("open");fn&&fn();};B.appendChild(b);};
   if(act&&act.change) mk("🔁 Changer de joueur",act.change);
+  if(act&&act.evo){ mk(act.evo.label,act.evo.fn); if(act.evo.dis) B.lastChild.disabled=true; }
   if(act&&act.sell) mk(act.sell.label,act.sell.fn);
   if(act&&act.remove) mk("Retirer",act.remove,true);
   mk("Fermer",null,true);
@@ -1152,7 +1188,7 @@ function nextFx(){
 }
 // ---------- Simulation de match ----------
 const LINE={GB:"gk",DC:"def",DD:"def",DG:"def",PG:"def",PD:"def",MDC:"mid",MC:"mid",MG:"mid",MD:"mid",MOC:"mo",AG:"att",AD:"att",BU:"att"};
-let match=null, matches=[], selA="cur", selB="cur", pA=null, pB=null, mTimer=null, mSkip=null, lastMatchId=null;
+let match=null, matches=[], selA="cur", selB="cur", pA=null, pB=null, clubMode=false, mTimer=null, mSkip=null, lastMatchId=null;
 function fit(p,role){
   if(p.pos.includes(role)) return 1;
   const ok=ROLE_OK[role]||[];
@@ -1171,14 +1207,24 @@ function teamOptions(w){
   return o;
 }
 function pickTeam(w,key){ const o=teamOptions(w); return (o.find(x=>x.key===key)||o[0]); }
-function strength(c){
+function chemistry(ps){
+  // collectif : liens entre joueurs de même nationalité ou arrivés à moins de 3 ans d'écart
+  if(ps.length<2) return 0; let links=0;
+  for(let i=0;i<ps.length;i++) for(let j=i+1;j<ps.length;j++){ const a=ps[i],b=ps[j]; if(NAT[a.id]&&NAT[a.id]===NAT[b.id]) links++; if(Math.abs(a.year-b.year)<=3) links++; }
+  return Math.min(100,Math.round(links/(ps.length*1.6)*100));
+}
+function strength(c,w,club){
   const form=F[c.formation]||F["4-3-3"];
-  const lineup=form.map(([role],i)=>{ const p=BY_ID[(c.slots||{})[i]]; return {role,pid:p?p.id:null,eff:p?(p.ovr+Math.min(3,(p.m||0)/150))*fit(p,role):35,fin:p?finOf(p,role):0}; });
+  const own=w&&club?(C(w).coll||{}):null;
+  const lineup=form.map(([role],i)=>{ let p=BY_ID[(c.slots||{})[i]]; if(p&&own&&!own[p.id]) p=null; const ev=p&&w?evoOf(w,p.id):0;
+    return {role,pid:p?p.id:null,eff:p?(p.ovr+ev+Math.min(3,(p.m||0)/150))*fit(p,role):35,fin:p?finOf(p,role):0}; });
   const acc={gk:[],def:[],mid:[],att:[]};
   for(const l of lineup){ const g=LINE[l.role]||"mid"; if(g==="mo"){acc.mid.push(l.eff);acc.att.push(l.eff);} else acc[g].push(l.eff); }
   const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:35;
-  const co=BY_ID[c.coach]; const cb=co?(co.ovr-75)/4:-2;
-  const r={gk:avg(acc.gk)+cb,def:avg(acc.def)+cb,mid:avg(acc.mid)+cb,att:avg(acc.att)+cb,coach:co?co.ovr:0,lineup,coachId:co?co.id:null};
+  let co=BY_ID[c.coach]; if(co&&own&&!own[co.id]) co=null;
+  const chem=chemistry(lineup.filter(l=>l.pid).map(l=>BY_ID[l.pid]));
+  const cb=(co?(co.ovr-75)/4:-2)+chem/100*3;
+  const r={gk:avg(acc.gk)+cb,def:avg(acc.def)+cb,mid:avg(acc.mid)+cb,att:avg(acc.att)+cb,coach:co?co.ovr:0,chem,lineup,coachId:co?co.id:null};
   r.global=Math.round(r.gk*.12+r.def*.3+r.mid*.3+r.att*.28);
   return r;
 }
@@ -1419,13 +1465,13 @@ async function launchMatch(){
   if(!db||!me){toast("Pas connecté",true);return;}
   const tA=pickTeam(pA,selA), tB=pickTeam(pB,selB);
   const cA=tA.get(), cB=tB.get();
-  const A=strength(cA), B=strength(cB);
+  const A=strength(cA,pA,clubMode), B=strength(cB,pB,clubMode);
   if(A.lineup.filter(l=>l.pid).length<7||B.lineup.filter(l=>l.pid).length<7){ toast("Il faut au moins 7 joueurs dans chaque équipe",true); return; }
   const r=simulate2(cA,A,cB,B);
-  const snap=(c,s,label,w,i)=>({label,owner:w,ownerName:NAMES[w]||"?",formation:c.formation,lineup:s.lineup.map(l=>({role:l.role,pid:l.pid})),played:r.played[i],coach:s.coachId,global:s.global});
+  const snap=(c,s,label,w,i)=>({label:label+(clubMode?" · Club":""),owner:w,ownerName:NAMES[w]||"?",formation:c.formation,lineup:s.lineup.map(l=>({role:l.role,pid:l.pid})),played:r.played[i],coach:s.coachId,global:s.global});
   const m={id:Date.now().toString(36),at:Date.now()+1500,by:me,teams:[snap(cA,A,tA.label,pA,0),snap(cB,B,tB.label,pB,1)],...r};
   delete m.played;
-  const hist=[{id:m.id,at:m.at,score:r.score,labels:[tA.label,tB.label],owners:[pA,pB],names:[NAMES[pA],NAMES[pB]]},...matches].slice(0,40);
+  const hist=[{id:m.id,at:m.at,score:r.score,labels:[tA.label,tB.label],owners:[pA,pB],names:[NAMES[pA],NAMES[pB]],motm:r.motm?{pid:r.motm.pid,t:r.motm.t,note:r.notes[r.motm.t][r.motm.pid]}:null},...matches].slice(0,200);
   try{ await db.collection("onzeol_meta").doc("main").set({match:m,matches:hist},{merge:true}); }catch(e){ toast("Pas de connexion, réessaie",true); }
 }
 function onMatchData(m,h){
@@ -1475,7 +1521,7 @@ function renderMatch(){
   if(!pA||!NAMES[pA]) pA=me; if(!pB||!NAMES[pB]||pB===pA) pB=ids.find(x=>x!==pA)||pA;
   const oa=teamOptions(pA), ob=teamOptions(pB);
   if(!oa.some(o=>o.key===selA)) selA="cur"; if(!ob.some(o=>o.key===selB)) selB="cur";
-  const A=strength(pickTeam(pA,selA).get()), B=strength(pickTeam(pB,selB).get());
+  const A=strength(pickTeam(pA,selA).get(),pA,clubMode), B=strength(pickTeam(pB,selB).get(),pB,clubMode);
   const pSel=(id,v)=>`<select id="${id}" class="psel">${ids.map(x=>`<option value="${esc(x)}" ${x===v?"selected":""}>${esc(NAMES[x])}</option>`).join("")}</select>`;
   const live=match&&matchMinute()<match.len+1&&matchMinute()>=-6;
   $("#mSetup").innerHTML=`<h3>🏟️ Simulation de match</h3>
@@ -1483,9 +1529,11 @@ function renderMatch(){
    <div class="vsmid">VS</div>
    <div class="field">${pSel("pB",pB)}<select id="selB">${ob.map(o=>`<option value="${esc(o.key)}" ${o.key===selB?"selected":""}>${esc(o.label)}</option>`).join("")}</select></div>
    <div class="vs"><b>${esc(NAMES[pA])}</b><span>Force</span><b>${esc(NAMES[pB])}</b></div>
-   ${bar("Global",A.global,B.global)}${bar("Attaque",A.att,B.att)}${bar("Milieu",A.mid,B.mid)}${bar("Défense",A.def,B.def)}${bar("Gardien",A.gk,B.gk)}${bar("Coach",A.coach,B.coach)}
+   ${bar("Global",A.global,B.global)}${bar("Attaque",A.att,B.att)}${bar("Milieu",A.mid,B.mid)}${bar("Défense",A.def,B.def)}${bar("Gardien",A.gk,B.gk)}${bar("Coach",A.coach,B.coach)}${bar("Collectif",A.chem,B.chem)}
+   <label class="chk2"><input type="checkbox" id="clubChk" ${clubMode?"checked":""}> 🔒 <b>Mode Club</b> : seules les cartes possédées jouent (les autres cases restent vides)</label>
    <button class="btn big" id="mGo" ${live?"disabled":""}>${live?"Match en cours…":"▶️ Lancer le match"}</button>
-   <div class="rules" style="font-size:12px;margin-bottom:0">Le résultat dépend des notes des joueurs, de leurs vraies stats à l'OL (matchs joués = expérience, ratio buts/match = efficacité devant le but), de leur placement (un joueur hors de son poste perd du niveau) et de l'entraîneur… avec une part de hasard, comme au vrai foot.</div>`;
+   <div class="rules" style="font-size:12px;margin-bottom:0">Le résultat dépend des notes des joueurs, de leurs vraies stats à l'OL (matchs joués = expérience, ratio buts/match = efficacité devant le but), de leur placement (un joueur hors de son poste perd du niveau), du collectif (même nationalité ou même époque), des évolutions de cartes et de l'entraîneur… avec une part de hasard, comme au vrai foot.</div>`;
+  $("#clubChk").onchange=e=>{clubMode=e.target.checked;renderMatch();};
   $("#pA").onchange=e=>{pA=e.target.value;selA="cur";renderMatch();};
   $("#pB").onchange=e=>{pB=e.target.value;selB="cur";renderMatch();};
   $("#selA").onchange=e=>{selA=e.target.value;renderMatch();};
@@ -1555,8 +1603,11 @@ function claimRewards(){
     if(h.owners[0]===h.owners[1]){ c.claimed.push(h.id); continue; }
     const r=rewardFor(h,i); const day=new Date(h.at).toLocaleDateString("fr-CA");
     if(!c.mday||c.mday.d!==day) c.mday={d:day,n:0}; c.mday.n++;
+    track("play"); if(r.a>r.b) track("win"); if(r.a) track("goals",r.a);
+    if(h.motm&&h.owners[h.motm.t]===me&&BY_ID[h.motm.pid]){ c.heroes=c.heroes||[]; c.heroes.push({id:h.id,pid:h.motm.pid,note:h.motm.note,at:h.at}); c.heroes=c.heroes.slice(-60); setTimeout(()=>toast(`⭐ Carte Héros du match : ${BY_ID[h.motm.pid].name} (${h.motm.note}/10)`),2500); }
     const k=c.mday.n<=5?1:.25; got+=Math.round(r.coins*k); lines.push(`${r.res} ${r.a}-${r.b}${k<1?" (gains réduits après 5 matchs/jour)":""}`); c.claimed.push(h.id); }
-  if(got){ c.claimed=c.claimed.slice(-120); addCoins(got,`match : ${lines.join(", ")}`); }
+  if(got){ c.claimed=c.claimed.slice(-300); addCoins(got,`match : ${lines.join(", ")}`); }
+  claimLeague();
 }
 const today=()=>new Date().toLocaleDateString("fr-CA");
 function dailyBonus(){ const c=W(); if(c.daily!==today()) toast("🎁 Ton pack du jour t'attend dans 🎴 Collec !"); }
@@ -1565,22 +1616,28 @@ function drawCard(pack,force){
   let arr=POOL[tier]; if(!arr.length) arr=POOL.icon; return arr[Math.floor(Math.random()*arr.length)];
 }
 const GOLD_RATE=0.001;
-function openPack(pack){
+function openPack(pack,free){
   const P=PACKS[pack]; const c=W();
-  if(pack==="jour"){ if(c.daily===today()){ toast("Pack du jour déjà ouvert : reviens demain !",true); return; } c.daily=today(); }
+  if(free){ c.freePacks=c.freePacks||{}; if(!(c.freePacks[pack]>0)){ toast("Plus de pack offert",true); return; } c.freePacks[pack]--; }
+  else if(pack==="jour"){ if(c.daily===today()){ toast("Pack du jour déjà ouvert : reviens demain !",true); return; } c.daily=today(); }
   else { if((c.coins||0)<P.price){ toast(`Il te manque ${P.price-(c.coins||0)} 🪙 : joue des matchs ou vends tes doublons !`,true); return; } c.coins-=P.price; }
   const rank={bronze:0,silver:1,gold:2,icon:3,myth:4};
   // ✨ GOLD PACK : 1 chance sur 1000, dans n'importe quel pack → 1 Épique + 1 Légendaire + 1 Mythique
   const gold=Math.random()<GOLD_RATE;
   let ids=[];
   if(gold){ ids=[drawCard(pack,"gold"),drawCard(pack,"icon"),drawCard(pack,"myth")]; c.goldPacks=(c.goldPacks||0)+1; }
+  else if(pack==="event"){ const f=curEvent().f; for(let i=0;i<P.n;i++) ids.push(drawFrom(f,P.w));
+    if(!ids.some(id=>rank[cardTier(BY_ID[id])]>=rank[P.guarantee])) ids[ids.length-1]=drawFrom(f,P.w,P.guarantee); }
   else { for(let i=0;i<P.n;i++) ids.push(drawCard(pack));
     if(P.guarantee&&!ids.some(id=>rank[cardTier(BY_ID[id])]>=rank[P.guarantee])) ids[ids.length-1]=drawCard(pack,P.guarantee); }
   ids.sort((a,b)=>rank[cardTier(BY_ID[a])]-rank[cardTier(BY_ID[b])]||BY_ID[a].ovr-BY_ID[b].ovr);
   c.coll=c.coll||{}; const isNew=ids.map(id=>!c.coll[id]);
   for(const id of ids) c.coll[id]=(c.coll[id]||0)+1;
   c.opened=(c.opened||0)+1;
-  save(); renderCoins(); packFx(pack,ids,isNew,gold);
+  save(); renderCoins(); track("pack");
+  if(gold) post(`✨ ${NAMES[me]} a ouvert un GOLD PACK !!!`);
+  for(const id of ids){ const t=cardTier(BY_ID[id]); if(t==="myth"||t==="icon") post(`${t==="myth"?"🌈":"🌟"} ${NAMES[me]} a tiré ${BY_ID[id].name} (${TIER_NAME[t]}) !`); }
+  packFx(pack,ids,isNew,gold);
 }
 function packFx(pack,ids,isNew,gold){
   const P=PACKS[pack]; const F=$("#packfx"); F.className="packfx open";
@@ -1631,19 +1688,40 @@ function renderCollec(){
   const dupes=Object.entries(coll).reduce((s,[id,n])=>s+(n>1?(n-1)*SELL[cardTier(BY_ID[id])]:0),0);
   $("#cShop").innerHTML=`<h3>🎴 Boutique <small>🪙 ${(c.coins||0).toLocaleString("fr-FR")}</small></h3>
     ${c.daily!==today()?`<button class="pkbtn daily" data-pk="jour" style="--pc:#7ee2a0"><b>🎁 Pack du jour gratuit</b><span>2 cartes · 1 par jour</span><em>Ouvrir</em></button>`:`<div class="mute" style="font-size:12.5px;margin-bottom:8px">🎁 Pack du jour ouvert, le prochain demain.</div>`}
-    <div class="shop">${Object.entries(PACKS).filter(([k])=>k!=="jour").map(([k,P])=>`<button class="pkbtn" data-pk="${k}" style="--pc:${P.color}"><b>${P.name}</b><span>${P.n} cartes${P.guarantee==="gold"?" · 1 Épique min.":P.guarantee==="icon"?" · 1 Légendaire min.":""}</span><em>🪙 ${P.price}</em></button>`).join("")}</div>
+    ${Object.entries(c.freePacks||{}).filter(([k,n])=>n>0&&PACKS[k]).map(([k,n])=>`<button class="pkbtn daily" data-free="${k}" style="--pc:${PACKS[k].color}"><b>🎁 ${PACKS[k].name} offert ×${n}</b><span>récompense</span><em>Ouvrir</em></button>`).join("")}
+    <button class="pkbtn daily" data-pk="event" style="--pc:#ff9a6a;animation:none"><b>${curEvent().name}</b><span>Pack Événement · 3 cartes du thème</span><em>🪙 600</em></button>
+    <div class="shop">${Object.entries(PACKS).filter(([k])=>!["jour","event","reward"].includes(k)).map(([k,P])=>`<button class="pkbtn" data-pk="${k}" style="--pc:${P.color}"><b>${P.name}</b><span>${P.n} cartes${P.guarantee==="gold"?" · 1 Épique min.":P.guarantee==="icon"?" · 1 Légendaire min.":""}</span><em>🪙 ${P.price}</em></button>`).join("")}</div>
     <div class="rules" style="font-size:12.5px">Gagne des pièces en jouant : <b>victoire 100</b>, nul 50, défaite 25, <b>+10 par but</b> (gains pleins sur tes 5 premiers matchs du jour, ¼ ensuite) et <b>1 pack gratuit par jour</b>. Doublons : revente 4 / 12 / 32 / 100 / 300 🪙 (Commune → Mythique), ou échange avec les autres pour plus de valeur.</div>
     ${dupes?`<button class="btn ghost big" id="sellBtn">Vendre mes doublons (+${dupes} 🪙)</button>`:""}`;
-  document.querySelectorAll(".pkbtn").forEach(b=>b.onclick=()=>openPack(b.dataset.pk));
+  document.querySelectorAll(".pkbtn[data-pk]").forEach(b=>b.onclick=()=>openPack(b.dataset.pk));
+  document.querySelectorAll(".pkbtn[data-free]").forEach(b=>b.onclick=()=>openPack(b.dataset.free,true));
   const sb=$("#sellBtn"); if(sb) sb.onclick=()=>openModal(`Vendre tous tes doublons pour ${dupes} 🪙 ?`,null,[["Vendre",()=>{ for(const id in coll) if(coll[id]>1) coll[id]=1; addCoins(dupes,"doublons vendus"); renderCollec(); }],["Annuler",null,true]]);
   const F=[["all","Tous"],["myth","Mythiques"],["icon","Légendaires"],["gold","Épiques"],["silver","Rares"],["bronze","Communes"],["coach","Entraîneurs"],["miss","Manquants"]];
   const list=ALL_CARDS.filter(p=>{ const t=cardTier(p); if(colFilter==="miss") return !coll[p.id]; if(colFilter==="coach") return p.pos[0]==="COACH"; return colFilter==="all"||t===colFilter; });
   $("#cAlbum").innerHTML=`<h3>📖 Mon album <small>${owned} / ${ALL_CARDS.length}</small></h3>
     <div class="track" style="height:10px;margin-bottom:10px"><i style="width:${owned/ALL_CARDS.length*100}%"></i></div>
     <div class="chips" style="margin-bottom:10px">${F.map(([k,l])=>`<button class="chip${colFilter===k?" on":""}" data-f="${k}">${l}</button>`).join("")}</div>
-    <div class="album">${list.map(p=>{ const n=coll[p.id]||0; return `<div class="slotc${n?"":" locked"}" data-id="${p.id}"><span class="no">#${String(CARD_NO[p.id]).padStart(3,"0")}</span>${cardHTML(p.id,{w:100})}${n>1?`<span class="cnt">×${n}</span>`:""}${n?"":`<span class="q">?</span>`}<div class="an">${esc(short(p.name))}</div></div>`; }).join("")}</div>`;
+    <div class="album">${list.map(p=>{ const n=coll[p.id]||0; return `<div class="slotc${n?"":" locked"}" data-id="${p.id}"><span class="no">#${String(CARD_NO[p.id]).padStart(3,"0")}${(c.evo||{})[p.id]?` <b style="color:#7ee2a0">+${c.evo[p.id]}</b>`:""}</span>${cardHTML(p.id,{w:100,ovr:p.ovr+((c.evo||{})[p.id]||0)})}${n>1?`<span class="cnt">×${n}</span>`:""}${n?"":`<span class="q">?</span>`}<div class="an">${esc(short(p.name))}</div></div>`; }).join("")}</div>`;
   document.querySelectorAll("#cAlbum .chip").forEach(b=>b.onclick=()=>{colFilter=b.dataset.f;renderCollec();});
-  document.querySelectorAll("#cAlbum .slotc").forEach(d=>d.onclick=()=>{ const id=d.dataset.id; if(coll[id]) showCard(id,coll[id]>1?{sell:{label:`Vendre 1 doublon (+${SELL[cardTier(BY_ID[id])]} 🪙)`,fn:()=>{ coll[id]--; addCoins(SELL[cardTier(BY_ID[id])],"doublon vendu"); renderCollec(); }}}:null); else toast(`${BY_ID[id].name} : pas encore dans ta collection`); });
+  document.querySelectorAll("#cAlbum .slotc").forEach(d=>d.onclick=()=>{ const id=d.dataset.id; if(!coll[id]){ toast(`${BY_ID[id].name} : pas encore dans ta collection`); return; }
+    const act={}; const lv=(c.evo||{})[id]||0;
+    if(coll[id]>1) act.sell={label:`Vendre 1 doublon (+${SELL[cardTier(BY_ID[id])]} 🪙)`,fn:()=>{ coll[id]--; addCoins(SELL[cardTier(BY_ID[id])],"doublon vendu"); renderCollec(); }};
+    if(lv<3) act.evo={label:coll[id]>=3?`⬆️ Faire évoluer +${lv+1} (2 doublons)`:`⬆️ Évolution +${lv+1} : il faut 2 doublons`,fn:()=>evolve(id),dis:coll[id]<3};
+    showCard(id,act,lv); });
+  // ensembles de l'album
+  c.albumDone=c.albumDone||[];
+  $("#cAlbum").insertAdjacentHTML("afterbegin",`<h3>🏅 Récompenses d'album</h3><div class="sets">${SETS.map(st=>{ const g=setProg(st); const done=c.albumDone.includes(st.id);
+    return `<div class="obj${done?" done":""}"><div class="oinfo"><b>${st.t}</b><small>${rTxt(st.r)}</small><div class="track" style="height:6px;margin-top:4px"><i style="width:${g.have/g.tot*100}%"></i></div></div><div class="oact">${done?"✅":g.have>=g.tot?`<button class="btn sm" data-set="${st.id}">Récupérer</button>`:`${g.have}/${g.tot}`}</div></div>`; }).join("")}</div>
+    ${(c.heroes||[]).length?`<h3 style="margin-top:14px">⭐ Héros du match <small>${c.heroes.length}</small></h3><div class="album">${c.heroes.slice().reverse().map(h=>`<div class="slotc" data-hero="${h.pid}"><span class="no">${new Date(h.at).toLocaleDateString("fr-FR",{day:"numeric",month:"short"})} · ${h.note}/10</span>${cardHTML(h.pid,{w:100,ovr:heroOvr(h),cls:"hero"})}</div>`).join("")}</div>`:""}
+    <h3 style="margin-top:14px">📖 Toutes les cartes</h3>`);
+  document.querySelectorAll("[data-set]").forEach(b=>b.onclick=()=>claimSet(b.dataset.set));
+  document.querySelectorAll("[data-hero]").forEach(b=>b.onclick=()=>showCard(b.dataset.hero,null));
+  // défis
+  c.sbcDone=c.sbcDone||{};
+  $("#cSbc").innerHTML=`<h3>🧩 Défis d'équipes <small>avec tes doublons</small></h3>${SBCS.map(x=>{ const done=!x.rep&&c.sbcDone[x.id]; const ok=!done&&sbcPick(x);
+    return `<div class="obj${done?" done":""}"><div class="oinfo"><b>${x.t}${x.rep?' <span class="mute" style="font-weight:400;font-size:11px">répétable</span>':""}</b><small>${x.req.map(g=>g.l).join(" ")} → ${rTxt(x.r)}</small></div><div class="oact">${done?"✅":`<button class="btn sm" data-sbc="${x.id}" ${ok?"":"disabled"}>${ok?"Compléter":"Manque"}</button>`}</div></div>`; }).join("")}`;
+  document.querySelectorAll("[data-sbc]").forEach(b=>b.onclick=()=>doSbc(b.dataset.sbc));
+  renderAuctions();
 }
 setInterval(()=>{ if(me) claimRewards(); },5000);
 // ---------- Échanges de cartes ----------
@@ -1698,7 +1776,7 @@ async function acceptTrade(id){
   catch(e){ toast(e.message||"Raté, réessaie",true); return; }
   { const c=W(); for(const [pid,n] of Object.entries(t.want)) c.coll[pid]-=n;
   for(const [pid,n] of Object.entries(t.give)) c.coll[pid]=(c.coll[pid]||0)+n; }
-  save(); toast("Échange accepté ✓ les cartes sont dans ta collection"); renderCollec();
+  track("deal"); save(); toast("Échange accepté ✓ les cartes sont dans ta collection"); renderCollec();
 }
 function openTradeUI(to,pre){
   const others_=others(); if(!others_.length){ toast("Personne d'autre n'a de compte pour l'instant",true); return; }
@@ -1742,7 +1820,7 @@ function onMarket(all){
   market=all; const c=W(); let changed=false;
   for(const [id,l] of Object.entries(market)){
     if(l.seller!==me||l.settled) continue;
-    if(l.status==="sold"){ const gain=Math.round(l.price*(1-TAX)); c.coins=(c.coins||0)+gain; changed=true; toast(`🏪 ${NAMES[l.buyer]||"?"} a acheté ${BY_ID[l.pid]?.name} : +${gain} 🪙`); }
+    if(l.status==="sold"){ const gain=Math.round(l.price*(1-TAX)); c.coins=(c.coins||0)+gain; changed=true; track("deal"); toast(`🏪 ${NAMES[l.buyer]||"?"} a acheté ${BY_ID[l.pid]?.name} : +${gain} 🪙`); }
     else if(l.status==="cancelled"){ c.coll[l.pid]=(c.coll[l.pid]||0)+1; changed=true; }
     else continue;
     db.collection("onzeol_market").doc(id).update({settled:true}).catch(()=>{});
@@ -1816,6 +1894,252 @@ async function buyListing(id){
   { const c=W(); c.coins-=l.price; c.coll[l.pid]=(c.coll[l.pid]||0)+1; } save(); renderCoins();
   toast(`${BY_ID[l.pid].name} ajouté à ta collection ✓`); renderCollec();
 }
+// =================== EXTRAS : objectifs, défis, album, évolution, enchères, ligue ===================
+const DAYK=()=>new Date().toLocaleDateString("fr-CA");
+const WEEKN=(t)=>Math.floor(((t||Date.now())/86400000+3)/7); // semaines commençant le lundi
+const AFRICA=new Set("ML CM GN CI BF SN GH NG GW AO ZW DZ MG".split(" "));
+const isDef=p=>["DC","DD","DG"].includes(p.pos[0]);
+
+// ---------- Récompenses génériques ----------
+function grant(r,why){
+  const c=W(); const parts=[];
+  if(r.coins){ c.coins=(c.coins||0)+r.coins; parts.push(`+${r.coins} 🪙`); }
+  if(r.pack){ const n=r.n||1; c.freePacks=c.freePacks||{}; c.freePacks[r.pack]=(c.freePacks[r.pack]||0)+n; parts.push(`${n>1?n+"× ":""}${PACKS[r.pack].name} offert`); }
+  let ids=null;
+  if(r.card){ const id=drawCard("legende",r.card); ids=[id]; c.coll[id]=(c.coll[id]||0)+1; parts.push(`carte ${TIER_NAME[r.card]}`); }
+  save(); renderCoins(); toast(`🎁 ${why} : ${parts.join(" · ")}`);
+  if(ids) setTimeout(()=>packFx("reward",ids,[c.coll[ids[0]]===1]),400);
+}
+const rTxt=r=>[r.coins?`${r.coins} 🪙`:"",r.pack?`${r.n>1?r.n+"× ":""}${PACKS[r.pack].name}`:"",r.card?`1 carte ${TIER_NAME[r.card]} garantie`:""].filter(Boolean).join(" + ");
+
+// ---------- Objectifs ----------
+const DAILY=[{k:"play",t:"Joue 2 matchs",n:2,r:{coins:80}},{k:"win",t:"Gagne 1 match",n:1,r:{coins:100}},{k:"goals",t:"Marque 3 buts",n:3,r:{coins:60}},{k:"pack",t:"Ouvre 1 pack",n:1,r:{coins:40}}];
+const WEEKLY=[{k:"win",t:"Gagne 7 matchs",n:7,r:{pack:"or"}},{k:"goals",t:"Marque 20 buts",n:20,r:{coins:400}},{k:"pack",t:"Ouvre 7 packs",n:7,r:{coins:300}},{k:"deal",t:"Fais 2 échanges, ventes ou enchères",n:2,r:{coins:300}},{k:"sbc",t:"Termine 1 défi d'équipe",n:1,r:{pack:"bronze"}}];
+function objState(){
+  const c=W(); c.obj=c.obj||{};
+  if(!c.obj.day||c.obj.day.d!==DAYK()) c.obj.day={d:DAYK(),p:{},done:[]};
+  if(!c.obj.week||c.obj.week.w!==WEEKN()) c.obj.week={w:WEEKN(),p:{},done:[]};
+  return c.obj;
+}
+function track(k,n=1){ if(!me) return; const o=objState(); for(const s of [o.day,o.week]) s.p[k]=(s.p[k]||0)+n; save(); badgeLigue(); }
+function objClaimable(){ const o=objState(); return DAILY.filter(x=>(o.day.p[x.k]||0)>=x.n&&!o.day.done.includes(x.k)).length+WEEKLY.filter(x=>(o.week.p[x.k]||0)>=x.n&&!o.week.done.includes(x.k)).length; }
+function claimObj(scope,k){ const o=objState(); const s=o[scope]; const L=scope==="day"?DAILY:WEEKLY; const x=L.find(y=>y.k===k); if(!x||s.done.includes(k)||(s.p[k]||0)<x.n) return; s.done.push(k); grant(x.r,`Objectif « ${x.t} »`); renderLigue(); }
+
+// ---------- Série de connexions ----------
+function loginStreak(){
+  const c=W(); const t=DAYK(); c.streak=c.streak||{last:null,n:0};
+  if(c.streak.last===t) return;
+  const y=new Date(Date.now()-86400000).toLocaleDateString("fr-CA");
+  c.streak.n= c.streak.last===y ? c.streak.n+1 : 1; c.streak.last=t;
+  const n=c.streak.n;
+  if(n%7===0){ grant({pack:"or"},`Série de ${n} jours 🔥`); post(`🔥 ${NAMES[me]} enchaîne ${n} jours de connexion !`); }
+  else grant({coins:n%7===3?150:30},`Série de connexion jour ${n} 🔥`);
+}
+
+// ---------- Événement de la semaine ----------
+const EVENTS=[
+  {k:"bresil",name:"Semaine Samba 🇧🇷",desc:"Packs remplis de Brésiliens",f:p=>NAT[p.id]==="BR"},
+  {k:"septuple",name:"Semaine du Septuplé 🏆",desc:"Les champions de France 2002-2008",f:p=>olTitles(p).l1>0},
+  {k:"jeunes",name:"Semaine Génération 2020's 🌱",desc:"Les joueurs arrivés depuis 2020",f:p=>p.year>=2020},
+  {k:"afrique",name:"Semaine Lions d'Afrique 🌍",desc:"Les joueurs des sélections africaines",f:p=>AFRICA.has(NAT[p.id])},
+  {k:"buteurs",name:"Semaine des Buteurs ⚽",desc:"Avant-centres et ailiers",f:p=>["BU","AG","AD"].includes(p.pos[0])},
+  {k:"murs",name:"Semaine des Murs 🧱",desc:"Gardiens et défenseurs",f:p=>["GB","DC","DD","DG"].includes(p.pos[0])},
+];
+const curEvent=()=>EVENTS[WEEKN()%EVENTS.length];
+PACKS.event={name:"Pack Événement",price:600,n:3,w:{bronze:40,silver:38,gold:17,icon:4.5,myth:.5},guarantee:"silver",color:"#ff9a6a"};
+PACKS.reward={name:"Récompense",price:0,n:1,w:{bronze:1},color:"#7ee2a0"};
+function drawFrom(filter,w,force){
+  let tier=force||wpick(Object.keys(w),k=>w[k]); const order=["myth","icon","gold","silver","bronze"];
+  for(let i=order.indexOf(tier);i<order.length;i++){ const arr=POOL[order[i]].filter(id=>filter(BY_ID[id])); if(arr.length) return arr[Math.floor(Math.random()*arr.length)]; }
+  return POOL.bronze[0];
+}
+
+// ---------- Défis d'équipes (SBC) ----------
+const SBCS=[
+  {id:"recyc",t:"Recyclage",req:[{n:5,f:p=>cardTier(p)==="bronze",l:"5 Communes"}],r:{card:"silver"},rep:true},
+  {id:"montee",t:"Montée en gamme",req:[{n:4,f:p=>cardTier(p)==="silver",l:"4 Rares"}],r:{card:"gold"},rep:true},
+  {id:"elite",t:"Élite",req:[{n:4,f:p=>cardTier(p)==="gold",l:"4 Épiques"}],r:{card:"icon"},rep:true},
+  {id:"aulas",t:"L'ère Aulas",req:[{n:4,f:p=>p.year>=2000&&p.year<=2008,l:"4 joueurs arrivés entre 2000 et 2008"}],r:{pack:"or"}},
+  {id:"bresil",t:"Samba lyonnaise",req:[{n:3,f:p=>NAT[p.id]==="BR",l:"3 Brésiliens"}],r:{coins:600}},
+  {id:"jeunes",t:"Génération actuelle",req:[{n:3,f:p=>CURRENT.has(p.id),l:"3 joueurs de l'effectif actuel"}],r:{pack:"bronze",n:2}},
+  {id:"afrique",t:"Lions d'Afrique",req:[{n:3,f:p=>AFRICA.has(NAT[p.id]),l:"3 joueurs de sélections africaines"}],r:{coins:500}},
+  {id:"mur",t:"Le mur lyonnais",req:[{n:3,f:p=>isDef(p),l:"3 défenseurs"},{n:1,f:p=>isDef(p)&&["gold","icon","myth"].includes(cardTier(p)),l:"+ 1 défenseur Épique ou mieux"}],r:{pack:"or"}},
+  {id:"banc",t:"Le banc",req:[{n:2,f:p=>p.pos[0]==="COACH",l:"2 entraîneurs"}],r:{coins:400}},
+  {id:"septuple",t:"Légende du septuplé",req:[{n:1,f:p=>cardTier(p)==="icon",l:"1 Légendaire"},{n:2,f:p=>cardTier(p)==="gold",l:"+ 2 Épiques"}],r:{pack:"legende"}},
+];
+function sbcPick(s){
+  // choisit les doublons les moins précieux qui remplissent chaque groupe
+  const avail=Object.fromEntries(dupesOf(me).map(x=>[x.id,x.n])); const chosen={};
+  for(const g of s.req){ const cand=Object.keys(avail).filter(id=>avail[id]>0&&g.f(BY_ID[id])).sort((a,b)=>TPTS[cardTier(BY_ID[a])]-TPTS[cardTier(BY_ID[b])]||BY_ID[a].ovr-BY_ID[b].ovr);
+    let need=g.n; for(const id of cand){ while(need>0&&avail[id]>0){ avail[id]--; chosen[id]=(chosen[id]||0)+1; need--; } if(!need) break; }
+    if(need>0) return null; }
+  return chosen;
+}
+function doSbc(id){
+  const s=SBCS.find(x=>x.id===id); const pick=sbcPick(s); if(!pick){ toast("Tu n'as pas assez de doublons pour ce défi",true); return; }
+  openModal(`Défi « ${s.t} » : tu donnes ${listTxt(pick)}`,null,[["Valider le défi",()=>{ const c=W(); for(const [pid,n] of Object.entries(pick)) c.coll[pid]-=n;
+    c.sbcDone=c.sbcDone||{}; c.sbcDone[id]=(c.sbcDone[id]||0)+1; track("sbc"); grant(s.r,`Défi « ${s.t} » réussi`); post(`🧩 ${NAMES[me]} a réussi le défi « ${s.t} »`); renderLigue(); renderCollec(); }],["Annuler",null,true]]);
+}
+
+// ---------- Récompenses d'album ----------
+const SETS=[
+  {id:"bronze",t:"Toutes les Communes",f:p=>cardTier(p)==="bronze",r:{coins:500}},
+  {id:"silver",t:"Toutes les Rares",f:p=>cardTier(p)==="silver",r:{coins:800}},
+  {id:"gold",t:"Toutes les Épiques",f:p=>cardTier(p)==="gold",r:{pack:"or",n:2}},
+  {id:"icon",t:"Toutes les Légendaires",f:p=>cardTier(p)==="icon",r:{pack:"legende",n:2}},
+  {id:"myth",t:"Toutes les Mythiques",f:p=>cardTier(p)==="myth",r:{coins:5000}},
+  {id:"coach",t:"Tous les entraîneurs",f:p=>p.pos[0]==="COACH",r:{coins:600}},
+  {id:"bresil",t:"Les Brésiliens",f:p=>NAT[p.id]==="BR",r:{pack:"or"}},
+  {id:"septuple",t:"Les champions du septuplé",f:p=>p.pos[0]!=="COACH"&&olTitles(p).l1>0,r:{pack:"legende"}},
+  {id:"actuel",t:"L'effectif actuel",f:p=>CURRENT.has(p.id)&&p.pos[0]!=="COACH",r:{pack:"or"}},
+  {id:"all",t:"L'album complet (205 cartes)",f:p=>true,r:{coins:10000,pack:"legende",n:3}},
+];
+function setProg(s){ const coll=W().coll||{}; const L=ALL_CARDS.filter(s.f); return {have:L.filter(p=>coll[p.id]).length,tot:L.length}; }
+function claimSet(id){ const s=SETS.find(x=>x.id===id); const g=setProg(s); const c=W(); c.albumDone=c.albumDone||[]; if(g.have<g.tot||c.albumDone.includes(id)) return;
+  c.albumDone.push(id); grant(s.r,`Album « ${s.t} » complété`); post(`📖 ${NAMES[me]} a complété « ${s.t} » !`); renderCollec(); }
+
+// ---------- Évolution des cartes ----------
+const evoOf=(w,pid)=>((C(w).evo||{})[pid]||0);
+function evolve(pid){ const c=W(); c.evo=c.evo||{}; const lv=c.evo[pid]||0; if(lv>=3){ toast("Déjà au niveau max (+3)",true); return; }
+  if((c.coll[pid]||0)<3){ toast("Il faut 2 doublons de cette carte",true); return; }
+  c.coll[pid]-=2; c.evo[pid]=lv+1; save(); toast(`⬆️ ${BY_ID[pid].name} passe à +${lv+1} (note ${BY_ID[pid].ovr+lv+1})`);
+  if(lv+1===3) post(`⬆️ ${NAMES[me]} a monté ${BY_ID[pid].name} au niveau max (+3) !`); renderCollec(); }
+
+// ---------- Prix du marché ----------
+let auctions={};
+function priceStats(pid){
+  const S=[...Object.values(market).filter(l=>l.pid===pid&&l.status==="sold").map(l=>({p:l.price,t:l.soldAt||l.at})),
+           ...Object.values(auctions).filter(a=>a.pid===pid&&a.bidder&&Date.now()>a.ends).map(a=>({p:a.bid,t:a.ends}))].sort((a,b)=>a.t-b.t);
+  if(!S.length) return null; const avg=Math.round(S.reduce((s,x)=>s+x.p,0)/S.length); const last=S[S.length-1].p;
+  const prev=S.length>1?S.slice(0,-1).reduce((s,x)=>s+x.p,0)/(S.length-1):last;
+  return {avg,last,n:S.length,trend:last>prev*1.05?"↑":last<prev*.95?"↓":"→"};
+}
+
+// ---------- Enchères (doublons uniquement) ----------
+const ABUMP=a=>Math.max(a.start,a.bid?Math.ceil(a.bid*1.05)+1:a.start);
+function onAuctions(all){ auctions=all; settleAuctions(); if(mode==="collec"&&!$("#packfx").classList.contains("open")) renderAuctions(); }
+function settleAuctions(){
+  if(!me||!db) return; const c=W(); let ch=false; c.bidsHeld=c.bidsHeld||{};
+  for(const [id,amt] of Object.entries(c.bidsHeld)){ const a=auctions[id]; if(!a) continue;
+    if(a.bidder!==me){ c.coins+=amt; delete c.bidsHeld[id]; ch=true; toast(`🔨 Surenchère sur ${BY_ID[a.pid]?.name} : tes ${amt} 🪙 te sont rendues`); }
+    else if(Date.now()>a.ends){ c.coll[a.pid]=(c.coll[a.pid]||0)+1; delete c.bidsHeld[id]; ch=true; track("deal"); toast(`🔨 Enchère gagnée : ${BY_ID[a.pid]?.name} !`);
+      db.collection("onzeol_auctions").doc(id).update({settledBuyer:true}).catch(()=>{}); } }
+  for(const [id,a] of Object.entries(auctions)){ if(a.seller!==me||a.settledSeller||Date.now()<=a.ends) continue;
+    if(a.bidder){ const g=Math.round(a.bid*(1-TAX)); c.coins+=g; track("deal"); toast(`🔨 ${BY_ID[a.pid]?.name} vendu aux enchères à ${NAMES[a.bidder]||"?"} : +${g} 🪙`); if(BY_ID[a.pid]&&["icon","myth"].includes(cardTier(BY_ID[a.pid]))) post(`🔨 ${BY_ID[a.pid].name} adjugé ${a.bid} 🪙 à ${NAMES[a.bidder]||"?"} !`); }
+    else c.coll[a.pid]=(c.coll[a.pid]||0)+1;
+    ch=true; db.collection("onzeol_auctions").doc(id).update({settledSeller:true}).catch(()=>{}); }
+  if(ch){ save(); renderCoins(); }
+}
+const fmtLeft=ms=>{ if(ms<=0) return "terminée"; const s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor(s%3600/60); return h?`${h} h ${m} min`:m?`${m} min ${s%60}s`:`${s}s`; };
+function renderAuctions(){
+  const el=$("#cAuct"); if(!el||!me) return; const c=W(); const now=Date.now();
+  const open=Object.entries(auctions).filter(([i,a])=>a.ends>now&&BY_ID[a.pid]).sort((x,y)=>x[1].ends-y[1].ends);
+  const done=Object.entries(auctions).filter(([i,a])=>a.ends<=now&&(a.seller===me||a.bidder===me)).sort((x,y)=>y[1].ends-x[1].ends).slice(0,4);
+  const row=(id,a)=>{ const p=BY_ID[a.pid], t=cardTier(p), mineS=a.seller===me, top=a.bidder===me, nb=ABUMP(a);
+    return `<div class="mk"><span class="tmini">${cardHTML(a.pid,{w:40,mini:true})}</span><span class="tname">${esc(p.name)}<small><span class="rar r-${t}">${TIER_NAME[t]}</span> ${mineS?"ta vente":"par "+esc(NAMES[a.seller]||"?")} · ⏱ <span data-left="${a.ends}">${fmtLeft(a.ends-now)}</span>${a.bidder?` · meilleure : ${esc(NAMES[a.bidder]||"?")}`:" · aucune offre"}</small></span>
+      <span class="mkp">🪙 ${a.bid||a.start}</span>${mineS?(a.bids?"":`<button class="btn sm ghost" data-acan="${id}">Annuler</button>`):top?`<span class="mute" style="font-size:11px">tu mènes</span>`:`<button class="btn sm" data-abid="${id}" ${(c.coins||0)<nb?"disabled":""}>${nb}</button>`}</div>`; };
+  el.innerHTML=`<h3>🔨 Enchères <small>doublons uniquement</small></h3>
+    <button class="btn big" id="aNew" style="margin-top:0">Mettre un doublon aux enchères</button>
+    <div class="rules" style="font-size:12px">Chaque offre doit dépasser la précédente d'au moins 5 %. Tes pièces sont bloquées tant que tu mènes, et rendues si quelqu'un surenchérit. Une offre dans la dernière minute prolonge l'enchère d'1 minute. Taxe de ${TAX*100} % pour le vendeur.</div>
+    ${open.length?open.map(([id,a])=>row(id,a)).join(""):`<div class="mute" style="font-size:13px">Aucune enchère en cours.</div>`}
+    ${done.length?`<h4>Terminées</h4>`+done.map(([id,a])=>`<div class="mute" style="font-size:12px;padding:3px 0">${a.bidder?`🔨 ${esc(BY_ID[a.pid]?.name)} adjugé ${a.bid} 🪙 à ${esc(NAMES[a.bidder]||"?")}`:`↩️ ${esc(BY_ID[a.pid]?.name)} : aucune offre, carte rendue`}</div>`).join(""):""}`;
+  $("#aNew").onclick=openAuctionUI;
+  el.querySelectorAll("[data-abid]").forEach(b=>b.onclick=()=>{ const a=auctions[b.dataset.abid]; const nb=ABUMP(a);
+    openModal(`Ton offre pour ${BY_ID[a.pid].name} (minimum ${nb} 🪙)`,String(nb),[["Enchérir",v=>{ const x=Math.round(+v); if(!(x>=nb)){ toast(`Minimum ${nb} 🪙`,true); return false; } placeBid(b.dataset.abid,x); }],["Annuler",null,true]]);
+    $("#mInput").type="number"; $("#mInput").inputMode="numeric"; });
+  el.querySelectorAll("[data-acan]").forEach(b=>b.onclick=async()=>{ try{ await db.collection("onzeol_auctions").doc(b.dataset.acan).update({ends:Date.now()-1}); toast("Enchère annulée, carte rendue"); }catch(e){ toast("Raté",true); } });
+}
+setInterval(()=>{ document.querySelectorAll("[data-left]").forEach(s=>s.textContent=fmtLeft(+s.dataset.left-Date.now())); },1000);
+setInterval(()=>{ if(me) settleAuctions(); },4000);
+function openAuctionUI(){
+  const L=dupesOf(me); if(!L.length){ toast("Tu n'as aucun doublon",true); return; }
+  const T=$("#tradeUI"); T.classList.add("open");
+  T.innerHTML=`<div class="tui-box"><div class="tui-head"><b>Mettre aux enchères</b><button class="btn sm ghost" id="tClose">Fermer</button></div>
+    <div class="tlist">${L.map(x=>{ const p=BY_ID[x.id], t=cardTier(p); return `<div class="tline" data-pick="${x.id}"><span class="tmini">${cardHTML(x.id,{w:34,mini:true})}</span><span class="tname">${esc(p.name)}<small><span class="rar r-${t}">${TIER_NAME[t]}</span> ${x.n} dispo · conseillé ${suggestPrice(x.id)} 🪙</small></span><button class="btn sm">Choisir</button></div>`; }).join("")}</div></div>`;
+  $("#tClose").onclick=()=>T.classList.remove("open");
+  T.querySelectorAll("[data-pick]").forEach(r=>r.onclick=()=>{ const id=r.dataset.pick, t=cardTier(BY_ID[id]); T.classList.remove("open");
+    const start=Math.max(SELL[t],Math.round(suggestPrice(id)*.6/5)*5);
+    const go=h=>v=>{ const s0=Math.round(+v); if(!(s0>=SELL[t])){ toast(`Prix de départ minimum ${SELL[t]} 🪙`,true); return false; } createAuction(id,s0,h); };
+    openModal(`Prix de départ pour ${BY_ID[id].name}, puis durée`,String(start),[["Durée 1 h",go(1)],["Durée 6 h",go(6)],["Durée 24 h",go(24)],["Annuler",null,true]]);
+    $("#mInput").type="number"; $("#mInput").inputMode="numeric"; });
+}
+async function createAuction(pid,start,h){
+  if((W().coll[pid]||0)<2){ toast("Plus de doublon",true); return; }
+  const id=Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+  try{ await db.collection("onzeol_auctions").doc(id).set({seller:me,pid,start,bid:0,bidder:null,bids:0,at:Date.now(),ends:Date.now()+h*3600000,settledSeller:false,settledBuyer:false}); }
+  catch(e){ toast("Impossible (règles Firebase à jour ?)",true); return; }
+  W().coll[pid]--; save(); toast(`🔨 ${BY_ID[pid].name} aux enchères pour ${h} h`); if(["icon","myth"].includes(cardTier(BY_ID[pid]))) post(`🔨 ${NAMES[me]} met ${BY_ID[pid].name} aux enchères !`); renderCollec();
+}
+async function placeBid(id,amount){
+  if((W().coins||0)<amount){ toast("Pas assez de pièces",true); return; }
+  const ref=db.collection("onzeol_auctions").doc(id);
+  try{ await firebase.firestore().runTransaction(async tx=>{ const s=await tx.get(ref); const a=s.data(); const now=Date.now();
+    if(!a||now>a.ends) throw new Error("Enchère terminée"); if(a.seller===me) throw new Error("C'est ta vente");
+    if(amount<ABUMP(a)) throw new Error(`Offre trop basse (minimum ${ABUMP(a)} 🪙)`);
+    tx.update(ref,{bid:amount,bidder:me,bids:(a.bids||0)+1,ends:a.ends-now<60000?now+60000:a.ends}); }); }
+  catch(e){ toast(e.message||"Raté",true); return; }
+  const c=W(); c.bidsHeld=c.bidsHeld||{}; if(c.bidsHeld[id]) c.coins+=c.bidsHeld[id]; c.coins-=amount; c.bidsHeld[id]=amount; save(); renderCoins(); toast(`Offre de ${amount} 🪙 placée ✓`);
+}
+
+// ---------- Fil d'actu ----------
+let feed=[];
+function post(text){ if(!db||!me) return; db.collection("onzeol_feed").doc(Date.now().toString(36)+Math.random().toString(36).slice(2,5)).set({who:me,text,at:Date.now()}).catch(()=>{}); }
+
+// ---------- Championnat de la semaine ----------
+function standings(wk){
+  const T={};
+  for(const h of matches){ if(!h.owners||h.owners[0]===h.owners[1]||WEEKN(h.at)!==wk) continue; const [x,y]=h.owners; const [a,b]=h.score;
+    for(const [id,gf,ga] of [[x,a,b],[y,b,a]]){ const r=T[id]||(T[id]={id,j:0,v:0,n:0,d:0,bp:0,bc:0}); r.j++; r.bp+=gf; r.bc+=ga; if(gf>ga) r.v++; else if(gf<ga) r.d++; else r.n++; } }
+  return Object.values(T).sort((p,q)=>(q.v*3+q.n)-(p.v*3+p.n)||(q.bp-q.bc)-(p.bp-p.bc)||q.bp-p.bp);
+}
+const LEAGUE_R=[{pack:"legende"},{pack:"or"},{pack:"bronze"}];
+function claimLeague(){
+  const c=W(); const last=WEEKN()-1; if(c.leagueW===last) return;
+  const S=standings(last); c.leagueW=last; const i=S.findIndex(r=>r.id===me);
+  if(S.length>=2&&i>=0&&i<3){ grant(LEAGUE_R[i],`Championnat de la semaine : ${i+1}${i?"e":"er"}`); if(i===0) post(`🏆 ${NAMES[me]} remporte le championnat de la semaine !`); }
+  else save();
+}
+
+// ---------- Héros du match ----------
+function heroOvr(h){ return Math.min(99,BY_ID[h.pid].ovr+Math.max(1,Math.round((h.note-6)*1.5))); }
+
+// ---------- Onglet Ligue ----------
+function badgeLigue(){ const b=$("#mLigue"); if(b&&me) b.dataset.badge=objClaimable()||""; }
+function renderLigue(){
+  if(!me) return; const o=objState(); const c=W(); const ev=curEvent(); const wk=WEEKN();
+  const objRow=(scope,x)=>{ const s=o[scope], v=Math.min(x.n,s.p[x.k]||0), done=s.done.includes(x.k), ok=v>=x.n;
+    return `<div class="obj${done?" done":""}"><div class="oinfo"><b>${x.t}</b><small>${rTxt(x.r)}</small><div class="track" style="height:6px;margin-top:4px"><i style="width:${v/x.n*100}%"></i></div></div><div class="oact">${done?"✅":ok?`<button class="btn sm" data-oc="${scope}:${x.k}">Récupérer</button>`:`${v}/${x.n}`}</div></div>`; };
+  const S=standings(wk), SL=standings(wk-1);
+  const endIn=((wk+1)*7-3)*86400000-Date.now();
+  $("#lObj").innerHTML=`<h3>🎯 Objectifs <small>🔥 série : ${c.streak?.n||1} jour${(c.streak?.n||1)>1?"s":""}</small></h3>
+    <h4>Aujourd'hui</h4>${DAILY.map(x=>objRow("day",x)).join("")}
+    <h4>Cette semaine</h4>${WEEKLY.map(x=>objRow("week",x)).join("")}
+    <div class="rules" style="font-size:12px">Connecte-toi chaque jour : petits bonus, et un <b>Pack Épique offert tous les 7 jours</b> d'affilée.</div>`;
+  $("#lObj").querySelectorAll("[data-oc]").forEach(b=>b.onclick=()=>{ const [s,k]=b.dataset.oc.split(":"); claimObj(s,k); });
+  $("#lEvent").innerHTML=`<div class="evban"><b>${ev.name}</b><span>${ev.desc}</span><small>Pack Événement : 600 🪙 · 3 cartes du thème · 1 Rare min. — dans la Boutique</small></div>`;
+  $("#lLeague").innerHTML=`<h3>🏆 Championnat de la semaine <small>fin dans ${fmtLeft(endIn)}</small></h3>
+    <div class="rules" style="font-size:12px;margin-top:0">Tous les matchs de la semaine entre joueurs comptent. Récompenses lundi : 1er Pack Légende, 2e Pack Épique, 3e Pack Classique.</div>
+    ${S.length?`<div class="rk head"><span>#</span><span>Joueur</span><span>J</span><span>V</span><span>D</span><span>Pts</span></div>`+S.map((r,i)=>`<div class="rk${r.id===me?" me":""}"><span>${["🥇","🥈","🥉"][i]||i+1}</span><span>${esc(NAMES[r.id]||"?")}</span><span>${r.j}</span><span>${r.v}</span><span>${r.d}</span><b>${r.v*3+r.n}</b></div>`).join(""):`<div class="mute" style="font-size:13px">Aucun match cette semaine.</div>`}
+    ${SL.length?`<div class="mute" style="font-size:12px;margin-top:8px">Semaine dernière : ${SL.slice(0,3).map((r,i)=>`${["🥇","🥈","🥉"][i]} ${esc(NAMES[r.id]||"?")}`).join(" · ")}</div>`:""}`;
+  $("#lFeed").innerHTML=`<h3>📰 Fil d'actu</h3>${feed.length?feed.slice(0,25).map(f=>`<div class="fd"><span>${esc(f.text)}</span><small>${new Date(f.at).toLocaleDateString("fr-FR",{day:"numeric",month:"short"})} ${new Date(f.at).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})}</small></div>`).join(""):`<div class="mute" style="font-size:13px">Rien pour l'instant.</div>`}`;
+  $("#lPlayers").innerHTML=`<h3>👥 Joueurs</h3><div class="plrs">${Object.keys(NAMES).map(id=>`<button class="plr${id===me?" me":""}" data-prof="${id}"><b>${esc(NAMES[id])}</b><small>${ALL_CARDS.filter(p=>(C(id).coll||{})[p.id]).length}/205</small></button>`).join("")}</div>`;
+  $("#lPlayers").querySelectorAll("[data-prof]").forEach(b=>b.onclick=()=>showProfile(b.dataset.prof));
+  badgeLigue();
+}
+function showProfile(id){
+  const c=C(id); const coll=c.coll||{}; const own=ALL_CARDS.filter(p=>coll[p.id]);
+  const rk={bronze:0,silver:1,gold:2,icon:3,myth:4};
+  const best=own.slice().sort((a,b)=>rk[cardTier(b)]-rk[cardTier(a)]||(b.ovr+evoOf(id,b.id))-(a.ovr+evoOf(id,a.id)))[0];
+  let v=0,n=0,d=0; for(const h of matches){ if(!h.owners) continue; const i=h.owners.indexOf(id); if(i<0||h.owners[0]===h.owners[1]) continue; const a=h.score[i],b=h.score[1-i]; if(a>b)v++; else if(a<b)d++; else n++; }
+  const cnt=t=>own.filter(p=>cardTier(p)===t).length;
+  const M=$("#cardModal");
+  M.innerHTML=`<div class="cm-box"><h2 style="margin:0 0 10px">${esc(NAMES[id]||"?")}</h2>${best?`<div class="cm-card">${cardHTML(best.id,{w:170,ovr:best.ovr+evoOf(id,best.id),cls:"flip-in"})}</div><div class="mute" style="font-size:12px;margin-top:4px">Plus belle carte</div>`:""}
+    <div class="pstats"><div><b>${own.length}/205</b>album</div><div><b>${v}-${n}-${d}</b>V-N-D</div><div><b>${(c.heroes||[]).length}</b>héros</div><div><b>${c.opened||0}</b>packs</div><div><b>${c.goldPacks||0}</b>Gold Packs</div><div><b>🔥 ${c.streak?.n||0}</b>série</div></div>
+    <div class="mute" style="font-size:12px">${cnt("myth")} Mythiques · ${cnt("icon")} Légendaires · ${cnt("gold")} Épiques · ${cnt("silver")} Rares · ${cnt("bronze")} Communes</div>
+    <div class="mbtns"><button class="btn ghost" id="pfClose">Fermer</button></div></div>`;
+  M.classList.add("open"); $("#pfClose").onclick=()=>M.classList.remove("open");
+}
+
 // ---------- Synchro Firebase (comptes) ----------
 let db=null, saveT=null, dirty=false, unsubs=[];
 function setSync(t,cls){ const s=$("#sync"); s.textContent=t; s.className="sync "+(cls||""); }
@@ -1851,7 +2175,9 @@ function startListeners(){
   },()=>setSync("⚠️ Synchro coupée — recharge la page","err")));
   unsubs.push(db.collection("onzeol_drafts").onSnapshot(qs=>{ const all={}; qs.forEach(doc=>all[doc.id]=doc.data()); onDraftData(all); },()=>{}));
   unsubs.push(db.collection("onzeol_trades").onSnapshot(qs=>{ const all={}; qs.forEach(doc=>{ const t=doc.data(); if(t&&(t.from===me||t.to===me)) all[doc.id]=t; }); onTrades(all); },()=>{}));
-  unsubs.push(db.collection("onzeol_market").onSnapshot(qs=>{ const all={}; qs.forEach(doc=>{ const l=doc.data(); if(l&&(l.status==="open"||l.seller===me||l.buyer===me)) all[doc.id]=l; }); onMarket(all); },()=>{}));
+  unsubs.push(db.collection("onzeol_market").onSnapshot(qs=>{ const all={}; qs.forEach(doc=>{ const l=doc.data(); if(l&&(l.status==="open"||l.status==="sold"||l.seller===me||l.buyer===me)) all[doc.id]=l; }); onMarket(all); },()=>{}));
+  unsubs.push(db.collection("onzeol_auctions").onSnapshot(qs=>{ const all={}; const now=Date.now(); qs.forEach(doc=>{ const a=doc.data(); if(a&&(a.ends>now-7*86400000)) all[doc.id]=a; }); onAuctions(all); },()=>{}));
+  unsubs.push(db.collection("onzeol_feed").onSnapshot(qs=>{ const L=[]; qs.forEach(doc=>L.push(doc.data())); feed=L.filter(x=>x&&x.text).sort((a,b)=>b.at-a.at).slice(0,60); if(mode==="ligue") renderLigue(); },()=>{}));
   unsubs.push(db.collection("onzeol_meta").doc("main").onSnapshot(snap=>{ const d=snap.exists?snap.data():{}; onMatchData(d.match,d.matches); },()=>{}));
 }
 try{
@@ -1871,7 +2197,7 @@ try{
       else { NAMES[me]=pendingName||($("#aName").value.trim())||user.email.split("@")[0]; compos[me]=blank(); compos[me].coins=300; await push(); await importLegacy(NAMES[me]); setTimeout(()=>toast("Bienvenue ! 300 🪙 offertes pour ton premier pack"),800); }
     }catch(e){ setSync("⚠️ Accès refusé : règles Firebase à mettre à jour","err"); }
     pendingName=null; $("#aPass").value="";
-    choose(me); startListeners(); setTimeout(()=>{ if(me){ dailyBonus(); claimRewards(); renderCoins(); } },1500);
+    choose(me); startListeners(); setTimeout(()=>{ if(me){ loginStreak(); dailyBonus(); claimRewards(); renderCoins(); badgeLigue(); } },1500);
   });
 }catch(e){ setSync("⚠️ Synchro indisponible","err"); }
 </script>
