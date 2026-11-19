@@ -411,6 +411,7 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
 .mp-slot{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:1px}.mp-slot small{font-size:9px;font-weight:800;background:#0009;padding:0 4px;border-radius:4px;white-space:nowrap}
 .mp-empty{display:inline-flex;width:34px;height:42px;align-items:center;justify-content:center;border:1px dashed #fff6;border-radius:8px;font-size:10px;color:#fffa}
 .xiavg{color:#ffd970}.vsavg{display:flex;align-items:center;justify-content:center;gap:16px;margin:8px 0 2px}.vsavg div{display:flex;flex-direction:column;align-items:center;background:rgba(255,255,255,.06);border-radius:12px;padding:6px 16px;min-width:90px}.vsavg b{font-size:26px}.vsavg small{opacity:.7;font-size:11px}.vsavg span{color:var(--rouge);font-weight:900}
+.dbtns{display:flex;gap:8px;justify-content:center;margin-top:10px}.dbtns .btn{flex:1}
 </style>
 </head>
 <body>
@@ -1102,7 +1103,7 @@ function dPick(kind,i,pid){
     t.set(dref,d);
   }).catch(e=>toast(e.message||"Raté, réessaie",true));
 }
-function dRestart(){ const d=dNorm(draft,me,dOpp); dWrite({"":{...dDefault(me,dOpp),format:d.format,form:d.form}}); }
+function dRestart(){ const ex=drafts[dKey()]; const d=dNorm(ex||draft,me,dOpp); dWrite({"":{...dDefault(me,dOpp),players:d.players,format:d.format,form:d.form}}); }
 let dResetArm=false;
 $("#dReset").onclick=e=>{ if(!dResetArm){dResetArm=true;e.target.textContent="Sûr ? Tout le draft sera effacé (re-touche)";setTimeout(()=>{dResetArm=false;e.target.textContent="Recommencer le draft";},3500);return;} dResetArm=false; e.target.textContent="Recommencer le draft"; dRestart(); };
 $("#dNew").onclick=dRestart; $("#dPlay").onclick=()=>playDraftMatch("classic");
@@ -1123,7 +1124,7 @@ function renderDraft(){
   B.className="dbanner"+(d.status==="running"&&d.turn===me?" me":"");
   if(d.status==="lobby") B.innerHTML=`Préparez le draft<small>Réglez vos systèmes, puis lancez</small>`;
   else if(d.status==="running") B.innerHTML= d.turn===me?`⚡ À toi de choisir !<small>Touche une case vide de ton équipe</small>`:`⏳ ${esc(NAMES[d.turn]||"?")} choisit…<small>Tour ${d.picks.length+1} · tu verras son choix en direct</small>`;
-  else B.innerHTML=`🏁 Draft terminé !<small>Comparez vos deux équipes</small>`;
+  else{ B.innerHTML=`🏁 Draft terminé !<small>Lance le match ou repars sur un nouveau draft</small><div class="dbtns"><button class="btn" id="dPlay2">▶️ Lancer le match</button><button class="btn ghost" id="dNew2">🆕 Nouveau draft</button></div>`; $("#dPlay2").onclick=()=>playDraftMatch("classic"); $("#dNew2").onclick=dRestart; }
   $("#dLobby").style.display=d.status==="lobby"?"":"none";
   $("#dGame").style.display=d.status==="lobby"?"none":"";
   if(d.status==="lobby"){
@@ -2190,7 +2191,7 @@ function renderBudget(){
   el.querySelectorAll("[data-bv]").forEach(b=>b.onclick=()=>renderBudgetKeepView(b.dataset.bv));
   el.querySelectorAll("[data-card]").forEach(b=>b.onclick=()=>showCard(b.dataset.card,null));
   el.querySelectorAll("[data-bs]").forEach(b=>b.onclick=()=>openBudgetSlot(b.dataset.bs));
-  let arm=false; $("#bReset").onclick=e=>{ if(d.status!=="done"&&!arm){arm=true;e.target.textContent="Sûr ? (re-touche)";return;} bWrite({...bNorm(null,me,dOpp),budget:d.budget,formation:d.formation},true); };
+  let arm=false; $("#bReset").onclick=e=>{ if(d.status!=="done"&&!arm){arm=true;e.target.textContent="Sûr ? (re-touche)";return;} bWrite({...bNorm(null,me,dOpp),players:d.players,budget:d.budget,formation:d.formation},true); };
   const pb=$("#bPlay"); if(pb) pb.onclick=()=>playDraftMatch("budget");
 }
 let bViewSel=null;
@@ -2502,7 +2503,7 @@ async function playDraftMatch(kind){
   try{ await db.collection("onzeol_drafthist").doc(m.id).set({players:teams.map(t=>t.w),mode:kind,at:Date.now(),score:m.score,mid:m.id,
     teams:Object.fromEntries(teams.map(t=>[t.w,{formation:t.c.formation,slots:t.c.slots,bench:t.c.bench||{},coach:t.c.coach||null}]))}); }catch(e){}
   // l'équipe de draft est remise à zéro (elle reste dans l'historique)
-  if(kind==="budget"){ const d=bNorm(budgets[bKey()],me,o); bWrite({...bNorm(null,me,o),budget:d.budget,formation:d.formation},true); } else dRestart();
+  if(kind==="budget"){ const d=bNorm(budgets[bKey()],me,o); bWrite({...bNorm(null,me,o),players:d.players,budget:d.budget,formation:d.formation},true); } else dRestart();
   post(`${label} : ${NAMES[teams[0].w]} ${m.score[0]}-${m.score[1]} ${NAMES[teams[1].w]}`); setTimeout(()=>toast("Après le match : nouveau draft contre qui tu veux dans ⚡ Draft"),4000);
   setMode("match"); window.scrollTo(0,0);
 }
@@ -3064,7 +3065,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-19r";
+const APP_V="2026-11-19s";
 let updShown=false;
 async function checkUpdate(){ if(updShown) return; try{ const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const APP_V="([^"]+)"/); if(m&&m[1]!==APP_V){ updShown=true;
