@@ -44,6 +44,20 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
 .save{display:block;width:100%;padding:14px;font-size:16px;margin:4px 0 2px;border-radius:12px}
 .save.done{background:#1f8a4c}
 .saved{text-align:center;font-size:12px;color:var(--mute);margin-bottom:4px}
+.lib .it{display:flex;align-items:center;gap:8px;padding:10px 0;border-top:1px solid #24345f}
+.lib .it:first-child{border-top:0}
+.lib .it .info{flex:1;min-width:0}
+.lib .it .info b{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lib .it .info small{color:var(--mute);font-size:12px}
+.lib .it.cur .info b{color:#7ee2a0}
+.sm{font-size:12.5px;padding:7px 9px;border-radius:9px}
+.modal{position:fixed;inset:0;z-index:40;background:#000b;display:none;align-items:center;justify-content:center;padding:20px}
+.modal.open{display:flex}
+.mbox{background:#101c3d;border:1px solid #2b3c6e;border-radius:16px;padding:16px;width:100%;max-width:380px}
+.mbox h3{margin:0 0 12px;font-size:17px}
+.mbox input{width:100%;background:var(--carte);color:var(--txt);border:1px solid #2b3c6e;border-radius:10px;padding:11px;font-size:16px}
+.mbtns{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.mbtns .btn{padding:12px;font-size:15px}
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#1f8a4c;color:#fff;padding:12px 18px;border-radius:12px;font-weight:700;z-index:30;box-shadow:0 6px 20px #0008;display:none}
 .count{font-size:13px;color:var(--mute);margin:8px 4px}
 .section{margin-top:14px;background:var(--carte);border-radius:14px;padding:12px}
@@ -144,6 +158,7 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
   <div class="count" id="count"></div>
   <button class="btn save" id="saveBtn">💾 Sauvegarder la compo</button>
   <div class="saved" id="savedInfo"></div>
+  <div class="section" id="libSec"><h3>Mes compos enregistrées <small id="libCount"></small></h3><div class="lib" id="lib"></div></div>
   <div class="section"><h3>Remplaçants <small id="benchCount"></small></h3><div class="bench" id="bench"></div></div>
   <div class="section"><h3>Entraîneur</h3><div class="coach" id="coach"></div></div>
   <div class="section" id="compare"></div>
@@ -172,6 +187,7 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
   </div>
 </div>
 <div class="toast" id="toast"></div>
+<div class="modal" id="modal"><div class="mbox"><h3 id="mTitle"></h3><input id="mInput" maxlength="40" autocomplete="off"><div class="mbtns" id="mBtns"></div></div></div>
 <div class="veil" id="veil"></div>
 <div class="sheet" id="sheet">
   <div class="sh-head">
@@ -400,8 +416,8 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"
 const short = n => { const parts=n.split(" "); return parts.length>1 && n.length>13 ? parts.slice(1).join(" ") : n; };
 let me=null, viewing=null, editing=null, chip=null;
 let compos={thib:blank(), val:blank()};
-function blank(){return {formation:"4-3-3",slots:{},bench:{},coach:null,savedAt:null};}
-function norm(c){c=c||{};return {formation:F[c.formation]?c.formation:"4-3-3",slots:c.slots||{},bench:c.bench||{},coach:c.coach||null,savedAt:c.savedAt||null};}
+function blank(){return {formation:"4-3-3",slots:{},bench:{},coach:null,savedAt:null,library:[],loadedId:null};}
+function norm(c){c=c||{};return {formation:F[c.formation]?c.formation:"4-3-3",slots:c.slots||{},bench:c.bench||{},coach:c.coach||null,savedAt:c.savedAt||null,library:Array.isArray(c.library)?c.library:[],loadedId:c.loadedId||null};}
 const other = w => w==="thib"?"val":"thib";
 try{ const l=JSON.parse(localStorage.getItem("onze-ol-cache")||"null"); if(l){compos.thib=norm(l.thib);compos.val=norm(l.val);} }catch(e){}
 
@@ -446,7 +462,10 @@ function render(){
   $("#benchCount").textContent=`${Object.values(c.bench).filter(Boolean).length}/${BENCH_N}`;
   $("#saveBtn").style.display=mine?"block":"none";
   const sv=c.savedAt?new Date(c.savedAt):null;
-  $("#savedInfo").textContent= sv ? (mine?"Dernière sauvegarde":"Sauvegardée")+" le "+sv.toLocaleDateString("fr-FR",{day:"numeric",month:"short"})+" à "+sv.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}) : (mine?"Pas encore sauvegardée":"Pas encore sauvegardée par "+NAMES[viewing]);
+  const curL=c.library.find(x=>x.id===c.loadedId);
+  $("#libSec").style.display=mine?"":"none";
+  if(mine) renderLib();
+  $("#savedInfo").textContent= (curL?`« ${curL.name} » · `:"") + (sv ? (mine?"Dernière sauvegarde":"Sauvegardée")+" le "+sv.toLocaleDateString("fr-FR",{day:"numeric",month:"short"})+" à "+sv.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}) : (mine?"Pas encore sauvegardée":"Pas encore sauvegardée par "+NAMES[viewing]));
   const co=$("#coach"); co.innerHTML=""; co.appendChild(slotBtn("coach",0,"COACH",c.coach,mine));
   renderCompare();
 }
@@ -529,18 +548,60 @@ $("#formation").innerHTML=Object.keys(F).map(f=>`<option>${f}</option>`).join(""
 $("#formation").onchange=e=>{ compos[me].formation=e.target.value; render(); save(); };
 let resetArm=false;
 $("#reset").onclick=e=>{ if(!resetArm){resetArm=true;e.target.textContent="Sûr ? Re-touche";setTimeout(()=>{resetArm=false;e.target.textContent="Tout effacer";},3000);return;}
-  resetArm=false;e.target.textContent="Tout effacer"; compos[me]=blank(); render(); save(); };
+  resetArm=false;e.target.textContent="Tout effacer"; const lib=compos[me].library; compos[me]=blank(); compos[me].library=lib; render(); save(); };
 
 function toast(t,bad){ const el=$("#toast"); el.textContent=t; el.style.background=bad?"#b4432b":"#1f8a4c"; el.style.display="block"; clearTimeout(toast.t); toast.t=setTimeout(()=>el.style.display="none",2500); }
-$("#saveBtn").onclick=async()=>{
+async function saveNow(msg){
   const b=$("#saveBtn"); b.disabled=true; b.textContent="Sauvegarde…";
   compos[me].savedAt=Date.now(); cache(); clearTimeout(saveT); dirty=true;
   const ok=await push();
   b.disabled=false;
-  if(ok){ b.textContent="✓ Compo sauvegardée"; b.classList.add("done"); toast("Compo sauvegardée ✓"); setTimeout(()=>{b.textContent="💾 Sauvegarder la compo";b.classList.remove("done");},2500); }
+  if(ok){ b.textContent="✓ "+msg; b.classList.add("done"); toast(msg+" ✓"); setTimeout(()=>{b.textContent="💾 Sauvegarder la compo";b.classList.remove("done");},2500); }
   else { b.textContent="💾 Sauvegarder la compo"; toast("Pas de connexion : gardée sur ce téléphone, réessaie",true); }
   render();
+}
+function openModal(title,value,buttons){
+  $("#mTitle").textContent=title; const inp=$("#mInput"); inp.style.display=value===null?"none":""; inp.value=value||"";
+  const B=$("#mBtns"); B.innerHTML="";
+  for(const [label,fn,ghost] of buttons){ const x=document.createElement("button"); x.className="btn"+(ghost?" ghost":""); x.textContent=label;
+    x.onclick=()=>{ const v=inp.value.trim(); if(fn&&fn(v)===false) return; $("#modal").classList.remove("open"); }; B.appendChild(x); }
+  $("#modal").classList.add("open"); if(value!==null) setTimeout(()=>inp.focus(),50);
+}
+$("#modal").onclick=e=>{ if(e.target.id==="modal") $("#modal").classList.remove("open"); };
+function snapshotOf(c,id,name){ return {id,name,formation:c.formation,slots:{...c.slots},bench:{...c.bench},coach:c.coach||null,savedAt:Date.now()}; }
+function storeNamed(name,replaceId){
+  if(!name){ toast("Donne un nom à ta compo",true); return false; }
+  const c=compos[me]; const id=replaceId||Date.now().toString(36);
+  const snap=snapshotOf(c,id,name);
+  const i=c.library.findIndex(x=>x.id===id);
+  if(i>=0) c.library[i]=snap; else c.library.unshift(snap);
+  c.loadedId=id; saveNow(i>=0?"Compo mise à jour":"Compo enregistrée");
+}
+$("#saveBtn").onclick=()=>{
+  const c=compos[me]; const cur=c.library.find(x=>x.id===c.loadedId);
+  const def=cur?cur.name:`Compo du ${new Date().toLocaleDateString("fr-FR",{day:"numeric",month:"short"})}`;
+  const btns=[];
+  if(cur) btns.push([`Mettre à jour « ${cur.name} »`,v=>storeNamed(v||cur.name,cur.id)]);
+  btns.push([cur?"Enregistrer comme nouvelle compo":"Enregistrer",v=>{ let n=v; if(n&&compos[me].library.some(x=>x.name===n)){ let k=2; while(compos[me].library.some(x=>x.name===`${v} (${k})`)) k++; n=`${v} (${k})`; } return storeNamed(n,null); }]);
+  btns.push(["Annuler",null,true]);
+  openModal("Nom de la compo",def,btns);
 };
+function renderLib(){
+  const c=compos[me]; const L=$("#lib"); L.innerHTML="";
+  $("#libCount").textContent=c.library.length?String(c.library.length):"";
+  if(!c.library.length){ L.innerHTML=`<div style="font-size:13px;color:var(--mute)">Appuie sur « Sauvegarder la compo » pour la garder ici avec un nom, et la recharger quand tu veux.</div>`; return; }
+  for(const it of c.library){
+    const n=Object.values(it.slots||{}).filter(Boolean).length;
+    const d=new Date(it.savedAt||0);
+    const row=document.createElement("div"); row.className="it"+(it.id===c.loadedId?" cur":"");
+    row.innerHTML=`<div class="info"><b>${esc(it.name)}</b><small>${esc(it.formation)} · ${n}/11 · ${d.toLocaleDateString("fr-FR",{day:"numeric",month:"short"})}${it.id===c.loadedId?" · affichée":""}</small></div>`;
+    const mk=(t,fn,ghost)=>{const b=document.createElement("button");b.className="btn sm"+(ghost?" ghost":"");b.textContent=t;b.onclick=fn;row.appendChild(b);};
+    mk("Charger",()=>{ c.formation=F[it.formation]?it.formation:"4-3-3"; c.slots={...it.slots}; c.bench={...(it.bench||{})}; c.coach=it.coach||null; c.loadedId=it.id; render(); save(); toast(`« ${it.name} » chargée`); window.scrollTo({top:0,behavior:"smooth"}); });
+    mk("✏️",()=>openModal("Renommer la compo",it.name,[["Renommer",v=>{ if(!v){toast("Nom vide",true);return false;} it.name=v; render(); save(); }],["Annuler",null,true]]),true);
+    mk("🗑",()=>openModal(`Supprimer « ${it.name} » ?`,null,[["Supprimer",()=>{ c.library=c.library.filter(x=>x.id!==it.id); if(c.loadedId===it.id) c.loadedId=null; render(); save(); toast("Compo supprimée"); }],["Annuler",null,true]]),true);
+    L.appendChild(row);
+  }
+}
 // ---------- Draft en direct ----------
 const FORMATS={xi:{label:"11 titulaires",bench:0,coach:false},xic:{label:"11 + entraîneur",bench:0,coach:true},full:{label:"11 + 7 remplaçants + entraîneur",bench:7,coach:true}};
 let draft=null, dView=null, lastPicks=-1, mode="compo";
