@@ -11,11 +11,11 @@
 :root{--bleu:#13306b;--bleu2:#1d4aa0;--rouge:#d3122d;--fond:#0b1530;--carte:#16244a;--txt:#eef2ff;--mute:#9fb0d8}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--fond);color:var(--txt);padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
-header{padding:14px 16px 6px;text-align:center;position:relative}
+header{padding:38px 16px 6px;text-align:center;position:relative}
 h1{margin:0;font-size:22px;letter-spacing:.5px}
 h1 span{color:var(--rouge)}
 .sub{color:var(--mute);font-size:13px;margin-top:4px}
-.who{position:absolute;right:12px;top:14px;font-size:12px;color:var(--mute);background:var(--carte);border:1px solid #2b3c6e;border-radius:999px;padding:5px 10px;cursor:pointer}
+.who{position:absolute;right:12px;top:8px;font-size:12px;color:var(--mute);background:var(--carte);border:1px solid #2b3c6e;border-radius:999px;padding:5px 10px;cursor:pointer}
 .sync{font-size:11px;color:var(--mute);text-align:center;margin-top:2px}
 .sync.ok{color:#7ee2a0}.sync.err{color:#ffb38a}
 .tabs{display:flex;gap:8px;padding:8px 16px}
@@ -81,7 +81,20 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
 .tag{font-size:10.5px;padding:2px 6px;border-radius:6px;background:#24345f;color:#c8d6ff;font-weight:700}
 .tag.cur{background:var(--rouge);color:#fff}
 .pl.used{opacity:.4}
-.pl.used .n::after{content:" · déjà pris";font-weight:400;font-size:12px;color:var(--mute)}
+.tk{display:block;font-weight:600;font-size:11.5px;color:#ff9aa8;margin-top:1px}
+.modes{display:flex;gap:6px;margin:6px 16px 0;background:#0f1d40;border-radius:12px;padding:4px}
+.modes button{flex:1;border:0;background:none;color:var(--mute);font-weight:700;font-size:14px;padding:9px;border-radius:9px;cursor:pointer}
+.modes button.on{background:var(--rouge);color:#fff}
+.dbanner{margin:10px 0 4px;padding:14px;border-radius:14px;text-align:center;font-weight:800;font-size:18px;background:var(--carte)}
+.dbanner.me{background:linear-gradient(90deg,#d3122d,#1d4aa0);animation:pulse 1.4s ease-in-out infinite}
+.dbanner small{display:block;font-weight:400;font-size:12.5px;opacity:.85;margin-top:3px}
+@keyframes pulse{50%{filter:brightness(1.25)}}
+.field{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:10px 0}
+.field span{font-size:14px;color:var(--mute)}
+.rules{font-size:13px;color:#c8d6ff;line-height:1.5;margin:10px 0}
+.logrow{font-size:13px;padding:6px 0;border-top:1px solid #24345f;display:flex;gap:8px}
+.logrow b{color:var(--mute);min-width:26px}
+.big{display:block;width:100%;padding:15px;font-size:16px;border-radius:12px;margin-top:10px}
 /* accueil */
 #start{position:fixed;inset:0;z-index:20;background:radial-gradient(circle at 50% 20%,#1d4aa0 0,#0b1530 70%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}
 #start h1{font-size:30px}
@@ -108,6 +121,8 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
   <div class="sub">Tous les joueurs passés par Lyon depuis 2000</div>
   <div class="sync" id="sync">Connexion…</div>
 </header>
+<div class="modes"><button id="mCompo" class="on">Mon 11 type</button><button id="mDraft">⚡ Draft en direct</button></div>
+<div id="viewCompo">
 <div class="tabs" id="tabs"></div>
 <div class="wrap">
   <div class="bar" id="bar">
@@ -134,6 +149,28 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
   <div class="section" id="compare"></div>
 </div>
 
+</div>
+<div id="viewDraft" class="wrap" style="display:none">
+  <div class="dbanner" id="dBanner"></div>
+  <div class="section" id="dLobby"></div>
+  <div id="dGame">
+    <div class="tabs" id="dTabs" style="padding:8px 0"></div>
+    <div class="pitch" id="dPitch"><svg class="lines" viewBox="0 0 68 100" preserveAspectRatio="none">
+      <g fill="none" stroke="#ffffff66" stroke-width=".35">
+        <rect x="2" y="2" width="64" height="96"/>
+        <line x1="2" y1="50" x2="66" y2="50"/>
+        <circle cx="34" cy="50" r="8"/>
+        <rect x="16" y="2" width="36" height="15"/><rect x="25" y="2" width="18" height="5.5"/>
+        <rect x="16" y="83" width="36" height="15"/><rect x="25" y="92.5" width="18" height="5.5"/>
+      </g>
+    </svg></div>
+    <div class="section" id="dBenchSec"><h3>Remplaçants</h3><div class="bench" id="dBench"></div></div>
+    <div class="section" id="dCoachSec"><h3>Entraîneur</h3><div class="coach" id="dCoach"></div></div>
+    <div class="section"><h3>Derniers choix</h3><div id="dLog"></div></div>
+    <button class="btn big" id="dNew" style="display:none">🔁 Nouveau draft</button>
+    <button class="btn ghost big" id="dReset">Recommencer le draft</button>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 <div class="veil" id="veil"></div>
 <div class="sheet" id="sheet">
@@ -369,7 +406,7 @@ const other = w => w==="thib"?"val":"thib";
 try{ const l=JSON.parse(localStorage.getItem("onze-ol-cache")||"null"); if(l){compos.thib=norm(l.thib);compos.val=norm(l.val);} }catch(e){}
 
 // ---------- Accueil ----------
-function choose(w){ me=w; viewing=w; try{localStorage.setItem("onze-ol-me",w);}catch(e){} $("#start").style.display="none"; render(); }
+function choose(w){ me=w; viewing=w; try{localStorage.setItem("onze-ol-me",w);}catch(e){} $("#start").style.display="none"; render(); renderDraft(); }
 document.querySelectorAll("#start button").forEach(b=>b.onclick=()=>choose(b.dataset.me));
 $("#who").onclick=()=>{$("#start").style.display="flex";};
 // L'écran de choix s'affiche à chaque ouverture, le dernier choix est juste mis en avant
@@ -387,11 +424,11 @@ function renderTabs(){
   }
   $("#who").textContent=NAMES[me]+" · changer";
 }
-function slotBtn(kind,i,role,pid,mine){
+function slotBtn(kind,i,role,pid,mine,onclick){
   const p=pid&&BY_ID[pid]; const b=document.createElement("button");
   b.className="slot"+(p?"":" empty")+(mine?"":" ro");
   b.innerHTML=`<div class="shirt"><b>${esc(role)}</b></div>`+(p?`<div class="nm">${esc(kind==="coach"?p.name:short(p.name))}</div>`:(mine?`<div class="nm">+ Choisir</div>`:`<div class="nm">—</div>`));
-  if(mine) b.onclick=()=>openSheet(kind,i,role);
+  if(mine) b.onclick=onclick||(()=>openSheet(kind,i,role));
   return b;
 }
 function render(){
@@ -431,8 +468,9 @@ function renderCompare(){
 }
 
 // ---------- Sélection ----------
-function openSheet(kind,i,role){
-  editing={kind,i,role};
+function openSheet(kind,i,role,mode){
+  editing={kind,i,role,mode:mode||"compo"};
+  $("#clearSlot").style.display=editing.mode==="draft"?"none":"";
   $("#shTitle").textContent= kind==="coach"?"Entraîneur" : kind==="bench"?`Remplaçant n°${i+1}` : `${ROLE_LABEL[role]||role} (${role})`;
   $("#q").value=""; chip = kind==="xi" ? "poste" : "tous";
   $("#q").placeholder= kind==="coach"?"Rechercher un entraîneur…":"Rechercher un joueur…";
@@ -465,17 +503,19 @@ function renderList(){
   });
   if(q) ps=ps.filter(p=>p.id.replace(/^coach-/,"").includes(q));
   ps.sort((a,b)=>a.year-b.year||a.name.localeCompare(b.name,"fr"));
-  const used=isCoach?new Set():usedIds();
+  const takenMap = editing.mode==="draft" ? dTaken(draft) : null;
+  const used = takenMap ? new Set(Object.keys(takenMap)) : (isCoach?new Set():usedIds());
   const L=$("#list"); L.innerHTML="";
   if(!ps.length){L.innerHTML=`<div style="padding:16px;color:var(--mute)">Personne trouvé.</div>`;return;}
   for(const p of ps){
     const d=document.createElement("div"); d.className="pl"+(used.has(p.id)?" used":"");
-    d.innerHTML=`<span class="n">${esc(p.name)}${isCoach?"":`<span class="yr">arrivé en ${p.year<2000?"avant 2000":p.year}</span>`}</span>`+(isCoach?"":`<span class="tags">${p.pos.map(x=>`<span class="tag ${ok.includes(x)?"cur":""}">${x}</span>`).join("")}</span>`);
+    d.innerHTML=`<span class="n">${esc(p.name)}${isCoach?"":`<span class="yr">arrivé en ${p.year<2000?"avant 2000":p.year}</span>`}${used.has(p.id)?`<span class="tk">${takenMap?(takenMap[p.id]===me?"dans ton équipe":"pris par "+NAMES[takenMap[p.id]]):"déjà dans ta compo"}</span>`:""}</span>`+(isCoach?"":`<span class="tags">${p.pos.map(x=>`<span class="tag ${ok.includes(x)?"cur":""}">${x}</span>`).join("")}</span>`);
     d.onclick=()=>{ if(!used.has(p.id)) setPick(p.id); };
     L.appendChild(d);
   }
 }
 function setPick(pid){
+  if(editing && editing.mode==="draft"){ const e=editing; closeSheet(); if(pid) dPick(e.kind,e.i,pid); return; }
   const c=compos[me];
   if(editing.kind==="xi"){ if(pid) c.slots[editing.i]=pid; else delete c.slots[editing.i]; }
   else if(editing.kind==="bench"){ if(pid) c.bench[editing.i]=pid; else delete c.bench[editing.i]; }
@@ -501,6 +541,106 @@ $("#saveBtn").onclick=async()=>{
   else { b.textContent="💾 Sauvegarder la compo"; toast("Pas de connexion : gardée sur ce téléphone, réessaie",true); }
   render();
 };
+// ---------- Draft en direct ----------
+const FORMATS={xi:{label:"11 titulaires",bench:0,coach:false},xic:{label:"11 + entraîneur",bench:0,coach:true},full:{label:"11 + 7 remplaçants + entraîneur",bench:7,coach:true}};
+let draft=null, dView=null, lastPicks=-1, mode="compo";
+const dBlankTeam=()=>({slots:{},bench:{},coach:null});
+function dDefault(){return {status:"lobby",format:"xic",form:{thib:"4-3-3",val:"4-3-3"},turn:null,teams:{thib:dBlankTeam(),val:dBlankTeam()},picks:[]};}
+function dNorm(x){
+  const d=Object.assign(dDefault(),x||{});
+  d.form=Object.assign({thib:"4-3-3",val:"4-3-3"},d.form||{});
+  for(const w of ["thib","val"]){ if(!F[d.form[w]]) d.form[w]="4-3-3"; }
+  d.teams=Object.assign({},d.teams||{});
+  for(const w of ["thib","val"]){ const t=Object.assign(dBlankTeam(),d.teams[w]||{}); t.slots=t.slots||{}; t.bench=t.bench||{}; d.teams[w]=t; }
+  d.picks=Array.isArray(d.picks)?d.picks:[];
+  if(!FORMATS[d.format]) d.format="xic";
+  return d;
+}
+const dNeeded=d=>{const f=FORMATS[d.format];return 11+f.bench+(f.coach?1:0);};
+const dCount=t=>Object.values(t.slots).filter(Boolean).length+Object.values(t.bench).filter(Boolean).length+(t.coach?1:0);
+function dTaken(d){ const m={}; if(!d) return m; for(const w of ["thib","val"]){ const t=d.teams[w]; [...Object.values(t.slots),...Object.values(t.bench),t.coach].forEach(x=>{if(x)m[x]=w;}); } return m; }
+async function dWrite(obj){ if(!ref){toast("Pas connecté",true);return;} try{ await ref.update(obj); }catch(e){ try{ await ref.set({draft:dNorm(draft)},{merge:true}); await ref.update(obj);}catch(e2){ toast("Pas de connexion, réessaie",true);} } }
+function onDraftData(x){
+  const prev=draft; draft=x?dNorm(x):null;
+  const picks=draft?draft.picks:[];
+  if(lastPicks>=0 && picks.length>lastPicks){
+    const news=picks.slice(lastPicks).filter(p=>p.by!==me);
+    news.forEach(p=>toast(`${NAMES[p.by]} a pris ${BY_ID[p.pid]?.name||"?"}`));
+    if(draft.status==="running" && draft.turn===me && news.length) setTimeout(()=>toast("⚡ À toi de jouer !"),1600);
+  }
+  if(prev && prev.status!=="running" && draft && draft.status==="running" && lastPicks>=0) toast(draft.turn===me?"🪙 Tu commences !":`🪙 ${NAMES[draft.turn]} commence`);
+  lastPicks=picks.length;
+  if(editing && editing.mode==="draft"){ if(!draft||draft.status!=="running"||draft.turn!==me) closeSheet(); else renderList(); }
+  renderDraft();
+}
+function dPick(kind,i,pid){
+  firebase.firestore().runTransaction(async t=>{
+    const s=await t.get(ref); const d=dNorm((s.data()||{}).draft);
+    if(d.status!=="running") throw new Error("Le draft n'est pas en cours");
+    if(d.turn!==me) throw new Error("Ce n'est pas ton tour");
+    if(dTaken(d)[pid]) throw new Error("Trop tard, déjà pris !");
+    const tm=d.teams[me];
+    if(kind==="xi"){ if(tm.slots[i]) throw new Error("Case déjà remplie"); tm.slots[i]=pid; }
+    else if(kind==="bench"){ if(tm.bench[i]) throw new Error("Case déjà remplie"); tm.bench[i]=pid; }
+    else { if(tm.coach) throw new Error("Tu as déjà un entraîneur"); tm.coach=pid; }
+    d.picks.push({by:me,pid,kind,i,at:Date.now()});
+    const n=dNeeded(d), o=other(me);
+    if(dCount(d.teams[o])<n) d.turn=o; else if(dCount(tm)<n) d.turn=me; else { d.status="done"; d.turn=null; }
+    t.update(ref,{draft:d});
+  }).catch(e=>toast(e.message||"Raté, réessaie",true));
+}
+function dRestart(){ const d=dNorm(draft); dWrite({draft:{...dDefault(),format:d.format,form:d.form}}); }
+let dResetArm=false;
+$("#dReset").onclick=e=>{ if(!dResetArm){dResetArm=true;e.target.textContent="Sûr ? Tout le draft sera effacé (re-touche)";setTimeout(()=>{dResetArm=false;e.target.textContent="Recommencer le draft";},3500);return;} dResetArm=false; e.target.textContent="Recommencer le draft"; dRestart(); };
+$("#dNew").onclick=dRestart;
+function setMode(m){ mode=m; $("#mCompo").classList.toggle("on",m==="compo"); $("#mDraft").classList.toggle("on",m==="draft"); $("#viewCompo").style.display=m==="compo"?"":"none"; $("#viewDraft").style.display=m==="draft"?"":"none"; if(m==="draft") renderDraft(); else render(); }
+$("#mCompo").onclick=()=>setMode("compo"); $("#mDraft").onclick=()=>setMode("draft");
+function renderDraft(){
+  if(!me) return;
+  const d=draft||dDefault(); const f=FORMATS[d.format]; const N=dNeeded(d); const o=other(me);
+  const B=$("#dBanner");
+  B.className="dbanner"+(d.status==="running"&&d.turn===me?" me":"");
+  if(d.status==="lobby") B.innerHTML=`Préparez le draft<small>Réglez vos systèmes, puis lancez</small>`;
+  else if(d.status==="running") B.innerHTML= d.turn===me?`⚡ À toi de choisir !<small>Touche une case vide de ton équipe</small>`:`⏳ ${NAMES[d.turn]} choisit…<small>Tour ${d.picks.length+1} · tu verras son choix en direct</small>`;
+  else B.innerHTML=`🏁 Draft terminé !<small>Comparez vos deux équipes</small>`;
+  $("#dLobby").style.display=d.status==="lobby"?"":"none";
+  $("#dGame").style.display=d.status==="lobby"?"none":"";
+  if(d.status==="lobby"){
+    const L=$("#dLobby");
+    L.innerHTML=`<h3>⚡ Draft en direct</h3>
+      <div class="rules">Chacun votre tour, vous choisissez <b>un</b> joueur pour une case de votre équipe. Un joueur pris par l'un est bloqué pour l'autre. Un tirage au sort décide qui commence.</div>
+      <div class="field"><span>Format</span><select id="dFormat">${Object.entries(FORMATS).map(([k,v])=>`<option value="${k}" ${k===d.format?"selected":""}>${v.label}</option>`).join("")}</select></div>
+      <div class="field"><span>Ton système</span><select id="dForm">${Object.keys(F).map(x=>`<option ${x===d.form[me]?"selected":""}>${x}</option>`).join("")}</select></div>
+      <div class="field"><span>Système de ${NAMES[o]}</span><b>${esc(d.form[o])}</b></div>
+      <button class="btn big" id="dStart">🪙 Lancer le draft</button>`;
+    $("#dFormat").onchange=e=>dWrite({"draft.format":e.target.value,"draft.status":"lobby"});
+    $("#dForm").onchange=e=>dWrite({["draft.form."+me]:e.target.value,"draft.status":"lobby"});
+    $("#dStart").onclick=()=>{ const first=Math.random()<.5?"thib":"val"; const cur=dNorm(draft); dWrite({draft:{...cur,status:"running",turn:first,teams:{thib:dBlankTeam(),val:dBlankTeam()},picks:[],started:Date.now()}}); };
+    return;
+  }
+  if(!dView) dView=me;
+  const T=$("#dTabs"); T.innerHTML="";
+  for(const w of [me,o]){ const b=document.createElement("button"); b.className="tab"+(w===dView?" on":"");
+    b.innerHTML=(w===me?"Mon équipe":"Équipe de "+NAMES[w])+`<small>${esc(d.form[w])} · ${dCount(d.teams[w])}/${N}${d.turn===w?" · ⚡ joue":""}</small>`;
+    b.onclick=()=>{dView=w;renderDraft();}; T.appendChild(b); }
+  const t=d.teams[dView]; const mine=dView===me; const can=mine&&d.status==="running"&&d.turn===me;
+  const P=$("#dPitch"); P.querySelectorAll(".slot").forEach(e=>e.remove());
+  F[d.form[dView]].forEach(([role,x,y],i)=>{ const pid=t.slots[i]; const clickable=can&&!pid;
+    const b=slotBtn("xi",i,role,pid,clickable||(mine&&!!pid),clickable?()=>openSheet("xi",i,role,"draft"):()=>{});
+    if(!clickable&&!pid) b.classList.add("ro"); if(!clickable&&!pid&&!mine) b.querySelector(".nm")&&(b.querySelector(".nm").textContent="—");
+    b.style.left=x+"%"; b.style.top=y+"%"; P.appendChild(b); });
+  $("#dBenchSec").style.display=f.bench?"":"none";
+  const BE=$("#dBench"); BE.innerHTML="";
+  for(let i=0;i<f.bench;i++){ const pid=t.bench[i]; const p=pid&&BY_ID[pid]; const clickable=can&&!pid;
+    BE.appendChild(slotBtn("bench",i,p?p.pos[0]:String(12+i),pid,clickable,clickable?()=>openSheet("bench",i,"R","draft"):null)); }
+  $("#dCoachSec").style.display=f.coach?"":"none";
+  const CO=$("#dCoach"); CO.innerHTML=""; if(f.coach){ const clickable=can&&!t.coach; CO.appendChild(slotBtn("coach",0,"COACH",t.coach,clickable,clickable?()=>openSheet("coach",0,"COACH","draft"):null)); }
+  const lg=d.picks.slice().reverse().slice(0,10);
+  $("#dLog").innerHTML= lg.length? lg.map((p,k)=>`<div class="logrow"><b>#${d.picks.length-k}</b><span>${NAMES[p.by]} → ${esc(BY_ID[p.pid]?.name||"?")}</span></div>`).join("") : `<div style="font-size:13px;color:var(--mute)">Aucun choix pour l'instant.</div>`;
+  $("#dNew").style.display=d.status==="done"?"block":"none";
+  $("#dReset").style.display=d.status==="done"?"none":"block";
+}
+
 // ---------- Synchro Firebase ----------
 let ref=null, saveT=null, dirty=false;
 function setSync(t,cls){ const s=$("#sync"); s.textContent=t; s.className="sync "+(cls||""); }
@@ -521,6 +661,7 @@ try{
       const d=snap.exists?snap.data():{};
       for(const w of ["thib","val"]){ if(w===me && dirty) continue; compos[w]=norm(d[w]); }
       cache(); setSync("✓ Synchronisé","ok"); render();
+      onDraftData(d.draft);
       if(dirty) push();
     }, ()=>setSync("⚠️ Synchro coupée — recharge la page","err"));
   }).catch(()=>setSync("⚠️ Pas de connexion — compo gardée sur ce téléphone","err"));
