@@ -123,3 +123,13 @@ exports.liveInjuries = onSchedule({ schedule: "30 10,19 * * *", timeZone: "Europ
     for (const [id, x] of fresh) if (mine.has(id)) await notify(u.id, x.st === "inj" ? "🤕 Un de tes joueurs est blessé" : "🟥 Un de tes joueurs est suspendu", `${id.split("-").map(w => w[0].toUpperCase() + w.slice(1)).join(" ")} : ${x.note || ""} (${x.mod > 0 ? "+" : ""}${x.mod} dans le jeu)`);
   }
 });
+
+// 💾 Sauvegarde de tous les comptes chaque nuit (garde 21 jours)
+exports.nightlyBackup = onSchedule({ schedule: "15 3 * * *", timeZone: "Europe/Paris", region: REGION }, async () => {
+  const day = new Date().toLocaleDateString("fr-CA", { timeZone: "Europe/Paris" });
+  const qs = await db.collection("onzeol_users").get(); const users = {};
+  qs.forEach(d => { const x = { ...d.data() }; delete x.fcm; users[d.id] = x; });
+  await db.collection("onzeol_backups").doc(day).set({ at: Date.now(), by: "nuit", users });
+  const old = await db.collection("onzeol_backups").get(); const lim = new Date(Date.now() - 21 * 86400000).toLocaleDateString("fr-CA");
+  for (const d of old.docs) if (d.id < lim) await d.ref.delete();
+});

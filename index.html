@@ -416,6 +416,12 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
 .sugg{margin:8px 0;background:#0f1d40;border:1px solid #1d2b55;border-radius:14px;padding:10px 12px}
 .sgh{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:6px}.sgl{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;padding:6px 0;border-top:1px solid #1d2b55}
 .sgl small{opacity:.7}.sgl em{color:#7ee2a0;font-style:normal;font-weight:800}
+.adm label{font-size:12px;color:var(--mute)}.adm select,.adm input{padding:9px 10px;border-radius:10px;border:1px solid #2a3b6b;background:#0b1530;color:#fff;font-size:15px;max-width:100%}
+.adm h4{margin:14px 0 6px}.arow{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.arow input{flex:1;min-width:80px}
+.pred{border-top:1px solid #1d2b55;padding:9px 0}.ph{display:flex;justify-content:space-between;align-items:baseline;gap:6px}.ph small{color:var(--mute);font-size:11.5px}
+.pin{display:flex;align-items:center;gap:6px;margin:6px 0}.pin input{width:52px;text-align:center;padding:9px 4px;border-radius:10px;border:1px solid #2a3b6b;background:#0b1530;color:#fff;font-size:17px;font-weight:800}
+.plist{display:flex;flex-wrap:wrap;gap:6px;margin-top:5px}.plist span{background:#1d2b55;border-radius:999px;padding:3px 9px;font-size:12px}.plist .exact{background:#1f8a4c}.plist .res{background:#2a5a8a}
+.mentrow{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.mentrow .btn{padding:8px 4px;font-size:12.5px}
 .readyrow{display:flex;justify-content:space-around;gap:8px;margin:10px 0 6px;font-size:13px;font-weight:700}
 .chatfab{position:fixed;right:14px;bottom:calc(76px + env(safe-area-inset-bottom));z-index:30;width:54px;height:54px;border-radius:50%;border:0;background:var(--rouge);color:#fff;font-size:25px;box-shadow:0 6px 18px #0008;display:none}
 .chatfab b{position:absolute;top:-4px;right:-4px;background:#ffd970;color:#111;font-size:11px;font-weight:900;border-radius:999px;padding:2px 6px;display:none}
@@ -523,6 +529,7 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
   <div class="section" id="cAlbum"></div>
 </div>
 <div id="viewJeux" class="wrap" style="display:none">
+  <div class="section" id="jPred"></div>
   <div class="section" id="jCareer"></div>
   <div class="section" id="jCup"></div>
   <div class="section" id="jDefi"></div>
@@ -830,7 +837,7 @@ $("#aSignup").onclick=async()=>{
   try{ $("#aSignup").disabled=true; await firebase.auth().createUserWithEmailAndPassword(pseudoEmail(n),pw); }catch(err){ pendingName=null; $("#aMsg").textContent=authErr(err); }
   $("#aSignup").disabled=false; };
 $("#shareBtn").onclick=async()=>{ const url=location.origin+location.pathname; try{ if(navigator.share){ await navigator.share({title:"Les Gones Legends",text:"Crée ton compte, fais ton 11 type de l'OL et viens me défier !",url}); return; } }catch(e){ return; } try{ await navigator.clipboard.writeText(url); toast("Lien copié !"); }catch(e){ toast(url); } };
-$("#who").onclick=()=>openModal(`Connecté en tant que ${NAMES[me]||"?"}`,null,[[notifState()==="granted"?"🔔 Notifications activées":"🔔 Activer les notifications",()=>{ enableNotifs(); }],["📲 Installer l'appli",()=>{ setTimeout(()=>installGuide(true),200); }],["💡 Revoir les explications",()=>{ resetTips(); }],["Se déconnecter",()=>{ firebase.auth().signOut(); }],["Inviter quelqu'un",()=>$("#shareBtn").click(),true],["Fermer",null,true]]);
+$("#who").onclick=()=>openModal(`Connecté en tant que ${NAMES[me]||"?"}`,null,[[notifState()==="granted"?"🔔 Notifications activées":"🔔 Activer les notifications",()=>{ enableNotifs(); }],["📲 Installer l'appli",()=>{ setTimeout(()=>installGuide(true),200); }],["💡 Revoir les explications",()=>{ resetTips(); }],...(me===ADMIN?[["🛠️ Panneau admin",()=>{ setTimeout(adminPanel,150); }]]:[]),["Se déconnecter",()=>{ firebase.auth().signOut(); }],["Inviter quelqu'un",()=>$("#shareBtn").click(),true],["Fermer",null,true]]);
 
 // ---------- Rendu ----------
 // Note moyenne du 11 (cartes possédées, évolutions et forme réelle comprises)
@@ -1292,7 +1299,7 @@ const liveOf=id=>{ const b=(BY_ID[id]&&BY_ID[id].base)||id; return (LIVE.players
 const liveMod=id=>{ const x=liveOf(id); return x?Math.max(-6,Math.min(3,x.mod|0)):0; };
 const LIVE_IC={inj:"🤕",sus:"🟥",up:"📈",down:"📉"};
 const liveIcon=id=>{ const x=liveOf(id); if(!x) return ""; return LIVE_IC[x.st]||(x.mod>0?"📈":x.mod<0?"📉":""); };
-async function loadLive(){ try{ const r=await fetch("live.json?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const d=await r.json(); if(d&&d.players){ LIVE=d; try{ render(); }catch(e){} } }catch(e){} }
+async function loadLive(){ try{ const r=await fetch("live.json?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const d=await r.json(); if(d&&d.players){ LIVE=d; try{ render(); settlePreds(); if(mode==="jeux") renderJeux(); }catch(e){} } }catch(e){} }
 loadLive(); setInterval(loadLive,30*60000);
 function cardHTML(pid,opts={}){
   const p=BY_ID[pid]; if(!p) return "";
@@ -1482,7 +1489,7 @@ function simulate2(cA,SA,cB,SB){
     const bench=Object.values(c.bench||{}).filter(pid=>BY_ID[pid]&&!on.some(x=>x.pid===pid));
     const co=BY_ID[c.coach]; const sk=skillOf(co?co.id:null);
     for(const x of on){ const p=BY_ID[x.pid]; let b=0; if(sk.boostLow&&p.ovr<75) b+=sk.boostLow; if(sk.boostYoung&&p.year>=2020) b+=sk.boostYoung; if(b){ x.eff+=b; x.a=attrs(p,x.role,x.eff); } }
-    return {on,bench,subs:0,red:0,cb:co?(co.ovr-75)/4:-2,all:[...on],sk};
+    return {on,bench,subs:0,red:0,cb:co?(co.ovr-75)/4:-2,all:[...on],sk,ment:S.ment||{}};
   };
   const T=[mkTeam(cA,SA),mkTeam(cB,SB)];
   // 🍀 part de chance : forme du jour de chaque équipe (±8 %) et de chaque joueur (±6 %)
@@ -1491,7 +1498,7 @@ function simulate2(cA,SA,cB,SB){
   const ev=[], score=[0,0], shots=[0,0], onT=[0,0], corners=[0,0], fouls=[0,0], offs=[0,0], cardsY=[0,0], possN=[0,0], xgSum=[0,0];
   const live=t=>T[t].on.filter(x=>!x.out);
   const avg=(arr,f)=>arr.length?arr.reduce((s,x)=>s+f(x),0)/arr.length:30;
-  const line=(t,g)=>{ const L=live(t).filter(x=>x.g===g); const base=avg(L,x=>x.eff); const missing=T[t].all.filter(x=>x.g===g&&x.out&&x.st.r).length; return base*(1-.07*missing)+T[t].cb+((T[t].sk.lines||{})[g]||0); };
+  const line=(t,g)=>{ const L=live(t).filter(x=>x.g===g); const base=avg(L,x=>x.eff); const missing=T[t].all.filter(x=>x.g===g&&x.out&&x.st.r).length; return base*(1-.07*missing)+T[t].cb+((T[t].sk.lines||{})[g]||0)+(T[t].ment[g]||0); };
   const gkOf=t=>live(t).find(x=>x.g==="gk")||live(t).find(x=>x.role==="DC")||live(t)[0];
   const add=(e)=>{ev.push(e);return e;};
   const len=90+2+Math.floor(rnd()*4);
@@ -1760,7 +1767,8 @@ function evText(e){
   case "corner": return `⛳ Corner pour ${T}${e.p?` tiré par ${N(e.p)}`:""}`;
   case "offside": return `🚩 ${N(e.p)} (${T}) signalé hors-jeu`;
   case "counter": return `⚡ Contre-attaque de ${T} menée par ${N(e.p)}`;
-  case "sub": return `🔁 ${T} : ${N(e.p)} remplace ${N(e.o)}${e.why==="inj"?" (blessé)":e.why==="yellow"?" (averti)":""}`;
+  case "sub": return `🔁 ${T} : ${N(e.p)} remplace ${N(e.o)}${e.why==="inj"?" (blessé)":e.why==="yellow"?" (averti)":e.why==="coach"?" (choix du coach)":""}`;
+  case "tactic": return `🧠 ${T} passe en mode <b>${esc(e.txt||"")}</b>`;
   case "injury": return `🚑 ${N(e.p)} (${T}) se blesse`;
   case "var": return `📺 <b>VAR : but de ${N(e.p)} refusé</b> pour hors-jeu !`;
   case "yellow": return `🟨 Carton jaune pour ${N(e.p)} (${T})`;
@@ -2300,6 +2308,88 @@ async function openBudgetSlot(k){
   T.querySelectorAll("[data-bp]").forEach(b=>b.onclick=()=>{ T.classList.remove("open"); bPick(s,b.dataset.bp); });
 }
 
+// =================== EXTRAS (suite) ===================
+
+// =================== 🔮 Pronostics sur les vrais matchs de l'OL ===================
+let PREDS={};
+const PRED_R={exact:150,res:50};
+const fxOf=()=>((LIVE&&LIVE.fixtures)||[]).slice().sort((a,b)=>new Date(a.date)-new Date(b.date));
+const fxOpen=f=>!f.score&&Date.now()<new Date(f.date).getTime();
+const sgn=(a,b)=>Math.sign(a-b);
+function predPts(p,sc){ if(!p||!sc) return null; return p[0]===sc[0]&&p[1]===sc[1]?"exact":sgn(p[0],p[1])===sgn(sc[0],sc[1])?"res":"rate"; }
+function settlePreds(){ if(!me||!compos[me]) return; const c=W(); c.predDone=c.predDone||{}; let ch=false;
+  for(const f of fxOf()){ if(!f.score||c.predDone[f.id]) continue; const p=(PREDS[f.id]||{})[me]; if(!p) continue; const r=predPts(p,f.score); c.predDone[f.id]=r; ch=true;
+    if(r!=="rate") grant({coins:PRED_R[r]},`🔮 Prono ${f.home}–${f.away} ${r==="exact"?"score exact !":"bon résultat"}`); }
+  if(ch) save(); }
+async function sendPred(id,h,a){ const f=fxOf().find(x=>x.id===id); if(!f||!fxOpen(f)){ toast("Les pronos sont fermés pour ce match",true); return; }
+  try{ await db.runTransaction(async tx=>{ const ref=db.collection("onzeol_meta").doc("preds"); const d=await tx.get(ref); const x=d.exists?d.data():{}; x[id]=Object.assign({},x[id]||{},{[me]:[h,a]}); tx.set(ref,x); }); toast(`🔮 Prono enregistré : ${f.home} ${h}-${a} ${f.away}`); }
+  catch(e){ toast("Prono non enregistré",true); } }
+function predHTML(){ const F_=fxOf(); const c=W(); const done=c.predDone||{};
+  const up=F_.filter(f=>!f.score).slice(0,3), past=F_.filter(f=>f.score).slice(-3).reverse();
+  const nm=u=>esc(NAMES[u]||"?");
+  const row=f=>{ const P=PREDS[f.id]||{}; const mine=P[me]; const open=fxOpen(f); const d=new Date(f.date);
+    const when=d.toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"short"});
+    return `<div class="pred"><div class="ph"><b>${esc(f.home)} – ${esc(f.away)}</b><small>${esc(f.comp||"")} · ${when}</small></div>
+      ${open?`<div class="pin"><input type="number" min="0" max="9" inputmode="numeric" id="ph_${f.id}" value="${mine?mine[0]:""}" placeholder="0"><span>-</span><input type="number" min="0" max="9" inputmode="numeric" id="pa_${f.id}" value="${mine?mine[1]:""}" placeholder="0"><button class="btn sm" data-pr="${f.id}">${mine?"Modifier":"Valider"}</button></div>
+        <div class="mute" style="font-size:12px">${Object.keys(P).length} prono${Object.keys(P).length>1?"s":""} · fermé au coup d'envoi · ${mine?"les autres pronos seront visibles après le coup d'envoi":"pas encore de prono"}</div>`
+      :`<div class="mute" style="font-size:12.5px">${f.score?`Score final : <b style="color:#fff">${f.score[0]}-${f.score[1]}</b>`:"⏱️ Match en cours / à venir — pronos fermés"}</div>
+        <div class="plist">${Object.entries(P).map(([u,p])=>{ const r=f.score?predPts(p,f.score):null; return `<span class="${r||""}">${nm(u)} ${p[0]}-${p[1]}${r==="exact"?" 🎯":r==="res"?" ✅":r==="rate"?" ❌":""}</span>`; }).join("")||`<span class="mute">Aucun prono</span>`}</div>`}</div>`; };
+  // classement des pronos (tous les matchs terminés)
+  const T={}; for(const f of F_.filter(x=>x.score)) for(const [u,p] of Object.entries(PREDS[f.id]||{})){ const r=predPts(p,f.score); T[u]=(T[u]||0)+(r==="exact"?3:r==="res"?1:0); }
+  const top=Object.entries(T).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  return `<h3>🔮 Pronostics OL</h3><div class="rules" style="font-size:12px;margin-top:0">Devine le score des vrais matchs de l'OL. Score exact : <b>${PRED_R.exact} 🪙</b> · bon résultat : <b>${PRED_R.res} 🪙</b>.</div>
+    ${up.map(row).join("")||`<div class="mute" style="font-size:13px">Prochains matchs bientôt affichés.</div>`}
+    ${past.length?`<h4>Derniers résultats</h4>${past.map(row).join("")}`:""}
+    ${top.length?`<h4>🏅 Meilleurs pronostiqueurs</h4><div class="plist">${top.map(([u,n],i)=>`<span>${["🥇","🥈","🥉","4.","5."][i]} ${nm(u)} · ${n} pt${n>1?"s":""}</span>`).join("")}</div>`:""}`; }
+function bindPred(){ document.querySelectorAll("[data-pr]").forEach(b=>b.onclick=()=>{ const id=b.dataset.pr; const h=+$("#ph_"+id).value, a=+$("#pa_"+id).value;
+  if(!Number.isInteger(h)||!Number.isInteger(a)||h<0||a<0||$("#ph_"+id).value===""||$("#pa_"+id).value===""){ toast("Mets un score pour les deux équipes",true); return; } sendPred(id,h,a); }); }
+
+
+// =================== 🛠️ Admin (Thib) + 💾 sauvegardes ===================
+const ADMIN="EMx6WLN3DtazTVDRozJmdvUHnVE2";
+const opsDone=new Set();
+async function applyAdminOp(id,o){ if(!o||o.done||opsDone.has(id)||!compos[me]) return; opsDone.add(id); const c=W(); const why="Cadeau de l'admin";
+  try{
+    if(o.type==="coins"){ if(o.n>=0) grant({coins:o.n},why); else { c.coins=Math.max(0,(c.coins||0)+o.n); save(); renderCoins(); toast(`${o.n} 🪙 (correction admin)`); } }
+    else if(o.type==="pack") grant({pack:o.pack,n:o.n||1},why);
+    else if(o.type==="card"){ const n=(c.coll[o.card]||0)+o.n; if(n>0) c.coll[o.card]=n; else { delete c.coll[o.card]; for(const k in c.slots) if(c.slots[k]===o.card) delete c.slots[k]; for(const k in c.bench) if(c.bench[k]===o.card) delete c.bench[k]; if(c.coach===o.card) c.coach=null; }
+      save(); render(); toast(o.n>0?`🎁 ${why} : ${BY_ID[o.card]?.name||"carte"}`:`🛠️ Carte retirée par l'admin : ${BY_ID[o.card]?.name||""}`); }
+    else if(o.type==="restore"&&o.data){ const keep={fcm:c.fcm,name:c.name}; compos[me]=norm(Object.assign({},o.data,keep.fcm?{fcm:keep.fcm}:{})); save(); render(); renderCoins(); toast("💾 Ton compte a été restauré depuis la sauvegarde du "+o.date); }
+    await db.collection("onzeol_admin").doc(id).update({done:true,doneAt:Date.now()});
+  }catch(e){ opsDone.delete(id); } }
+const BK_DAY=()=>new Date().toLocaleDateString("fr-CA");
+async function makeBackup(manual){ const qs=await db.collection("onzeol_users").get(); const users={}; qs.forEach(d=>{ const x={...d.data()}; delete x.fcm; users[d.id]=x; });
+  await db.collection("onzeol_backups").doc(BK_DAY()).set({at:Date.now(),by:manual?"admin":"auto",users}); return Object.keys(users).length; }
+async function autoBackup(){ try{ const d=await db.collection("onzeol_backups").doc(BK_DAY()).get(); if(!d.exists) await makeBackup(false); }catch(e){} }
+async function adminOp(o){ await db.collection("onzeol_admin").add({...o,by:me,at:Date.now(),done:false}); }
+async function adminPanel(){ if(me!==ADMIN) return; const T=$("#tradeUI"); T.classList.add("open");
+  const users=Object.keys(NAMES).filter(u=>u!==CPU).sort((a,b)=>(NAMES[a]||"").localeCompare(NAMES[b]||"","fr"));
+  let bks=[]; try{ const qs=await db.collection("onzeol_backups").get(); qs.forEach(d=>bks.push(d.id)); bks.sort().reverse(); }catch(e){}
+  const opt=users.map(u=>`<option value="${u}">${esc(NAMES[u])}</option>`).join("");
+  T.innerHTML=`<div class="tui-box"><div class="tui-head"><b>🛠️ Panneau admin</b><button class="btn sm ghost" id="tClose">Fermer</button></div>
+   <div class="adm"><label>Joueur</label><select id="aU">${opt}</select><div id="aInfo" class="mute" style="font-size:12.5px;margin:6px 0"></div>
+   <h4>🪙 Pièces</h4><div class="arow"><input id="aCoins" type="number" value="200" inputmode="numeric"><button class="btn sm" id="aCoinsGo">Donner</button><button class="btn sm ghost" id="aCoinsRm">Retirer</button></div>
+   <h4>🎁 Pack offert</h4><div class="arow"><select id="aPack">${Object.entries(PACKS).map(([k,v])=>`<option value="${k}">${esc(v.name)}</option>`).join("")}</select><input id="aPackN" type="number" value="1" style="width:60px"><button class="btn sm" id="aPackGo">Offrir</button></div>
+   <h4>🎴 Carte</h4><div class="arow"><input id="aCardQ" placeholder="Nom du joueur…" autocomplete="off"></div><div id="aCardL"></div>
+   <h4>💾 Sauvegardes <small class="mute">(une par jour, automatique)</small></h4><div class="arow"><select id="aBk">${bks.map(b=>`<option>${b}</option>`).join("")||"<option value=''>Aucune</option>"}</select><button class="btn sm ghost" id="aBkGo">Restaurer ce joueur</button></div>
+   <button class="btn sm ghost" id="aBkNow" style="margin-top:6px">💾 Sauvegarder maintenant</button></div></div>`;
+  const U=()=>$("#aU").value; const info=()=>{ const c=compos[U()]||{}; $("#aInfo").textContent=`${c.coins||0} 🪙 · ${Object.keys(c.coll||{}).length} cartes · carrière ${(c.career||{}).lvl||0}/${CAREER.length}`; }; info();
+  $("#aU").onchange=()=>{ info(); $("#aCardQ").oninput(); };
+  $("#tClose").onclick=()=>T.classList.remove("open");
+  const done=t=>{ toast("✅ "+t+" — appliqué à sa prochaine ouverture"); };
+  $("#aCoinsGo").onclick=async()=>{ const n=Math.abs(+$("#aCoins").value||0); if(!n) return; await adminOp({to:U(),type:"coins",n}); done(`+${n} 🪙 pour ${NAMES[U()]}`); };
+  $("#aCoinsRm").onclick=async()=>{ const n=Math.abs(+$("#aCoins").value||0); if(!n) return; await adminOp({to:U(),type:"coins",n:-n}); done(`-${n} 🪙 pour ${NAMES[U()]}`); };
+  $("#aPackGo").onclick=async()=>{ const n=Math.max(1,+$("#aPackN").value||1); await adminOp({to:U(),type:"pack",pack:$("#aPack").value,n}); done(`${n}× ${PACKS[$("#aPack").value].name} pour ${NAMES[U()]}`); };
+  $("#aCardQ").oninput=()=>{ const q=slug($("#aCardQ").value.trim()); const own=(compos[U()]||{}).coll||{}; const L=$("#aCardL");
+    if(q.length<2){ L.innerHTML=""; return; }
+    L.innerHTML=ALL_CARDS.filter(p=>p.id.includes(q)).slice(0,8).map(p=>`<div class="sgl"><span>${esc(p.name)} <small>${TIER_NAME[cardTier(p)]} · ${p.ovr} · possède ${own[p.id]||0}</small></span><span><button class="btn sm" data-ac="${p.id}" data-n="1">+1</button> <button class="btn sm ghost" data-ac="${p.id}" data-n="-1" ${own[p.id]?"":"disabled"}>−1</button></span></div>`).join("")||`<div class="mute">Aucune carte.</div>`;
+    L.querySelectorAll("[data-ac]").forEach(b=>b.onclick=async()=>{ await adminOp({to:U(),type:"card",card:b.dataset.ac,n:+b.dataset.n}); done(`${b.dataset.n>0?"+1":"−1"} ${BY_ID[b.dataset.ac].name} pour ${NAMES[U()]}`); }); };
+  let arm=false; $("#aBkGo").onclick=async e=>{ const d=$("#aBk").value; if(!d) return; if(!arm){ arm=true; e.target.textContent="Sûr ? Re-touche"; return; } arm=false; e.target.textContent="Restaurer ce joueur";
+    const sn=await db.collection("onzeol_backups").doc(d).get(); const data=sn.exists&&sn.data().users[U()]; if(!data){ toast("Ce joueur n'est pas dans cette sauvegarde",true); return; }
+    await adminOp({to:U(),type:"restore",date:d,data}); done(`Compte de ${NAMES[U()]} restauré au ${d}`); };
+  $("#aBkNow").onclick=async()=>{ try{ const n=await makeBackup(true); toast(`💾 Sauvegarde faite (${n} comptes)`); }catch(e){ toast("Sauvegarde impossible : "+(e.code||e.message),true); } };
+}
+
 // =================== EXTRAS : objectifs, défis, album, évolution, enchères, ligue ===================
 const DAYK=()=>new Date().toLocaleDateString("fr-CA");
 const WEEKN=(t)=>Math.floor(((t||Date.now())/86400000+3)/7); // semaines commençant le lundi
@@ -2760,7 +2850,63 @@ function buildMatch(sides){
 }
 function histOf(m,extra){ return Object.assign({id:m.id,at:m.at,score:m.score,labels:m.teams.map(t=>t.label),owners:m.teams.map(t=>t.owner),names:m.teams.map(t=>t.ownerName),motm:m.motm?{pid:m.motm.pid,t:m.motm.t,note:m.notes[m.motm.t][m.motm.pid]}:null,st:mStats(m)},extra||{}); }
 async function addHist(h,shared){ try{ const ref=db.collection("onzeol_meta").doc("main"); await db.runTransaction(async tx=>{ const d=await tx.get(ref); const cur=(d.exists&&d.data().matches)||[]; if(cur.some(x=>x.id===h.id)) return; const u={matches:[h,...cur].slice(0,200)}; if(shared) u.match=shared; tx.set(ref,u,{merge:true}); }); return true; }catch(e){ return false; } }
-function playLocal(m){ cpuMatch=m; match=m; fxSeen[m.id]=null; mSkip=null; setMode("match"); window.scrollTo(0,0); }
+
+// ---------- 🧠 Coaching à la mi-temps (matchs solo : carrière, défi) ----------
+let LCTX=null;
+const MENT={eq:{n:"⚖️ Équilibré",d:"Aucun changement",v:{}},off:{n:"⚔️ Offensif",d:"Attaque +4, milieu +1, défense −4",v:{att:4,mid:1,def:-4}},def:{n:"🛡️ Défensif",d:"Défense +4, gardien +1, attaque −4",v:{def:4,gk:1,att:-4}}};
+function htFinish(changed){ const X=LCTX; if(!X||X.decided) return; X.decided=true; try{ X.fin(match&&match.id===X.mid?match:cpuMatch,changed); }catch(e){} }
+function htTick(){ const X=LCTX; if(!X||X.decided||!match||match.id!==X.mid) return;
+  if(mSkip===match.id){ htFinish(false); return; }
+  const mm=matchMinute(); if(mm<45.95) return;
+  if(!X.paused){ X.paused=true; X.subs=[]; X.ment="eq"; htPanel(); }
+  match.at=Date.now()-45.95*MSPEED; }
+setInterval(htTick,250);
+function htPanel(){ const X=LCTX, m=match, t=X.t; const T=$("#tradeUI"); T.classList.add("open");
+  const sentOff=new Set(m.ev.filter(e=>e.m<=45.95&&e.t===t&&e.k==="red").map(e=>e.p));
+  const injured=new Set(m.ev.filter(e=>e.m<=45.95&&e.t===t&&e.k==="injury").map(e=>e.p));
+  const firstSubs=m.ev.filter(e=>e.m<=45.95&&e.t===t&&e.k==="sub");
+  const onPitch=m.teams[t].lineup.map((l,i)=>({...l,i})).filter(l=>l.pid&&!sentOff.has(l.pid)).map(l=>{ const s=firstSubs.find(e=>e.o===l.pid); return s?{...l,pid:s.p}:l; });
+  const usedB=new Set([...firstSubs.map(e=>e.p),...X.subs.map(x=>x.in)]);
+  const bench=Object.values(X.c.bench||{}).filter(pid=>BY_ID[pid]&&!usedB.has(pid)&&!m.teams[t].lineup.some(l=>l.pid===pid));
+  const sc=m.ev.filter(e=>e.m<=45.95&&e.k==="goal"); const g=[sc.filter(e=>e.t===0).length,sc.filter(e=>e.t===1).length];
+  T.innerHTML=`<div class="tui-box"><div class="tui-head"><b>⏸️ Mi-temps · ${esc(m.teams[0].ownerName||"")} ${g[0]}-${g[1]} ${esc(m.teams[1].ownerName||"")}</b></div>
+    <div class="mute" style="font-size:12.5px;margin-bottom:8px">Tu es le coach : change de tactique et fais jusqu'à 3 changements pour la 2ᵉ mi-temps.</div>
+    <h4 style="margin:6px 0">Mentalité</h4><div class="mentrow">${Object.entries(MENT).map(([k,v])=>`<button class="btn sm${X.ment===k?"":" ghost"}" data-mt="${k}">${v.n}<small style="display:block;font-weight:500;opacity:.8">${v.d}</small></button>`).join("")}</div>
+    <h4 style="margin:12px 0 6px">Changements <small class="mute">(${X.subs.length}/3)</small></h4>
+    ${X.subs.map((x,k)=>`<div class="sgl"><span>🔁 <b>${esc(BY_ID[x.in].name)}</b> remplace ${esc(BY_ID[x.out].name)}${injured.has(x.out)?" 🚑":""}</span><button class="btn sm ghost" data-us="${k}">Annuler</button></div>`).join("")}
+    ${!bench.length?`<div class="mute" style="font-size:12.5px">${X.c.bench&&Object.keys(X.c.bench).length?"Plus de remplaçant disponible.":"Pas de remplaçant sur ton banc."}</div>`:X.subs.length>=3?"":`<div class="arow"><select id="htOut">${onPitch.filter(l=>!X.subs.some(x=>x.out===l.pid)).map(l=>`<option value="${l.pid}">${l.role} · ${esc(BY_ID[l.pid].name)}${injured.has(l.pid)?" 🚑":""} (${(m.notes[t]||{})[l.pid]??"–"})</option>`).join("")}</select>
+      <select id="htIn">${bench.slice().sort((a,b)=>effR(b)-effR(a)).map(pid=>`<option value="${pid}">${esc(BY_ID[pid].name)} · ${BY_ID[pid].pos[0]} · ${effR(pid)||BY_ID[pid].ovr}</option>`).join("")}</select><button class="btn sm" id="htAdd">Faire entrer</button></div>`}
+    <button class="btn big" id="htGo" style="margin-top:14px">▶️ Reprendre le match</button></div>`;
+  T.querySelectorAll("[data-mt]").forEach(b=>b.onclick=()=>{ X.ment=b.dataset.mt; htPanel(); });
+  T.querySelectorAll("[data-us]").forEach(b=>b.onclick=()=>{ X.subs.splice(+b.dataset.us,1); htPanel(); });
+  const so=$("#htOut"), si=$("#htIn");
+  if(so&&si){ const sortIn=()=>{ const z=ZONE[BY_ID[so.value].pos[0]]; const opts=[...si.options].sort((a,b)=>((ZONE[BY_ID[b.value].pos[0]]===z)-(ZONE[BY_ID[a.value].pos[0]]===z))||(effR(b.value)-effR(a.value))); opts.forEach(o=>si.appendChild(o)); si.value=opts[0].value; }; so.onchange=sortIn; sortIn(); }
+  const add=$("#htAdd"); if(add) add.onclick=()=>{ X.subs.push({out:$("#htOut").value,in:$("#htIn").value}); htPanel(); };
+  $("#htGo").onclick=()=>{ T.classList.remove("open"); htResume(); };
+}
+function htResume(){ const X=LCTX, m=match, t=X.t;
+  if(X.ment==="eq"&&!X.subs.length){ X.paused=false; htFinish(false); return; }
+  const c2={formation:X.c.formation,slots:{...X.c.slots},bench:{...(X.c.bench||{})},coach:X.c.coach};
+  for(const x of X.subs){ for(const k in c2.slots) if(c2.slots[k]===x.out) c2.slots[k]=x.in; for(const k in c2.bench) if(c2.bench[k]===x.in) delete c2.bench[k]; }
+  const S2=strength(c2,X.w,X.club); S2.ment=MENT[X.ment].v;
+  const r=t===0?simulate2(c2,S2,X.oc,X.OS):simulate2(X.oc,X.OS,c2,S2);
+  const H=45.95; const first=m.ev.filter(e=>e.m<=H);
+  const subsEv=X.subs.map(x=>({m:H+.01,t,k:"sub",p:x.in,o:x.out,why:"coach"}));
+  if(X.ment!=="eq") subsEv.push({m:H+.02,t,k:"tactic",txt:MENT[X.ment].n});
+  const second=r.ev.filter(e=>e.m>H&&e.k!=="ht");
+  m.ev=[...first,...subsEv,...second].sort((a,b)=>a.m-b.m);
+  m.score=[0,1].map(k=>m.ev.filter(e=>e.k==="goal"&&e.t===k).length);
+  const mix=(a,b)=>Array.isArray(a)&&Array.isArray(b)?a.map((x,i)=>Math.round((x+b[i])/2*100)/100):a;
+  for(const k of ["shots","onT","corners","fouls","offs","cards","xg"]) if(m[k]) m[k]=mix(m[k],r[k]);
+  m.poss=Math.round((m.poss+r.poss)/2); m.len=r.len;
+  m.notes=[0,1].map(k=>Object.assign({},m.notes[k]||{},r.notes[k]||{}));
+  for(const x of X.subs) if(m.notes[t][x.out]==null) m.notes[t][x.out]=6;
+  const pl=m.teams[t].played||[]; for(const x of X.subs) if(!pl.some(p=>p.pid===x.in)) pl.push({pid:x.in,role:(pl.find(p=>p.pid===x.out)||{}).role||BY_ID[x.in].pos[0],sub:true}); m.teams[t].played=pl;
+  let best=-1; m.motm=null; for(const k of [0,1]) for(const [pid,n] of Object.entries(m.notes[k])) if(n>best){ best=n; m.motm={t:k,pid}; }
+  X.paused=false; match.at=Date.now()-H*MSPEED; htFinish(true);
+  toast(X.subs.length?`🔁 ${X.subs.length} changement${X.subs.length>1?"s":""} · ${MENT[X.ment].n}`:MENT[X.ment].n); }
+
+function playLocal(m,ctx){ LCTX=ctx?{...ctx,mid:m.id,decided:false,paused:false}:null; cpuMatch=m; match=m; fxSeen[m.id]=null; mSkip=null; setMode("match"); window.scrollTo(0,0); }
 const endDelay=m=>(m.len+3)*MSPEED+1500;
 const sharedLive=()=>match&&match!==cpuMatch&&matchMinute()<match.len+1&&matchMinute()>=-6;
 const enough=S=>S.lineup.filter(l=>l.pid).length>=7;
@@ -2815,9 +2961,10 @@ async function careerPlay(){
   const mine=W(), A=strength(mine,me,true); if(!enough(A)){ toast("Il te faut au moins 7 joueurs possédés dans ton 11 type",true); return; }
   const oc=careerOpp(i), B=strength(oc,null,false);
   const m=buildMatch([{c:mine,S:A,label:"11 type",owner:me,name:NAMES[me]},{c:oc,S:B,label:O.comp,owner:CPU,name:O.n}]);
-  const [a,b]=m.score; k.n=(k.n||0)+1;
-  if(a>b){ k.lvl=i+1; if(i+1>k.best){ k.best=i+1; later({coins:40+15*i},`Carrière : victoire contre ${O.n}`,m); if(CAREER_END[i]) later(CAREER_END[i],`🏆 ${O.comp} remportée`,m); if(i===CAREER.length-1) post(`🧗 ${NAMES[me]} a terminé la Carrière en battant le Real Madrid !`); } }
-  save(); saveReplay(m); addHist(histOf(m,{nr:1,mode:"carriere"})); playLocal(m);
+  k.n=(k.n||0)+1; const snap={lvl:k.lvl,best:k.best};
+  const apply=m=>{ const [a,b]=m.score; if(a>b){ k.lvl=i+1; if(i+1>k.best){ k.best=i+1; later({coins:40+15*i},`Carrière : victoire contre ${O.n}`,m); if(CAREER_END[i]) later(CAREER_END[i],`🏆 ${O.comp} remportée`,m); if(i===CAREER.length-1) post(`🧗 ${NAMES[me]} a terminé la Carrière en battant le Real Madrid !`); } } };
+  apply(m); save();
+  playLocal(m,{t:0,c:mine,w:me,club:true,oc,OS:B,fin:(m2,changed)=>{ if(changed){ k.lvl=snap.lvl; k.best=snap.best; const c=W(); c.pend=(c.pend||[]).filter(p=>p.mid!==m2.id); apply(m2); } save(); saveReplay(m2); addHist(histOf(m2,{nr:1,mode:"carriere"})); }});
 }
 function careerHTML(){
   const k=careerState(); const i=k.lvl; const fin=i>=CAREER.length;
@@ -2928,8 +3075,9 @@ async function defiPlay(){
   if(ids.length<11){ toast("Complète tes 11 joueurs",true); return; } if(df.budget&&bCost(ids)>df.budget){ toast("Budget dépassé",true); return; }
   const mine={formation:D.formation,slots:D.slots,bench:{},coach:null}, A=strength(mine,null,false), oc=defiOpp(D.day), B=strength(oc,null,false);
   const m=buildMatch([{c:mine,S:A,label:"🎯 Défi du jour",owner:me,name:NAMES[me]},{c:oc,S:B,label:"Adversaire du jour",owner:CPU,name:defiClub(D.day)}]);
-  D.done=true; D.score=m.score; const [a,b]=m.score; later({coins:40+(a>b?60:a===b?20:0)},`Défi du jour ${a}-${b}`,m); save();
-  saveReplay(m); addHist(histOf(m,{nr:1,mode:"defi"})); playLocal(m);
+  const apply=m=>{ D.done=true; D.score=m.score; const [a,b]=m.score; later({coins:40+(a>b?60:a===b?20:0)},`Défi du jour ${a}-${b}`,m); };
+  apply(m); save();
+  playLocal(m,{t:0,c:mine,w:null,club:false,oc,OS:B,fin:(m2,changed)=>{ if(changed){ const c=W(); c.pend=(c.pend||[]).filter(p=>p.mid!==m2.id); apply(m2); } save(); saveReplay(m2); addHist(histOf(m2,{nr:1,mode:"defi"})); }});
 }
 function defiHTML(){
   const D=defiState(), df=defiOf(D.day); const ids=Object.values(D.slots); const B=defiBoard(D.day);
@@ -3075,6 +3223,7 @@ setInterval(chatTick,1000);
 // ---------- Onglet Jeux ----------
 function renderJeux(){
   if(!me) return; claimDefi();
+  $("#jPred").innerHTML=predHTML(); bindPred();
   $("#jCareer").innerHTML=careerHTML(); $("#jCup").innerHTML=cupHTML(); $("#jDefi").innerHTML=defiHTML(); $("#jQuizS").innerHTML=quizHTML(); $("#jSofa").innerHTML=sofaHTML(); $("#jStats").innerHTML=statsHTML();
   const on=(s,f)=>{ const e=$(s); if(e) e.onclick=f; };
   on("#jCarGo",careerPlay); on("#jCarReset",()=>{ careerState().lvl=0; save(); renderJeux(); });
@@ -3196,7 +3345,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-20g";
+const APP_V="2026-11-20h";
 let updShown=false;
 async function checkUpdate(){ if(updShown) return; try{ const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const APP_V="([^"]+)"/); if(m&&m[1]!==APP_V){
@@ -3256,6 +3405,9 @@ function startListeners(){
   unsubs.push(db.collection("onzeol_market").onSnapshot(qs=>{ const all={}; qs.forEach(doc=>{ const l=doc.data(); if(l&&(l.status==="open"||l.status==="sold"||l.seller===me||l.buyer===me)) all[doc.id]=l; }); onMarket(all); },()=>{}));
   unsubs.push(db.collection("onzeol_auctions").onSnapshot(qs=>{ const all={}; const now=Date.now(); qs.forEach(doc=>{ const a=doc.data(); if(a&&(a.ends>now-7*86400000)) all[doc.id]=a; }); onAuctions(all); },()=>{}));
   unsubs.push(db.collection("onzeol_leagues").onSnapshot(qs=>{ const all={}; const now=Date.now(); qs.forEach(doc=>{ const L=doc.data(); if(L&&L.end>now-30*86400000) all[doc.id]=L; }); onLeagues(all); },()=>{}));
+  try{ unsubs.push(db.collection("onzeol_admin").where("to","==",me).onSnapshot(qs=>{ qs.forEach(doc=>applyAdminOp(doc.id,doc.data())); },()=>{})); }catch(e){}
+  if(me===ADMIN) setTimeout(autoBackup,8000);
+  unsubs.push(db.collection("onzeol_meta").doc("preds").onSnapshot(sn=>{ PREDS=sn.exists?sn.data():{}; settlePreds(); if(mode==="jeux") renderJeux(); },()=>{}));
   unsubs.push(db.collection("onzeol_cups").onSnapshot(qs=>{ const all={}; qs.forEach(doc=>{ const K=doc.data(); if(K&&K.name) all[doc.id]=K; }); onCups(all); },()=>{}));
   unsubs.push(db.collection("onzeol_meta").doc("react").onSnapshot(snap=>{ if(snap.exists) onReact(snap.data()); },()=>{}));
   unsubs.push(db.collection("onzeol_drafthist").onSnapshot(qs=>{ const L=[]; qs.forEach(doc=>L.push(doc.data())); onDraftHist(L); },()=>{}));
