@@ -1,0 +1,36 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===== Mon héroïne (inchangé) =====
+    // Chaque famille a un code secret de 14 caractères (ex. ABCD-EFGH-JKLM).
+    match /families/{family} {
+      allow read, write: if request.auth != null && family.size() == 14;
+      match /messages/{message} {
+        allow read, write: if request.auth != null && family.size() == 14;
+      }
+    }
+
+    // ===== Notre 11 type OL =====
+    function joueurConnecte() {
+      return request.auth != null && request.auth.token.firebase.sign_in_provider == 'password';
+    }
+    // Profil + compos : tout le monde peut voir, seul le propriétaire peut modifier
+    match /onzeol_users/{uid} {
+      allow read: if joueurConnecte();
+      allow write: if joueurConnecte() && request.auth.uid == uid;
+    }
+    // Drafts : seuls les 2 joueurs du draft peuvent le créer / le modifier
+    match /onzeol_drafts/{key} {
+      allow read: if joueurConnecte();
+      allow create: if joueurConnecte() && request.auth.uid in request.resource.data.players;
+      allow update: if joueurConnecte() && request.auth.uid in resource.data.players
+                    && request.resource.data.players == resource.data.players;
+      allow delete: if false;
+    }
+    // Match en direct + historique : n'importe quel joueur connecté
+    match /onzeol_meta/{doc} {
+      allow read, write: if joueurConnecte();
+    }
+  }
+}

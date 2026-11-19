@@ -211,6 +211,11 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
 .plist button{padding:18px 8px;border-radius:16px;border:2px solid #ffffff33;background:#ffffff14;color:#fff;font-size:19px;font-weight:800;cursor:pointer}
 .plist button.last{border-color:#fff}
 .plist button:active{background:var(--rouge)}
+.auth{display:flex;flex-direction:column;gap:10px;width:100%;max-width:360px}
+.auth input{background:#ffffff14;border:1px solid #ffffff44;color:#fff;border-radius:12px;padding:13px;font-size:16px}
+.auth input::placeholder{color:#c8d6ff}
+.auth .big{margin-top:0}
+.amsg{min-height:18px;font-size:13.5px;color:#ffd0a0}
 .pcreate{display:flex;gap:8px;width:100%;max-width:420px;margin-top:16px}
 .pcreate input{flex:1;min-width:0;background:#ffffff14;border:1px solid #ffffff44;color:#fff;border-radius:12px;padding:12px;font-size:16px}
 .pcreate input::placeholder{color:#c8d6ff}
@@ -228,9 +233,14 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
 <body>
 <div id="start">
   <h1>Notre 11 type <span style="color:var(--rouge)">OL</span></h1>
-  <p>Qui joue ?</p>
-  <div class="plist" id="plist"></div>
-  <div class="pcreate"><input id="newName" placeholder="Nouveau ? Ton prénom" maxlength="16" autocomplete="off"><button class="btn" id="createP">Créer mon profil</button></div>
+  <p id="aTitle">Connecte-toi pour jouer</p>
+  <form class="auth" id="authForm" autocomplete="on">
+    <input id="aName" name="username" placeholder="Pseudo" maxlength="16" autocomplete="username" autocapitalize="off">
+    <input id="aPass" name="password" type="password" placeholder="Mot de passe (6 caractères min.)" autocomplete="current-password">
+    <button class="btn big" id="aLogin" type="submit">Se connecter</button>
+    <button class="btn ghost big" id="aSignup" type="button">Créer mon compte</button>
+    <div class="amsg" id="aMsg"></div>
+  </form>
   <button class="btn ghost" id="shareBtn" style="margin-top:18px">📤 Inviter quelqu'un</button>
 </div>
 
@@ -544,7 +554,7 @@ const BY_ID = Object.fromEntries([...PLAYERS,...COACHES].map(p=>[p.id,p]));
 BY_ID["sylvain-squillaci"]=BY_ID["sebastien-squillaci"];
 function slug(n){return n.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-");}
 const BENCH_N = 7;
-let NAMES = {thib:"Thib", val:"Val"};
+let NAMES = {};
 const others = () => Object.keys(NAMES).filter(x=>x!==me);
 const POS_CHIPS = ["GB","DD","DC","DG","MDC","MC","MOC","AD","AG","BU"];
 
@@ -553,34 +563,39 @@ const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const short = n => { const parts=n.split(" "); return parts.length>1 && n.length>13 ? parts.slice(1).join(" ") : n; };
 let me=null, viewing=null, editing=null, chip=null;
-let compos={thib:blank(), val:blank()};
+let compos={};
 const C = w => compos[w]||(compos[w]=blank());
 function blank(){return {formation:"4-3-3",slots:{},bench:{},coach:null,savedAt:null,library:[],loadedId:null};}
 function norm(c){c=c||{};return {formation:F[c.formation]?c.formation:"4-3-3",slots:c.slots||{},bench:c.bench||{},coach:c.coach||null,savedAt:c.savedAt||null,library:Array.isArray(c.library)?c.library:[],loadedId:c.loadedId||null};}
-try{ const l=JSON.parse(localStorage.getItem("onze-ol-cache")||"null"); if(l){ for(const k in l) compos[k]=norm(l[k]); } const n=JSON.parse(localStorage.getItem("onze-ol-names")||"null"); if(n) NAMES=Object.assign(NAMES,n); }catch(e){}
+try{ const l=JSON.parse(localStorage.getItem("onze-ol-cache2")||"null"); if(l){ for(const k in l) compos[k]=norm(l[k]); } const n=JSON.parse(localStorage.getItem("onze-ol-names2")||"null"); if(n) NAMES=Object.assign(NAMES,n); }catch(e){}
 
 // ---------- Accueil ----------
-function choose(w){ me=w; viewing=w; C(w); try{localStorage.setItem("onze-ol-me",w);}catch(e){} $("#start").style.display="none"; setMode(mode); }
-function renderStart(){
-  let last=null; try{ last=localStorage.getItem("onze-ol-me"); }catch(e){}
-  const ids=Object.keys(NAMES).sort((a,b)=>(a===last?-1:b===last?1:NAMES[a].localeCompare(NAMES[b],"fr")));
-  const L=$("#plist"); L.innerHTML="";
-  for(const id of ids){ const b=document.createElement("button"); b.textContent=NAMES[id]; if(id===last) b.className="last"; b.onclick=()=>choose(id); L.appendChild(b); }
-}
-$("#createP").onclick=async()=>{
-  const n=$("#newName").value.trim().replace(/\s+/g," ");
-  if(n.length<2){ toast("Écris ton prénom (2 lettres min.)",true); return; }
-  if(Object.values(NAMES).some(x=>x.toLowerCase()===n.toLowerCase())){ toast("Ce profil existe déjà : touche-le dans la liste",true); return; }
-  if(!ref){ toast("Pas encore connecté, réessaie dans 2 s",true); return; }
-  const id="u"+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
-  NAMES[id]=n; compos[id]=blank();
-  try{ await ref.update({["profiles."+id]:{name:n,at:Date.now()}}); }catch(e){ try{ await ref.set({profiles:{[id]:{name:n,at:Date.now()}}},{merge:true}); }catch(e2){ toast("Pas de connexion, réessaie",true); return; } }
-  $("#newName").value=""; toast(`Bienvenue ${n} !`); choose(id);
-};
-$("#newName").onkeydown=e=>{ if(e.key==="Enter") $("#createP").click(); };
-$("#shareBtn").onclick=async()=>{ const url=location.origin+location.pathname; try{ if(navigator.share){ await navigator.share({title:"Notre 11 type OL",text:"Viens faire ton 11 type de l'OL et me défier !",url}); return; } }catch(e){ return; } try{ await navigator.clipboard.writeText(url); toast("Lien copié !"); }catch(e){ toast(url); } };
-$("#who").onclick=()=>{ renderStart(); $("#start").style.display="flex"; };
-renderStart();
+function choose(w){ me=w; viewing=w; C(w); $("#start").style.display="none"; setMode(mode); }
+function renderStart(){}
+const pseudoEmail=n=>slug(n).replace(/^-+|-+$/g,"")+"@onze-ol.app";
+function authErr(e){ const c=(e&&e.code)||"";
+  if(/invalid-credential|wrong-password|user-not-found|invalid-login/.test(c)) return "Pseudo ou mot de passe incorrect";
+  if(/email-already-in-use/.test(c)) return "Ce pseudo est déjà pris";
+  if(/weak-password/.test(c)) return "Mot de passe trop court (6 caractères minimum)";
+  if(/operation-not-allowed/.test(c)) return "La connexion par mot de passe n'est pas encore activée dans Firebase";
+  if(/too-many-requests/.test(c)) return "Trop d'essais, attends un peu";
+  if(/network/.test(c)) return "Pas de connexion internet";
+  return "Erreur : "+(c||e.message||"inconnue"); }
+let pendingName=null;
+$("#authForm").onsubmit=async e=>{ e.preventDefault();
+  const n=$("#aName").value.trim(), pw=$("#aPass").value; $("#aMsg").textContent="";
+  if(!n||!pw){ $("#aMsg").textContent="Pseudo et mot de passe obligatoires"; return; }
+  try{ $("#aLogin").disabled=true; await firebase.auth().signInWithEmailAndPassword(pseudoEmail(n),pw); }catch(err){ $("#aMsg").textContent=authErr(err); }
+  $("#aLogin").disabled=false; };
+$("#aSignup").onclick=async()=>{
+  const n=$("#aName").value.trim().replace(/\s+/g," "), pw=$("#aPass").value; $("#aMsg").textContent="";
+  if(n.length<2||!/[a-z0-9]/i.test(slug(n))){ $("#aMsg").textContent="Choisis un pseudo (2 lettres min.)"; return; }
+  if(pw.length<6){ $("#aMsg").textContent="Mot de passe : 6 caractères minimum"; return; }
+  pendingName=n;
+  try{ $("#aSignup").disabled=true; await firebase.auth().createUserWithEmailAndPassword(pseudoEmail(n),pw); }catch(err){ pendingName=null; $("#aMsg").textContent=authErr(err); }
+  $("#aSignup").disabled=false; };
+$("#shareBtn").onclick=async()=>{ const url=location.origin+location.pathname; try{ if(navigator.share){ await navigator.share({title:"Notre 11 type OL",text:"Crée ton compte, fais ton 11 type de l'OL et viens me défier !",url}); return; } }catch(e){ return; } try{ await navigator.clipboard.writeText(url); toast("Lien copié !"); }catch(e){ toast(url); } };
+$("#who").onclick=()=>openModal(`Connecté en tant que ${NAMES[me]||"?"}`,null,[["Se déconnecter",()=>{ firebase.auth().signOut(); }],["Inviter quelqu'un",()=>$("#shareBtn").click(),true],["Fermer",null,true]]);
 
 // ---------- Rendu ----------
 function filled(c){return Object.values(c.slots).filter(Boolean).length;}
@@ -592,7 +607,7 @@ function renderTabs(){
     b.onclick=()=>{viewing=w;render();};
     $("#tabs").appendChild(b);
   }
-  $("#who").textContent=NAMES[me]+" · changer";
+  $("#who").textContent=(NAMES[me]||"?")+" · compte";
 }
 function slotBtn(kind,i,role,pid,mine,onclick){
   const p=pid&&BY_ID[pid]; const b=document.createElement("button");
@@ -773,7 +788,7 @@ try{ dOpp=localStorage.getItem("onze-ol-opp"); }catch(e){}
 const pairKey=(a,b)=>[a,b].sort().join("__");
 const dKey=()=>pairKey(me,dOpp);
 const dBlankTeam=()=>({slots:{},bench:{},coach:null});
-function dDefault(a,b){a=a||me;b=b||dOpp;return {status:"lobby",format:"xic",players:[a,b],form:{[a]:"4-3-3",[b]:"4-3-3"},turn:null,teams:{[a]:dBlankTeam(),[b]:dBlankTeam()},picks:[]};}
+function dDefault(a,b){a=a||me;b=b||dOpp;return {status:"lobby",format:"xic",players:[a,b].sort(),form:{[a]:"4-3-3",[b]:"4-3-3"},turn:null,teams:{[a]:dBlankTeam(),[b]:dBlankTeam()},picks:[]};}
 function dNorm(x,a,b){
   const pl=(x&&Array.isArray(x.players)&&x.players.length===2)?x.players:(a?[a,b]:["thib","val"]);
   const d=Object.assign(dDefault(pl[0],pl[1]),x||{}); d.players=pl;
@@ -788,7 +803,9 @@ function dNorm(x,a,b){
 const dNeeded=d=>{const f=FORMATS[d.format];return 11+f.bench+(f.coach?1:0);};
 const dCount=t=>Object.values(t.slots).filter(Boolean).length+Object.values(t.bench).filter(Boolean).length+(t.coach?1:0);
 function dTaken(d){ const m={}; if(!d) return m; for(const w of d.players){ const t=d.teams[w]; [...Object.values(t.slots),...Object.values(t.bench),t.coach].forEach(x=>{if(x)m[x]=w;}); } return m; }
-async function dWrite(obj){ if(!ref){toast("Pas connecté",true);return;} const o={}; for(const k in obj) o[`drafts.${dKey()}${k?"."+k:""}`]=obj[k]; try{ await ref.update(o); }catch(e){ try{ await ref.set({drafts:{[dKey()]:dNorm(draft,me,dOpp)}},{merge:true}); await ref.update(o);}catch(e2){ toast("Pas de connexion, réessaie",true);} } }
+async function dWrite(obj){ if(!db||!me){toast("Pas connecté",true);return;} const dref=db.collection("onzeol_drafts").doc(dKey());
+  try{ if(""in obj) await dref.set(obj[""]); else { try{ await dref.update(obj); }catch(e){ await dref.set(dNorm(draft,me,dOpp)); await dref.update(obj); } } }
+  catch(e){ toast("Impossible d'enregistrer le draft, réessaie",true); } }
 let dPrevStatus={}, dOppManual=false;
 function onDraftData(all){
   drafts=all||{};
@@ -817,7 +834,7 @@ function onDraftData(all){
 }
 function dPick(kind,i,pid){
   firebase.firestore().runTransaction(async t=>{
-    const s=await t.get(ref); const key=dKey(); const d=dNorm(((s.data()||{}).drafts||{})[key],me,dOpp);
+    const key=dKey(); const dref=db.collection("onzeol_drafts").doc(key); const s=await t.get(dref); const d=dNorm(s.exists?s.data():null,me,dOpp);
     if(d.status!=="running") throw new Error("Le draft n'est pas en cours");
     if(d.turn!==me) throw new Error("Ce n'est pas ton tour");
     if(dTaken(d)[pid]) throw new Error("Trop tard, déjà pris !");
@@ -828,7 +845,7 @@ function dPick(kind,i,pid){
     d.picks.push({by:me,pid,kind,i,at:Date.now()});
     const n=dNeeded(d), o=d.players.find(x=>x!==me);
     if(dCount(d.teams[o])<n) d.turn=o; else if(dCount(tm)<n) d.turn=me; else { d.status="done"; d.turn=null; }
-    t.update(ref,{["drafts."+key]:d});
+    t.set(dref,d);
   }).catch(e=>toast(e.message||"Raté, réessaie",true));
 }
 function dRestart(){ const d=dNorm(draft,me,dOpp); dWrite({"":{...dDefault(me,dOpp),format:d.format,form:d.form}}); }
@@ -843,6 +860,7 @@ function renderDraft(){
   const OB=$("#dOpp");
   OB.innerHTML= ops.length? `<span>Adversaire</span><select id="dOppSel">${ops.map(x=>{ const dd=drafts[pairKey(me,x)]; const tag=dd&&dd.status==="running"?(dd.turn===me?" · ⚡ à toi":" · en cours"):""; return `<option value="${esc(x)}" ${x===dOpp?"selected":""}>${esc(NAMES[x])}${tag}</option>`; }).join("")}</select>` : "";
   if(ops.length) $("#dOppSel").onchange=e=>{ dOpp=e.target.value; dOppManual=true; try{localStorage.setItem("onze-ol-opp",dOpp);}catch(_){} dView=null; draft=drafts[dKey()]?dNorm(drafts[dKey()]):null; renderDraft(); };
+  if(ops.length&&(!dOpp||!NAMES[dOpp]||dOpp===me)){ dOpp=ops[0]; draft=drafts[dKey()]?dNorm(drafts[dKey()]):null; }
   if(!ops.length||!dOpp){ $("#dBanner").className="dbanner"; $("#dBanner").innerHTML=`Personne à affronter pour l'instant<small>Envoie le lien de l'appli : chacun crée son profil à l'ouverture</small>`; $("#dLobby").style.display="none"; $("#dGame").style.display="none"; return; }
   const d=draft||dDefault(me,dOpp); const f=FORMATS[d.format]; const N=dNeeded(d); const o=dOpp;
   if(dView&&!d.players.includes(dView)) dView=null;
@@ -959,19 +977,31 @@ function queueFx(e,m){ if(fxQ.length>4&&e.k==="save") return; fxQ.push({e,m}); i
 function nextFx(){
   const it=fxQ.shift(); if(!it){fxBusy=false;return;} fxBusy=true;
   const {e,m}=it; const F=$("#fx"); const col=e.t===0?"var(--rouge)":"var(--bleu2)";
-  const role=pid=>{for(const tm of m.teams) for(const l of tm.lineup) if(l.pid===pid) return l.role; return null;};
+  const role=pid=>{for(const tm of m.teams) for(const l of (tm.played||tm.lineup)) if(l.pid===pid) return l.role; return null;};
   let html="",dur=1500;
   if(e.k==="goal"){
     dur=2600;
     const conf=Array.from({length:26},(_,i)=>`<i style="left:${(i*37)%100}%;background:${i%3?col:"#fff"};animation-delay:${(i%7)*.08}s;--dx:${((i*53)%60)-30}px"></i>`).join("");
     html=`<div class="fx-bg" style="--c:${col}"></div><div class="confetti">${conf}</div>
-      <div class="fx-label goal" style="--c:${col}">BUUUT !</div>
+      <div class="fx-label goal" style="--c:${col}">${e.gt==="pen"?"PENALTY… BUT !":e.gt==="fk"||e.fk?"COUP FRANC… BUT !":e.gt==="head"?"DE LA TÊTE !":"BUUUT !"}</div>
       <div class="fx-card">${cardHTML(e.p,{w:190,role:role(e.p),cls:"flip-in glow"})}</div>
       <div class="fx-sub">${e.m|0}' · ${esc(tn(m,e.t))} ${e.fk?"· coup franc 🎯":""}</div>
       ${e.a?`<div class="fx-assist">${cardHTML(e.a,{w:70,mini:true,role:role(e.a)})}<span>Passe décisive<br><b>${esc(pn(e.a))}</b></span></div>`:""}`;
   } else if(e.k==="red"){
     dur=2000;
     html=`<div class="fx-bg" style="--c:#b4432b"></div><div class="fx-card shake">${cardHTML(e.p,{w:170,role:role(e.p),cls:"flip-in"})}<div class="stamp">EXPULSÉ</div></div><div class="fx-sub">${e.m|0}' · 🟥 ${esc(pn(e.p))}</div>`;
+  } else if(e.k==="pen_award"){
+    dur=1900;
+    html=`<div class="fx-bg" style="--c:${col}"></div><div class="fx-label save" style="--c:${col}">🔴 PENALTY !</div><div class="fx-card">${cardHTML(e.p,{w:150,role:role(e.p),cls:"flip-in"})}</div><div class="fx-sub">${e.m|0}' · faute sur ${esc(pn(e.p))}</div>`;
+  } else if(e.k==="pen_save"){
+    dur=2300;
+    html=`<div class="fx-bg" style="--c:${col}"></div><div class="fx-label save" style="--c:${col}">PENALTY ARRÊTÉ !</div><div class="fx-card">${cardHTML(e.p,{w:180,role:"GB",cls:"flip-in glow"})}</div><div class="fx-sub">${esc(pn(e.p))} devant ${esc(pn(e.s))}</div>`;
+  } else if(e.k==="post"){
+    dur=1500;
+    html=`<div class="fx-bg" style="--c:#888"></div><div class="fx-label save" style="--c:#fff">🥅 POTEAU !</div><div class="fx-card shake">${cardHTML(e.p,{w:140,role:role(e.p),cls:"slide-in"})}</div>`;
+  } else if(e.k==="var"){
+    dur=2200;
+    html=`<div class="fx-bg" style="--c:#555"></div><div class="fx-label save" style="--c:#fff">📺 VAR…</div><div class="fx-card">${cardHTML(e.p,{w:160,role:role(e.p),cls:"flip-in"})}<div class="stamp">REFUSÉ</div></div><div class="fx-sub">Hors-jeu de ${esc(pn(e.p))}</div>`;
   } else if(e.k==="save"){
     dur=1400;
     html=`<div class="fx-bg" style="--c:${col}"></div><div class="fx-label save" style="--c:${col}">ARRÊT !</div><div class="fx-card">${cardHTML(e.p,{w:150,role:"GB",cls:"slide-in"})}</div>`;
@@ -1067,19 +1097,199 @@ function simulate(A,B){
   let motm=null,best=-1; for(const t of [0,1]) for(const [pid,n] of Object.entries(notes[t])) if(n>best){best=n;motm={t,pid};}
   return {ev,score,shots,onT,poss,notes,motm,len:90+extra,xg:xg.map(x=>Math.round(x*100)/100)};
 }
+// ---------- Moteur de match v2 (phases de jeu basées sur les stats) ----------
+const GRP={GB:"gk",DC:"def",DD:"def",DG:"def",PG:"def",PD:"def",MDC:"mid",MC:"mid",MG:"mid",MD:"mid",MOC:"mid",AG:"att",AD:"att",BU:"att"};
+function attrs(p,role,eff){
+  const cs=cardStats(p); const v=cs?cs.vals:[60,60,60,60,60,60]; const k=eff/Math.max(1,p.ovr);
+  if(p.pos[0]==="GB") return {gk:true,plo:v[0]*k,mai:v[1]*k,deg:v[2]*k,ref:v[3]*k,vit:v[4]*k,pla:v[5]*k,tir:30,pas:v[2]*k*.8,dri:35,def:40,phy:v[5]*k};
+  return {vit:v[0]*k,tir:v[1]*k,pas:v[2]*k,dri:v[3]*k,def:v[4]*k,phy:v[5]*k};
+}
+const rnd=Math.random, pick=(a,w)=>wpick(a,w), clamp=(x,a,b)=>Math.max(a,Math.min(b,x)), sig=x=>1/(1+Math.exp(-x));
+function simulate2(cA,SA,cB,SB){
+  const mkTeam=(c,S)=>{
+    const on=S.lineup.filter(l=>l.pid).map(l=>{const p=BY_ID[l.pid];return {pid:l.pid,role:l.role,g:GRP[l.role]||"mid",eff:l.eff,a:attrs(p,l.role,l.eff),y:0,out:false,fresh:true,st:{g:0,a:0,sv:0,psv:0,f:0,dw:0,y:0,r:0,kp:0,inj:0,inMin:0}};});
+    const bench=Object.values(c.bench||{}).filter(pid=>BY_ID[pid]&&!on.some(x=>x.pid===pid));
+    const co=BY_ID[c.coach]; return {on,bench,subs:0,red:0,cb:co?(co.ovr-75)/4:-2,all:[...on]};
+  };
+  const T=[mkTeam(cA,SA),mkTeam(cB,SB)];
+  const ev=[], score=[0,0], shots=[0,0], onT=[0,0], corners=[0,0], fouls=[0,0], offs=[0,0], cardsY=[0,0], possN=[0,0], xgSum=[0,0];
+  const live=t=>T[t].on.filter(x=>!x.out);
+  const avg=(arr,f)=>arr.length?arr.reduce((s,x)=>s+f(x),0)/arr.length:30;
+  const line=(t,g)=>{ const L=live(t).filter(x=>x.g===g); const base=avg(L,x=>x.eff); const missing=T[t].all.filter(x=>x.g===g&&x.out&&x.st.r).length; return base*(1-.07*missing)+T[t].cb; };
+  const gkOf=t=>live(t).find(x=>x.g==="gk")||live(t).find(x=>x.role==="DC")||live(t)[0];
+  const add=(e)=>{ev.push(e);return e;};
+  const len=90+2+Math.floor(rnd()*4);
+  let half2Start=false;
+  function shooterGoal(t,sh,xg,type,assist,m,extra={}){
+    shots[t]++; xgSum[t]+=xg;
+    const gk=gkOf(1-t); const ga=gk.a.gk?(gk.a.ref+gk.a.plo)/2:45;
+    if(type!=="pen"&&type!=="fk"&&rnd()<.2*(line(1-t,"def")/80)){ add({m,t,k:"block",p:sh.pid}); if(rnd()<.45) corner(t,m); return; }
+    const pg=clamp(.9*xg*Math.pow(sh.a.tir/78,1.3)/Math.pow(ga/78,1.1),.01,.8);
+    const pOn=clamp(.36+sh.a.tir/250,.3,.8); const onTarget=rnd()<pOn;
+    if(onTarget&&rnd()<pg/pOn){
+      onT[t]++;
+      if((type==="1v1"||type==="combo")&&rnd()<.05){ add({m,t,k:"var",p:sh.pid}); return; }
+      score[t]++; sh.st.g++; if(assist){assist.st.a++;}
+      add({m,t,k:"goal",p:sh.pid,a:assist?assist.pid:null,gt:type,fk:type==="fk"});
+      return true;
+    }
+    if(onTarget){ onT[t]++; gk.st.sv++; const big=xg>.18||type==="fk";
+      if(type==="pen"){ gk.st.psv++; add({m,t:1-t,k:"pen_save",p:gk.pid,s:sh.pid}); return; }
+      add({m,t:1-t,k:"save",p:gk.pid,s:sh.pid,big,gt:type}); if(rnd()<.32) corner(t,m); return; }
+    if(rnd()<.09){ add({m,t,k:"post",p:sh.pid,gt:type}); return; }
+    if(type==="pen"){ add({m,t,k:"pen_miss",p:sh.pid}); return; }
+    if(xg>.12||type==="fk") add({m,t,k:"miss",p:sh.pid,gt:type});
+  }
+  function corner(t,m){
+    corners[t]++;
+    const hd=pick(live(t).filter(x=>x.g!=="gk"),x=>Math.pow(x.a.phy/70,4)*(x.role==="DC"?1.4:x.g==="att"?1.6:.6));
+    const tk=pick(live(t).filter(x=>x.g!=="gk"&&x!==hd),x=>Math.pow(x.a.pas/70,5));
+    const marker=avg(live(1-t).filter(x=>x.g==="def"),x=>x.a.phy);
+    if(!hd) return;
+    const ch=sig((hd.a.phy-marker)/16)*.4;
+    if(rnd()<ch){ add({m,t,k:"corner",p:tk?tk.pid:null}); shooterGoal(t,hd,.11,"head",tk,m); }
+  }
+  function card(t,f,m,lastMan){
+    // retourne "y", "r" ou null
+    if(lastMan&&rnd()<.35){ f.st.r=1; f.out=true; T[t].red++; return "r"; }
+    const p=lastMan?.6:.24+(f.g==="def"||f.role==="MDC"?.06:0);
+    if(rnd()<p){ if(f.y){ f.y=2; f.st.r=1; f.out=true; T[t].red++; return "r2"; } f.y=1; f.st.y=1; cardsY[t]++; return "y"; }
+    return null;
+  }
+  function foul(t,att,m,zone){
+    // faute commise par l'équipe 1-t sur att (équipe t)
+    const D=live(1-t).filter(x=>x.g!=="gk"); if(!D.length) return;
+    const f=pick(D,x=>(zone==="box"||zone==="30m"?(x.g==="def"?3:x.role==="MDC"?2:.5):(x.g==="mid"?2:1))*(110-x.a.def)/40);
+    fouls[1-t]++; f.st.f++;
+    const lastMan= att.a.vit>f.a.vit+6 && zone!=="mid" && rnd()<.12;
+    const c=card(1-t,f,m,lastMan);
+    const e={m,t:1-t,k:"foul",p:f.pid,v:att.pid,zone,card:c,last:lastMan&&!!c};
+    if(c||zone!=="mid") add(e);
+    if(c==="r"||c==="r2") add({m,t:1-t,k:"red",p:f.pid,second:c==="r2"});
+    if(zone==="box"){ penalty(t,m,att); }
+    else if(zone==="30m") freekick(t,m);
+  }
+  function penalty(t,m,victim){
+    add({m,t,k:"pen_award",p:victim.pid});
+    const tk=pick(live(t).filter(x=>x.g!=="gk"),x=>Math.pow(x.a.tir/70,12)); if(!tk) return;
+    const gk=gkOf(1-t); const ga=gk.a.gk?gk.a.ref:45;
+    shots[t]++; xgSum[t]+=.76;
+    const conv=clamp(.76+(tk.a.tir-82)/160-(ga-80)/220,.55,.92);
+    const r=rnd();
+    if(r<conv){ onT[t]++; score[t]++; tk.st.g++; add({m,t,k:"goal",p:tk.pid,a:null,gt:"pen"}); }
+    else if(r<conv+(1-conv)*.65){ onT[t]++; gk.st.sv++; gk.st.psv++; add({m,t:1-t,k:"pen_save",p:gk.pid,s:tk.pid}); }
+    else add({m,t,k:"pen_miss",p:tk.pid,post:rnd()<.4});
+  }
+  function freekick(t,m){
+    const tk=pick(live(t).filter(x=>x.g!=="gk"),x=>Math.pow((x.a.tir*.55+x.a.pas*.45)/70,10)*(x.pid==="juninho"?6:1)); if(!tk) return;
+    const direct=rnd()<clamp((tk.a.tir-60)/30,.25,.85);
+    add({m,t,k:"fk",p:tk.pid,direct});
+    if(direct){ const x=.05*(tk.pid==="juninho"?2.6:1)*Math.pow(tk.a.tir/80,2); shooterGoal(t,tk,x,"fk",null,m); }
+    else { const hd=pick(live(t).filter(x=>x.g!=="gk"&&x!==tk),x=>Math.pow(x.a.phy/70,4)); if(hd&&rnd()<.45) shooterGoal(t,hd,.12,"head",tk,m); else add({m:m+.1,t:1-t,k:"clear"}); }
+  }
+  function phase(t,m){
+    possN[t]++;
+    const st=T[t], op=T[1-t];
+    // progression vers le dernier tiers
+    const prog=clamp(.21*Math.pow(line(t,"mid")/line(1-t,"mid"),1.1)*Math.pow(line(t,"att")/line(1-t,"def"),.9),.1,.4);
+    if(rnd()>prog){
+      if(rnd()<.11){ const c=pick(live(t).filter(x=>x.g!=="gk"),x=>x.a.dri); if(c) foul(t,c,m,"mid"); }
+      // contre-attaque de l'adversaire
+      if(rnd()<.035*Math.pow(line(1-t,"att")/75,1.5)){ counter(1-t,m); }
+      return;
+    }
+    const L=live(t).filter(x=>x.g!=="gk");
+    const modes={through:.22*Math.pow(avg(L.filter(x=>x.g==="mid"),x=>x.a.pas)/78,2),cross:.24,dribble:.18*Math.pow(avg(L.filter(x=>x.g==="att"),x=>x.a.dri)/78,2),long:.16,combo:.2};
+    const mode=pick(Object.keys(modes),k=>modes[k]);
+    const Dl=live(1-t).filter(x=>x.g!=="gk");
+    const defender=pick(Dl,x=>x.g==="def"?3:x.role==="MDC"?2:.6); if(!defender) return;
+    let carrier, finisher, xg, type=mode, assist=null;
+    if(!L.length) return;
+    if(mode==="through"){ carrier=pick(L.filter(x=>x.g==="mid"),x=>Math.pow(x.a.pas/70,6))||pick(L,x=>1); finisher=pick(L.filter(x=>x.g==="att"),x=>Math.pow(x.a.vit/70,4))||carrier; xg=.32; type="1v1";
+      if(rnd()<.2){ offs[t]++; add({m,t,k:"offside",p:finisher.pid}); return; }
+      const duel=sig(((finisher.a.vit+carrier.a.pas)/2-(defender.a.def+defender.a.vit)/2)/16); if(rnd()>duel){ defender.st.dw++; if(rnd()<.14) foul(t,finisher,m,rnd()<.4?"box":"30m"); return; } assist=carrier; }
+    else if(mode==="cross"){ carrier=pick(L.filter(x=>["AG","AD","DD","DG","MG","MD","PG","PD"].includes(x.role)),x=>Math.pow(x.a.pas/70,4))||pick(L,x=>1);
+      finisher=pick(L.filter(x=>x!==carrier),x=>Math.pow(x.a.phy/70,3)*(x.g==="att"?2.5:x.role==="MOC"?1.2:.4)); xg=.13; type="head";
+      const aer=sig(((finisher.a.phy+carrier.a.pas)/2-(defender.a.phy+defender.a.def)/2)/16)*.8; if(rnd()>aer){ defender.st.dw++; if(rnd()<.35) corner(t,m); return; } assist=carrier; }
+    else if(mode==="dribble"){ carrier=pick(L.filter(x=>x.g!=="def"),x=>Math.pow(x.a.dri/70,6))||pick(L,x=>1); finisher=carrier; xg=.17; type="solo";
+      const duel=sig((carrier.a.dri*.7+carrier.a.vit*.3-(defender.a.def*.7+defender.a.phy*.3))/15);
+      if(rnd()>duel){ defender.st.dw++; if(rnd()<.22+(carrier.a.dri-defender.a.def)/300) foul(t,carrier,m,rnd()<.22?"box":"30m"); return; } }
+    else if(mode==="long"){ finisher=pick(L.filter(x=>x.g==="mid"||x.g==="att"),x=>Math.pow(x.a.tir/70,6))||pick(L,x=>1); xg=.045; type="long"; }
+    else { carrier=pick(L.filter(x=>x.g!=="def"),x=>Math.pow(x.a.pas/70,4))||pick(L,x=>1); finisher=pick(L.filter(x=>x!==carrier),x=>Math.pow(x.a.tir/70,4)*(x.g==="att"?2:1))||carrier; xg=.14; type="combo";
+      const duel=sig(((carrier.a.pas+finisher.a.dri)/2-avg(Dl.filter(x=>x.g==="def"),x=>x.a.def))/15); if(rnd()>duel){ defender.st.dw++; if(rnd()<.1) foul(t,finisher,m,rnd()<.3?"box":"30m"); return; } assist=carrier; }
+    if(!finisher) return;
+    if(assist) assist.st.kp++;
+    shooterGoal(t,finisher,xg,type,assist,m);
+  }
+  function counter(t,m){
+    const L=live(t).filter(x=>x.g==="att"||x.role==="MOC"); if(!L.length) return;
+    const f=pick(L,x=>Math.pow(x.a.vit/70,5)); const d=pick(live(1-t).filter(x=>x.g==="def"),x=>1); if(!d) return;
+    add({m,t,k:"counter",p:f.pid});
+    if(rnd()<sig((f.a.vit-d.a.vit)/14)*.8) shooterGoal(t,f,.24,"counter",null,m);
+    else { d.st.dw++; if(rnd()<.25) foul(t,f,m,rnd()<.25?"box":"30m"); }
+  }
+  function doSub(t,m,outP,reason){
+    const st=T[t]; if(!st.bench.length||st.subs>=5||outP.st.r) return false;
+    const want=outP.g;
+    let pid=st.bench.find(x=>GRP[BY_ID[x].pos[0]]===want)||st.bench[0];
+    st.bench=st.bench.filter(x=>x!==pid);
+    const p=BY_ID[pid]; const eff=(p.ovr+Math.min(3,(p.m||0)/150))*fit(p,outP.role);
+    const inP={pid,role:outP.role,g:outP.g,eff,a:attrs(p,outP.role,eff),y:0,out:false,st:{g:0,a:0,sv:0,psv:0,f:0,dw:0,y:0,r:0,kp:0,inj:0,inMin:m}};
+    outP.out=true; outP.subbed=true; st.on.push(inP); st.all.push(inP); st.subs++;
+    add({m,t,k:"sub",p:pid,o:outP.pid,why:reason});
+    return true;
+  }
+  for(let m=1;m<=len;m++){
+    if(m===46&&!half2Start){ half2Start=true; }
+    // état du match : l'équipe menée pousse en fin de match
+    for(const t of [0,1]){
+      // blessure
+      if(rnd()<.0022){ const v=pick(live(t).filter(x=>x.g!=="gk"),x=>1); if(v){ v.st.inj=1; add({m,t,k:"injury",p:v.pid}); if(!doSub(t,m,v,"inj")){ v.eff*=.8; v.a=attrs(BY_ID[v.pid],v.role,v.eff); } } }
+      // fatigue + remplacements tactiques
+      if(m>=58&&m<=82&&T[t].subs<3&&T[t].bench.length&&rnd()<.07){
+        const cand=live(t).filter(x=>x.g!=="gk"&&x.st.inMin===0).sort((a,b)=>(b.y*8+ (b.eff<70?3:0) - b.eff/20)-(a.y*8+(a.eff<70?3:0)-a.eff/20))[0];
+        if(cand) doSub(t,m,cand,cand.y?"yellow":"tired");
+      }
+      if(m>60) for(const x of live(t)) if(x.st.inMin===0){ x.eff*= 1-.0012*(1-(x.a.phy-50)/100); }
+    }
+    const phases=rnd()<.55?2:1;
+    for(let i=0;i<phases;i++){
+      let pA=.5+(line(0,"mid")-line(1,"mid"))/70+(T[1].red-T[0].red)*.06;
+      if(m>65){ if(score[0]<score[1]) pA+=.06; if(score[1]<score[0]) pA-=.06; }
+      pA=clamp(pA,.25,.75);
+      phase(rnd()<pA?0:1,m+(i?.5:0));
+    }
+    if(m===45) add({m:45.9,t:-1,k:"ht"});
+  }
+  add({m:len+.9,t:-1,k:"ft"});
+  const poss=Math.round(possN[0]/Math.max(1,possN[0]+possN[1])*100);
+  const notes=[0,1].map(t=>{ const o={}; const conceded=score[1-t]; const res=Math.sign(score[t]-score[1-t]);
+    for(const x of T[t].all){ const st=x.st;
+      let n=6+(x.eff-75)/14+st.g*1.2+st.a*.7+st.kp*.15+st.sv*.3+st.psv*1+st.dw*.06-st.f*.08-st.y*.3-st.r*1.6+res*.3+(rnd()*.6-.3);
+      if(x.g==="gk"||x.g==="def"){ n-=conceded*.3; if(conceded===0) n+=.5; }
+      if(st.inMin>0) n=6+(n-6)*.6;
+      o[x.pid]=Math.round(clamp(n,3,10)*10)/10; }
+    return o; });
+  let motm=null,best=-1; for(const t of [0,1]) for(const [pid,n] of Object.entries(notes[t])) if(n>best){best=n;motm={t,pid};}
+  ev.sort((a,b)=>a.m-b.m);
+  return {v:2,ev,score,shots,onT,poss,notes,motm,len,corners,fouls,offs,cards:cardsY,xg:xgSum.map(x=>Math.round(x*100)/100),
+    played:[0,1].map(t=>T[t].all.map(x=>({pid:x.pid,role:x.role,sub:x.st.inMin>0})))};
+}
+
 const MSPEED=600; // ms par minute de match
 function matchMinute(){ if(!match) return 0; if(mSkip===match.id) return 999; return (Date.now()-match.at)/MSPEED; }
 async function launchMatch(){
-  if(!ref){toast("Pas connecté",true);return;}
+  if(!db||!me){toast("Pas connecté",true);return;}
   const tA=pickTeam(pA,selA), tB=pickTeam(pB,selB);
   const cA=tA.get(), cB=tB.get();
   const A=strength(cA), B=strength(cB);
   if(A.lineup.filter(l=>l.pid).length<7||B.lineup.filter(l=>l.pid).length<7){ toast("Il faut au moins 7 joueurs dans chaque équipe",true); return; }
-  const r=simulate(A,B);
-  const snap=(c,s,label,w)=>({label,owner:w,ownerName:NAMES[w]||"?",formation:c.formation,lineup:s.lineup.map(l=>({role:l.role,pid:l.pid})),coach:s.coachId,global:s.global});
-  const m={id:Date.now().toString(36),at:Date.now()+1500,by:me,teams:[snap(cA,A,tA.label,pA),snap(cB,B,tB.label,pB)],...r};
+  const r=simulate2(cA,A,cB,B);
+  const snap=(c,s,label,w,i)=>({label,owner:w,ownerName:NAMES[w]||"?",formation:c.formation,lineup:s.lineup.map(l=>({role:l.role,pid:l.pid})),played:r.played[i],coach:s.coachId,global:s.global});
+  const m={id:Date.now().toString(36),at:Date.now()+1500,by:me,teams:[snap(cA,A,tA.label,pA,0),snap(cB,B,tB.label,pB,1)],...r};
+  delete m.played;
   const hist=[{id:m.id,at:m.at,score:r.score,labels:[tA.label,tB.label],owners:[pA,pB],names:[NAMES[pA],NAMES[pB]]},...matches].slice(0,40);
-  try{ await ref.update({match:m,matches:hist}); }catch(e){ try{ await ref.set({match:m,matches:hist},{merge:true}); }catch(e2){ toast("Pas de connexion, réessaie",true); } }
+  try{ await db.collection("onzeol_meta").doc("main").set({match:m,matches:hist},{merge:true}); }catch(e){ toast("Pas de connexion, réessaie",true); }
 }
 function onMatchData(m,h){
   matches=Array.isArray(h)?h:[];
@@ -1091,18 +1301,36 @@ function onMatchData(m,h){
 }
 const pn=pid=>{const p=BY_ID[pid];return p?short(p.name):"?";};
 const tn=(m,t)=>(m&&m.teams&&m.teams[t]&&m.teams[t].ownerName)||["Thib","Val"][t];
+const GT_TXT={pen:" sur penalty",fk:" sur coup franc direct 🎯",head:" de la tête",long:" d'une frappe lointaine 🚀",solo:" après un super dribble",["1v1"]:" en face-à-face",combo:" au bout d'une belle combinaison",counter:" en contre-attaque"};
 function evText(e){
-  const T=e.t>=0?esc(tn(match,e.t)):"";
-  if(e.k==="goal") return `⚽ <b>BUT pour ${T} !</b> ${esc(pn(e.p))}${e.fk?" sur coup franc 🎯":""}${e.a?` <span class="mute">(passe de ${esc(pn(e.a))})</span>`:""}`;
-  if(e.k==="save") return `🧤 Arrêt de ${esc(pn(e.p))} devant ${esc(pn(e.s))}`;
-  if(e.k==="miss") return `😬 ${esc(pn(e.p))} (${T}) manque le cadre`;
-  if(e.k==="yellow") return `🟨 Carton jaune pour ${esc(pn(e.p))} (${T})`;
-  if(e.k==="red") return `🟥 ${e.second?"Deuxième jaune, ":""}${esc(pn(e.p))} (${T}) est expulsé !`;
-  if(e.k==="ht") return `⏸️ Mi-temps`;
-  if(e.k==="ft") return `🏁 Coup de sifflet final`;
+  const T=e.t>=0?esc(tn(match,e.t)):""; const N=x=>esc(pn(x));
+  switch(e.k){
+  case "goal": return `⚽ <b>BUT pour ${T} !</b> ${N(e.p)}${GT_TXT[e.gt]||(e.fk?GT_TXT.fk:"")}${e.a?` <span class="mute">(passe de ${N(e.a)})</span>`:""}`;
+  case "save": return e.big?`🧤 <b>Parade de ${N(e.p)}</b> devant ${N(e.s)} !`:`🧤 Arrêt de ${N(e.p)} sur la frappe de ${N(e.s)}`;
+  case "miss": return `😬 ${N(e.p)} (${T}) ${e.gt==="fk"?"envoie son coup franc au-dessus":"manque le cadre"}`;
+  case "post": return `🥅 <b>POTEAU !</b> ${N(e.p)} (${T}) trouve le montant`;
+  case "block": return `🛡️ Frappe de ${N(e.p)} contrée`;
+  case "foul": return `🚫 Faute sur ${N(e.v)}${e.zone==="box"?" <b>dans la surface</b>":e.zone==="30m"?" aux abords de la surface":""} (${N(e.p)})${e.card==="y"?" · 🟨 carton jaune":""}${e.last?" · dernier défenseur":""}`;
+  case "fk": return `🎯 Coup franc pour ${T} : ${N(e.p)} ${e.direct?"tente sa chance directement":"le joue en centre"}`;
+  case "pen_award": return `🔴 <b>PENALTY pour ${T} !</b>`;
+  case "pen_save": return `🧤 <b>${N(e.p)} arrête le penalty</b> de ${N(e.s)} !`;
+  case "pen_miss": return `😱 ${N(e.p)} (${T}) rate son penalty${e.post?" : sur le poteau !":" : au-dessus !"}`;
+  case "corner": return `⛳ Corner pour ${T}${e.p?` tiré par ${N(e.p)}`:""}`;
+  case "offside": return `🚩 ${N(e.p)} (${T}) signalé hors-jeu`;
+  case "counter": return `⚡ Contre-attaque de ${T} menée par ${N(e.p)}`;
+  case "sub": return `🔁 ${T} : ${N(e.p)} remplace ${N(e.o)}${e.why==="inj"?" (blessé)":e.why==="yellow"?" (averti)":""}`;
+  case "injury": return `🚑 ${N(e.p)} (${T}) se blesse`;
+  case "var": return `📺 <b>VAR : but de ${N(e.p)} refusé</b> pour hors-jeu !`;
+  case "yellow": return `🟨 Carton jaune pour ${N(e.p)} (${T})`;
+  case "red": return `🟥 ${e.second?"Deuxième jaune, ":"Rouge direct ! "}${N(e.p)} (${T}) est expulsé`;
+  case "clear": return `🛡️ La défense de ${T} repousse le ballon`;
+  case "ht": return `⏸️ Mi-temps`;
+  case "ft": return `🏁 Coup de sifflet final`;
+  }
   return "";
 }
-function bar(label,a,b,raw){ const w=raw?(a/((a+b)||1)*100):Math.min(92,Math.max(8,50+(a-b)*2.5)); return `<div class="sbar"><div class="sv">${Math.round(a)}</div><div class="sl"><span>${label}</span><div class="track"><i style="width:${w}%"></i></div></div><div class="sv">${Math.round(b)}</div></div>`; }
+const fmtv=v=>raw2(v); function raw2(v){ return Number.isInteger(v)?v:(Math.abs(v)<10?v.toFixed(1):Math.round(v)); }
+function bar(label,a,b,raw){ const w=raw?(a/((a+b)||1)*100):Math.min(92,Math.max(8,50+(a-b)*2.5)); return `<div class="sbar"><div class="sv">${raw?fmtv(a):Math.round(a)}</div><div class="sl"><span>${label}</span><div class="track"><i style="width:${w}%"></i></div></div><div class="sv">${raw?fmtv(b):Math.round(b)}</div></div>`; }
 function renderMatch(){
   if(!me) return;
   // setup
@@ -1147,7 +1375,7 @@ function renderBoard(){
   if(mSkip!==match.id){
     if(fxSeen[match.id]==null) fxSeen[match.id]= cur>2 ? shown.length : 0;
     while(fxSeen[match.id]<shown.length){ const e=shown[fxSeen[match.id]++]; if(mode!=="match") continue;
-      if(e.k==="goal"||e.k==="red"||(e.k==="save"&&Math.random()<.6)) queueFx(e,match);
+      if(["goal","red","pen_award","pen_save","post","var"].includes(e.k)||(e.k==="save"&&e.big)) queueFx(e,match);
       if(e.k==="ft"&&match.motm) queueFx({k:"motm",p:match.motm.pid,t:match.motm.t,note:match.notes[match.motm.t][match.motm.pid]},match); }
   }
   const sc=[0,0]; shown.forEach(e=>{if(e.k==="goal")sc[e.t]++;});
@@ -1157,9 +1385,9 @@ function renderBoard(){
   if(!done) h+=`<button class="btn ghost big" id="mSkipBtn">⏩ Voir le résultat</button>`;
   else{
     const M=match;
-    h+=`<div class="vs" style="margin-top:12px"><b>${esc(tn(M,0))}</b><span>Stats</span><b>${esc(tn(M,1))}</b></div>`+bar("Possession %",M.poss,100-M.poss,1)+bar("Tirs",M.shots[0],M.shots[1],1)+bar("Tirs cadrés",M.onT[0],M.onT[1],1);
+    h+=`<div class="vs" style="margin-top:12px"><b>${esc(tn(M,0))}</b><span>Stats</span><b>${esc(tn(M,1))}</b></div>`+bar("Possession %",M.poss,100-M.poss,1)+bar("Tirs",M.shots[0],M.shots[1],1)+bar("Tirs cadrés",M.onT[0],M.onT[1],1)+(M.v===2?bar("xG (occasions)",M.xg[0],M.xg[1],1)+bar("Corners",M.corners[0],M.corners[1],1)+bar("Fautes",M.fouls[0],M.fouls[1],1)+bar("Cartons jaunes",M.cards[0],M.cards[1],1)+bar("Hors-jeu",M.offs[0],M.offs[1],1):"");
     const mo=M.motm; if(mo) h+=`<div class="motm">⭐ Homme du match : <b>${esc(BY_ID[mo.pid]?.name||"?")}</b> (${esc(tn(M,mo.t))}) · ${M.notes[mo.t][mo.pid]}/10</div>`;
-    h+=`<div class="notes">${[0,1].map(t=>`<div><h4>Notes ${esc(tn(M,t))}</h4>${M.teams[t].lineup.filter(l=>l.pid).map(l=>`<div class="nr" onclick="showCard('${l.pid}')"><span>${l.role} ${esc(pn(l.pid))}</span><b class="${M.notes[t][l.pid]>=7.5?"hi":M.notes[t][l.pid]<5.5?"lo":""}">${M.notes[t][l.pid]}</b></div>`).join("")}</div>`).join("")}</div>`;
+    h+=`<div class="notes">${[0,1].map(t=>`<div><h4>Notes ${esc(tn(M,t))}</h4>${(M.teams[t].played||M.teams[t].lineup).filter(l=>l.pid&&M.notes[t][l.pid]!=null).map(l=>`<div class="nr" onclick="showCard('${l.pid}')"><span>${l.sub?"🔁 ":""}${l.role} ${esc(pn(l.pid))}</span><b class="${M.notes[t][l.pid]>=7.5?"hi":M.notes[t][l.pid]<5.5?"lo":""}">${M.notes[t][l.pid]}</b></div>`).join("")}</div>`).join("")}</div>`;
   }
   el.innerHTML=h;
   const sk=$("#mSkipBtn"); if(sk) sk.onclick=()=>{mSkip=match.id;fxQ=[];renderMatch();};
@@ -1167,35 +1395,61 @@ function renderBoard(){
   if(done&&mTimer){clearInterval(mTimer);mTimer=null;}
 }
 
-// ---------- Synchro Firebase ----------
-let ref=null, saveT=null, dirty=false;
+// ---------- Synchro Firebase (comptes) ----------
+let db=null, saveT=null, dirty=false, unsubs=[];
 function setSync(t,cls){ const s=$("#sync"); s.textContent=t; s.className="sync "+(cls||""); }
-function cache(){ try{localStorage.setItem("onze-ol-cache",JSON.stringify(compos));}catch(e){} }
+function cache(){ try{localStorage.setItem("onze-ol-cache2",JSON.stringify(compos));}catch(e){} }
 function save(){ cache(); dirty=true; clearTimeout(saveT); saveT=setTimeout(push,400); }
 async function push(){
-  if(!ref||!me){ return false; }
-  const data={...compos[me], updated:Date.now()};
-  try{ await ref.update({[me]:data}); }
-  catch(e){ try{ await ref.set({[me]:data},{merge:true}); }catch(e2){ setSync("⚠️ Enregistrement impossible, réessaie","err"); return false; } }
+  if(!db||!me){ return false; }
+  const data={...C(me), name:NAMES[me]||"?", updated:Date.now()};
+  try{ await db.collection("onzeol_users").doc(me).set(data); }
+  catch(e){ setSync("⚠️ Enregistrement impossible, réessaie","err"); return false; }
   dirty=false; setSync("✓ Synchronisé","ok"); return true;
+}
+async function importLegacy(name){
+  // Récupère les compos de l'ancienne version (Thib / Val) une seule fois
+  const key=slug(name); if(key!=="thib"&&key!=="val") return;
+  try{
+    const lref=db.collection("families").doc(ROOM); const ls=await lref.get(); const L=ls.exists?ls.data():{};
+    if(!L[key]||(L.claimed||{})[key]) return;
+    const c=norm(L[key]); if(!Object.keys(c.slots).length&&!c.library.length) return;
+    compos[me]=c; await push(); await lref.set({claimed:{[key]:me}},{merge:true});
+    toast("Tes compos de l'ancienne version ont été récupérées ✓"); render();
+  }catch(e){}
+}
+function startListeners(){
+  unsubs.forEach(u=>u()); unsubs=[];
+  unsubs.push(db.collection("onzeol_users").onSnapshot(qs=>{
+    const seen={};
+    qs.forEach(doc=>{ const d=doc.data()||{}; seen[doc.id]=1; NAMES[doc.id]=d.name||"?"; if(doc.id===me&&dirty) return; compos[doc.id]=norm(d); });
+    for(const id of Object.keys(NAMES)) if(!seen[id]&&id!==me) delete NAMES[id];
+    try{ localStorage.setItem("onze-ol-names2",JSON.stringify(NAMES)); }catch(e){}
+    cache(); setSync("✓ Synchronisé","ok"); render(); if(mode==="match") renderMatch(); if(mode==="draft") renderDraft();
+    if(dirty) push();
+  },()=>setSync("⚠️ Synchro coupée — recharge la page","err")));
+  unsubs.push(db.collection("onzeol_drafts").onSnapshot(qs=>{ const all={}; qs.forEach(doc=>all[doc.id]=doc.data()); onDraftData(all); },()=>{}));
+  unsubs.push(db.collection("onzeol_meta").doc("main").onSnapshot(snap=>{ const d=snap.exists?snap.data():{}; onMatchData(d.match,d.matches); },()=>{}));
 }
 try{
   firebase.initializeApp(FIREBASE_CONFIG);
-  firebase.auth().signInAnonymously().then(()=>{
-    ref=firebase.firestore().collection("families").doc(ROOM);
-    ref.onSnapshot(snap=>{
-      const d=snap.exists?snap.data():{};
-      const pr=d.profiles||{}; for(const [id,x] of Object.entries(pr)) if(x&&x.name) NAMES[id]=x.name;
-      try{ localStorage.setItem("onze-ol-names",JSON.stringify(NAMES)); }catch(e){}
-      for(const w of Object.keys(NAMES)){ if(w===me && dirty) continue; compos[w]=norm(d[w]); }
-      if($("#start").style.display!=="none") renderStart();
-      cache(); setSync("✓ Synchronisé","ok"); render();
-      const dr=Object.assign({},d.drafts||{}); if(!dr["thib__val"]&&d.draft) dr["thib__val"]=Object.assign({players:["thib","val"]},d.draft);
-      onDraftData(dr);
-      onMatchData(d.match,d.matches);
-      if(dirty) push();
-    }, ()=>setSync("⚠️ Synchro coupée — recharge la page","err"));
-  }).catch(()=>setSync("⚠️ Pas de connexion — compo gardée sur ce téléphone","err"));
+  db=firebase.firestore();
+  firebase.auth().onAuthStateChanged(async user=>{
+    if(!user||user.isAnonymous){
+      unsubs.forEach(u=>u()); unsubs=[]; me=null;
+      $("#start").style.display="flex"; setSync("Non connecté",""); return;
+    }
+    me=user.uid; C(me);
+    setSync("Connexion…","");
+    const uref=db.collection("onzeol_users").doc(me);
+    try{
+      const s=await uref.get();
+      if(s.exists){ const d=s.data(); NAMES[me]=d.name||"?"; compos[me]=norm(d); }
+      else { NAMES[me]=pendingName||($("#aName").value.trim())||user.email.split("@")[0]; compos[me]=blank(); await push(); await importLegacy(NAMES[me]); }
+    }catch(e){ setSync("⚠️ Accès refusé : règles Firebase à mettre à jour","err"); }
+    pendingName=null; $("#aPass").value="";
+    choose(me); startListeners();
+  });
 }catch(e){ setSync("⚠️ Synchro indisponible","err"); }
 </script>
 </body>
