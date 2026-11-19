@@ -1311,7 +1311,7 @@ function nextFx(){
 }
 // ---------- Simulation de match ----------
 const LINE={GB:"gk",DC:"def",DD:"def",DG:"def",PG:"def",PD:"def",MDC:"mid",MC:"mid",MG:"mid",MD:"mid",MOC:"mo",AG:"att",AD:"att",BU:"att"};
-let match=null, matches=[], selA="cur", selB="cur", pA=null, pB=null, clubMode=false, mTimer=null, mSkip=null, lastMatchId=null;
+let mClosed=null, match=null, matches=[], selA="cur", selB="cur", pA=null, pB=null, clubMode=false, mTimer=null, mSkip=null, lastMatchId=null;
 function fit(p,role){
   if(p.pos.includes(role)) return 1;
   const ok=ROLE_OK[role]||[];
@@ -1726,7 +1726,9 @@ function renderMatch(){
 }
 function renderBoard(){
   const el=$("#mBoard");
-  if(!match){ el.style.display="none"; clearInterval(mTimer); mTimer=null; return; }
+  const showB=match&&mClosed!==match.id;
+  $("#mSetup").style.display=showB?"none":""; $("#mHist").style.display=showB?"none":"";
+  if(!showB){ el.style.display="none"; clearInterval(mTimer); mTimer=null; return; }
   el.style.display="";
   const cur=matchMinute(); const done=cur>=match.len+.5;
   const shown=match.ev.filter(e=>e.m<=cur);
@@ -1747,7 +1749,9 @@ function renderBoard(){
     const mo=M.motm; if(mo) h+=`<div class="motm">⭐ Homme du match : <b>${esc(BY_ID[mo.pid]?.name||"?")}</b> (${esc(tn(M,mo.t))}) · ${M.notes[mo.t][mo.pid]}/10</div>`;
     h+=`<div class="notes">${[0,1].map(t=>`<div><h4>Notes ${esc(tn(M,t))}</h4>${(M.teams[t].played||M.teams[t].lineup).filter(l=>l.pid&&M.notes[t][l.pid]!=null).map(l=>`<div class="nr" onclick="showCard('${l.pid}')"><span>${l.sub?"🔁 ":""}${l.role} ${esc(pn(l.pid))}</span><b class="${M.notes[t][l.pid]>=7.5?"hi":M.notes[t][l.pid]<5.5?"lo":""}">${M.notes[t][l.pid]}</b></div>`).join("")}</div>`).join("")}</div>`;
   }
+  h+=`<button class="btn ghost big" id="mCloseBtn" style="margin-top:6px">✖ Fermer le match</button>`;
   el.innerHTML=h;
+  const cb=$("#mCloseBtn"); if(cb) cb.onclick=()=>{ mClosed=match.id; fxQ=[]; renderMatch(); window.scrollTo(0,0); };
   const sk=$("#mSkipBtn"); if(sk) sk.onclick=()=>{mSkip=match.id;fxQ=[];renderMatch();processPend();};
   if(!done&&!mTimer) mTimer=setInterval(()=>{ if(mode!=="match") return; const d=matchMinute()>=match.len+.5; renderBoard(); if(d){clearInterval(mTimer);mTimer=null;renderMatch();} },MSPEED);
   if(done&&mTimer){clearInterval(mTimer);mTimer=null;}
@@ -2692,7 +2696,35 @@ const CAREER=[
  {comp:"Europa League",n:"FC Porto",r:[72,80]},{comp:"Europa League",n:"Ajax",r:[74,81]},{comp:"Europa League",n:"Séville FC",r:[75,82]},{comp:"Europa League",n:"Tottenham",r:[76,84]},
  {comp:"Ligue des champions",n:"Juventus",r:[78,85]},{comp:"Ligue des champions",n:"Bayern Munich",r:[80,88]},{comp:"Ligue des champions",n:"FC Barcelone",r:[82,92]},{comp:"Ligue des champions",n:"Real Madrid",r:[84,99]}];
 const CAREER_END={6:{pack:"bronze"},10:{pack:"or"},14:{pack:"legende"}};
-const careerOpp=i=>genTeam(CAREER[i].r[0],CAREER[i].r[1],rng(hashS("carriere"+i)));
+// Effectifs (11 de départ) des adversaires de la Carrière — ordre des postes du 4-3-3 : GB, DG, DC, DC, DD, MC, MDC, MC, AG, BU, AD
+const CLUB_XI={
+ "FC Lorient":["Olivier Pantaloni|72","Yvon Mvogo|75","Darlin Yongwa|70","Bamo Meïté|71","Montassar Talbi|73","Panos Katseris|70","Arthur Avom|72","Laurent Abergel|74","Jean-Victor Makengo|71","Aiyegun Tosin|73","Bamba Dieng|73","Pablo Pagis|72"],
+ "RC Lens":["Pierre Sage|76","Robin Risser|76","Matthieu Udol|73","Malang Sarr|75","Jonathan Gradit|74","Ruben Aguilar|74","Adrien Thomasson|76","Mamadou Sangaré|76","Florian Thauvin|79","Wesley Saïd|76","Odsonne Édouard|76","Florian Sotoca|75"],
+ "Stade Rennais":["Habib Beye|75","Brice Samba|81","Quentin Merlin|75","Jérémy Jacquet|74","Anthony Rouault|76","Przemysław Frankowski|76","Valentin Rongier|77","Djaoui Cissé|74","Ludovic Blas|77","Esteban Lepaul|76","Breel Embolo|77","Mousa Al-Tamari|76"],
+ "LOSC":["Bruno Genesio|78","Berke Özer|77","Romain Perraud|75","Aïssa Mandi|76","Nathan Ngoy|75","Thomas Meunier|76","Ngal'ayel Mukau|75","Benjamin André|78","Hákon Arnar Haraldsson|79","Matías Fernández-Pardo|76","Olivier Giroud|77","Osame Sahraoui|77"],
+ "AS Monaco":["Adi Hütter|79","Philipp Köhn|78","Caio Henrique|79","Mohammed Salisu|79","Thilo Kehrer|79","Vanderson|80","Lamine Camara|80","Denis Zakaria|81","Aleksandr Golovin|80","Ansu Fati|77","Folarin Balogun|80","Takumi Minamino|79"],
+ "Olympique de Marseille":["Roberto De Zerbi|84","Gerónimo Rulli|81","Emerson Palmieri|76","Nayef Aguerd|80","Leonardo Balerdi|80","Amir Murillo|76","Matt O'Riley|79","Pierre-Emile Højbjerg|82","Geoffrey Kondogbia|78","Igor Paixão|78","Pierre-Emerick Aubameyang|80","Mason Greenwood|83"],
+ "Paris SG":["Luis Enrique|88","Lucas Chevalier|82","Nuno Mendes|86","Willian Pacho|84","Marquinhos|85","Achraf Hakimi|87","Fabián Ruiz|84","Vitinha|88","João Neves|86","Khvicha Kvaratskhelia|87","Ousmane Dembélé|90","Désiré Doué|84"],
+ "FC Porto":["Francesco Farioli|80","Diogo Costa|85","Francisco Moura|76","Jakub Kiwior|79","Jan Bednarek|77","Alberto Costa|74","Gabri Veiga|79","Alan Varela|80","Victor Froholdt|76","Borja Sainz|76","Samu Aghehowa|80","William Gomes|76"],
+ "Ajax":["Entraîneur de l'Ajax|76","Vítězslav Jaroš|74","Owen Wijndal|72","Josip Šutalo|77","Youri Baas|77","Lucas Rosa|72","Youri Regeer|74","Davy Klaassen|75","Kenneth Taylor|79","Mika Godts|77","Wout Weghorst|77","Steven Berghuis|77"],
+ "Séville FC":["Matías Almeyda|76","Ørjan Nyland|75","Adrià Pedrosa|74","Kike Salas|74","Tanguy Nianzou|74","José Ángel Carmona|75","Djibril Sow|76","Nemanja Gudelj|76","Lucien Agoumé|76","Rubén Vargas|76","Akor Adams|75","Chidera Ejuke|75"],
+ "Tottenham":["Thomas Frank|81","Guglielmo Vicario|83","Destiny Udogie|81","Micky van de Ven|84","Cristian Romero|85","Pedro Porro|83","Rodrigo Bentancur|81","João Palhinha|83","Mohammed Kudus|82","Xavi Simons|83","Dominic Solanke|81","Brennan Johnson|79"],
+ "Juventus":["Luciano Spalletti|84","Michele Di Gregorio|81","Andrea Cambiaso|81","Federico Gatti|80","Gleison Bremer|84","Pierre Kalulu|79","Teun Koopmeiners|81","Manuel Locatelli|82","Khéphren Thuram|80","Kenan Yıldız|83","Dušan Vlahović|82","Francisco Conceição|81"],
+ "Bayern Munich":["Vincent Kompany|84","Manuel Neuer|86","Alphonso Davies|83","Jonathan Tah|85","Dayot Upamecano|85","Konrad Laimer|82","Aleksandar Pavlović|83","Joshua Kimmich|89","Jamal Musiala|89","Luis Díaz|86","Harry Kane|90","Michael Olise|88"],
+ "FC Barcelone":["Hansi Flick|87","Joan García|84","Alejandro Balde|84","Ronald Araújo|84","Pau Cubarsí|85","Jules Koundé|86","Frenkie de Jong|86","Pedri|90","Dani Olmo|85","Raphinha|89","Robert Lewandowski|86","Lamine Yamal|92"],
+ "Real Madrid":["Xabi Alonso|86","Thibaut Courtois|89","Álvaro Carreras|80","Dean Huijsen|83","Éder Militão|85","Trent Alexander-Arnold|85","Federico Valverde|88","Aurélien Tchouaméni|85","Jude Bellingham|90","Vinícius Júnior|90","Kylian Mbappé|92","Arda Güler|84"]
+};
+const CLUB_ROLES=["GB","DG","DC","DC","DD","MC","MDC","MC","AG","BU","AD"];
+const clubSlug=t=>t.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+function clubTeam(club){
+  const L=CLUB_XI[club]; if(!L) return null; const cs=clubSlug(club); const slots={};
+  const [cn,co]=L[0].split("|"); const cid="x-"+cs+"-coach"; BY_ID[cid]=BY_ID[cid]||{id:cid,name:cn,pos:["COACH"],ovr:+co,year:2026,ext:true};
+  L.slice(1).forEach((x,i)=>{ const [n,o]=x.split("|"); const id="x-"+cs+"-"+clubSlug(n); BY_ID[id]=BY_ID[id]||{id,name:n,pos:[CLUB_ROLES[i]],ovr:+o,year:2026,m:null,g:null,ext:true}; slots[i]=id; });
+  return {formation:"4-3-3",slots,bench:{},coach:cid};
+}
+const clubAvg=club=>{ const L=CLUB_XI[club]; return L?Math.round(L.slice(1).reduce((a,x)=>a+ +x.split("|")[1],0)/11):0; };
+
+const careerOpp=i=>clubTeam(CAREER[i].n)||genTeam(CAREER[i].r[0],CAREER[i].r[1],rng(hashS("carriere"+i)));
 function careerState(){ const c=W(); return c.career=c.career||{lvl:0,best:0}; }
 async function careerPlay(){
   const k=careerState(); if(k.lvl>=CAREER.length) return; const i=k.lvl, O=CAREER[i];
@@ -2707,10 +2739,10 @@ function careerHTML(){
   const k=careerState(); const i=k.lvl; const fin=i>=CAREER.length;
   const comps=[...new Set(CAREER.map(x=>x.comp))];
   return `<h3>🧗 Carrière solo <small>${Math.min(i,CAREER.length)}/${CAREER.length}</small></h3>
-  <div class="rules" style="font-size:12px;margin-top:0">Ton 11 type (cartes possédées) affronte des adversaires de plus en plus forts. Gagne pour passer au suivant (nul ou défaite : tu rejoues). Pièces à chaque première victoire, pack à la fin de chaque compétition.</div>
+  <div class="rules" style="font-size:12px;margin-top:0">Ton 11 type (cartes possédées) affronte le vrai 11 de clubs de plus en plus forts. Gagne pour passer au suivant (nul ou défaite : tu rejoues). Pièces à chaque première victoire, pack à la fin de chaque compétition.</div>
   ${comps.map(cp=>`<h4>${cp}</h4><div class="car">${CAREER.map((x,j)=>x.comp!==cp?"":`<span class="${j<i?"ok":j===i?"cur":""}" title="${esc(x.n)}">${j<i?"✅":j===i?"⚔️":"🔒"} ${esc(x.n)}</span>`).join("")}</div>`).join("")}
   ${fin?`<div class="motm">🏆 Carrière terminée ! Tu as battu le Real Madrid.</div><button class="btn ghost big" id="jCarReset">🔁 Recommencer (sans récompenses déjà gagnées)</button>`
-   :`<button class="btn big" id="jCarGo">▶️ Affronter ${esc(CAREER[i].n)}</button><div class="mute" style="font-size:12px;text-align:center">Niveau adverse : ${CAREER[i].r[0]}–${CAREER[i].r[1]}</div>`}`;
+   :`<button class="btn big" id="jCarGo">▶️ Affronter ${esc(CAREER[i].n)}</button><div class="mute" style="font-size:12px;text-align:center">Note moyenne de leur 11 : ${clubAvg(CAREER[i].n)||CAREER[i].r[0]+"–"+CAREER[i].r[1]}</div>`}`;
 }
 
 // ---------- 🏆 Coupe à élimination ----------
@@ -2786,7 +2818,8 @@ const DEFIS=[
  {k:"u80",t:"Aucun joueur noté plus de 80",f:p=>p.ovr<=80},
  {k:"bud",t:"Budget de 95 crédits (prix du mode Budget)",f:()=>true,budget:95}];
 const defiOf=d=>DEFIS[hashS("defi"+d)%DEFIS.length];
-const defiOpp=d=>genTeam(76,86,rng(hashS("adv"+d)));
+const defiClub=d=>{ const K=Object.keys(CLUB_XI).filter(k=>clubAvg(k)>=75); return K[hashS("adv"+d)%K.length]; };
+const defiOpp=d=>clubTeam(defiClub(d));
 function defiState(){ const c=W(); const d=today(); if(!c.dch||c.dch.day!==d){ if(c.dch&&c.dch.done) c.dchPrev=c.dch; c.dch={day:d,formation:"4-3-3",slots:{},done:false}; } return c.dch; }
 const bCost=ids=>ids.reduce((s,id)=>s+(BPRICE[cardTier(BY_ID[id])]||0),0);
 function defiBoard(d){ const L=[]; for(const id of Object.keys(NAMES)){ const c=C(id)||{}; const x=[c.dch,c.dchPrev].find(z=>z&&z.day===d&&z.done); if(x) L.push({id,s:x.score}); }
@@ -2810,14 +2843,14 @@ async function defiPlay(){
   const D=defiState(); if(D.done) return; const df=defiOf(D.day); const ids=Object.values(D.slots);
   if(ids.length<11){ toast("Complète tes 11 joueurs",true); return; } if(df.budget&&bCost(ids)>df.budget){ toast("Budget dépassé",true); return; }
   const mine={formation:D.formation,slots:D.slots,bench:{},coach:null}, A=strength(mine,null,false), oc=defiOpp(D.day), B=strength(oc,null,false);
-  const m=buildMatch([{c:mine,S:A,label:"🎯 Défi du jour",owner:me,name:NAMES[me]},{c:oc,S:B,label:"Adversaire du jour",owner:CPU,name:"🎯 Adversaire du jour"}]);
+  const m=buildMatch([{c:mine,S:A,label:"🎯 Défi du jour",owner:me,name:NAMES[me]},{c:oc,S:B,label:"Adversaire du jour",owner:CPU,name:defiClub(D.day)}]);
   D.done=true; D.score=m.score; const [a,b]=m.score; later({coins:40+(a>b?60:a===b?20:0)},`Défi du jour ${a}-${b}`,m); save();
   addHist(histOf(m,{nr:1,mode:"defi"})); playLocal(m);
 }
 function defiHTML(){
   const D=defiState(), df=defiOf(D.day); const ids=Object.values(D.slots); const B=defiBoard(D.day);
   const form=F[D.formation];
-  return `<h3>🎯 Défi du jour</h3><div class="evban"><b>${df.t}</b><span>Même adversaire pour tout le monde aujourd'hui · 1 seul essai · tous les joueurs du jeu sont dispo</span></div>
+  return `<h3>🎯 Défi du jour</h3><div class="evban"><b>${df.t}</b><span>Adversaire du jour : <b>${esc(defiClub(D.day))}</b> (note moyenne ${clubAvg(defiClub(D.day))}) · le même pour tout le monde · 1 seul essai · tous les joueurs du jeu sont dispo</span></div>
   ${D.done?`<div class="motm">Ton score : <b>${D.score[0]} - ${D.score[1]}</b></div>`:`
    <div class="field"><span>Formation</span><select id="dfForm">${Object.keys(F).map(f=>`<option ${f===D.formation?"selected":""}>${f}</option>`).join("")}</select></div>
    <div class="dslots">${form.map(([role],i)=>{ const p=BY_ID[D.slots[i]]; return `<button class="dslot${p?" on "+cardTier(p):""}" data-ds="${i}|${role}"><small>${role}</small><b>${p?esc(short(p.name)):"+"}</b>${p?`<i>${Math.round(p.ovr*fit(p,role))}</i>`:""}</button>`; }).join("")}</div>
@@ -3050,7 +3083,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-19l";
+const APP_V="2026-11-19n";
 let updShown=false;
 async function checkUpdate(){ if(updShown) return; try{ const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const APP_V="([^"]+)"/); if(m&&m[1]!==APP_V){ updShown=true;
