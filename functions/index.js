@@ -78,18 +78,28 @@ exports.cupCreated = onDocumentCreated({ document: "onzeol_cups/{id}", region: R
   const K = ev.data.data(); await notifyAll("🏆 Nouvelle coupe !", `${await nameOf(K.owner)} a créé la coupe « ${K.name} » (${K.size} joueurs). Inscris-toi dans 🎮 Jeux.`, K.owner);
 });
 
-// ⚔️ Match de coupe prêt (tirage, tour suivant, match retour)
+// ⚽ Résultats des matchs automatiques de coupe
 exports.cupTieReady = onDocumentUpdated({ document: "onzeol_cups/{id}", region: REGION }, async ev => {
-  const b = ev.data.before.data(), a = ev.data.after.data(); if (a.status !== "running" && a.status !== "done") return;
-  if (a.status === "done" && b.status !== "done") { for (const m of a.members || []) if (m !== a.winner) await notify(m, "🏆 Coupe terminée", `${await nameOf(a.winner)} remporte la coupe « ${a.name} » !`); return; }
-  const R = a.rounds || [], last = R[R.length - 1]; if (!last) return;
-  const prev = (b.rounds || [])[R.length - 1];
-  for (let i = 0; i < last.ties.length; i++) {
-    const t = last.ties[i], p = prev && prev.ties[i]; if (t.w) continue;
-    const isNew = !p || (p.legs || []).length !== (t.legs || []).length; if (!isNew) continue;
-    const leg = (t.legs || []).length ? "retour" : "aller";
-    for (const [x, y] of [[t.a, t.b], [t.b, t.a]]) await notify(x, "⚔️ Ton match de coupe est prêt", `Match ${leg} contre ${await nameOf(y)} dans « ${a.name} ». Lance-le dans 🎮 Jeux !`);
+  const b = ev.data.before.data(), a = ev.data.after.data();
+  if (a.status === "running" && b.status === "open") { for (const m of a.members || []) await notify(m, "🏆 Tirage effectué !", `La coupe « ${a.name} » commence : les matchs se jouent automatiquement.`); return; }
+  const R = a.rounds || [];
+  for (let ri = 0; ri < R.length; ri++) for (let i = 0; i < R[ri].ties.length; i++) {
+    const t = R[ri].ties[i], p = ((b.rounds || [])[ri] || { ties: [] }).ties[i] || { legs: [] };
+    if ((t.legs || []).length <= (p.legs || []).length) continue;
+    const l = t.legs[t.legs.length - 1], an = await nameOf(t.a), bn = await nameOf(t.b);
+    const txt = `${an} ${l.s[0]}-${l.s[1]} ${bn}${t.w ? ` · qualifié : ${t.w === t.a ? an : bn}` : ""}`;
+    for (const x of [t.a, t.b]) await notify(x, `⚽ ${a.name} : résultat`, txt + " (revois le match dans 🎮 Jeux)");
   }
+  if (a.status === "done" && b.status !== "done") for (const m of a.members || []) if (m !== a.winner) await notify(m, "🏆 Coupe terminée", `${await nameOf(a.winner)} remporte la coupe « ${a.name} » !`);
+});
+// ⚽ Résultats et lancement des championnats automatiques
+exports.leagueUpdate = onDocumentUpdated({ document: "onzeol_leagues/{id}", region: REGION }, async ev => {
+  const b = ev.data.before.data(), a = ev.data.after.data();
+  if (a.status === "running" && b.status !== "running") { for (const m of a.members || []) if (m !== a.owner) await notify(m, "🏆 Le championnat commence !", `« ${a.name} » est lancé : les matchs se jouent automatiquement.`); return; }
+  const F = a.fix || [], P = b.fix || [];
+  for (let i = 0; i < F.length; i++) { const f = F[i]; if (!f.s || (P[i] && P[i].s)) continue;
+    const txt = `${await nameOf(f.a)} ${f.s[0]}-${f.s[1]} ${await nameOf(f.b)} (journée ${f.r})`;
+    for (const x of [f.a, f.b]) await notify(x, `⚽ ${a.name} : résultat`, txt + " · revois le match dans Ligue"); }
 });
 
 // 🌈 Carte Mythique ou ✨ Gold Pack tiré par un pote (via le fil d'actu)

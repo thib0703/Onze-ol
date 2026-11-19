@@ -61,6 +61,8 @@ service cloud.firestore {
       allow create: if joueurConnecte() && request.resource.data.owner == request.auth.uid
                     && request.resource.data.members == [request.auth.uid];
       allow update: if joueurConnecte() && (resource.data.owner == request.auth.uid
+                    || (resource.data.status == 'running' && request.auth.uid in resource.data.members
+                        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['fix','status']))
                     || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['members'])
                         && request.resource.data.members.toSet().difference(resource.data.members.toSet()).union(
                            resource.data.members.toSet().difference(request.resource.data.members.toSet()))
@@ -81,6 +83,11 @@ service cloud.firestore {
                     || (resource.data.status == 'running' && request.auth.uid in resource.data.members
                         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['rounds','status','winner','finalist'])));
       allow delete: if joueurConnecte() && resource.data.owner == request.auth.uid;
+    }
+    // Résumés des matchs automatiques (à revoir)
+    match /onzeol_replays/{id} {
+      allow read, create: if joueurConnecte();
+      allow update, delete: if false;
     }
     // Match en direct + historique : n'importe quel joueur connecté
     match /onzeol_meta/{doc} {

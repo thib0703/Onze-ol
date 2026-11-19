@@ -402,6 +402,9 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
 .evban.tfban{background:linear-gradient(120deg,#5a0d06,#b3200e,#ff7a1a);margin-top:8px}
 .fc-ovr{position:relative}.fc-live{position:absolute;left:100%;top:0;font-style:normal;font-size:.42em;margin-left:2px}
 .livel{margin:6px 0;padding:6px 8px;border-radius:8px;background:rgba(31,138,76,.22);font-size:13px}.livel.neg{background:rgba(180,67,43,.25)}
+.fixd{margin-top:8px;font-size:13px}.fixd summary{cursor:pointer;color:var(--mute);margin:4px 0}.fixr h5{margin:8px 0 4px;font-size:12px;color:var(--mute)}
+.fixm{display:grid;grid-template-columns:1fr auto 1fr 34px;gap:6px;align-items:center;padding:4px 0;border-top:1px solid rgba(255,255,255,.06)}.fixm>span:nth-of-type(2){text-align:right}.fixm b{text-align:center;min-width:40px}.fixm.me{color:#ffd970}
+.fixm .btn{padding:2px 6px}.tieb{grid-column:1/-1;display:flex;gap:6px;justify-content:center;align-items:center;flex-wrap:wrap}
 </style>
 </head>
 <body>
@@ -1632,10 +1635,10 @@ async function launchMatch(){
   if(pA===CPU||pB===CPU){ // match solo : joué seulement sur ton téléphone
     cpuMatch=m; match=m; fxSeen[m.id]=null; lastMatchId=lastMatchId; cpuTeams={}; renderMatch();
     const h={id:m.id,at:m.at,score:r.score,labels:[tA.label,tB.label],owners:[pA,pB],names:[pName(pA),pName(pB)],motm:r.motm?{pid:r.motm.pid,t:r.motm.t,note:r.notes[r.motm.t][r.motm.pid]}:null,st:mStats(m)};
-    try{ await db.collection("onzeol_meta").doc("main").set({matches:[h,...matches].slice(0,200)},{merge:true}); }catch(e){}
+    await addHist(h);
     return; }
   const hist=[{id:m.id,at:m.at,score:r.score,labels:[tA.label,tB.label],owners:[pA,pB],names:[NAMES[pA],NAMES[pB]],motm:r.motm?{pid:r.motm.pid,t:r.motm.t,note:r.notes[r.motm.t][r.motm.pid]}:null,st:mStats(m)},...matches].slice(0,200);
-  try{ await db.collection("onzeol_meta").doc("main").set({match:m,matches:hist},{merge:true}); }catch(e){ toast("Pas de connexion, réessaie",true); }
+  if(!(await addHist(hist[0],m))) toast("Pas de connexion, réessaie",true);
 }
 function onMatchData(m,h){
   matches=Array.isArray(h)?h:[]; setTimeout(claimRewards,0);
@@ -2426,55 +2429,105 @@ async function placeBid(id,amount){
 let feed=[];
 function post(text){ if(!db||!me) return; db.collection("onzeol_feed").doc(Date.now().toString(36)+Math.random().toString(36).slice(2,5)).set({who:me,text,at:Date.now()}).catch(()=>{}); }
 
-// ---------- Championnats (facultatifs, créés par les joueurs) ----------
+// ---------- Championnats (facultatifs, matchs joués automatiquement) ----------
 let leagues={};
 const LEAGUE_R=[{pack:"legende"},{pack:"or"},{pack:"bronze"}];
 const LG_DUR=[["3 jours",3],["1 semaine",7],["2 semaines",14],["1 mois",30]];
 function standings(L){
-  const T={}; const mem=new Set(L.members||[]); mem.forEach(id=>T[id]={id,j:0,v:0,n:0,d:0,bp:0,bc:0});
-  for(const h of matches){ if(!h.owners||h.owners[0]===h.owners[1]||isCpuH(h)||h.at<L.start||h.at>L.end) continue; const [x,y]=h.owners;
-    if(!mem.has(x)||!mem.has(y)) continue; const [a,b]=h.score;
-    for(const [id,gf,ga] of [[x,a,b],[y,b,a]]){ const r=T[id]; r.j++; r.bp+=gf; r.bc+=ga; if(gf>ga) r.v++; else if(gf<ga) r.d++; else r.n++; } }
-  return Object.values(T).sort((p,q)=>(q.v*3+q.n)-(p.v*3+p.n)||(q.bp-q.bc)-(p.bp-p.bc)||q.bp-p.bp||q.j-p.j);
+  const T={}; (L.members||[]).forEach(id=>T[id]={id,j:0,v:0,n:0,d:0,bp:0,bc:0});
+  for(const f of L.fix||[]){ if(!f.s||!T[f.a]||!T[f.b]) continue; const [a,b]=f.s;
+    for(const [id,gf,ga] of [[f.a,a,b],[f.b,b,a]]){ const r=T[id]; r.j++; r.bp+=gf; r.bc+=ga; if(gf>ga) r.v++; else if(gf<ga) r.d++; else r.n++; } }
+  return Object.values(T).sort((p,q)=>(q.v*3+q.n)-(p.v*3+p.n)||(q.bp-q.bc)-(p.bp-p.bc)||q.bp-p.bp);
 }
+function roundRobin(P){ const L=P.slice(); if(L.length%2) L.push(null); const n=L.length, R=[];
+  for(let r=0;r<n-1;r++){ const ties=[]; for(let i=0;i<n/2;i++){ const a=L[i], b=L[n-1-i]; if(a&&b) ties.push(r%2?[b,a]:[a,b]); } R.push(ties); L.splice(1,0,L.pop()); }
+  return R; }
 function claimLeague(){
   const c=W(); c.lgDone=c.lgDone||[]; let changed=false;
   for(const [id,L] of Object.entries(leagues)){
-    if(Date.now()<L.end||c.lgDone.includes(id)||!(L.members||[]).includes(me)) continue;
+    if(L.status!=="done"||c.lgDone.includes(id)||!(L.members||[]).includes(me)) continue;
     c.lgDone.push(id); changed=true;
-    const S=standings(L).filter(r=>r.j>0); const i=S.findIndex(r=>r.id===me);
+    const S=standings(L); const i=S.findIndex(r=>r.id===me);
     if(S.length>=2&&i>=0&&i<3){ grant(LEAGUE_R[i],`Championnat « ${L.name} » : ${i+1}${i?"e":"er"}`); if(i===0) post(`🏆 ${NAMES[me]} remporte le championnat « ${L.name} » !`); changed=false; }
   }
   c.lgDone=c.lgDone.slice(-60); if(changed) save();
 }
 function createLeague(){
-  openModal("Nom du championnat","",[...LG_DUR.map(([t,d])=>[t,async v=>{
+  openModal("Nom du championnat (tous les matchs se joueront automatiquement sur la durée choisie)","",[...LG_DUR.map(([t,d])=>[t,async v=>{
     if(!v){ toast("Donne un nom au championnat",true); return false; }
     const id=Date.now().toString(36)+Math.random().toString(36).slice(2,5), now=Date.now();
-    try{ await db.collection("onzeol_leagues").doc(id).set({name:v.slice(0,30),owner:me,members:[me],start:now,end:now+d*86400000,created:now});
+    try{ await db.collection("onzeol_leagues").doc(id).set({name:v.slice(0,30),owner:me,members:[me],status:"open",days:d,created:now,start:now,end:now+d*86400000});
       post(`🏆 ${NAMES[me]} a créé le championnat « ${v.slice(0,30)} » (${t}). Rejoignez-le dans Ligue !`); toast("Championnat créé ✓"); }
     catch(e){ toast("Création impossible, réessaie",true); } }]),["Annuler",null,true]]);
 }
+async function lgTx(id,fn){ const ref=db.collection("onzeol_leagues").doc(id);
+  try{ let out; await db.runTransaction(async tx=>{ const d=await tx.get(ref); if(!d.exists) throw new Error("Championnat introuvable"); const u=fn(d.data()); if(u==null) throw new Error("skip"); out=u; tx.update(ref,u); }); return out; }
+  catch(e){ if(e.message!=="skip") toast(e.message&&e.message.length<70?e.message:"Impossible, réessaie",true); return null; } }
 async function joinLeague(id,join){
-  const ref=db.collection("onzeol_leagues").doc(id);
-  try{ await db.runTransaction(async tx=>{ const d=await tx.get(ref); if(!d.exists) throw new Error("gone"); const L=d.data();
-      if(Date.now()>L.end) throw new Error("fini");
-      const m=new Set(L.members||[]); if(join) m.add(me); else m.delete(me); tx.update(ref,{members:[...m]}); });
-    toast(join?"Tu as rejoint le championnat ✓":"Tu as quitté le championnat");
-    if(join) post(`🏆 ${NAMES[me]} rejoint le championnat « ${leagues[id]?.name||""} »`);
-  }catch(e){ toast(e.message==="fini"?"Ce championnat est terminé":"Impossible, réessaie",true); }
+  const ok=await lgTx(id,L=>{ if(L.status&&L.status!=="open") throw new Error("Le championnat a déjà commencé"); const m=new Set(L.members||[]); if(join) m.add(me); else m.delete(me); return {members:[...m]}; });
+  if(ok){ toast(join?"Tu as rejoint le championnat ✓":"Tu as quitté le championnat"); if(join) post(`🏆 ${NAMES[me]} rejoint le championnat « ${leagues[id]?.name||""} »`); }
+}
+async function startLeague(id){
+  const ok=await lgTx(id,L=>{ if(L.owner!==me||(L.status&&L.status!=="open")) throw new Error("Impossible"); const P=(L.members||[]).slice().sort(()=>Math.random()-.5);
+    if(P.length<2) throw new Error("Il faut au moins 2 joueurs");
+    let R=roundRobin(P); if(P.length<=4) R=[...R,...R.map(t=>t.map(([a,b])=>[b,a]))]; // aller-retour si peu de joueurs
+    const now=Date.now(), dur=(L.days||7)*86400000, gap=Math.max(3600000,Math.floor(dur/R.length));
+    const fix=[]; R.forEach((ties,r)=>ties.forEach(([a,b])=>fix.push({r:r+1,a,b,t:now+60000+r*gap,s:null,mid:null})));
+    return {status:"running",fix,start:now,end:fix[fix.length-1].t}; });
+  if(ok){ post(`🏆 Le championnat « ${leagues[id]?.name||""} » commence ! ${new Set(ok.fix.map(f=>f.r)).size} journées, matchs joués automatiquement.`); toast("C'est parti ! La 1re journée se joue dans une minute."); }
 }
 async function deleteLeague(id){
   openModal(`Supprimer le championnat « ${leagues[id]?.name||""} » ?`,null,[["Supprimer",async()=>{ try{ await db.collection("onzeol_leagues").doc(id).delete(); toast("Championnat supprimé"); }catch(e){ toast("Impossible",true); } }],["Annuler",null,true]]);
 }
-function onLeagues(all){ leagues=all; if(me){ claimLeague(); if(mode==="ligue") renderLigue(); } }
+function onLeagues(all){ leagues=all; if(me){ claimLeague(); autoPlay(); if(mode==="ligue") renderLigue(); } }
+const fmtWhen=t=>{ const d=new Date(t); return d.toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"short"})+" "+d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}); };
 function leagueHTML(id,L){
-  const mine=(L.members||[]).includes(me), over=Date.now()>L.end, S=standings(L);
+  const mine=(L.members||[]).includes(me), st=L.status||"open", S=standings(L);
   const tbl=`<div class="rk head"><span>#</span><span>Joueur</span><span>J</span><span>V</span><span>D</span><span>Pts</span></div>`+S.map((r,i)=>`<div class="rk${r.id===me?" me":""}"><span>${r.j?(["🥇","🥈","🥉"][i]||i+1):"–"}</span><span>${esc(NAMES[r.id]||"?")}</span><span>${r.j}</span><span>${r.v}</span><span>${r.d}</span><b>${r.v*3+r.n}</b></div>`).join("");
-  return `<div class="lg${mine?" mine":""}"><div class="lgh"><b>${esc(L.name)}</b><small>${over?"Terminé":"fin dans "+fmtLeft(L.end-Date.now())} · ${(L.members||[]).length} joueur${(L.members||[]).length>1?"s":""} · créé par ${esc(NAMES[L.owner]||"?")}</small></div>
-    ${mine||over?tbl:`<div class="mute" style="font-size:12px">${(L.members||[]).map(x=>esc(NAMES[x]||"?")).join(", ")}</div>`}
-    <div class="lgb">${over?"":mine?(L.owner===me?"":`<button class="btn sm ghost" data-lq="${id}">Quitter</button>`):`<button class="btn sm" data-lj="${id}">Rejoindre</button>`}${L.owner===me?`<button class="btn sm ghost" data-ld="${id}">Supprimer</button>`:""}</div></div>`;
+  const F=L.fix||[]; const rounds=[...new Set(F.map(f=>f.r))];
+  const nextR=(F.find(f=>!f.s)||{}).r; const lastR=[...F].reverse().find(f=>f.s)?.r;
+  const fx=r=>`<div class="fixr"><h5>Journée ${r}${F.find(f=>f.r===r&&!f.s)?` · ${fmtWhen(F.find(f=>f.r===r).t)}`:""}</h5>${F.filter(f=>f.r===r).map(f=>`<div class="fixm${f.a===me||f.b===me?" me":""}"><span>${esc(NAMES[f.a]||"?")}</span><b>${f.s?f.s.join(" - "):"–"}</b><span>${esc(NAMES[f.b]||"?")}</span>${f.mid?`<button class="btn sm ghost" data-rp="${f.mid}">▶️</button>`:""}</div>`).join("")}</div>`;
+  const status=st==="open"?`Inscriptions ouvertes · ${L.days||7} j`:st==="running"?`En cours · ${F.filter(f=>f.s).length}/${F.length} matchs`:"Terminé";
+  return `<div class="lg${mine?" mine":""}"><div class="lgh"><b>${esc(L.name)}</b><small>${status} · ${(L.members||[]).length} joueur${(L.members||[]).length>1?"s":""} · créé par ${esc(NAMES[L.owner]||"?")}</small></div>
+    ${st==="open"?`<div class="mute" style="font-size:12px">${(L.members||[]).map(x=>esc(NAMES[x]||"?")).join(", ")}</div>`:tbl+
+      (mine||st==="done"?`<details class="fixd"${st==="running"?" open":""}><summary>📅 Calendrier et résultats</summary>${(lastR?[lastR]:[]).concat(nextR&&nextR!==lastR?[nextR]:[]).map(fx).join("")}<details><summary>Toutes les journées</summary>${rounds.map(fx).join("")}</details></details>`:"")}
+    <div class="lgb">${st==="open"?(mine?(L.owner===me?`<button class="btn sm" data-ls="${id}">🚀 Lancer (${(L.members||[]).length} joueurs)</button>`:`<button class="btn sm ghost" data-lq="${id}">Quitter</button>`):`<button class="btn sm" data-lj="${id}">Rejoindre</button>`):""}${L.owner===me?`<button class="btn sm ghost" data-ld="${id}">Supprimer</button>`:""}</div></div>`;
 }
+
+// ---------- ⚙️ Matchs automatiques (championnats + coupes) & résumés à revoir ----------
+let autoBusy=false;
+async function saveReplay(m){ try{ const r=JSON.parse(JSON.stringify(m)); await db.collection("onzeol_replays").doc(m.id).set(r); }catch(e){} }
+async function openReplay(mid){
+  try{ const d=await db.collection("onzeol_replays").doc(mid).get(); if(!d.exists){ toast("Résumé introuvable",true); return; }
+    const m=Object.assign(d.data(),{at:Date.now()+800}); m.id=mid+"r"+Date.now().toString(36); playLocal(m); }catch(e){ toast("Impossible de charger le résumé",true); }
+}
+function autoSides(a,b,label){ const ca=C(a)||{}, cb=C(b)||{}; const A=strength(ca,a,true), B=strength(cb,b,true);
+  return [{c:ca,S:A,label,owner:a,name:NAMES[a]||"?"},{c:cb,S:B,label,owner:b,name:NAMES[b]||"?"}]; }
+function forfeitScore(sd){ const ok=sd.map(x=>enough(x.S)); if(ok[0]&&ok[1]) return null; if(!ok[0]&&!ok[1]) return [0,0]; return ok[0]?[3,0]:[0,3]; }
+async function autoPlay(){
+  if(autoBusy||!me||!db) return; autoBusy=true; const now=Date.now();
+  try{
+    // Championnats
+    for(const [id,L] of Object.entries(leagues)){
+      if(L.status!=="running"||!(L.members||[]).includes(me)) continue;
+      for(let i=0;i<(L.fix||[]).length;i++){ const f=L.fix[i]; if(f.s||f.t>now) continue;
+        const sd=autoSides(f.a,f.b,`🏆 ${L.name} · J${f.r}`); const ff=forfeitScore(sd); let m=null, sc=ff;
+        if(!ff){ m=buildMatch(sd); sc=m.score; }
+        const res=await lgTx(id,X=>{ const g=X.fix[i]; if(!g||g.s) return null; g.s=sc; g.mid=m?m.id:null; const out={fix:X.fix}; if(X.fix.every(z=>z.s)) out.status="done"; return out; });
+        if(res&&m){ m.at=f.t; await saveReplay(m); await addHist(histOf(m,{lg:id})); post(`⚽ ${L.name} (J${f.r}) : ${NAMES[f.a]} ${sc[0]}-${sc[1]} ${NAMES[f.b]}`); }
+        else if(res&&ff) post(`⚽ ${L.name} (J${f.r}) : ${NAMES[f.a]} ${sc[0]}-${sc[1]} ${NAMES[f.b]} (forfait : moins de 7 joueurs)`);
+      }
+    }
+    // Coupes : une manche toutes les 12 h après le tirage
+    for(const [id,K] of Object.entries(cups)){
+      if(K.status!=="running"||!(K.members||[]).includes(me)) continue;
+      const ri=K.rounds.length-1, R=K.rounds[ri];
+      for(let ti=0;ti<R.ties.length;ti++){ const T=R.ties[ti]; if(T.w) continue; const k=T.legs.length; if(cupLegTime(K,ri,k)>now) continue;
+        await autoTie(id,ri,ti,k); }
+    }
+  }catch(e){} autoBusy=false;
+}
+setInterval(autoPlay,60000);
 
 // ---------- Héros du match ----------
 function heroOvr(h){ return Math.min(99,BY_ID[h.pid].ovr+Math.max(1,Math.round((h.note-6)*1.5))); }
@@ -2510,10 +2563,10 @@ function renderLigue(){
   $("#lObj").querySelectorAll("[data-oc]").forEach(b=>b.onclick=()=>{ const [s,k]=b.dataset.oc.split(":"); claimObj(s,k); });
   $("#lEvent").innerHTML=(notifState()!=="granted"?`<button class="btn ghost big" id="lNotif" style="margin:8px 0 0">🔔 Activer les notifications (ton tour, défis, échanges…)</button>`:"")+`<div class="evban"><b>${ev.name}</b><span>${ev.desc}</span><small>Pack Événement : 600 🪙 · 3 cartes du thème · 1 Rare min. — dans la Boutique</small></div><div class="evban tfban"><b>🔥 Forme du moment cette semaine</b><span>${tfWeek().map(id=>esc(BY_ID[id].name)+" ("+BY_ID[id].ovr+")").join(" · ")}</span><small>Cartes boostées dispo seulement cette semaine : 1 chance sur 5 dans le Pack Événement, 8 % dans le Pack Légende</small></div>`;
   const now=Date.now(), LL=Object.entries(leagues).sort((x,y)=>y[1].created-x[1].created);
-  const act=LL.filter(([,L])=>now<=L.end), done=LL.filter(([,L])=>now>L.end&&now-L.end<14*86400000);
+  const act=LL.filter(([,L])=>L.status!=="done"), done=LL.filter(([,L])=>L.status==="done"&&now-(L.end||0)<14*86400000);
   const mineA=act.filter(([,L])=>(L.members||[]).includes(me)), other=act.filter(([,L])=>!(L.members||[]).includes(me));
   $("#lLeague").innerHTML=`<h3>🏆 Championnats</h3>
-    <div class="rules" style="font-size:12px;margin-top:0">Facultatif : crée un championnat ou rejoins-en un. Seuls les matchs entre membres pendant sa durée comptent (pas contre l'ordi). À la fin : 1er Pack Légende, 2e Pack Épique, 3e Pack Classique (si au moins 2 joueurs ont joué).</div>
+    <div class="rules" style="font-size:12px;margin-top:0">Facultatif : crée un championnat ou rejoins-en un. Quand le créateur le lance, <b>tous les matchs se jouent automatiquement</b> avec vos 11 types, répartis sur la durée choisie. Revois chaque match avec ▶️. À la fin : 1er Pack Légende, 2e Pack Épique, 3e Pack Classique (si au moins 2 joueurs ont joué).</div>
     <button class="btn big" id="lCreate" style="margin:4px 0 10px">➕ Créer un championnat</button>
     ${mineA.length?`<h4>Mes championnats</h4>`+mineA.map(([i,L])=>leagueHTML(i,L)).join(""):""}
     ${other.length?`<h4>Championnats ouverts</h4>`+other.map(([i,L])=>leagueHTML(i,L)).join(""):""}
@@ -2523,6 +2576,8 @@ function renderLigue(){
   $("#lLeague").querySelectorAll("[data-lj]").forEach(b=>b.onclick=()=>joinLeague(b.dataset.lj,true));
   $("#lLeague").querySelectorAll("[data-lq]").forEach(b=>b.onclick=()=>joinLeague(b.dataset.lq,false));
   $("#lLeague").querySelectorAll("[data-ld]").forEach(b=>b.onclick=()=>deleteLeague(b.dataset.ld));
+  $("#lLeague").querySelectorAll("[data-ls]").forEach(b=>b.onclick=()=>startLeague(b.dataset.ls));
+  $("#lLeague").querySelectorAll("[data-rp]").forEach(b=>b.onclick=()=>openReplay(b.dataset.rp));
   $("#lFeed").innerHTML=`<h3>📰 Fil d'actu</h3>${feed.length?feed.slice(0,25).map(f=>`<div class="fd"><span>${esc(f.text)}</span><small>${new Date(f.at).toLocaleDateString("fr-FR",{day:"numeric",month:"short"})} ${new Date(f.at).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})}</small></div>`).join(""):`<div class="mute" style="font-size:13px">Rien pour l'instant.</div>`}`;
   $("#lPlayers").innerHTML=`<h3>👥 Joueurs</h3><div class="plrs">${Object.keys(NAMES).map(id=>`<button class="plr${id===me?" me":""}" data-prof="${id}"><b>${esc(NAMES[id])}</b><small>${ALL_CARDS.filter(p=>(C(id).coll||{})[p.id]).length}/${ALL_CARDS.length}</small></button>`).join("")}</div>`;
   $("#lPlayers").querySelectorAll("[data-prof]").forEach(b=>b.onclick=()=>showProfile(b.dataset.prof));
@@ -2569,7 +2624,7 @@ function buildMatch(sides){
   const m={id:Date.now().toString(36)+Math.random().toString(36).slice(2,4),at:Date.now()+1500,by:me,teams:sides.map(snap),...r}; delete m.played; return m;
 }
 function histOf(m,extra){ return Object.assign({id:m.id,at:m.at,score:m.score,labels:m.teams.map(t=>t.label),owners:m.teams.map(t=>t.owner),names:m.teams.map(t=>t.ownerName),motm:m.motm?{pid:m.motm.pid,t:m.motm.t,note:m.notes[m.motm.t][m.motm.pid]}:null,st:mStats(m)},extra||{}); }
-async function addHist(h,shared){ try{ await db.collection("onzeol_meta").doc("main").set(shared?{match:shared,matches:[h,...matches].slice(0,200)}:{matches:[h,...matches].slice(0,200)},{merge:true}); return true; }catch(e){ return false; } }
+async function addHist(h,shared){ try{ const ref=db.collection("onzeol_meta").doc("main"); await db.runTransaction(async tx=>{ const d=await tx.get(ref); const cur=(d.exists&&d.data().matches)||[]; if(cur.some(x=>x.id===h.id)) return; const u={matches:[h,...cur].slice(0,200)}; if(shared) u.match=shared; tx.set(ref,u,{merge:true}); }); return true; }catch(e){ return false; } }
 function playLocal(m){ cpuMatch=m; match=m; fxSeen[m.id]=null; mSkip=null; setMode("match"); window.scrollTo(0,0); }
 const endDelay=m=>(m.len+3)*MSPEED+1500;
 const sharedLive=()=>match&&match!==cpuMatch&&matchMinute()<match.len+1&&matchMinute()>=-6;
@@ -2611,7 +2666,7 @@ function careerHTML(){
 
 // ---------- 🏆 Coupe à élimination ----------
 let cups={};
-function onCups(all){ cups=all; if(me){ claimCups(); if(mode==="jeux") renderJeux(); } }
+function onCups(all){ cups=all; if(me){ claimCups(); autoPlay(); if(mode==="jeux") renderJeux(); } }
 function createCup(){
   openModal("Nom de la coupe","",[...[4,8].map(n=>[`${n} joueurs`,async v=>{
     if(!v){ toast("Donne un nom à la coupe",true); return false; }
@@ -2619,35 +2674,36 @@ function createCup(){
     try{ await db.collection("onzeol_cups").doc(id).set({name:v.slice(0,30),owner:me,size:n,members:[me],status:"open",rounds:[],created:Date.now()});
       post(`🏆 ${NAMES[me]} a créé la coupe « ${v.slice(0,30)} » (${n} joueurs). Inscrivez-vous dans Jeux !`); toast("Coupe créée ✓"); }catch(e){ toast("Création impossible",true); } }]),["Annuler",null,true]]);
 }
-async function cupTx(id,fn){ const ref=db.collection("onzeol_cups").doc(id);
+async function cupTx(id,fn,quiet){ const ref=db.collection("onzeol_cups").doc(id);
   try{ await db.runTransaction(async tx=>{ const d=await tx.get(ref); if(!d.exists) throw new Error("Coupe introuvable"); const u=fn(d.data()); tx.update(ref,u); }); return true; }
-  catch(e){ toast(e.message&&e.message.length<60?e.message:"Impossible, réessaie",true); return false; } }
+  catch(e){ if(!quiet&&e.message!=="skip") toast(e.message&&e.message.length<60?e.message:"Impossible, réessaie",true); return false; } }
 function joinCup(id,join){ return cupTx(id,K=>{ if(K.status!=="open") throw new Error("Inscriptions fermées"); const m=new Set(K.members||[]);
   if(join){ if(m.size>=K.size) throw new Error("Coupe complète"); m.add(me); } else m.delete(me); return {members:[...m]}; }).then(ok=>ok&&toast(join?"Inscrit ✓":"Désinscrit")); }
 function startCup(id){ return cupTx(id,K=>{ if(K.owner!==me||K.status!=="open") throw new Error("Impossible"); if((K.members||[]).length!==K.size) throw new Error(`Il faut ${K.size} inscrits`);
   const P=K.members.slice().sort(()=>Math.random()-.5); const ties=[]; for(let i=0;i<P.length;i+=2) ties.push({a:P[i],b:P[i+1],legs:[],w:null});
-  return {status:"running",rounds:[{ties}]}; }).then(ok=>{ if(ok){ post(`🏆 Tirage de la coupe « ${cups[id]?.name||""} » effectué !`); toast("Tirage effectué ✓"); } }); }
+  return {status:"running",rounds:[{ties}],start:Date.now()}; }).then(ok=>{ if(ok){ post(`🏆 Tirage de la coupe « ${cups[id]?.name||""} » effectué ! Les matchs se jouent automatiquement.`); toast("Tirage effectué ✓ : 1er match dans une minute"); } }); }
+const CUP_GAP=12*3600000;
+const cupLegTime=(K,ri,k)=>(K.start||K.created)+60000+(2*ri+k)*CUP_GAP;
 function shootout(gA,gB){ const pA=.76-(gB-75)/250, pB=.76-(gA-75)/250; let a=0,b=0;
   for(let k=0;k<5;k++){ if(Math.random()<pA) a++; if(Math.random()<pB) b++; if(a>b+(4-k)||b>a+(4-k)) break; }
   let g=0; while(a===b&&g++<20){ const x=Math.random()<pA, y=Math.random()<pB; a+=x; b+=y; } if(a===b) a++; return [a,b]; }
-async function playTie(id,ri,ti){
-  if(sharedLive()){ toast("Un match est déjà en cours, attends la fin",true); return; }
-  const K=cups[id]; const T=K.rounds[ri].ties[ti]; const k=T.legs.length; if(k>=2||T.w) return;
-  const [h,v]=k===0?[T.a,T.b]:[T.b,T.a];
-  const ch=C(h), cv=C(v), H=strength(ch,h,true), V=strength(cv,v,true);
-  if(!enough(H)||!enough(V)){ toast(`${NAMES[enough(H)?v:h]||"?"} n'a pas 7 joueurs possédés dans son 11 type`,true); return; }
-  const m=buildMatch([{c:ch,S:H,label:`🏆 ${K.name} · ${k?"retour":"aller"}`,owner:h,name:NAMES[h]},{c:cv,S:V,label:"11 type",owner:v,name:NAMES[v]}]);
-  const ok=await cupTx(id,X=>{ const R=X.rounds, t=R[ri].ties[ti]; if(t.legs.length!==k) throw new Error("Ce match a déjà été joué");
-    const s=k===0?[m.score[0],m.score[1]]:[m.score[1],m.score[0]]; t.legs.push({s,mid:m.id});
+async function autoTie(id,ri,ti,k){
+  const K=cups[id]; const T=K.rounds[ri].ties[ti]; const [h,v]=k===0?[T.a,T.b]:[T.b,T.a];
+  const sd=autoSides(h,v,`🏆 ${K.name} · ${k?"retour":"aller"}`); const ff=forfeitScore(sd); let m=null, sc=ff;
+  if(!ff){ m=buildMatch(sd); sc=m.score; }
+  const H=sd[0].S, V=sd[1].S;
+  const ok=await cupTx(id,X=>{ const R=X.rounds, t=R[ri]&&R[ri].ties[ti]; if(!t||t.legs.length!==k||t.w) throw new Error("skip");
+    const s2=k===0?[sc[0],sc[1]]:[sc[1],sc[0]]; t.legs.push({s:s2,mid:m?m.id:null});
     if(t.legs.length===2){ const ga=t.legs[0].s[0]+t.legs[1].s[0], gb=t.legs[0].s[1]+t.legs[1].s[1];
-      if(ga!==gb) t.w=ga>gb?t.a:t.b; else { t.tab=shootout(H.gk,V.gk); /* tab = [b, a] : b reçoit au retour */ t.w=t.tab[0]>t.tab[1]?t.b:t.a; } }
+      if(ga!==gb) t.w=ga>gb?t.a:t.b; else { t.tab=shootout(H.gk,V.gk); t.w=t.tab[0]>t.tab[1]?t.b:t.a; } }
     const out={rounds:R};
     if(R[ri].ties.every(x=>x.w)){ const W2=R[ri].ties.map(x=>x.w);
       if(W2.length===1){ out.status="done"; out.winner=W2[0]; out.finalist=t.a===W2[0]?t.b:t.a; }
       else if(ri===R.length-1){ const ties=[]; for(let i=0;i<W2.length;i+=2) ties.push({a:W2[i],b:W2[i+1],legs:[],w:null}); R.push({ties}); } }
-    return out; });
+    return out; },true);
   if(!ok) return;
-  await addHist(histOf(m,{cup:id}),m); setMode("match");
+  if(m){ m.at=cupLegTime(K,ri,k); await saveReplay(m); await addHist(histOf(m,{cup:id})); }
+  post(`🏆 ${K.name} (${RNAME(K.rounds[ri].ties.length)}, ${k?"retour":"aller"}) : ${NAMES[h]} ${sc[0]}-${sc[1]} ${NAMES[v]}${ff?" (forfait)":""}`);
 }
 function claimCups(){ const c=W(); c.cupDone=c.cupDone||[]; let ch=false;
   for(const [id,K] of Object.entries(cups)){ if(K.status!=="done"||c.cupDone.includes(id)) continue; if(K.winner!==me&&K.finalist!==me) continue;
@@ -2661,10 +2717,10 @@ const RNAME=n=>n===1?"Finale":n===2?"Demi-finales":"Quarts de finale";
 function cupHTML(){
   const L=Object.entries(cups).sort((x,y)=>y[1].created-x[1].created).filter(([,K])=>K.status!=="done"||Date.now()-K.created<21*86400000);
   const tieH=(id,K,ri,ti,T)=>{ const N=x=>esc(NAMES[x]||"?"); const ag=T.legs.length?[T.legs.reduce((s,l)=>s+l.s[0],0),T.legs.reduce((s,l)=>s+l.s[1],0)]:null;
-    const mine=T.a===me||T.b===me; const can=mine&&!T.w&&K.status==="running"&&ri===K.rounds.length-1;
+    const mine=T.a===me||T.b===me; const nxt=!T.w&&K.status==="running"&&ri===K.rounds.length-1?cupLegTime(K,ri,T.legs.length):null;
     return `<div class="tie${T.w?" done":""}"><span class="${T.w===T.a?"win":""}">${N(T.a)}</span><b>${T.legs.map(l=>l.s.join("-")).join(" / ")||"–"}${ag&&T.legs.length===2?`<small>(${ag.join("-")}${T.tab?` · t.a.b ${T.tab[1]}-${T.tab[0]}`:""})</small>`:""}</b><span class="${T.w===T.b?"win":""}">${N(T.b)}</span>
-      ${can?`<button class="btn sm" data-ct="${id}|${ri}|${ti}">${T.legs.length?"▶️ Retour":"▶️ Aller"}</button>`:""}</div>`; };
-  return `<h3>🏆 Coupes à élimination</h3><div class="rules" style="font-size:12px;margin-top:0">4 ou 8 joueurs, tirage au sort, matchs aller-retour avec vos 11 types (cartes possédées). Égalité au total : tirs au but. Vainqueur : Pack Légende + 300 🪙, finaliste : Pack Épique.</div>
+      <div class="tieb">${T.legs.map((l,k)=>l.mid?`<button class="btn sm ghost" data-rp="${l.mid}">▶️ ${k?"Retour":"Aller"}</button>`:"").join("")}${nxt?`<small class="mute">${T.legs.length?"Retour":"Aller"} : ${fmtWhen(nxt)}</small>`:""}</div></div>`; };
+  return `<h3>🏆 Coupes à élimination</h3><div class="rules" style="font-size:12px;margin-top:0">4 ou 8 joueurs, tirage au sort, matchs aller-retour avec vos 11 types (cartes possédées), <b>joués automatiquement toutes les 12 h</b> : revois les résumés avec ▶️. Égalité au total : tirs au but. Vainqueur : Pack Légende + 300 🪙, finaliste : Pack Épique.</div>
   <button class="btn big" id="jCupNew">➕ Créer une coupe</button>
   ${L.map(([id,K])=>`<div class="lg${(K.members||[]).includes(me)?" mine":""}"><div class="lgh"><b>${esc(K.name)}</b><small>${K.status==="open"?`Inscriptions ${K.members.length}/${K.size}`:K.status==="running"?"En cours":`Terminée · 🏆 ${esc(NAMES[K.winner]||"?")}`} · créée par ${esc(NAMES[K.owner]||"?")}</small></div>
     ${K.status==="open"?`<div class="mute" style="font-size:12px">${K.members.map(x=>esc(NAMES[x]||"?")).join(", ")}</div><div class="lgb">${K.members.includes(me)?(K.owner===me?"":`<button class="btn sm ghost" data-cq="${id}">Se désinscrire</button>`):K.members.length<K.size?`<button class="btn sm" data-cj="${id}">S'inscrire</button>`:""}${K.owner===me&&K.members.length===K.size?`<button class="btn sm" data-cs="${id}">🎲 Lancer le tirage</button>`:""}${K.owner===me?`<button class="btn sm ghost" data-cd="${id}">Supprimer</button>`:""}</div>`
@@ -2830,7 +2886,7 @@ function renderJeux(){
   J.querySelectorAll("[data-cq]").forEach(b=>b.onclick=()=>joinCup(b.dataset.cq,false));
   J.querySelectorAll("[data-cs]").forEach(b=>b.onclick=()=>startCup(b.dataset.cs));
   J.querySelectorAll("[data-cd]").forEach(b=>b.onclick=()=>openModal(`Supprimer la coupe « ${cups[b.dataset.cd]?.name||""} » ?`,null,[["Supprimer",()=>{ db.collection("onzeol_cups").doc(b.dataset.cd).delete().catch(()=>toast("Impossible",true)); }],["Annuler",null,true]]));
-  J.querySelectorAll("[data-ct]").forEach(b=>b.onclick=()=>{ const [id,ri,ti]=b.dataset.ct.split("|"); playTie(id,+ri,+ti); });
+  J.querySelectorAll("[data-rp]").forEach(b=>b.onclick=()=>openReplay(b.dataset.rp));
   const fs=$("#dfForm"); if(fs) fs.onchange=e=>{ const D=defiState(); D.formation=e.target.value; D.slots={}; save(); renderJeux(); };
   J.querySelectorAll("[data-ds]").forEach(b=>b.onclick=()=>{ const [i,r]=b.dataset.ds.split("|"); pickDefi(+i,r); });
   on("#dfGo",defiPlay); on("#jQuiz",quizStart);
@@ -2874,9 +2930,9 @@ const TIPS={
  auction:{t:"🔨 Enchères",x:`Mets un doublon aux enchères pour une durée choisie. Chaque offre doit dépasser la précédente, et la meilleure offre à la fin remporte la carte.`},
  sell:{t:"💰 Vendre les doublons",x:`Tes doublons se revendent contre des pièces (Commune 4, Rare 12, Épique 32, Légendaire 100, Mythique 300).<br><br>Astuce : garde-en quelques-uns pour les échanges, le marché ou pour <b>faire évoluer</b> une carte (+1 à +3).`},
  sbc:{t:"🧩 Défis SBC",x:`Donne un groupe de cartes qui respecte les conditions du défi, et reçois une récompense en échange. Les cartes données disparaissent de ta collection.`},
- league:{t:"🏆 Créer un championnat",x:`Choisis un nom et une durée. Les autres le voient et décident de le rejoindre ou non. Seuls les matchs entre membres pendant la durée comptent.<br><br>À la fin : 1er Pack Légende, 2e Pack Épique, 3e Pack Classique.`},
+ league:{t:"🏆 Créer un championnat",x:`Choisis un nom et une durée. Les autres le rejoignent s'ils veulent, puis tu le <b>lances</b> : un calendrier est tiré au sort et <b>tous les matchs se jouent automatiquement</b> avec vos 11 types, répartis sur la durée. Tu peux revoir chaque match avec ▶️.<br><br>À la fin : 1er Pack Légende, 2e Pack Épique, 3e Pack Classique.`},
  career:{t:"🧗 Carrière",x:`Ton 11 type (cartes possédées) affronte 15 clubs, de Lorient jusqu'au Real Madrid. Gagne pour passer au suivant : un nul ou une défaite, et tu rejoues.<br><br>Des pièces à chaque première victoire, un pack à la fin de chaque compétition.`},
- cup:{t:"🏆 Coupes",x:`Crée une coupe à 4 ou 8 joueurs. Quand tout le monde est inscrit, le créateur lance le tirage. Chaque tour se joue en aller-retour avec vos 11 types, et en cas d'égalité ce sont les tirs au but.`},
+ cup:{t:"🏆 Coupes",x:`Crée une coupe à 4 ou 8 joueurs. Quand tout le monde est inscrit, le créateur lance le tirage. Les matchs aller-retour <b>se jouent automatiquement toutes les 12 h</b> avec vos 11 types, et tu peux revoir chaque match avec ▶️. Égalité : tirs au but.`},
  defi:{t:"🎯 Défi du jour",x:`Compose une équipe qui respecte la contrainte du jour, avec tous les joueurs du jeu. Tout le monde affronte le même adversaire et tu n'as <b>qu'un seul essai</b>.<br><br>Le meilleur écart de buts du jour gagne un Pack Épique le lendemain.`},
  quiz:{t:"🧠 Quiz OL",x:`5 questions sur les joueurs de l'OL. 10 🪙 par bonne réponse, +30 pour un sans-faute, et 3 quiz récompensés par jour.`},
  sofa:{t:"🛋️ Canapé",x:`Pour jouer à deux sur le même téléphone. À chaque poste, 5 joueurs sont proposés : le premier en choisit un, l'autre prend parmi les 4 restants, et on alterne qui commence.<br><br>Ensuite le match se joue directement ici (sans gains).`},
@@ -2942,7 +2998,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-19i";
+const APP_V="2026-11-19j";
 let updShown=false;
 async function checkUpdate(){ if(updShown) return; try{ const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const APP_V="([^"]+)"/); if(m&&m[1]!==APP_V){ updShown=true;
