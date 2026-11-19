@@ -64,6 +64,18 @@ service cloud.firestore {
       allow create: if joueurConnecte() && request.resource.data.who == request.auth.uid;
       allow update, delete: if false;
     }
+    // Championnats facultatifs : le créateur gère, les autres peuvent seulement se rajouter / se retirer
+    match /onzeol_leagues/{id} {
+      allow read: if joueurConnecte();
+      allow create: if joueurConnecte() && request.resource.data.owner == request.auth.uid
+                    && request.resource.data.members == [request.auth.uid];
+      allow update: if joueurConnecte() && (resource.data.owner == request.auth.uid
+                    || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['members'])
+                        && request.resource.data.members.toSet().difference(resource.data.members.toSet()).union(
+                           resource.data.members.toSet().difference(request.resource.data.members.toSet()))
+                           .hasOnly([request.auth.uid])));
+      allow delete: if joueurConnecte() && resource.data.owner == request.auth.uid;
+    }
     // Match en direct + historique : n'importe quel joueur connecté
     match /onzeol_meta/{doc} {
       allow read, write: if joueurConnecte();

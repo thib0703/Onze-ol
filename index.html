@@ -354,6 +354,10 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
 .pick button{flex:1;padding:28px 10px;border-radius:18px;border:2px solid #ffffff33;background:#ffffff14;color:#fff;font-size:24px;font-weight:800;cursor:pointer}
 .pick button span{display:block;font-size:13px;font-weight:400;color:#c8d6ff;margin-top:6px}
 .pick button:active{background:var(--rouge)}
+.lg{border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:10px;margin:8px 0;background:rgba(255,255,255,.03)}
+.lg.mine{border-color:rgba(255,217,112,.5)}
+.lgh{display:flex;flex-direction:column;margin-bottom:6px}.lgh small{opacity:.7;font-size:12px}
+.lgb{display:flex;gap:6px;justify-content:flex-end;margin-top:6px}.lgb:empty{display:none}
 </style>
 </head>
 <body>
@@ -1626,7 +1630,7 @@ function renderMatch(){
    <div class="field">${pSel("pB",pB)}<select id="selB">${ob.map(o=>`<option value="${esc(o.key)}" ${o.key===selB?"selected":""}>${esc(o.label)}</option>`).join("")}</select></div>
    <div class="vs"><b>${esc(pName(pA))}</b><span>Force</span><b>${esc(pName(pB))}</b></div>
    ${bar("Global",A.global,B.global)}${bar("Attaque",A.att,B.att)}${bar("Milieu",A.mid,B.mid)}${bar("Défense",A.def,B.def)}${bar("Gardien",A.gk,B.gk)}${bar("Coach",A.coach,B.coach)}${bar("Collectif",A.chem,B.chem)}
-   <div class="rules" style="font-size:12px">🤖 Personne de dispo ? Choisis « Ordinateur » comme adversaire (4 niveaux, gains divisés par 2, hors championnat).<br>🔒 Avec un 11 type ou une compo enregistrée, seules les cartes possédées jouent. Une équipe de Draft joue avec tous ses joueurs.</div>
+   <div class="rules" style="font-size:12px">🤖 Personne de dispo ? Choisis « Ordinateur » comme adversaire (4 niveaux, gains divisés par 2, hors championnats).<br>🔒 Avec un 11 type ou une compo enregistrée, seules les cartes possédées jouent. Une équipe de Draft joue avec tous ses joueurs.</div>
    <button class="btn big" id="mGo" ${live?"disabled":""}>${live?"Match en cours…":"▶️ Lancer le match"}</button>
    <div class="rules" style="font-size:12px;margin-bottom:0">Le résultat dépend des notes des joueurs, de leurs vraies stats à l'OL (matchs joués = expérience, ratio buts/match = efficacité devant le but), de leur placement (un joueur hors de son poste perd du niveau), du collectif (même nationalité ou même époque), des évolutions de cartes et de l'entraîneur… avec une part de hasard, comme au vrai foot.</div>`;
   $("#pA").onchange=e=>{pA=e.target.value;selA="cur";renderMatch();};
@@ -2274,7 +2278,7 @@ function settleAuctions(){
     ch=true; db.collection("onzeol_auctions").doc(id).update({settledSeller:true}).catch(()=>{}); }
   if(ch){ save(); renderCoins(); }
 }
-const fmtLeft=ms=>{ if(ms<=0) return "terminée"; const s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor(s%3600/60); return h?`${h} h ${m} min`:m?`${m} min ${s%60}s`:`${s}s`; };
+const fmtLeft=ms=>{ if(ms<=0) return "terminée"; const s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor(s%3600/60); return h>=48?`${Math.floor(h/24)} j ${h%24} h`:h?`${h} h ${m} min`:m?`${m} min ${s%60}s`:`${s}s`; };
 function renderAuctions(){
   const el=$("#cAuct"); if(!el||!me) return; const c=W(); const now=Date.now();
   const open=Object.entries(auctions).filter(([i,a])=>a.ends>now&&BY_ID[a.pid]).sort((x,y)=>x[1].ends-y[1].ends);
@@ -2329,19 +2333,54 @@ async function placeBid(id,amount){
 let feed=[];
 function post(text){ if(!db||!me) return; db.collection("onzeol_feed").doc(Date.now().toString(36)+Math.random().toString(36).slice(2,5)).set({who:me,text,at:Date.now()}).catch(()=>{}); }
 
-// ---------- Championnat de la semaine ----------
-function standings(wk){
-  const T={};
-  for(const h of matches){ if(!h.owners||h.owners[0]===h.owners[1]||isCpuH(h)||WEEKN(h.at)!==wk) continue; const [x,y]=h.owners; const [a,b]=h.score;
-    for(const [id,gf,ga] of [[x,a,b],[y,b,a]]){ const r=T[id]||(T[id]={id,j:0,v:0,n:0,d:0,bp:0,bc:0}); r.j++; r.bp+=gf; r.bc+=ga; if(gf>ga) r.v++; else if(gf<ga) r.d++; else r.n++; } }
-  return Object.values(T).sort((p,q)=>(q.v*3+q.n)-(p.v*3+p.n)||(q.bp-q.bc)-(p.bp-p.bc)||q.bp-p.bp);
-}
+// ---------- Championnats (facultatifs, créés par les joueurs) ----------
+let leagues={};
 const LEAGUE_R=[{pack:"legende"},{pack:"or"},{pack:"bronze"}];
+const LG_DUR=[["3 jours",3],["1 semaine",7],["2 semaines",14],["1 mois",30]];
+function standings(L){
+  const T={}; const mem=new Set(L.members||[]); mem.forEach(id=>T[id]={id,j:0,v:0,n:0,d:0,bp:0,bc:0});
+  for(const h of matches){ if(!h.owners||h.owners[0]===h.owners[1]||isCpuH(h)||h.at<L.start||h.at>L.end) continue; const [x,y]=h.owners;
+    if(!mem.has(x)||!mem.has(y)) continue; const [a,b]=h.score;
+    for(const [id,gf,ga] of [[x,a,b],[y,b,a]]){ const r=T[id]; r.j++; r.bp+=gf; r.bc+=ga; if(gf>ga) r.v++; else if(gf<ga) r.d++; else r.n++; } }
+  return Object.values(T).sort((p,q)=>(q.v*3+q.n)-(p.v*3+p.n)||(q.bp-q.bc)-(p.bp-p.bc)||q.bp-p.bp||q.j-p.j);
+}
 function claimLeague(){
-  const c=W(); const last=WEEKN()-1; if(c.leagueW===last) return;
-  const S=standings(last); c.leagueW=last; const i=S.findIndex(r=>r.id===me);
-  if(S.length>=2&&i>=0&&i<3){ grant(LEAGUE_R[i],`Championnat de la semaine : ${i+1}${i?"e":"er"}`); if(i===0) post(`🏆 ${NAMES[me]} remporte le championnat de la semaine !`); }
-  else save();
+  const c=W(); c.lgDone=c.lgDone||[]; let changed=false;
+  for(const [id,L] of Object.entries(leagues)){
+    if(Date.now()<L.end||c.lgDone.includes(id)||!(L.members||[]).includes(me)) continue;
+    c.lgDone.push(id); changed=true;
+    const S=standings(L).filter(r=>r.j>0); const i=S.findIndex(r=>r.id===me);
+    if(S.length>=2&&i>=0&&i<3){ grant(LEAGUE_R[i],`Championnat « ${L.name} » : ${i+1}${i?"e":"er"}`); if(i===0) post(`🏆 ${NAMES[me]} remporte le championnat « ${L.name} » !`); changed=false; }
+  }
+  c.lgDone=c.lgDone.slice(-60); if(changed) save();
+}
+function createLeague(){
+  openModal("Nom du championnat","",[...LG_DUR.map(([t,d])=>[t,async v=>{
+    if(!v){ toast("Donne un nom au championnat",true); return false; }
+    const id=Date.now().toString(36)+Math.random().toString(36).slice(2,5), now=Date.now();
+    try{ await db.collection("onzeol_leagues").doc(id).set({name:v.slice(0,30),owner:me,members:[me],start:now,end:now+d*86400000,created:now});
+      post(`🏆 ${NAMES[me]} a créé le championnat « ${v.slice(0,30)} » (${t}). Rejoignez-le dans Ligue !`); toast("Championnat créé ✓"); }
+    catch(e){ toast("Création impossible, réessaie",true); } }]),["Annuler",null,true]]);
+}
+async function joinLeague(id,join){
+  const ref=db.collection("onzeol_leagues").doc(id);
+  try{ await db.runTransaction(async tx=>{ const d=await tx.get(ref); if(!d.exists) throw new Error("gone"); const L=d.data();
+      if(Date.now()>L.end) throw new Error("fini");
+      const m=new Set(L.members||[]); if(join) m.add(me); else m.delete(me); tx.update(ref,{members:[...m]}); });
+    toast(join?"Tu as rejoint le championnat ✓":"Tu as quitté le championnat");
+    if(join) post(`🏆 ${NAMES[me]} rejoint le championnat « ${leagues[id]?.name||""} »`);
+  }catch(e){ toast(e.message==="fini"?"Ce championnat est terminé":"Impossible, réessaie",true); }
+}
+async function deleteLeague(id){
+  openModal(`Supprimer le championnat « ${leagues[id]?.name||""} » ?`,null,[["Supprimer",async()=>{ try{ await db.collection("onzeol_leagues").doc(id).delete(); toast("Championnat supprimé"); }catch(e){ toast("Impossible",true); } }],["Annuler",null,true]]);
+}
+function onLeagues(all){ leagues=all; if(me){ claimLeague(); if(mode==="ligue") renderLigue(); } }
+function leagueHTML(id,L){
+  const mine=(L.members||[]).includes(me), over=Date.now()>L.end, S=standings(L);
+  const tbl=`<div class="rk head"><span>#</span><span>Joueur</span><span>J</span><span>V</span><span>D</span><span>Pts</span></div>`+S.map((r,i)=>`<div class="rk${r.id===me?" me":""}"><span>${r.j?(["🥇","🥈","🥉"][i]||i+1):"–"}</span><span>${esc(NAMES[r.id]||"?")}</span><span>${r.j}</span><span>${r.v}</span><span>${r.d}</span><b>${r.v*3+r.n}</b></div>`).join("");
+  return `<div class="lg${mine?" mine":""}"><div class="lgh"><b>${esc(L.name)}</b><small>${over?"Terminé":"fin dans "+fmtLeft(L.end-Date.now())} · ${(L.members||[]).length} joueur${(L.members||[]).length>1?"s":""} · créé par ${esc(NAMES[L.owner]||"?")}</small></div>
+    ${mine||over?tbl:`<div class="mute" style="font-size:12px">${(L.members||[]).map(x=>esc(NAMES[x]||"?")).join(", ")}</div>`}
+    <div class="lgb">${over?"":mine?(L.owner===me?"":`<button class="btn sm ghost" data-lq="${id}">Quitter</button>`):`<button class="btn sm" data-lj="${id}">Rejoindre</button>`}${L.owner===me?`<button class="btn sm ghost" data-ld="${id}">Supprimer</button>`:""}</div></div>`;
 }
 
 // ---------- Héros du match ----------
@@ -2353,8 +2392,6 @@ function renderLigue(){
   if(!me) return; const o=objState(); const c=W(); const ev=curEvent(); const wk=WEEKN();
   const objRow=(scope,x)=>{ const s=o[scope], v=Math.min(x.n,s.p[x.k]||0), done=s.done.includes(x.k), ok=v>=x.n;
     return `<div class="obj${done?" done":""}"><div class="oinfo"><b>${x.t}</b><small>${rTxt(x.r)}</small><div class="track" style="height:6px;margin-top:4px"><i style="width:${v/x.n*100}%"></i></div></div><div class="oact">${done?"✅":ok?`<button class="btn sm" data-oc="${scope}:${x.k}">Récupérer</button>`:`${v}/${x.n}`}</div></div>`; };
-  const S=standings(wk), SL=standings(wk-1);
-  const endIn=((wk+1)*7-3)*86400000-Date.now();
   $("#lObj").innerHTML=`<h3>🎯 Objectifs <small>🔥 série : ${c.streak?.n||1} jour${(c.streak?.n||1)>1?"s":""}</small></h3>
     <h4>Aujourd'hui</h4>${DAILY.map(x=>objRow("day",x)).join("")}
     <h4>Cette semaine</h4>${WEEKLY.map(x=>objRow("week",x)).join("")}
@@ -2362,10 +2399,20 @@ function renderLigue(){
   const ln=$("#lNotif"); if(ln) ln.onclick=enableNotifs;
   $("#lObj").querySelectorAll("[data-oc]").forEach(b=>b.onclick=()=>{ const [s,k]=b.dataset.oc.split(":"); claimObj(s,k); });
   $("#lEvent").innerHTML=(notifState()!=="granted"?`<button class="btn ghost big" id="lNotif" style="margin:8px 0 0">🔔 Activer les notifications (ton tour, défis, échanges…)</button>`:"")+`<div class="evban"><b>${ev.name}</b><span>${ev.desc}</span><small>Pack Événement : 600 🪙 · 3 cartes du thème · 1 Rare min. — dans la Boutique</small></div>`;
-  $("#lLeague").innerHTML=`<h3>🏆 Championnat de la semaine <small>fin dans ${fmtLeft(endIn)}</small></h3>
-    <div class="rules" style="font-size:12px;margin-top:0">Tous les matchs de la semaine entre joueurs comptent. Récompenses lundi : 1er Pack Légende, 2e Pack Épique, 3e Pack Classique.</div>
-    ${S.length?`<div class="rk head"><span>#</span><span>Joueur</span><span>J</span><span>V</span><span>D</span><span>Pts</span></div>`+S.map((r,i)=>`<div class="rk${r.id===me?" me":""}"><span>${["🥇","🥈","🥉"][i]||i+1}</span><span>${esc(NAMES[r.id]||"?")}</span><span>${r.j}</span><span>${r.v}</span><span>${r.d}</span><b>${r.v*3+r.n}</b></div>`).join(""):`<div class="mute" style="font-size:13px">Aucun match cette semaine.</div>`}
-    ${SL.length?`<div class="mute" style="font-size:12px;margin-top:8px">Semaine dernière : ${SL.slice(0,3).map((r,i)=>`${["🥇","🥈","🥉"][i]} ${esc(NAMES[r.id]||"?")}`).join(" · ")}</div>`:""}`;
+  const now=Date.now(), LL=Object.entries(leagues).sort((x,y)=>y[1].created-x[1].created);
+  const act=LL.filter(([,L])=>now<=L.end), done=LL.filter(([,L])=>now>L.end&&now-L.end<14*86400000);
+  const mineA=act.filter(([,L])=>(L.members||[]).includes(me)), other=act.filter(([,L])=>!(L.members||[]).includes(me));
+  $("#lLeague").innerHTML=`<h3>🏆 Championnats</h3>
+    <div class="rules" style="font-size:12px;margin-top:0">Facultatif : crée un championnat ou rejoins-en un. Seuls les matchs entre membres pendant sa durée comptent (pas contre l'ordi). À la fin : 1er Pack Légende, 2e Pack Épique, 3e Pack Classique (si au moins 2 joueurs ont joué).</div>
+    <button class="btn big" id="lCreate" style="margin:4px 0 10px">➕ Créer un championnat</button>
+    ${mineA.length?`<h4>Mes championnats</h4>`+mineA.map(([i,L])=>leagueHTML(i,L)).join(""):""}
+    ${other.length?`<h4>Championnats ouverts</h4>`+other.map(([i,L])=>leagueHTML(i,L)).join(""):""}
+    ${!act.length?`<div class="mute" style="font-size:13px">Aucun championnat en cours.</div>`:""}
+    ${done.length?`<h4>Terminés récemment</h4>`+done.map(([i,L])=>leagueHTML(i,L)).join(""):""}`;
+  $("#lCreate").onclick=createLeague;
+  $("#lLeague").querySelectorAll("[data-lj]").forEach(b=>b.onclick=()=>joinLeague(b.dataset.lj,true));
+  $("#lLeague").querySelectorAll("[data-lq]").forEach(b=>b.onclick=()=>joinLeague(b.dataset.lq,false));
+  $("#lLeague").querySelectorAll("[data-ld]").forEach(b=>b.onclick=()=>deleteLeague(b.dataset.ld));
   $("#lFeed").innerHTML=`<h3>📰 Fil d'actu</h3>${feed.length?feed.slice(0,25).map(f=>`<div class="fd"><span>${esc(f.text)}</span><small>${new Date(f.at).toLocaleDateString("fr-FR",{day:"numeric",month:"short"})} ${new Date(f.at).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})}</small></div>`).join(""):`<div class="mute" style="font-size:13px">Rien pour l'instant.</div>`}`;
   $("#lPlayers").innerHTML=`<h3>👥 Joueurs</h3><div class="plrs">${Object.keys(NAMES).map(id=>`<button class="plr${id===me?" me":""}" data-prof="${id}"><b>${esc(NAMES[id])}</b><small>${ALL_CARDS.filter(p=>(C(id).coll||{})[p.id]).length}/205</small></button>`).join("")}</div>`;
   $("#lPlayers").querySelectorAll("[data-prof]").forEach(b=>b.onclick=()=>showProfile(b.dataset.prof));
@@ -2422,6 +2469,7 @@ function startListeners(){
   unsubs.push(db.collection("onzeol_trades").onSnapshot(qs=>{ const all={}; qs.forEach(doc=>{ const t=doc.data(); if(t&&(t.from===me||t.to===me)) all[doc.id]=t; }); onTrades(all); },()=>{}));
   unsubs.push(db.collection("onzeol_market").onSnapshot(qs=>{ const all={}; qs.forEach(doc=>{ const l=doc.data(); if(l&&(l.status==="open"||l.status==="sold"||l.seller===me||l.buyer===me)) all[doc.id]=l; }); onMarket(all); },()=>{}));
   unsubs.push(db.collection("onzeol_auctions").onSnapshot(qs=>{ const all={}; const now=Date.now(); qs.forEach(doc=>{ const a=doc.data(); if(a&&(a.ends>now-7*86400000)) all[doc.id]=a; }); onAuctions(all); },()=>{}));
+  unsubs.push(db.collection("onzeol_leagues").onSnapshot(qs=>{ const all={}; const now=Date.now(); qs.forEach(doc=>{ const L=doc.data(); if(L&&L.end>now-30*86400000) all[doc.id]=L; }); onLeagues(all); },()=>{}));
   unsubs.push(db.collection("onzeol_feed").onSnapshot(qs=>{ const L=[]; qs.forEach(doc=>L.push(doc.data())); feed=L.filter(x=>x&&x.text).sort((a,b)=>b.at-a.at).slice(0,60); if(mode==="ligue") renderLigue(); },()=>{}));
   unsubs.push(db.collection("onzeol_meta").doc("main").onSnapshot(snap=>{ const d=snap.exists?snap.data():{}; onMatchData(d.match,d.matches); },()=>{}));
 }
