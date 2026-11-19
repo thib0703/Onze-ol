@@ -936,7 +936,9 @@ function renderList(){
   const L=$("#list"); L.innerHTML="";
   if(!clubPick) L.insertAdjacentHTML("beforeend",`<div class="mute" style="font-size:12px;padding:6px 10px">🎲 5 joueurs tirés au sort pour ce poste, de raretés différentes. Choisis-en un !</div>`);
   if(clubPick) L.insertAdjacentHTML("beforeend",`<div class="mute" style="font-size:12px;padding:6px 10px">🔒 Mode Club : seules tes cartes apparaissent. Le Draft, lui, propose tous les joueurs.</div>`);
-  if(!ps.length){L.insertAdjacentHTML("beforeend",`<div style="padding:16px;color:var(--mute)">${clubPick?"Aucune de tes cartes ici : ouvre des packs dans 🎴 Collec !":"Personne trouvé."}</div>`);return;}
+  if(clubPick){ const cc=compos[me]||{}; const curId=editing.kind==="xi"?(cc.slots||{})[editing.i]:editing.kind==="bench"?(cc.bench||{})[editing.i]:cc.coach;
+    ps=ps.filter(p=>p.id!==curId&&!(used.has(p.id)||used.has(baseOf(p.id)))); } // ni le joueur déjà en place, ni ceux déjà alignés
+  if(!ps.length){L.insertAdjacentHTML("beforeend",`<div style="padding:18px 16px;text-align:center;color:var(--mute)">${clubPick?(q?"Aucune de tes cartes ne correspond à ta recherche.":`<b style="color:#fff">Aucun joueur dispo à ce poste</b><br>Ouvre des packs dans 🎴 Collec pour en débloquer, ou touche « Tous » pour voir tes autres cartes.`):"Personne trouvé."}</div>`);return;}
   for(const p of ps){
     const isUsed=used.has(p.id)||used.has(baseOf(p.id)); const d=document.createElement("div"); d.className="pl"+(isUsed?" used":"");
     d.innerHTML=`<span class="n">${esc(p.name)}<span class="yr"><span class="rar r-${cardTier(p)}" style="font-size:9px;padding:0 5px;margin:0 4px 0 0">${TIER_NAME[cardTier(p)]}</span>${isCoach?"":`arrivé en ${p.year<2000?"avant 2000":p.year} · ${p.m!=null?`${p.m} matchs · ${p.g} but${p.g>1?"s":""} · `:""}`}note <b style="color:${p.ovr>=85?"#ffd970":p.ovr>=80?"#7ee2a0":"#c8d6ff"}">${p.ovr}</b></span>${used.has(p.id)?`<span class="tk">${takenMap?(takenMap[p.id]===me?"dans ton équipe":"pris par "+NAMES[takenMap[p.id]]):"déjà dans ta compo"}</span>`:""}</span>`+(isCoach?"":`<span class="tags">${p.pos.map(x=>`<span class="tag ${ok.includes(x)?"cur":""}">${x}</span>`).join("")}</span>`);
@@ -2841,7 +2843,7 @@ const TIPS={
   📰 <b>Fil d'actu</b> de tout ce qui se passe, et la liste des joueurs (touche un pseudo pour voir son profil).`},
  tab_jeux:{t:"🎮 Jeux",x:`D'autres façons de jouer :<br><br>🧗 <b>Carrière</b> solo contre des clubs de plus en plus forts.<br>🏆 <b>Coupes</b> à élimination en aller-retour.<br>
   🎯 <b>Défi du jour</b> avec une contrainte, même adversaire pour tous.<br>🧠 <b>Quiz OL</b> pour gagner des pièces.<br>🛋️ <b>Canapé</b> : à deux sur un même téléphone.<br>📊 Tes <b>stats</b> de saison.`},
- slot:{t:"👆 Choisir un joueur",x:`La liste montre les joueurs adaptés à ce poste. Les cartes avec 🔒 ne sont pas encore à toi : tu peux les placer, mais elles ne joueront pas en match tant que tu ne les as pas obtenues.<br><br>Un joueur placé hors de son poste perd du niveau.`},
+ slot:{t:"👆 Choisir un joueur",x:`La liste montre <b>uniquement tes cartes</b> adaptées à ce poste (touche « Tous » pour voir toutes tes cartes). S'il n'y a personne, ouvre des packs dans 🎴 Collec pour en débloquer.<br><br>Un joueur placé hors de son poste perd du niveau.`},
  save:{t:"💾 Compos enregistrées",x:`Donne un nom à ta compo pour la garder dans ta liste. Tu pourras la recharger, la renommer ou la choisir directement comme équipe dans l'onglet Match.`},
  mgo:{t:"▶️ Lancer un match",x:`Le match apparaît en direct chez les deux joueurs. Le bouton « Voir le résultat » passe directement à la fin.<br><br>Les pièces arrivent automatiquement à la fin du match, et l'homme du match devient une carte ⭐ Héros dans ta collection.`},
  budget:{t:"💰 Mode Budget",x:`Vous choisissez un budget à la création. Poste par poste, 5 joueurs sont proposés : le premier en prend un, l'autre choisit parmi les 4 restants, puis on inverse au poste suivant.<br><br>
@@ -2922,7 +2924,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-19f";
+const APP_V="2026-11-19g";
 let updShown=false;
 async function checkUpdate(){ if(updShown) return; try{ const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const APP_V="([^"]+)"/); if(m&&m[1]!==APP_V){ updShown=true;
