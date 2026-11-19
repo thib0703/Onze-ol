@@ -452,7 +452,7 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
   <div class="bar" id="bar">
     <label for="formation">Système</label>
     <select id="formation"></select>
-    <button class="btn ghost" id="reset">Tout effacer</button>
+    <button class="btn ghost" id="reset">Vider mon 11</button>
   </div>
   <div class="pitch" id="pitch">
     <svg class="lines" viewBox="0 0 68 100" preserveAspectRatio="none">
@@ -995,8 +995,8 @@ $("#q").oninput=renderList;
 $("#formation").innerHTML=Object.keys(F).map(f=>`<option>${f}</option>`).join("");
 $("#formation").onchange=e=>{ compos[me].formation=e.target.value; render(); save(); };
 let resetArm=false;
-$("#reset").onclick=e=>{ if(!resetArm){resetArm=true;e.target.textContent="Sûr ? Re-touche";setTimeout(()=>{resetArm=false;e.target.textContent="Tout effacer";},3000);return;}
-  resetArm=false;e.target.textContent="Tout effacer"; const o=compos[me]; compos[me]=Object.assign(blank(),{library:o.library,coins:o.coins,coll:o.coll,claimed:o.claimed,daily:o.daily,opened:o.opened}); render(); save(); };
+$("#reset").onclick=e=>{ if(!resetArm){resetArm=true;e.target.textContent="Sûr ? Re-touche";setTimeout(()=>{resetArm=false;e.target.textContent="Vider mon 11";},3000);return;}
+  resetArm=false;e.target.textContent="Vider mon 11"; const o=W(); o.slots={}; o.bench={}; o.coach=null; o.loadedId=null; render(); save(); toast("11 type vidé (ta collection et ta progression sont gardées)"); };
 
 function toast(t,bad){ const el=$("#toast"); el.textContent=t; el.style.background=bad?"#b4432b":"#1f8a4c"; el.style.display="block"; clearTimeout(toast.t); toast.t=setTimeout(()=>el.style.display="none",2500); }
 async function saveNow(msg){
@@ -1670,6 +1670,13 @@ async function launchMatch(){
   const hist=[{id:m.id,at:m.at,score:r.score,labels:[tA.label,tB.label],owners:[pA,pB],names:[NAMES[pA],NAMES[pB]],motm:r.motm?{pid:r.motm.pid,t:r.motm.t,note:r.notes[r.motm.t][r.motm.pid]}:null,st:mStats(m)},...matches].slice(0,200);
   if(!(await addHist(hist[0],m))) toast("Pas de connexion, réessaie",true);
 }
+// Réparation unique : recalcule la carrière depuis l'historique des matchs (après l'ancien bouton « Tout effacer »)
+function repairAccount(){ if(!me||!compos[me]) return; const c=W(); let ch=false;
+  if(!c.careerFix&&matches&&matches.length){ const won=new Set(matches.filter(h=>h.mode==="carriere"&&h.owners&&h.owners[0]===me&&h.score[0]>h.score[1]).map(h=>h.names&&h.names[1]));
+    let i=0; while(i<CAREER.length&&won.has(CAREER[i].n)) i++; const k=careerState(); if(i>k.lvl) k.lvl=i; if(i>k.best) k.best=i; c.careerFix=1; ch=true; }
+  if((c.opened||0)>0&&!c.seen){ c.seen={}; for(const t in TIPS) c.seen[t]=1; c.seen.welcome=1; ch=true; }
+  if(ch) save(); }
+setInterval(repairAccount,5000);
 function onMatchData(m,h){
   matches=Array.isArray(h)?h:[]; setTimeout(claimRewards,0);
   const isNew=m&&m.id!==lastMatchId;
@@ -3134,7 +3141,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-20a";
+const APP_V="2026-11-20b";
 let updShown=false;
 async function checkUpdate(){ if(updShown) return; try{ const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const APP_V="([^"]+)"/); if(m&&m[1]!==APP_V){
