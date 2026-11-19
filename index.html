@@ -406,6 +406,9 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
 .fixm{display:grid;grid-template-columns:1fr auto 1fr 34px;gap:6px;align-items:center;padding:4px 0;border-top:1px solid rgba(255,255,255,.06)}.fixm>span:nth-of-type(2){text-align:right}.fixm b{text-align:center;min-width:40px}.fixm.me{color:#ffd970}
 .fixm .btn{padding:2px 6px}.tieb{grid-column:1/-1;display:flex;gap:6px;justify-content:center;align-items:center;flex-wrap:wrap}
 .dh{display:grid;grid-template-columns:1fr auto auto auto;gap:6px;align-items:center;padding:7px 0;border-top:1px solid rgba(255,255,255,.07)}.dh small{display:block;opacity:.6;font-size:11px}.dh .win{color:#7ee2a0}.dh .lose{color:#ff8a7a}
+.mini-pitch{position:relative;height:380px;margin:4px 0;border-radius:12px;background:linear-gradient(#1f7a3a,#18662f);overflow:hidden}
+.mp-slot{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:1px}.mp-slot small{font-size:9px;font-weight:800;background:#0009;padding:0 4px;border-radius:4px;white-space:nowrap}
+.mp-empty{display:inline-flex;width:34px;height:42px;align-items:center;justify-content:center;border:1px dashed #fff6;border-radius:8px;font-size:10px;color:#fffa}
 </style>
 </head>
 <body>
@@ -811,7 +814,7 @@ $("#who").onclick=()=>openModal(`Connecté en tant que ${NAMES[me]||"?"}`,null,[
 // ---------- Rendu ----------
 function filled(c){return Object.values(c.slots).filter(Boolean).length;}
 function renderTabs(){
-  $("#tabs").innerHTML="";
+  viewing=me; $("#tabs").innerHTML=""; $("#tabs").style.display="none"; $("#who").textContent=(NAMES[me]||"?")+" · compte"; return; // les 11 des autres se voient depuis leur profil (Ligue → Joueurs)
   for(const w of [me,...others()]){
     const c=C(w); const b=document.createElement("button"); b.className="tab"+(w===viewing?" on":"");
     b.innerHTML=(w===me?"Ma compo":"Compo de "+esc(NAMES[w]||"?"))+`<small>${esc(c.formation)} · ${filled(c)}/11 · ${Object.values(c.bench).filter(Boolean).length}/${BENCH_N} remplaçants</small>`;
@@ -854,7 +857,7 @@ function render(){
   if(mine) renderLib();
   $("#savedInfo").textContent= (curL?`« ${curL.name} » · `:"") + (sv ? (mine?"Dernière sauvegarde":"Sauvegardée")+" le "+sv.toLocaleDateString("fr-FR",{day:"numeric",month:"short"})+" à "+sv.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}) : (mine?"Pas encore sauvegardée":"Pas encore sauvegardée par "+esc(NAMES[viewing]||"?")));
   const co=$("#coach"); co.innerHTML=""; co.appendChild(slotBtn("coach",0,"COACH",c.coach,mine));
-  renderCompare();
+  $("#compare").style.display="none";
 }
 function renderCompare(){
   const ob = viewing!==me ? viewing : others().sort((x,y)=>filled(C(y))-filled(C(x)))[0];
@@ -2633,8 +2636,14 @@ function showProfile(id){
   M.innerHTML=`<div class="cm-box"><h2 style="margin:0 0 10px">${esc(NAMES[id]||"?")}</h2>${best?`<div class="cm-card">${cardHTML(best.id,{w:170,ovr:best.ovr+evoOf(id,best.id),cls:"flip-in"})}</div><div class="mute" style="font-size:12px;margin-top:4px">Plus belle carte</div>`:""}
     <div class="pstats"><div><b>${own.length}/${ALL_CARDS.length}</b>album</div><div><b>${v}-${n}-${d}</b>V-N-D</div><div><b>${(c.heroes||[]).length}</b>héros</div><div><b>${c.opened||0}</b>packs</div><div><b>${c.goldPacks||0}</b>Gold Packs</div><div><b>🔥 ${c.streak?.n||0}</b>série</div></div>
     <div class="mute" style="font-size:12px">${cnt("myth")} Mythiques · ${cnt("icon")} Légendaires · ${cnt("gold")} Épiques · ${cnt("silver")} Rares · ${cnt("bronze")} Communes</div>
+    ${id!==me?`<div class="mbtns"><button class="btn" id="pfXI">⚽ Voir son 11 type</button></div>`:""}<div id="pfXIbox"></div>
     <div class="mbtns"><button class="btn ghost" id="pfClose">Fermer</button></div></div>`;
   M.classList.add("open"); $("#pfClose").onclick=()=>M.classList.remove("open");
+  const xb=$("#pfXI"); if(xb) xb.onclick=()=>{ const own=c.coll||{}; const f=F[c.formation]||F["4-3-3"];
+    $("#pfXIbox").innerHTML=`<div class="mute" style="font-size:12px;margin:6px 0">${esc(c.formation||"4-3-3")} · cartes possédées seulement</div><div class="pitch mini-pitch">${f.map(([r,x,y],i)=>{ const pid=(c.slots||{})[i]; const ok=pid&&own[pid];
+      return `<div class="mp-slot" style="left:${x}%;top:${4+y*.86}%">${ok?cardHTML(pid,{w:40,mini:true,role:r,ovr:BY_ID[pid].ovr+evoOf(id,pid)}):`<span class="mp-empty">${r}</span>`}<small>${ok?esc(short(BY_ID[pid].name)):""}</small></div>`; }).join("")}</div>
+      ${c.coach&&own[c.coach]?`<div class="mute" style="font-size:12px;margin-top:6px">Entraîneur : <b>${esc(BY_ID[c.coach].name)}</b></div>`:""}`;
+    xb.style.display="none"; };
 }
 
 // ======================================================================
@@ -3041,7 +3050,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-19k";
+const APP_V="2026-11-19l";
 let updShown=false;
 async function checkUpdate(){ if(updShown) return; try{ const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const APP_V="([^"]+)"/); if(m&&m[1]!==APP_V){ updShown=true;
