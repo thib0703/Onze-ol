@@ -95,18 +95,22 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
 .fcard.bronze{background:linear-gradient(155deg,#f9d6b3,#cf915a 40%,#8d5627 75%,#e2a774);color:#2f1806}
 .fcard.icon{background:linear-gradient(155deg,#fffdf5,#f0e5c4 35%,#cdb67c 70%,#fff4d2);color:#3d2d06}
 .fcard.icon::before{content:"";position:absolute;inset:4%;clip-path:inherit;border:calc(var(--w)/70) solid #b8954166}
+.fcard.myth{background:linear-gradient(155deg,#2a1240,#5b1e7a 30%,#1a0b2e 60%,#d7a8ff 100%);color:#ffe7a3}
+.fcard.myth::before{content:"";position:absolute;inset:0;background:conic-gradient(from 0deg,#ff6ad533,#6ad5ff33,#ffe76a33,#ff6ad533);mix-blend-mode:screen;animation:spin 6s linear infinite}
+.fcard.myth .fc-shine{background:linear-gradient(115deg,transparent 30%,#ffe7a3aa 48%,transparent 62%)}
 .fcard.coach{background:linear-gradient(155deg,#2b3f78,#13306b 50%,#0b1a3d);color:#ffd970}
 .fc-shine{position:absolute;inset:0;background:linear-gradient(115deg,transparent 35%,#ffffff70 48%,transparent 60%);transform:translateX(-120%);animation:shine 4.5s ease-in-out infinite}
 .mini .fc-shine{display:none}
 @keyframes shine{0%,60%{transform:translateX(-120%)}85%,100%{transform:translateX(120%)}}
-.fc-top{position:absolute;left:11%;top:12%;text-align:center;line-height:1;z-index:1}
+.fc-top{position:absolute;left:11%;top:10.5%;text-align:center;line-height:1;z-index:1}
 .fc-ovr{font-size:2.4em;font-weight:900;letter-spacing:-.04em}
 .fc-pos{font-size:.95em;font-weight:800;margin-top:.1em}
 .fc-club{margin-top:.5em;font-size:.68em;font-weight:900;border:.13em solid currentColor;border-radius:.35em;padding:.15em .25em}
+.fc-flag{font-size:1.05em;margin-top:.3em;line-height:1}
 .fc-face{position:absolute;right:6%;top:8%;width:60%;height:48%}
 .fc-face svg{width:100%;height:100%}
-.fc-name{position:absolute;top:52.5%;left:8%;right:8%;text-align:center;font-weight:900;font-size:1.08em;text-transform:uppercase;letter-spacing:.02em;padding-bottom:.25em;border-bottom:.07em solid currentColor;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.fc-stats{position:absolute;top:63.5%;left:15%;right:11%;display:grid;grid-template-columns:1fr 1fr;column-gap:.6em;row-gap:.05em;font-size:.8em}
+.fc-name{position:absolute;top:54%;left:8%;right:8%;text-align:center;font-weight:900;font-size:1.08em;text-transform:uppercase;letter-spacing:.02em;padding-bottom:.25em;border-bottom:.07em solid currentColor;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fc-stats{position:absolute;top:65%;left:15%;right:11%;display:grid;grid-template-columns:1fr 1fr;column-gap:.6em;row-gap:0;font-size:.76em}
 .fc-stats span{display:flex;gap:.35em;align-items:baseline}
 .fc-stats b{font-weight:900;font-size:1.12em;min-width:1.3em}
 .fc-coach{position:absolute;top:66%;left:8%;right:8%;text-align:center;font-weight:800;font-size:.85em}
@@ -125,6 +129,11 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
 .cm-card{filter:drop-shadow(0 10px 30px #000c)}
 .cm-info{text-align:center;font-size:14px;line-height:1.6;margin:14px 0 4px;color:#dfe7ff}
 .cm-box .mbtns{width:100%}
+.cm-palm{margin-top:8px;font-size:13px;line-height:1.5;color:#dfe7ff}
+.rar{display:inline-block;font-weight:900;font-size:12px;letter-spacing:.08em;padding:3px 10px;border-radius:999px;margin-bottom:4px;text-transform:uppercase}
+.r-bronze{background:#8d5627;color:#fff}.r-silver{background:#97a1ad;color:#111}.r-gold{background:#c39531;color:#111}.r-icon{background:#f0e5c4;color:#3d2d06}.r-myth{background:linear-gradient(90deg,#ff6ad5,#6ad5ff,#ffe76a);color:#111}
+.pk-rar{position:relative;font-weight:900;letter-spacing:.2em;font-size:15px;padding:5px 16px;border-radius:999px;margin-bottom:14px;text-transform:uppercase;animation:pop .5s .3s both}
+.rays.myth{background:repeating-conic-gradient(#ff6ad533 0 6deg,transparent 6deg 12deg,#6ad5ff33 12deg 18deg,transparent 18deg 24deg)}
 .cm-note{font-size:11px;color:var(--mute);text-align:center;margin-top:10px}
 .flip-in{animation:flipIn .7s cubic-bezier(.2,.9,.3,1.2) both}
 @keyframes flipIn{0%{transform:perspective(600px) rotateY(100deg) scale(.4);opacity:0}100%{transform:none;opacity:1}}
@@ -179,6 +188,20 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
 .pk-new{position:relative;margin-top:16px;font-weight:900;font-size:22px;color:#7ee2a0;text-shadow:0 0 12px #1f8a4c;animation:pop .5s .5s both}
 .pk-dup{position:relative;margin-top:16px;font-weight:700;color:var(--mute);animation:fade .5s .5s both}
 .pk-hint{position:relative;margin-top:14px;font-size:12px;color:#c8d6ff;opacity:.7}
+.walk{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#02040c;overflow:hidden;cursor:pointer}
+.wo-beam{position:absolute;left:50%;top:-10%;width:140px;height:130%;transform:translateX(-50%);background:linear-gradient(180deg,transparent,var(--wc),transparent);filter:blur(18px);opacity:0;animation:beam 1.2s .1s ease-out forwards}
+.walk.gold{--wc:#ffd970}.walk.icon{--wc:#fff2c8}.walk.myth{--wc:#d07bff}
+@keyframes beam{0%{opacity:0;width:4px}60%{opacity:1}100%{opacity:.85;width:180px}}
+.walk.myth .wo-beam{background:linear-gradient(180deg,transparent,#ff6ad5,#6ad5ff,#ffe76a,transparent)}
+.wo-stage{position:relative;text-align:center;color:#fff}
+.wo-item{animation:woIn .6s cubic-bezier(.2,1.4,.4,1) both}
+@keyframes woIn{0%{transform:scale(2.5);opacity:0;filter:blur(8px)}100%{transform:none;opacity:1;filter:none}}
+.wo-big{font-size:72px;font-weight:900;line-height:1;text-shadow:0 0 30px var(--wc)}
+.wo-flag{font-size:96px}
+.wo-small{margin-top:12px;font-size:20px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#e8eeff}
+.wo-skip{position:absolute;bottom:40px}
+.walk.boom{animation:boom .45s ease-in forwards}
+@keyframes boom{0%{background:#02040c}50%{background:#fff}100%{opacity:0;background:#fff}}
 .pk-sum{position:relative;display:flex;flex-direction:column;align-items:center;padding:16px;width:100%;max-width:420px}
 .pk-sum h3{margin:0 0 12px}
 .pk-row{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:12px}
@@ -973,26 +996,53 @@ function cardStats(p){
   return {labels:OUT_L,vals:v.map((x,i)=>Math.max(22,Math.min(99,i===0?99:o+6,Math.round(x+jit(i+1)))))};
 }
 const CURRENT=new Set("dominik-greif remy-descamps nicolas-tagliafico zachary-athekame abner-vinicius moussa-niakhate felix-bacher ruben-kluivert clinton-mata mads-bidstrup tanner-tessmann corentin-tolisso pavel-sulc khalis-merah tyler-morton julien-duranville noah-nartey ernest-nuamah keito-nakamura lois-openda kail-boudache alejandro-rodriguez remi-himbert carlos-vicens".split(" "));
-function cardTier(p){
-  if(p.pos[0]==="COACH") return "coach";
-  if(p.ovr>=84 && p.year<2014 && !CURRENT.has(p.id)) return "icon";
-  return p.ovr>=75?"gold":p.ovr>=65?"silver":"bronze";
+// ---------- Palmarès et rareté ----------
+const SPANS={"gregory-coupet":[[1997,2008]],"anthony-lopes":[[2012,2024]],"sidney-govou":[[1999,2010]],"anthony-reveillere":[[2003,2013]],"alexandre-lacazette":[[2010,2017],[2022,2025]],"juninho":[[2001,2009]],"maxime-gonalons":[[2009,2017]],"cris":[[2004,2012]],"kim-kallstrom":[[2006,2012]],"corentin-tolisso":[[2013,2017],[2022,2026]],"philippe-violeau":[[1997,2004]],"florent-laville":[[1993,2003]],"maxwel-cornet":[[2015,2021]],"bafetimbi-gomis":[[2009,2014]],"steed-malbranque":[[1997,2001],[2012,2016]],"houssem-aouar":[[2017,2023]],"vikash-dhorasoo":[[1993,1998],[2002,2004]],"christophe-delmotte":[[1997,2004]],"patrick-muller":[[2000,2004],[2006,2008]],"jordan-ferri":[[2011,2019]],"jeremy-toulalan":[[2006,2011]],"david-linares":[[1996,2002]],"hugo-lloris":[[2008,2012]],"mahamadou-diarra":[[2002,2006]],"nabil-fekir":[[2013,2019]],"florent-malouda":[[2003,2007]],"rayan-cherki":[[2019,2025]],"maxence-caqueret":[[2018,2025]],"memphis-depay":[[2017,2021]],"moussa-dembele":[[2018,2023]],"samuel-umtiti":[[2011,2016]],"jeremie-brechet":[[1998,2003]],"lisandro-lopez":[[2009,2013]],"marcelo":[[2017,2021]],"lucas-tousart":[[2015,2020]],"jimmy-briand":[[2010,2014]],"sonny-anderson":[[1999,2003]],"edmilson":[[2000,2004]],"jacek-bak":[[1995,2002]],"clement-grenier":[[2009,2018]],"karim-benzema":[[2004,2009]],"thiago-mendes":[[2019,2023]],"michel-bastos":[[2009,2013]],"bakary-kone":[[2011,2016]],"rafael":[[2015,2020]],"jeremy-morel":[[2015,2019]],"jason-denayer":[[2018,2022]],"alain-caveglia":[[1996,2000]],"aly-cissokho":[[2009,2013]],"dejan-lovren":[[2010,2013],[2023,2024]],"leo-dubois":[[2018,2022]],"yoann-gourcuff":[[2010,2015]],"peguy-luyindula":[[2001,2004]],"eric-deflandre":[[2000,2004]],"fred":[[2005,2009]],"bertrand-traore":[[2017,2020]],"miralem-pjanic":[[2008,2011]],"rachid-ghezzal":[[2012,2017],[2025,2026]],"karl-toko-ekambi":[[2020,2023]],"ederson":[[2008,2012]],"francois-clerc":[[2004,2010]],"sylvain-wiltord":[[2004,2007]],"eric-carriere":[[2001,2004]],"remy-vercoutre":[[2002,2014]],"claudio-cacapa":[[2000,2007]],"tanguy-ndombele":[[2017,2019],[2022,2026]],"pierre-laigle":[[1999,2002]],"jean-ii-makoun":[[2008,2010]],"eric-abidal":[[2004,2007]],"nicolas-tagliafico":[[2022,2026]],"gueida-fofana":[[2011,2015]],"henri-bedimo":[[2013,2016]],"milan-bisevac":[[2012,2015]],"cesar-delgado":[[2008,2011]],"tiago":[[2005,2007]],"jeremy-berthod":[[2003,2007]],"tony-vairelles":[[1999,2003]],"michael-essien":[[2003,2005]],"christophe-jallet":[[2014,2017]],"hatem-ben-arfa":[[2004,2008]],"mouhamadou-dabo":[[2011,2015]],"mathieu-bodmer":[[2007,2010]],"marc-vivien-foe":[[2000,2002]],"jean-alain-boumsong":[[2008,2010]],"sebastien-squillaci":[[2006,2008]],"sinaly-diomande":[[2020,2024]],"arnold-mvuemba":[[2012,2016]],"jean-marc-chanelet":[[2000,2003]],"lucas-paqueta":[[2020,2022]],"kenny-tete":[[2017,2020]],"ferland-mendy":[[2017,2019]],"ainsley-maitland-niles":[[2023,2026]],"clinton-mata":[[2023,2026]],"martin-terrier":[[2018,2020]],"fabio-grosso":[[2007,2009]],"mathieu-valbuena":[[2015,2017]],"fernando-marcal":[[2017,2020]],"sergi-darder":[[2015,2017]],"mapou-yanga-mbiwa":[[2015,2020]],"abdul-kader-keita":[[2007,2009]],"bruno-guimaraes":[[2020,2022]],"castello-lukeba":[[2021,2023]],"malick-fofana":[[2024,2026]],"ernest-nuamah":[[2023,2026]],"tino-kadewere":[[2020,2024]],"sael-kumbedi":[[2022,2026]],"malo-gusto":[[2021,2023]],"nemanja-matic":[[2024,2025]],"duje-caleta-car":[[2023,2026]],"jeremy-pied":[[2010,2012]],"mouctar-diakhaby":[[2016,2018]],"frederic-kanoute":[[1997,2000]],"john-carew":[[2005,2007]],"yassine-benzia":[[2012,2015]],"jeremy-clement":[[2004,2006]],"steve-marlet":[[2000,2002]],"pierre-alain-frau":[[2004,2005]],"georges-mikautadze":[[2024,2025]],"lucas-perri":[[2024,2025]],"jeff-reine-adelaide":[[2019,2023]],"mariano-diaz":[[2017,2018]],"bryan-bergougnoux":[[2001,2005]],"bradley-barcola":[[2021,2023]],"moussa-niakhate":[[2024,2026]],"nilmar":[[2004,2005]],"serge-blanc":[[1998,2001]],"henrique":[[2021,2024]],"clinton-n-jie":[[2012,2015]],"giovane-elber":[[2003,2005]],"johann-lepenant":[[2022,2025]],"tanner-tessmann":[[2024,2026]],"jordan-veretout":[[2024,2025]],"frederic-nee":[[2001,2003]],"islam-slimani":[[2021,2022]],"said-benrahma":[[2024,2025]],"emerson-palmieri":[[2021,2022]],"jerome-boateng":[[2021,2023]],"joachim-andersen":[[2019,2021]],"milan-baros":[[2007,2008]],"mattia-de-sciglio":[[2020,2021]],"jake-o-brien":[[2023,2024]],"abner-vinicius":[[2024,2026]],"miguel-lopes":[[2013,2014]],"tete":[[2022,2023]],"benoit-pedretti":[[2005,2006]]};
+const COACH_SPANS={"coach-jacques-santini":[[1999,2002]],"coach-paul-le-guen":[[2002,2005]],"coach-gerard-houllier":[[2005,2007]],"coach-alain-perrin":[[2007,2008]],"coach-claude-puel":[[2008,2011]],"coach-remi-garde":[[2011,2014]],"coach-hubert-fournier":[[2014,2015]],"coach-bruno-genesio":[[2015,2019]],"coach-sylvinho":[[2019,2019]],"coach-rudi-garcia":[[2019,2021]],"coach-peter-bosz":[[2021,2022]],"coach-laurent-blanc":[[2022,2023]],"coach-fabio-grosso":[[2023,2023]],"coach-pierre-sage":[[2023,2025]],"coach-paulo-fonseca":[[2025,2026]],"coach-jorge-maciel":[[2026,2026]],"coach-carlos-vicens":[[2026,2026]]};
+const OL_TITLES={l1:[2002,2003,2004,2005,2006,2007,2008],cdf:[2008,2012],cdl:[2001],tdc:[2002,2003,2004,2005,2006,2007,2012]};
+const MAJ={"karim-benzema":{bo:["2022"],ucl:5},"hugo-lloris":{wc:["2018"]},"samuel-umtiti":{wc:["2018"]},"corentin-tolisso":{wc:["2018"],ucl:1},"nabil-fekir":{wc:["2018"]},"ferland-mendy":{wc:["2018"],ucl:2},"edmilson":{wc:["2002"],ucl:1},"fabio-grosso":{wc:["2006"]},"jerome-boateng":{wc:["2014"],ucl:2},"eric-abidal":{ucl:2},"michael-essien":{ucl:1},"florent-malouda":{ucl:1},"giovane-elber":{ucl:1},"dejan-lovren":{ucl:1},"emerson-palmieri":{euro:["2021"],ucl:1},"sylvain-wiltord":{euro:["2000"]},"bradley-barcola":{ucl:1}};
+function spansOf(p){ if(p.pos[0]==="COACH") return COACH_SPANS[p.id]||[]; return SPANS[p.id]||[[p.year,p.year+1]]; }
+function olTitles(p){
+  const sp=spansOf(p); const inS=E=>sp.some(([a,b])=>a<=E-1&&b>=E); const inTdc=S=>sp.some(([a,b])=>a<=S&&b>=S+1||(a===S&&b===S));
+  return {l1:OL_TITLES.l1.filter(inS).length,cdf:OL_TITLES.cdf.filter(inS).length,cdl:OL_TITLES.cdl.filter(inS).length,tdc:OL_TITLES.tdc.filter(inTdc).length};
 }
-const TIER_TAG={icon:"ICÔNE OL",gold:"OR",silver:"ARGENT",bronze:"BRONZE",coach:"ENTRAÎNEUR"};
+const _rcache={};
+function palmScore(p){
+  if(_rcache[p.id]!=null) return _rcache[p.id];
+  const t=olTitles(p), M=MAJ[p.id]||{};
+  const inv=p.pos[0]==="COACH"?1:clamp((p.m||0)/250,.25,1); // poids des titres selon l'implication (matchs joués)
+  let sc=(3*t.l1+2*t.cdf+t.cdl+.5*t.tdc)*inv+8*(M.wc||[]).length+5*(M.ucl||0)+4*(M.euro||[]).length+10*(M.bo||[]).length;
+  if(p.pos[0]!=="COACH") sc+=Math.max(0,(p.ovr-75)/2)+(p.m||0)/80; else sc+=Math.max(0,(p.ovr-75)/3);
+  return _rcache[p.id]=sc;
+}
+function rarity(p){ const s=palmScore(p); return s>=24?"myth":s>=12?"icon":s>=6?"gold":s>=2.5?"silver":"bronze"; }
+function palmText(p){
+  const t=olTitles(p), M=MAJ[p.id]||{}; const L=[];
+  if(t.l1) L.push(`${t.l1}× Champion de France`); if(t.cdf) L.push(`${t.cdf}× Coupe de France`); if(t.cdl) L.push(`${t.cdl}× Coupe de la Ligue`); if(t.tdc) L.push(`${t.tdc}× Trophée des champions`);
+  const X=[]; if(M.bo) X.push(`Ballon d'Or ${M.bo.join(", ")}`); if(M.wc) X.push(`Champion du monde ${M.wc.join(", ")}`); if(M.euro) X.push(`Champion d'Europe ${M.euro.join(", ")}`); if(M.ucl) X.push(`${M.ucl}× Ligue des champions`);
+  return {ol:L,ext:X};
+}
+const NAT={"gregory-coupet":"FR","hugo-lloris":"FR","anthony-lopes":"PT","remy-vercoutre":"FR","nicolas-puydebois":"FR","mathieu-gorgelin":"FR","ciprian-tatarusanu":"RO","julian-pollersbeck":"DE","lucas-perri":"BR","dominik-greif":"SK","remy-descamps":"FR","kayne-bonnevie":"FR","patrick-muller":"CH","edmilson":"BR","claudio-cacapa":"BR","cris":"BR","florent-laville":"FR","jacek-bak":"PL","jean-marc-chanelet":"FR","anthony-reveillere":"FR","eric-abidal":"FR","sebastien-squillaci":"FR","jean-alain-boumsong":"FR","francois-clerc":"FR","jeremy-berthod":"FR","fabio-grosso":"IT","aly-cissokho":"FR","dejan-lovren":"HR","bakary-kone":"BF","mouhamadou-dabo":"FR","samuel-umtiti":"FR","christophe-jallet":"FR","rafael":"BR","jeremy-morel":"MG","mapou-yanga-mbiwa":"FR","emanuel-mammana":"AR","nicolas-nkoulou":"CM","mouctar-diakhaby":"GN","marcelo":"BR","ferland-mendy":"FR","kenny-tete":"NL","fernando-marcal":"BR","jason-denayer":"BE","leo-dubois":"FR","joachim-andersen":"DK","youssouf-kone":"ML","mattia-de-sciglio":"IT","jerome-boateng":"DE","emerson-palmieri":"IT","castello-lukeba":"FR","sinaly-diomande":"CI","malo-gusto":"FR","henrique":"BR","damien-da-silva":"FR","nicolas-tagliafico":"AR","sael-kumbedi":"FR","clinton-mata":"AO","jake-o-brien":"IE","duje-caleta-car":"HR","ainsley-maitland-niles":"ENG","moussa-niakhate":"ML","abner-vinicius":"BR","ruben-kluivert":"NL","zachary-athekame":"CH","felix-bacher":"AT","hans-hateboer":"NL","david-linares":"FR","jeremie-brechet":"FR","eric-deflandre":"BE","milan-bisevac":"RS","henri-bedimo":"CM","jeremy-pied":"FR","miguel-lopes":"PT","serge-blanc":"FR","philippe-violeau":"FR","vikash-dhorasoo":"FR","eric-carriere":"FR","juninho":"BR","mahamadou-diarra":"ML","michael-essien":"GH","tiago":"PT","jeremy-toulalan":"FR","kim-kallstrom":"SE","jean-ii-makoun":"CM","mathieu-bodmer":"FR","jeremy-clement":"FR","miralem-pjanic":"BA","ederson":"BR","yoann-gourcuff":"FR","maxime-gonalons":"FR","clement-grenier":"FR","steed-malbranque":"FR","yassine-benzia":"DZ","corentin-tolisso":"FR","jordan-ferri":"FR","mathieu-valbuena":"FR","lucas-tousart":"FR","tanguy-ndombele":"FR","houssem-aouar":"DZ","nabil-fekir":"FR","pape-cheikh-diop":"SN","jean-lucas":"BR","bruno-guimaraes":"BR","thiago-mendes":"BR","maxence-caqueret":"FR","lucas-paqueta":"BR","jeff-reine-adelaide":"FR","rayan-cherki":"FR","johann-lepenant":"FR","paul-akouokou":"CI","thiago-almada":"AR","nemanja-matic":"RS","orel-mangala":"BE","jordan-veretout":"FR","mahamadou-diawara":"FR","tanner-tessmann":"US","tyler-morton":"ENG","pavel-sulc":"CZ","khalis-merah":"FR","mads-bidstrup":"DK","noah-nartey":"DK","adam-karabec":"CZ","christophe-delmotte":"FR","pierre-laigle":"FR","marc-vivien-foe":"CM","arnold-mvuemba":"FR","gueida-fofana":"FR","sergi-darder":"ES","benoit-pedretti":"FR","sonny-anderson":"BR","sidney-govou":"FR","peguy-luyindula":"FR","florent-malouda":"FR","giovane-elber":"BR","john-carew":"NO","sylvain-wiltord":"FR","hatem-ben-arfa":"FR","fred":"BR","milan-baros":"CZ","abdul-kader-keita":"CI","karim-benzema":"FR","nilmar":"BR","bryan-bergougnoux":"FR","lisandro-lopez":"AR","michel-bastos":"BR","bafetimbi-gomis":"FR","jimmy-briand":"FR","alexandre-lacazette":"FR","clinton-n-jie":"CM","mohamed-yattara":"GN","rachid-ghezzal":"DZ","claudio-beauvue":"FR","maxwel-cornet":"CI","mariano-diaz":"DO","memphis-depay":"NL","bertrand-traore":"BF","myziane-maolida":"FR","willem-geubbels":"FR","amine-gouiri":"DZ","moussa-dembele":"FR","martin-terrier":"FR","karl-toko-ekambi":"CM","tino-kadewere":"ZW","islam-slimani":"DZ","bradley-barcola":"FR","malick-fofana":"BE","ernest-nuamah":"GH","mama-balde":"GW","said-benrahma":"DZ","gift-orban":"NG","georges-mikautadze":"GE","wilfried-zaha":"CI","martin-satriano":"UY","afonso-moreira":"PT","keito-nakamura":"JP","lois-openda":"BE","julien-duranville":"BE","remi-himbert":"FR","kail-boudache":"FR","steve-marlet":"FR","tony-vairelles":"FR","cesar-delgado":"AR","pierre-alain-frau":"FR","frederic-nee":"FR","tete":"BR","alain-caveglia":"FR","frederic-kanoute":"ML","coach-jacques-santini":"FR","coach-paul-le-guen":"FR","coach-gerard-houllier":"FR","coach-alain-perrin":"FR","coach-claude-puel":"FR","coach-remi-garde":"FR","coach-hubert-fournier":"FR","coach-bruno-genesio":"FR","coach-sylvinho":"BR","coach-rudi-garcia":"FR","coach-peter-bosz":"NL","coach-laurent-blanc":"FR","coach-fabio-grosso":"IT","coach-pierre-sage":"FR","coach-paulo-fonseca":"PT","coach-jorge-maciel":"PT","coach-carlos-vicens":"ES"};
+const COUNTRY={"FR":"France","PT":"Portugal","RO":"Roumanie","DE":"Allemagne","BR":"Brésil","SK":"Slovaquie","CH":"Suisse","PL":"Pologne","IT":"Italie","HR":"Croatie","BF":"Burkina Faso","MG":"Madagascar","AR":"Argentine","CM":"Cameroun","GN":"Guinée","NL":"Pays-Bas","BE":"Belgique","DK":"Danemark","ML":"Mali","CI":"Côte d'Ivoire","AO":"Angola","IE":"Irlande","ENG":"Angleterre","AT":"Autriche","RS":"Serbie","GH":"Ghana","SE":"Suède","BA":"Bosnie","DZ":"Algérie","SN":"Sénégal","US":"États-Unis","CZ":"Tchéquie","ES":"Espagne","NO":"Norvège","DO":"Rép. dominicaine","ZW":"Zimbabwe","GW":"Guinée-Bissau","NG":"Nigeria","GE":"Géorgie","UY":"Uruguay","JP":"Japon"};
+function flag(c){ if(!c) return ""; if(c==="ENG") return "\u{1F3F4}\u{E0067}\u{E0062}\u{E0065}\u{E006E}\u{E0067}\u{E007F}"; return String.fromCodePoint(...[...c].map(x=>0x1F1E6+x.charCodeAt(0)-65)); }
+const POS_NAME={GB:"Gardien",DC:"Défenseur central",DD:"Latéral droit",DG:"Latéral gauche",MDC:"Milieu défensif",MC:"Milieu central",MOC:"Meneur de jeu",AG:"Ailier gauche",AD:"Ailier droit",BU:"Avant-centre",COACH:"Entraîneur"};
+function cardTier(p){ return rarity(p); }
+const TIER_TAG={myth:"MYTHIQUE",icon:"LÉGENDAIRE",gold:"ÉPIQUE",silver:"RARE",bronze:"COMMUNE"};
+const TIER_NAME={myth:"Mythique",icon:"Légendaire",gold:"Épique",silver:"Rare",bronze:"Commune"};
 function initials(n){return n.replace(/[^A-Za-zÀ-ÿ \-']/g,"").split(/[\s\-]+/).filter(Boolean).map(w=>w[0]).slice(0,2).join("").toUpperCase();}
 function cardHTML(pid,opts={}){
   const p=BY_ID[pid]; if(!p) return "";
-  const t=cardTier(p); const st=cardStats(p); const w=opts.w||160; const mini=!!opts.mini;
+  const t=cardTier(p); const st=cardStats(p); const w=opts.w||160; const mini=!!opts.mini; const cls=p.pos[0]==="COACH"?"coach r-"+t:t;
   const pos=opts.role&&p.pos[0]!=="COACH"?opts.role:(p.pos[0]==="COACH"?"COA":p.pos[0]);
   const shortN=p.name.split(" ").length>1&&p.name.length>12?p.name.split(" ").slice(-1)[0]:p.name;
   const ovr=opts.ovr!=null?opts.ovr:p.ovr;
-  return `<div class="fcard ${t}${mini?" mini":""}${opts.cls?" "+opts.cls:""}" style="--w:${w}px">
+  return `<div class="fcard ${cls}${mini?" mini":""}${opts.cls?" "+opts.cls:""}" style="--w:${w}px">
    <div class="fc-shine"></div>
-   <div class="fc-top"><div class="fc-ovr">${ovr}</div><div class="fc-pos">${esc(pos)}</div>${mini?"":`<div class="fc-club">OL</div>`}</div>
+   <div class="fc-top"><div class="fc-ovr">${ovr}</div><div class="fc-pos">${esc(pos)}</div>${mini?"":`<div class="fc-club">OL</div>${w>=140?`<div class="fc-flag">${flag(NAT[p.id])}</div>`:""}`}</div>
    <div class="fc-face"><svg viewBox="0 0 100 100"><circle cx="50" cy="36" r="19" fill="currentColor" opacity=".28"/><path d="M12 100c2-24 18-36 38-36s36 12 38 36z" fill="currentColor" opacity=".28"/>${mini?"":`<text x="50" y="43" text-anchor="middle" font-size="18" font-weight="900" fill="currentColor" opacity=".55">${esc(initials(p.name))}</text>`}</svg></div>
    ${mini?"":`<div class="fc-name">${esc(shortN)}</div>`}
    ${mini||!st?(!mini&&p.pos[0]==="COACH"?`<div class="fc-coach">${esc(p.name)}<small>Entraîneur de l'OL</small></div>`:""):`<div class="fc-stats">${[0,3,1,4,2,5].map(i=>`<span><b>${st.vals[i]}</b>${st.labels[i]}</span>`).join("")}</div>`}
-   ${mini?"":`<div class="fc-tag">${TIER_TAG[t]}</div>`}
+   ${mini?"":`<div class="fc-tag">${p.pos[0]==="COACH"?"COACH · ":""}${TIER_TAG[t]}</div>`}
   </div>`;
 }
 function showCard(pid,act){
@@ -1000,7 +1050,9 @@ function showCard(pid,act){
   const M=$("#cardModal");
   const info=p.pos[0]==="COACH"?`<div>Entraîneur de l'OL · note ${p.ovr}</div>`:
     `<div>${p.pos.join(" · ")} · arrivé à l'OL ${p.year<2000?"avant 2000":"en "+p.year}</div>${p.m!=null?`<div><b>${p.m}</b> matchs · <b>${p.g}</b> but${p.g>1?"s":""} à l'OL</div>`:`<div class="mute">Moins de 30 matchs à l'OL : pas de stats officielles</div>`}`;
-  M.innerHTML=`<div class="cm-box"><div class="cm-card">${cardHTML(pid,{w:230,cls:"flip-in"})}</div><div class="cm-info">${info}</div><div class="mbtns" id="cmBtns"></div><div class="cm-note">Stats de carte inspirées des jeux FIFA/FC, calculées d'après la note, le poste et le profil du joueur.</div></div>`;
+  const pt=palmText(p); const rt=cardTier(p);
+  const palm=`<div class="cm-palm"><div class="rar r-${rt}">${TIER_NAME[rt]}</div>${pt.ol.length?`<div>🏆 Avec l'OL : ${pt.ol.join(" · ")}</div>`:`<div class="mute">Pas de titre avec l'OL</div>`}${pt.ext.length?`<div>🌍 ${pt.ext.join(" · ")}</div>`:""}</div>`;
+  M.innerHTML=`<div class="cm-box"><div class="cm-card">${cardHTML(pid,{w:230,cls:"flip-in"})}</div><div class="cm-info">${info}${palm}</div><div class="mbtns" id="cmBtns"></div><div class="cm-note">Stats inspirées des jeux FIFA/FC (note, poste, profil). Rareté selon le palmarès : titres avec l'OL et grands trophées en carrière.</div></div>`;
   const B=$("#cmBtns");
   const mk=(t,fn,ghost)=>{const b=document.createElement("button");b.className="btn"+(ghost?" ghost":"");b.textContent=t;b.onclick=()=>{M.classList.remove("open");fn&&fn();};B.appendChild(b);};
   if(act&&act.change) mk("🔁 Changer de joueur",act.change);
@@ -1435,20 +1487,20 @@ function renderBoard(){
 
 // ---------- Récompenses, packs et collection ----------
 const PACKS={
-  jour:{name:"Pack du jour",price:0,n:3,w:{bronze:55,silver:35,gold:9,icon:1},color:"#7ee2a0"},
-  bronze:{name:"Pack Bronze",price:200,n:3,w:{bronze:58,silver:33,gold:8,icon:1},color:"#c98a52"},
-  or:{name:"Pack Or",price:500,n:4,w:{bronze:22,silver:40,gold:33,icon:5},guarantee:"gold",color:"#e7c45a"},
-  legende:{name:"Pack Légende",price:1500,n:5,w:{bronze:5,silver:28,gold:50,icon:17},guarantee:"icon",color:"#f4ecd2"}
+  jour:{name:"Pack du jour",price:0,n:2,w:{bronze:72,silver:24,gold:3.6,icon:.4,myth:0},color:"#7ee2a0"},
+  bronze:{name:"Pack Classique",price:250,n:3,w:{bronze:66,silver:27,gold:6,icon:.9,myth:.1},color:"#c98a52"},
+  or:{name:"Pack Épique",price:800,n:3,w:{bronze:35,silver:40,gold:20,icon:4.5,myth:.5},guarantee:"gold",color:"#e7c45a"},
+  legende:{name:"Pack Légende",price:2500,n:3,w:{bronze:15,silver:35,gold:34,icon:13,myth:3},guarantee:"icon",color:"#f4ecd2"}
 };
-const SELL={bronze:15,silver:30,gold:70,coach:70,icon:250};
+const SELL={bronze:5,silver:12,gold:30,icon:100,myth:300};
 const ALL_CARDS=[...PLAYERS.slice().sort((a,b)=>a.year-b.year||a.name.localeCompare(b.name,"fr")),...COACHES];
 const CARD_NO=Object.fromEntries(ALL_CARDS.map((p,i)=>[p.id,i+1]));
-const poolTier=p=>{const t=cardTier(p);return t==="coach"?"gold":t;};
-const POOL={bronze:[],silver:[],gold:[],icon:[]}; for(const p of ALL_CARDS) POOL[poolTier(p)].push(p.id);
+const poolTier=p=>cardTier(p);
+const POOL={bronze:[],silver:[],gold:[],icon:[],myth:[]}; for(const p of ALL_CARDS) POOL[poolTier(p)].push(p.id);
 const W=()=>C(me);
 function addCoins(n,why){ const c=W(); c.coins=(c.coins||0)+n; save(); renderCoins(); if(why) toast(`${n>0?"+":""}${n} 🪙 ${why}`); }
 function renderCoins(){ const el=$("#coins"); if(!el) return; if(!me){el.style.display="none";return;} el.style.display=""; el.textContent=`🪙 ${(W().coins||0).toLocaleString("fr-FR")}`; }
-function rewardFor(h,i){ const [a,b]=i===0?h.score:[h.score[1],h.score[0]]; const base=a>b?300:a===b?150:80; return {coins:base+25*a,res:a>b?"victoire":a===b?"nul":"défaite",a,b}; }
+function rewardFor(h,i){ const [a,b]=i===0?h.score:[h.score[1],h.score[0]]; const base=a>b?120:a===b?60:30; return {coins:base+10*a,res:a>b?"victoire":a===b?"nul":"défaite",a,b}; }
 function claimRewards(){
   if(!me||!C(me)) return; const c=W(); c.claimed=c.claimed||[]; let got=0, lines=[];
   for(const h of matches){ if(!h.owners||c.claimed.includes(h.id)) continue; const i=h.owners.indexOf(me); if(i<0) continue;
@@ -1461,14 +1513,14 @@ const today=()=>new Date().toLocaleDateString("fr-CA");
 function dailyBonus(){ const c=W(); if(c.daily!==today()) toast("🎁 Ton pack du jour t'attend dans 🎴 Collec !"); }
 function drawCard(pack,force){
   const P=PACKS[pack]; let tier=force||wpick(Object.keys(P.w),k=>P.w[k]);
-  const arr=POOL[tier]; return arr[Math.floor(Math.random()*arr.length)];
+  let arr=POOL[tier]; if(!arr.length) arr=POOL.icon; return arr[Math.floor(Math.random()*arr.length)];
 }
 function openPack(pack){
   const P=PACKS[pack]; const c=W();
   if(pack==="jour"){ if(c.daily===today()){ toast("Pack du jour déjà ouvert : reviens demain !",true); return; } c.daily=today(); }
   else { if((c.coins||0)<P.price){ toast(`Il te manque ${P.price-(c.coins||0)} 🪙 : joue des matchs ou vends tes doublons !`,true); return; } c.coins-=P.price; }
   const ids=[]; for(let i=0;i<P.n;i++) ids.push(drawCard(pack));
-  const rank={bronze:0,silver:1,gold:2,coach:2,icon:3};
+  const rank={bronze:0,silver:1,gold:2,icon:3,myth:4};
   if(P.guarantee&&!ids.some(id=>rank[cardTier(BY_ID[id])]>=rank[P.guarantee])) ids[ids.length-1]=drawCard(pack,P.guarantee);
   ids.sort((a,b)=>rank[cardTier(BY_ID[a])]-rank[cardTier(BY_ID[b])]||BY_ID[a].ovr-BY_ID[b].ovr);
   c.coll=c.coll||{}; const isNew=ids.map(id=>!c.coll[id]);
@@ -1481,16 +1533,31 @@ function packFx(pack,ids,isNew){
   F.innerHTML=`<div class="pk-bg"></div><div class="pk-pack" style="--pc:${P.color}"><div class="pk-foil"></div><b>OL</b><span>${P.name}</span><small>Touche pour ouvrir</small></div>`;
   const pk=F.querySelector(".pk-pack"); let opened=false;
   const go=()=>{ if(opened) return; opened=true; pk.classList.add("tear"); setTimeout(()=>reveal(0),700); };
-  pk.onclick=go; setTimeout(go,1800);
-  const reveal=i=>{
+  pk.onclick=go;
+  const reveal=(i,skipWalk)=>{
     if(i>=ids.length) return summary();
     const id=ids[i], t=cardTier(BY_ID[id]);
+    if(!skipWalk&&(t==="icon"||t==="myth"||t==="gold")) return walkout(id,t,()=>reveal(i,true));
     const old=F.querySelector(".pk-show"); if(old) old.remove();
-    const d=document.createElement("div"); d.className="pk-show"+(t==="icon"?" icon":"");
-    d.innerHTML=(t==="icon"?`<div class="rays"></div>`:"")+`<div class="pk-card">${cardHTML(id,{w:200,cls:"flip-in"+(t==="icon"||t==="gold"?" glow":"")})}</div>${isNew[i]?`<div class="pk-new">NOUVEAU !</div>`:`<div class="pk-dup">Doublon</div>`}<div class="pk-hint">${i<ids.length-1?"Touche pour la suivante":"Touche pour voir ton pack"}</div>`;
+    const d=document.createElement("div"); d.className="pk-show"+(t==="icon"||t==="myth"?" icon":"");
+    d.innerHTML=(t==="icon"||t==="myth"?`<div class="rays${t==="myth"?" myth":""}"></div>`:"")+`<div class="pk-rar r-${t}">${TIER_NAME[t]}</div>`+`<div class="pk-card">${cardHTML(id,{w:200,cls:"flip-in"+(t==="icon"||t==="gold"||t==="myth"?" glow":"")})}</div>${isNew[i]?`<div class="pk-new">NOUVEAU !</div>`:`<div class="pk-dup">Doublon</div>`}<div class="pk-hint">${i<ids.length-1?"Touche pour la suivante":"Touche pour voir ton pack"}</div>`;
     F.appendChild(d); pk.style.display="none";
     let done=false; const next=()=>{ if(done) return; done=true; reveal(i+1); };
-    d.onclick=next; setTimeout(next,t==="icon"?3200:2200);
+    setTimeout(()=>{ d.onclick=next; },900);
+  };
+  const walkout=(id,t,done)=>{
+    const p=BY_ID[id]; pk.style.display="none";
+    const old=F.querySelector(".pk-show"); if(old) old.remove();
+    const sp=spansOf(p); const era=sp.map(([a,b])=>a===b?`${a}`:`${a}–${b>=2026&&CURRENT.has(p.id)?"…":b}`).join(" · ");
+    const steps=t==="gold"?[]:[[`<span class="wo-flag">${flag(NAT[p.id])}</span>`,COUNTRY[NAT[p.id]]||""],[`<b>${esc(p.pos[0]==="COACH"?"COACH":p.pos[0])}</b>`,POS_NAME[p.pos[0]]||""],[`<b>OL</b>`,era]];
+    const w=document.createElement("div"); w.className="walk "+t;
+    w.innerHTML=`<div class="wo-beam"></div><div class="wo-stage"></div><div class="pk-hint wo-skip">Touche pour passer</div>`;
+    F.appendChild(w); const st=w.querySelector(".wo-stage");
+    let k=0, fin=false; const end=()=>{ if(fin) return; fin=true; w.classList.add("boom"); setTimeout(()=>{ w.remove(); done(); },450); };
+    w.onclick=end;
+    const next=()=>{ if(fin) return; if(k>=steps.length) return setTimeout(end,t==="gold"?900:500);
+      const [big,small]=steps[k++]; st.innerHTML=`<div class="wo-item"><div class="wo-big">${big}</div><div class="wo-small">${esc(small)}</div></div>`; setTimeout(next,1500); };
+    setTimeout(next,t==="gold"?300:1100);
   };
   const summary=()=>{
     const old=F.querySelector(".pk-show"); if(old) old.remove();
@@ -1505,14 +1572,14 @@ function renderCollec(){
   const owned=ALL_CARDS.filter(p=>coll[p.id]).length;
   const dupes=Object.entries(coll).reduce((s,[id,n])=>s+(n>1?(n-1)*SELL[cardTier(BY_ID[id])]:0),0);
   $("#cShop").innerHTML=`<h3>🎴 Boutique <small>🪙 ${(c.coins||0).toLocaleString("fr-FR")}</small></h3>
-    ${c.daily!==today()?`<button class="pkbtn daily" data-pk="jour" style="--pc:#7ee2a0"><b>🎁 Pack du jour gratuit</b><span>3 cartes · 1 par jour</span><em>Ouvrir</em></button>`:`<div class="mute" style="font-size:12.5px;margin-bottom:8px">🎁 Pack du jour ouvert, le prochain demain.</div>`}
-    <div class="shop">${Object.entries(PACKS).filter(([k])=>k!=="jour").map(([k,P])=>`<button class="pkbtn" data-pk="${k}" style="--pc:${P.color}"><b>${P.name}</b><span>${P.n} cartes${P.guarantee==="gold"?" · 1 Or min.":P.guarantee==="icon"?" · 1 Icône":""}</span><em>🪙 ${P.price}</em></button>`).join("")}</div>
-    <div class="rules" style="font-size:12.5px">Gagne des pièces en jouant : <b>victoire 300</b>, nul 150, défaite 80, <b>+25 par but</b> marqué, et <b>1 pack gratuit par jour</b>. Tes doublons se revendent pour acheter des packs (Bronze 15, Argent 30, Or 70, Icône 250).</div>
+    ${c.daily!==today()?`<button class="pkbtn daily" data-pk="jour" style="--pc:#7ee2a0"><b>🎁 Pack du jour gratuit</b><span>2 cartes · 1 par jour</span><em>Ouvrir</em></button>`:`<div class="mute" style="font-size:12.5px;margin-bottom:8px">🎁 Pack du jour ouvert, le prochain demain.</div>`}
+    <div class="shop">${Object.entries(PACKS).filter(([k])=>k!=="jour").map(([k,P])=>`<button class="pkbtn" data-pk="${k}" style="--pc:${P.color}"><b>${P.name}</b><span>${P.n} cartes${P.guarantee==="gold"?" · 1 Épique min.":P.guarantee==="icon"?" · 1 Légendaire min.":""}</span><em>🪙 ${P.price}</em></button>`).join("")}</div>
+    <div class="rules" style="font-size:12.5px">Gagne des pièces en jouant : <b>victoire 120</b>, nul 60, défaite 30, <b>+10 par but</b> marqué, et <b>1 pack gratuit par jour</b>. Rareté selon le palmarès : Commune, Rare, Épique, Légendaire, Mythique. Doublons revendables : 5 / 12 / 30 / 100 / 300 🪙.</div>
     ${dupes?`<button class="btn ghost big" id="sellBtn">Vendre mes doublons (+${dupes} 🪙)</button>`:""}`;
   document.querySelectorAll(".pkbtn").forEach(b=>b.onclick=()=>openPack(b.dataset.pk));
   const sb=$("#sellBtn"); if(sb) sb.onclick=()=>openModal(`Vendre tous tes doublons pour ${dupes} 🪙 ?`,null,[["Vendre",()=>{ for(const id in coll) if(coll[id]>1) coll[id]=1; addCoins(dupes,"doublons vendus"); renderCollec(); }],["Annuler",null,true]]);
-  const F=[["all","Tous"],["icon","Icônes"],["gold","Or"],["silver","Argent"],["bronze","Bronze"],["coach","Entraîneurs"],["miss","Manquants"]];
-  const list=ALL_CARDS.filter(p=>{ const t=cardTier(p); if(colFilter==="miss") return !coll[p.id]; return colFilter==="all"||t===colFilter; });
+  const F=[["all","Tous"],["myth","Mythiques"],["icon","Légendaires"],["gold","Épiques"],["silver","Rares"],["bronze","Communes"],["coach","Entraîneurs"],["miss","Manquants"]];
+  const list=ALL_CARDS.filter(p=>{ const t=cardTier(p); if(colFilter==="miss") return !coll[p.id]; if(colFilter==="coach") return p.pos[0]==="COACH"; return colFilter==="all"||t===colFilter; });
   $("#cAlbum").innerHTML=`<h3>📖 Mon album <small>${owned} / ${ALL_CARDS.length}</small></h3>
     <div class="track" style="height:10px;margin-bottom:10px"><i style="width:${owned/ALL_CARDS.length*100}%"></i></div>
     <div class="chips" style="margin-bottom:10px">${F.map(([k,l])=>`<button class="chip${colFilter===k?" on":""}" data-f="${k}">${l}</button>`).join("")}</div>
@@ -1540,7 +1607,7 @@ async function importLegacy(name){
     const lref=db.collection("families").doc(ROOM); const ls=await lref.get(); const L=ls.exists?ls.data():{};
     if(!L[key]||(L.claimed||{})[key]) return;
     const c=norm(L[key]); if(!Object.keys(c.slots).length&&!c.library.length) return;
-    compos[me]=Object.assign(c,{coins:compos[me].coins||600}); await push(); await lref.set({claimed:{[key]:me}},{merge:true});
+    compos[me]=Object.assign(c,{coins:compos[me].coins||300}); await push(); await lref.set({claimed:{[key]:me}},{merge:true});
     toast("Tes compos de l'ancienne version ont été récupérées ✓"); render();
   }catch(e){}
 }
@@ -1571,7 +1638,7 @@ try{
     try{
       const s=await uref.get();
       if(s.exists){ const d=s.data(); NAMES[me]=d.name||"?"; compos[me]=norm(d); }
-      else { NAMES[me]=pendingName||($("#aName").value.trim())||user.email.split("@")[0]; compos[me]=blank(); compos[me].coins=600; await push(); await importLegacy(NAMES[me]); setTimeout(()=>toast("Bienvenue ! 600 🪙 offertes pour tes premiers packs"),800); }
+      else { NAMES[me]=pendingName||($("#aName").value.trim())||user.email.split("@")[0]; compos[me]=blank(); compos[me].coins=300; await push(); await importLegacy(NAMES[me]); setTimeout(()=>toast("Bienvenue ! 300 🪙 offertes pour ton premier pack"),800); }
     }catch(e){ setSync("⚠️ Accès refusé : règles Firebase à mettre à jour","err"); }
     pendingName=null; $("#aPass").value="";
     choose(me); startListeners(); setTimeout(()=>{ if(me){ dailyBonus(); claimRewards(); renderCoins(); } },1500);
