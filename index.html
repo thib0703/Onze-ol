@@ -1727,6 +1727,7 @@ const PACKS={
   or:{name:"Pack Épique",price:900,n:3,w:{bronze:35,silver:40,gold:20,icon:4.5,myth:.5},guarantee:"gold",color:"#e7c45a"},
   legende:{name:"Pack Légende",price:2500,n:3,w:{bronze:15,silver:35,gold:34,icon:13,myth:3},guarantee:"icon",color:"#f4ecd2"}
 };
+PACKS.starter={name:"Pack de départ",price:0,n:12,w:{bronze:100},color:"#7ec8ff"};
 const SELL={bronze:4,silver:12,gold:32,icon:100,myth:300};
 const ALL_CARDS=[...PLAYERS.slice().sort((a,b)=>a.year-b.year||a.name.localeCompare(b.name,"fr")),...COACHES];
 const CARD_NO=Object.fromEntries(ALL_CARDS.map((p,i)=>[p.id,i+1]));
@@ -1763,20 +1764,22 @@ function openPack(pack,free){
   else { if((c.coins||0)<P.price){ toast(`Il te manque ${P.price-(c.coins||0)} 🪙 : joue des matchs ou vends tes doublons !`,true); return; } c.coins-=P.price; }
   const rank={bronze:0,silver:1,gold:2,icon:3,myth:4};
   // ✨ GOLD PACK : 1 chance sur 1000, dans n'importe quel pack → 1 Épique + 1 Légendaire + 1 Mythique
-  const gold=Math.random()<GOLD_RATE;
+  const gold=pack!=="starter"&&Math.random()<GOLD_RATE;
   let ids=[];
-  if(gold){ ids=[drawCard(pack,"gold"),drawCard(pack,"icon"),drawCard(pack,"myth")]; c.goldPacks=(c.goldPacks||0)+1; }
+  if(pack==="starter"){ ids=starterIds(c); }
+  else if(gold){ ids=[drawCard(pack,"gold"),drawCard(pack,"icon"),drawCard(pack,"myth")]; c.goldPacks=(c.goldPacks||0)+1; }
   else if(pack==="event"){ const f=curEvent().f; for(let i=0;i<P.n;i++) ids.push(drawFrom(f,P.w));
     if(!ids.some(id=>rank[cardTier(BY_ID[id])]>=rank[P.guarantee])) ids[ids.length-1]=drawFrom(f,P.w,P.guarantee); }
   else { for(let i=0;i<P.n;i++) ids.push(drawCard(pack));
     if(P.guarantee&&!ids.some(id=>rank[cardTier(BY_ID[id])]>=rank[P.guarantee])) ids[ids.length-1]=drawCard(pack,P.guarantee); }
-  ids.sort((a,b)=>rank[cardTier(BY_ID[a])]-rank[cardTier(BY_ID[b])]||BY_ID[a].ovr-BY_ID[b].ovr);
+  if(pack!=="starter") ids.sort((a,b)=>rank[cardTier(BY_ID[a])]-rank[cardTier(BY_ID[b])]||BY_ID[a].ovr-BY_ID[b].ovr);
   c.coll=c.coll||{}; const isNew=ids.map(id=>!c.coll[id]);
   for(const id of ids) c.coll[id]=(c.coll[id]||0)+1;
   c.opened=(c.opened||0)+1;
   save(); renderCoins(); track("pack");
   if(gold) post(`✨ ${NAMES[me]} a ouvert un GOLD PACK !!!`);
   for(const id of ids){ const t=cardTier(BY_ID[id]); if(t==="myth"||t==="icon") post(`${t==="myth"?"🌈":"🌟"} ${NAMES[me]} a tiré ${BY_ID[id].name} (${TIER_NAME[t]}) !`); }
+  if(pack==="starter") placeStarter(c,ids);
   packFx(pack,ids,isNew,gold);
 }
 function packFx(pack,ids,isNew,gold){
@@ -1818,7 +1821,7 @@ function packFx(pack,ids,isNew,gold){
     const old=F.querySelector(".pk-show"); if(old) old.remove();
     const s=document.createElement("div"); s.className="pk-sum";
     s.innerHTML=`<h3>${gold?"✨ GOLD PACK ✨":P.name}</h3><div class="pk-row">${ids.map((id,i)=>`<div class="pk-mini">${cardHTML(id,{w:96})}${isNew[i]?`<i>NEW</i>`:""}</div>`).join("")}</div><button class="btn big" id="pkOk">Ajouter à ma collection</button>`;
-    F.appendChild(s); $("#pkOk").onclick=()=>{ F.className="packfx"; F.innerHTML=""; renderCollec(); };
+    F.appendChild(s); $("#pkOk").onclick=()=>{ F.className="packfx"; F.innerHTML=""; renderCollec(); if(pack==="starter"){ render(); setMode("compo"); toast("✅ Ton équipe de départ est en place dans ton 11 type !"); } };
   };
 }
 let colFilter="all";
@@ -1830,7 +1833,7 @@ function renderCollec(){
     ${c.daily!==today()?`<button class="pkbtn daily" data-pk="jour" style="--pc:#7ee2a0"><b>🎁 Pack du jour gratuit</b><span>2 cartes · 1 par jour</span><em>Ouvrir</em></button>`:`<div class="mute" style="font-size:12.5px;margin-bottom:8px">🎁 Pack du jour ouvert, le prochain demain.</div>`}
     ${Object.entries(c.freePacks||{}).filter(([k,n])=>n>0&&PACKS[k]).map(([k,n])=>`<button class="pkbtn daily" data-free="${k}" style="--pc:${PACKS[k].color}"><b>🎁 ${PACKS[k].name} offert ×${n}</b><span>récompense</span><em>Ouvrir</em></button>`).join("")}
     <button class="pkbtn daily" data-pk="event" style="--pc:#ff9a6a;animation:none"><b>${curEvent().name}</b><span>Pack Événement · 3 cartes du thème</span><em>🪙 600</em></button>
-    <div class="shop">${Object.entries(PACKS).filter(([k])=>!["jour","event","reward"].includes(k)).map(([k,P])=>`<button class="pkbtn" data-pk="${k}" style="--pc:${P.color}"><b>${P.name}</b><span>${P.n} cartes${P.guarantee==="gold"?" · 1 Épique min.":P.guarantee==="icon"?" · 1 Légendaire min.":""}</span><em>🪙 ${P.price}</em></button>`).join("")}</div>
+    <div class="shop">${Object.entries(PACKS).filter(([k])=>!["jour","event","reward","starter"].includes(k)).map(([k,P])=>`<button class="pkbtn" data-pk="${k}" style="--pc:${P.color}"><b>${P.name}</b><span>${P.n} cartes${P.guarantee==="gold"?" · 1 Épique min.":P.guarantee==="icon"?" · 1 Légendaire min.":""}</span><em>🪙 ${P.price}</em></button>`).join("")}</div>
     <div class="rules" style="font-size:12.5px">Gagne des pièces en jouant : <b>victoire 100</b>, nul 50, défaite 25, <b>+10 par but</b> (gains pleins sur tes 5 premiers matchs du jour, ¼ ensuite) et <b>1 pack gratuit par jour</b>. Doublons : revente 4 / 12 / 32 / 100 / 300 🪙 (Commune → Mythique), ou échange avec les autres pour plus de valeur.</div>
     ${dupes?`<button class="btn ghost big" id="sellBtn">Vendre mes doublons (+${dupes} 🪙)</button>`:""}`;
   document.querySelectorAll(".pkbtn[data-pk]").forEach(b=>b.onclick=()=>openPack(b.dataset.pk));
@@ -2205,15 +2208,24 @@ function claimObj(scope,k){ const o=objState(); const s=o[scope]; const L=scope=
 
 // ---------- Série de connexions ----------
 function starterPack(){
+  // Nouveau compte : aucun joueur, un Pack de départ à ouvrir (11 joueurs Communes + 1 entraîneur)
   const c=W(); if(c.starter) return; c.starter=true;
-  const pick=(f)=>{ const L=POOL.bronze.filter(id=>f(BY_ID[id])&&!Object.values(c.slots).includes(id)); return L.length?L[Math.floor(Math.random()*L.length)]:null; };
-  // l'ancienne compo (joueurs non possédés) est gardée dans les compos enregistrées
+  c.freePacks=c.freePacks||{}; c.freePacks.starter=1; save();
+}
+function starterIds(c){
+  const ids=[]; const pick=f=>{ const L=POOL.bronze.filter(id=>f(BY_ID[id])&&!ids.includes(id)); return L.length?L[Math.floor(Math.random()*L.length)]:null; };
+  F["4-3-3"].forEach(([r])=>{ const id=pick(p=>p.pos[0]===r)||pick(p=>(ROLE_OK[r]||[]).includes(p.pos[0])); if(id) ids.push(id); });
+  ids.push(pick(p=>p.pos[0]==="COACH")||POOL.bronze.find(id=>BY_ID[id].pos[0]==="COACH")||"coach-hubert-fournier");
+  return ids;
+}
+function placeStarter(c,ids){
   if(Object.values(c.slots||{}).filter(Boolean).length){ c.library=c.library||[]; c.library.unshift({id:"avant"+Date.now().toString(36),name:"Ma compo d'avant",formation:c.formation,slots:{...c.slots},bench:{...c.bench},coach:c.coach||null,savedAt:Date.now()}); }
-  c.formation="4-3-3"; c.slots={}; c.bench={}; c.coach=null; c.loadedId=null;
-  const roles=F["4-3-3"].map(([r])=>r); const ids=[];
-  roles.forEach((r,i)=>{ const id=pick(p=>p.pos[0]===r)||pick(p=>(ROLE_OK[r]||[]).includes(p.pos[0])); if(id){ ids.push(id); c.coll[id]=(c.coll[id]||0)+1; c.slots[i]=id; } });
-  const co=pick(p=>p.pos[0]==="COACH")||POOL.bronze.find(id=>BY_ID[id].pos[0]==="COACH")||"coach-hubert-fournier"; ids.push(co); c.coll[co]=(c.coll[co]||0)+1; if(!c.coach||!c.coll[c.coach]) c.coach=co;
-  save(); render(); setTimeout(()=>{ toast("🎒 Pack de départ : une équipe complète t'attend dans ton 11 type !"); },2200);
+  c.formation="4-3-3"; c.slots={}; c.bench={}; c.loadedId=null;
+  ids.slice(0,11).forEach((id,i)=>{ c.slots[i]=id; }); c.coach=ids[11]||null; save();
+}
+function starterPrompt(then){
+  const c=W(); if(!((c.freePacks||{}).starter>0)){ if(then) then(); return; }
+  openModal("🎒 Ton Pack de départ t'attend ! 11 joueurs et un entraîneur pour lancer ton équipe.",null,[["🎁 Ouvrir mon pack",()=>{ setTimeout(()=>openPack("starter",true),150); }],["Plus tard",()=>{ toast("Il t'attend dans 🎴 Collec"); if(then) then(); },true]]);
 }
 function loginStreak(){
   const c=W(); const t=DAYK(); c.streak=c.streak||{last:null,n:0};
@@ -2775,7 +2787,7 @@ const TIPS={
  welcome:{t:"👋 Bienvenue dans Les Gones Legends !",x:`Construis l'équipe ultime de l'OL avec tous les joueurs passés par Lyon depuis 2000.<br><br>
   🎴 <b>Collectionne</b> des cartes en ouvrant des packs (un gratuit chaque jour).<br>⚽ <b>Compose</b> ton 11 type avec les cartes que tu possèdes.<br>
   🏟️ <b>Affronte</b> tes potes ou l'ordi dans des matchs simulés en direct.<br>🪙 <b>Gagne des pièces</b> à chaque match pour acheter d'autres packs.<br><br>
-  Tu as reçu un <b>pack de départ</b> : une équipe complète est déjà dans ton 11 type. À chaque nouvel écran, une petite explication s'affichera.`},
+  Pour commencer, ouvre ton <b>Pack de départ</b> : 11 joueurs et un entraîneur qui forment ta première équipe. À chaque nouvel écran, une petite explication s'affichera.`},
  tab_compo:{t:"⚽ 11 type",x:`C'est ton équipe. Choisis un <b>système</b>, puis touche un poste sur le terrain pour y mettre un joueur.<br><br>
   🔒 Seules les <b>cartes que tu possèdes</b> jouent en match. Ajoute aussi des remplaçants et un entraîneur (il compte dans la force de l'équipe).<br><br>
   💾 « Sauvegarder la compo » la garde de côté pour la recharger plus tard. En haut, tu peux regarder la compo des autres.`},
@@ -2847,7 +2859,7 @@ function platformInfo(){ const ua=navigator.userAgent;
   return {ios,android,inApp,samsung,iosOther}; }
 function installGuide(force){
   const P=platformInfo(); if(isStandalone) { if(force) toast("L'appli est déjà sur ton écran d'accueil ✓"); return; }
-  if(!force){ try{ if(localStorage.getItem("onze-ol-install")) return; localStorage.setItem("onze-ol-install","1"); }catch(e){} if(!P.ios&&!P.android) return; }
+  if(!force){ if(!P.ios&&!P.android) return; if(document.querySelector(".tipov.ig")) return; }
   let steps, head;
   if(P.inApp){ head="Ouvre d'abord le lien dans ton navigateur"; steps=[`Touche les <b>⋯</b> ou le bouton de partage de l'appli où tu as ouvert le lien`,`Choisis <b>« Ouvrir dans ${P.ios?"Safari":"le navigateur"} »</b>`,`Puis suis les étapes pour l'ajouter à l'écran d'accueil`]; }
   else if(P.ios){ head=P.iosOther?"Sur iPhone (Chrome / autre navigateur)":"Sur iPhone (Safari)";
@@ -2857,21 +2869,21 @@ function installGuide(force){
   else if(P.android){ head="Sur Android (Chrome)"; steps=[`Touche le menu <b><span class="igk">⋮</span></b> en haut à droite`,`Choisis <b>« Ajouter à l'écran d'accueil »</b> ou <b>« Installer l'application »</b>`,`Confirme avec <b>« Installer »</b> ou <b>« Ajouter »</b>`]; }
   else { head="Sur ordinateur"; steps=[`Dans Chrome ou Edge, clique sur l'icône <b>Installer</b> à droite de la barre d'adresse`,`Sinon, ajoute simplement la page à tes favoris`]; }
   const was=tipOpen; tipOpen=true;
-  const el=document.createElement("div"); el.className="tipov"; el.style.zIndex=130;
+  const el=document.createElement("div"); el.className="tipov ig"; el.style.zIndex=130;
   el.innerHTML=`<div class="tipbox"><h3>📲 Installe l'appli sur ton téléphone</h3><div class="tipx">Ajoute <b>Les Gones Legends</b> à ton écran d'accueil : elle s'ouvrira en plein écran comme une vraie appli${P.ios?", et c'est obligatoire sur iPhone pour recevoir les notifications":""}.</div>
     <h4 style="margin:0 0 8px">${head}</h4><ol class="igsteps">${steps.map(s=>`<li>${s}</li>`).join("")}</ol>
     <button class="btn big" id="igInstall" style="${installEvt?"":"display:none"}">📲 Installer maintenant</button>
     <button class="btn ${installEvt?"ghost":""} big" id="igOk">${installEvt?"Plus tard":"OK, compris"}</button>
-    <div class="mute" style="font-size:12px;text-align:center;margin-top:8px">Tu retrouveras ces explications en touchant ton pseudo → « 📲 Installer l'appli ».</div></div>`;
+    <div class="mute" style="font-size:12px;text-align:center;margin-top:8px">Ce message s'affiche tant que l'appli est ouverte dans le navigateur. Tu retrouveras aussi ces explications en touchant ton pseudo → « 📲 Installer l'appli ».</div></div>`;
   document.body.appendChild(el);
   const close=()=>{ el.remove(); tipOpen=was; if(!was){ const nx=tipQ.shift(); if(nx) setTimeout(()=>tip(nx[0],nx[1]),250); } };
   el.querySelector("#igOk").onclick=close;
   el.querySelector("#igInstall").onclick=async()=>{ if(!installEvt) return; installEvt.prompt(); try{ const r=await installEvt.userChoice; if(r.outcome==="accepted") toast("Appli installée 🎉"); }catch(e){} installEvt=null; close(); };
 }
-setTimeout(()=>installGuide(false),900);
+installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-19b";
+const APP_V="2026-11-19c";
 let updShown=false;
 async function checkUpdate(){ if(updShown) return; try{ const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const APP_V="([^"]+)"/); if(m&&m[1]!==APP_V){ updShown=true;
@@ -2940,7 +2952,7 @@ try{
       else { NAMES[me]=pendingName||($("#aName").value.trim())||user.email.split("@")[0]; compos[me]=blank(); compos[me].coins=300; await push(); await importLegacy(NAMES[me]); setTimeout(()=>toast("Bienvenue ! 300 🪙 offertes pour ton premier pack"),800); }
     }catch(e){ setSync("⚠️ Accès refusé : règles Firebase à mettre à jour","err"); }
     pendingName=null; $("#aPass").value="";
-    choose(me); startListeners(); setTimeout(()=>{ if(me){ starterPack(); loginStreak(); dailyBonus(); claimRewards(); renderCoins(); badgeLigue(); tip("welcome",()=>tip("tab_"+mode)); } },1500);
+    choose(me); startListeners(); setTimeout(()=>{ if(me){ starterPack(); loginStreak(); dailyBonus(); claimRewards(); renderCoins(); badgeLigue(); tip("welcome",()=>starterPrompt(()=>tip("tab_"+mode))); } },1500);
   });
 }catch(e){ setSync("⚠️ Synchro indisponible","err"); }
 </script>
