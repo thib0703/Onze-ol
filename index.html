@@ -405,6 +405,7 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
 .fixd{margin-top:8px;font-size:13px}.fixd summary{cursor:pointer;color:var(--mute);margin:4px 0}.fixr h5{margin:8px 0 4px;font-size:12px;color:var(--mute)}
 .fixm{display:grid;grid-template-columns:1fr auto 1fr 34px;gap:6px;align-items:center;padding:4px 0;border-top:1px solid rgba(255,255,255,.06)}.fixm>span:nth-of-type(2){text-align:right}.fixm b{text-align:center;min-width:40px}.fixm.me{color:#ffd970}
 .fixm .btn{padding:2px 6px}.tieb{grid-column:1/-1;display:flex;gap:6px;justify-content:center;align-items:center;flex-wrap:wrap}
+.oppf select{font-weight:800}.oppf{background:rgba(255,217,112,.08);border-radius:10px;padding:6px 8px}
 .dh{display:grid;grid-template-columns:1fr auto auto auto;gap:6px;align-items:center;padding:7px 0;border-top:1px solid rgba(255,255,255,.07)}.dh small{display:block;opacity:.6;font-size:11px}.dh .win{color:#7ee2a0}.dh .lose{color:#ff8a7a}
 .mini-pitch{position:relative;height:380px;margin:4px 0;border-radius:12px;background:linear-gradient(#1f7a3a,#18662f);overflow:hidden}
 .mp-slot{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:1px}.mp-slot small{font-size:9px;font-weight:800;background:#0009;padding:0 4px;border-radius:4px;white-space:nowrap}
@@ -483,7 +484,7 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
     <div class="section" id="dCoachSec"><h3>Entraîneur</h3><div class="coach" id="dCoach"></div></div>
     <div class="section"><h3>Derniers choix</h3><div id="dLog"></div></div>
     <button class="btn big" id="dPlay" style="display:none">▶️ Lancer le match</button>
-    <button class="btn ghost big" id="dNew" style="display:none">🔁 Nouveau draft (sans jouer)</button>
+    <button class="btn ghost big" id="dNew" style="display:none">🆕 Nouveau draft (contre qui tu veux)</button>
     <button class="btn ghost big" id="dReset">Recommencer le draft</button>
   </div>
 </div>
@@ -1123,13 +1124,13 @@ function renderDraft(){
   $("#dGame").style.display=d.status==="lobby"?"none":"";
   if(d.status==="lobby"){
     const L=$("#dLobby");
-    L.innerHTML=`<h3>⚡ Draft en direct</h3>
+    L.innerHTML=`<h3>⚡ Nouveau draft</h3>${oppPickHTML()}
       <div class="rules">Contre ${esc(NAMES[o])} : chacun votre tour, vous choisissez <b>un</b> joueur pour une case de votre équipe. Un joueur pris par l'un est bloqué pour l'autre. Un tirage au sort décide qui commence.</div>
       <div class="field"><span>Format</span><select id="dFormat">${Object.entries(FORMATS).map(([k,v])=>`<option value="${k}" ${k===d.format?"selected":""}>${v.label}</option>`).join("")}</select></div>
       <div class="field"><span>Ton système</span><select id="dForm">${Object.keys(F).map(x=>`<option ${x===d.form[me]?"selected":""}>${x}</option>`).join("")}</select></div>
       <div class="field"><span>Système de ${esc(NAMES[o])}</span><b>${esc(d.form[o])}</b></div>
       <button class="btn big" id="dStart">🪙 Lancer le draft</button>`;
-    const ensure=()=> drafts[dKey()]?null:dNorm(null,me,dOpp);
+    bindOppPick(L); const ensure=()=> drafts[dKey()]?null:dNorm(null,me,dOpp);
     $("#dFormat").onchange=e=>{ const base=ensure(); base?dWrite({"":{...base,format:e.target.value}}):dWrite({"format":e.target.value,"status":"lobby"}); };
     $("#dForm").onchange=e=>{ const base=ensure(); if(base){ base.form[me]=e.target.value; dWrite({"":base}); } else dWrite({["form."+me]:e.target.value,"status":"lobby"}); };
     $("#dStart").onclick=()=>{ const first=Math.random()<.5?me:dOpp; const cur=dNorm(draft,me,dOpp); dWrite({"":{...cur,status:"running",turn:first,teams:{[me]:dBlankTeam(),[dOpp]:dBlankTeam()},picks:[],offers:{},started:Date.now()}}); };
@@ -2178,17 +2179,19 @@ function renderDraftSwitch(){
   el.querySelectorAll("[data-ds]").forEach(b=>b.onclick=()=>{ dSub=b.dataset.ds; renderDraft(); });
   $("#dClassic").style.display=dSub==="classic"?"":"none"; $("#bView").style.display=dSub==="budget"?"":"none";
 }
+function oppPickHTML(){ const ops=others(); return `<div class="field oppf"><span>👥 Jouer contre</span><select class="oppPick">${ops.map(x=>{ const dd=drafts[pairKey(me,x)], bb=budgets["budget__"+pairKey(me,x)]; const tag=[dd,bb].some(z=>z&&z.status==="running")?" · en cours":""; return `<option value="${esc(x)}" ${x===dOpp?"selected":""}>${esc(NAMES[x])}${tag}</option>`; }).join("")}</select></div>`; }
+function bindOppPick(root){ root.querySelectorAll(".oppPick").forEach(sel=>sel.onchange=e=>{ dOpp=e.target.value; dOppManual=true; try{localStorage.setItem("onze-ol-opp",dOpp);}catch(_){} dView=null; draft=drafts[dKey()]?dNorm(drafts[dKey()]):null; renderDraft(); }); }
 function renderBudget(){
   const el=$("#bView"); if(!me) return;
   if(!dOpp||!NAMES[dOpp]){ el.innerHTML=`<div class="section mute">Personne à affronter pour l'instant.</div>`; return; }
   const raw=budgets[bKey()]; const d=bNorm(raw,me,dOpp); bView=d; const o=dOpp; const myT=d.teams[me], oT=d.teams[o];
   if(!raw||d.status==="lobby"){
-    el.innerHTML=`<div class="section"><h3>💰 Mode Budget contre ${esc(NAMES[o])}</h3>
+    el.innerHTML=`<div class="section"><h3>💰 Nouvelle partie Budget</h3>${oppPickHTML()}
       <div class="rules">Chacun a le même budget pour 11 joueurs + 1 entraîneur. À ton tour, tu ouvres un poste (5 joueurs tirés au sort) et tu en prends un, ou tu prends un joueur dans un poste déjà ouvert par l'adversaire (parmi ceux qu'il a laissés). Prix : Commune 4 · Rare 7 · Épique 10 · Légendaire 14 · Mythique 20.</div>
       <div class="field"><span>Budget</span><select id="bBud">${[60,80,100,120,150].map(v=>`<option ${v===d.budget?"selected":""}>${v}</option>`).join("")}</select></div>
       <div class="field"><span>Système (pour les deux)</span><select id="bForm">${Object.keys(F).map(x=>`<option ${x===d.formation?"selected":""}>${x}</option>`).join("")}</select></div>
       <button class="btn big" id="bStart">🪙 Lancer la partie</button></div>`;
-    const base=()=>bNorm(budgets[bKey()],me,dOpp);
+    const base=()=>bNorm(budgets[bKey()],me,dOpp); bindOppPick(el);
     $("#bBud").onchange=e=>{ const x=base(); x.budget=+e.target.value; bWrite(x,true); };
     $("#bForm").onchange=e=>{ const x=base(); x.formation=e.target.value; bWrite(x,true); };
     $("#bStart").onclick=()=>{ const x=base(); const pl=x.players; bWrite({...x,status:"running",turn:Math.random()<.5?pl[0]:pl[1],teams:{[pl[0]]:{slots:{},coach:null,spent:0},[pl[1]]:{slots:{},coach:null,spent:0}},offers:{},opener:{},picks:[],budget:+$("#bBud").value,formation:$("#bForm").value,started:Date.now()},true); };
@@ -2206,7 +2209,7 @@ function renderBudget(){
     ${slotHTML(view)}
     ${d.status==="done"?`<button class="btn big" id="bPlay">▶️ Lancer le match</button>`:""}
     <div class="section"><h3>Derniers choix</h3>${d.picks.slice().reverse().slice(0,8).map(p=>`<div class="logrow"><span>${esc(NAMES[p.by]||"?")} → ${esc(BY_ID[p.pid]?.name||"?")} <span class="mute">(${p.price} pts)</span></span></div>`).join("")||`<div class="mute" style="font-size:13px">Aucun choix.</div>`}</div>
-    <button class="btn ghost big" id="bReset">${d.status==="done"?"🔁 Nouvelle partie":"Recommencer la partie"}</button>`;
+    <button class="btn ghost big" id="bReset">${d.status==="done"?"🆕 Nouvelle partie (contre qui tu veux)":"Recommencer la partie"}</button>`;
   el.querySelectorAll("[data-bv]").forEach(b=>b.onclick=()=>renderBudgetKeepView(b.dataset.bv));
   el.querySelectorAll("[data-card]").forEach(b=>b.onclick=()=>showCard(b.dataset.card,null));
   el.querySelectorAll("[data-bs]").forEach(b=>b.onclick=()=>openBudgetSlot(b.dataset.bs));
@@ -2523,7 +2526,7 @@ async function playDraftMatch(kind){
     teams:Object.fromEntries(teams.map(t=>[t.w,{formation:t.c.formation,slots:t.c.slots,bench:t.c.bench||{},coach:t.c.coach||null}]))}); }catch(e){}
   // l'équipe de draft est remise à zéro (elle reste dans l'historique)
   if(kind==="budget"){ const d=bNorm(budgets[bKey()],me,o); bWrite({...bNorm(null,me,o),budget:d.budget,formation:d.formation},true); } else dRestart();
-  post(`${label} : ${NAMES[teams[0].w]} ${m.score[0]}-${m.score[1]} ${NAMES[teams[1].w]}`);
+  post(`${label} : ${NAMES[teams[0].w]} ${m.score[0]}-${m.score[1]} ${NAMES[teams[1].w]}`); setTimeout(()=>toast("Après le match : nouveau draft contre qui tu veux dans ⚡ Draft"),4000);
   setMode("match"); window.scrollTo(0,0);
 }
 function onDraftHist(all){ draftHist=all.filter(h=>h&&(h.players||[]).includes(me)).sort((a,b)=>b.at-a.at); if(mode==="draft") renderDraftHist(); }
@@ -2697,22 +2700,22 @@ const CAREER=[
  {comp:"Ligue des champions",n:"Juventus",r:[78,85]},{comp:"Ligue des champions",n:"Bayern Munich",r:[80,88]},{comp:"Ligue des champions",n:"FC Barcelone",r:[82,92]},{comp:"Ligue des champions",n:"Real Madrid",r:[84,99]}];
 const CAREER_END={6:{pack:"bronze"},10:{pack:"or"},14:{pack:"legende"}};
 // Effectifs (11 de départ) des adversaires de la Carrière — ordre des postes du 4-3-3 : GB, DG, DC, DC, DD, MC, MDC, MC, AG, BU, AD
-const CLUB_XI={
- "FC Lorient":["Olivier Pantaloni|72","Yvon Mvogo|75","Darlin Yongwa|70","Bamo Meïté|71","Montassar Talbi|73","Panos Katseris|70","Arthur Avom|72","Laurent Abergel|74","Jean-Victor Makengo|71","Aiyegun Tosin|73","Bamba Dieng|73","Pablo Pagis|72"],
- "RC Lens":["Pierre Sage|76","Robin Risser|76","Matthieu Udol|73","Malang Sarr|75","Jonathan Gradit|74","Ruben Aguilar|74","Adrien Thomasson|76","Mamadou Sangaré|76","Florian Thauvin|79","Wesley Saïd|76","Odsonne Édouard|76","Florian Sotoca|75"],
- "Stade Rennais":["Habib Beye|75","Brice Samba|81","Quentin Merlin|75","Jérémy Jacquet|74","Anthony Rouault|76","Przemysław Frankowski|76","Valentin Rongier|77","Djaoui Cissé|74","Ludovic Blas|77","Esteban Lepaul|76","Breel Embolo|77","Mousa Al-Tamari|76"],
- "LOSC":["Bruno Genesio|78","Berke Özer|77","Romain Perraud|75","Aïssa Mandi|76","Nathan Ngoy|75","Thomas Meunier|76","Ngal'ayel Mukau|75","Benjamin André|78","Hákon Arnar Haraldsson|79","Matías Fernández-Pardo|76","Olivier Giroud|77","Osame Sahraoui|77"],
- "AS Monaco":["Adi Hütter|79","Philipp Köhn|78","Caio Henrique|79","Mohammed Salisu|79","Thilo Kehrer|79","Vanderson|80","Lamine Camara|80","Denis Zakaria|81","Aleksandr Golovin|80","Ansu Fati|77","Folarin Balogun|80","Takumi Minamino|79"],
- "Olympique de Marseille":["Roberto De Zerbi|84","Gerónimo Rulli|81","Emerson Palmieri|76","Nayef Aguerd|80","Leonardo Balerdi|80","Amir Murillo|76","Matt O'Riley|79","Pierre-Emile Højbjerg|82","Geoffrey Kondogbia|78","Igor Paixão|78","Pierre-Emerick Aubameyang|80","Mason Greenwood|83"],
- "Paris SG":["Luis Enrique|88","Lucas Chevalier|82","Nuno Mendes|86","Willian Pacho|84","Marquinhos|85","Achraf Hakimi|87","Fabián Ruiz|84","Vitinha|88","João Neves|86","Khvicha Kvaratskhelia|87","Ousmane Dembélé|90","Désiré Doué|84"],
- "FC Porto":["Francesco Farioli|80","Diogo Costa|85","Francisco Moura|76","Jakub Kiwior|79","Jan Bednarek|77","Alberto Costa|74","Gabri Veiga|79","Alan Varela|80","Victor Froholdt|76","Borja Sainz|76","Samu Aghehowa|80","William Gomes|76"],
- "Ajax":["Entraîneur de l'Ajax|76","Vítězslav Jaroš|74","Owen Wijndal|72","Josip Šutalo|77","Youri Baas|77","Lucas Rosa|72","Youri Regeer|74","Davy Klaassen|75","Kenneth Taylor|79","Mika Godts|77","Wout Weghorst|77","Steven Berghuis|77"],
- "Séville FC":["Matías Almeyda|76","Ørjan Nyland|75","Adrià Pedrosa|74","Kike Salas|74","Tanguy Nianzou|74","José Ángel Carmona|75","Djibril Sow|76","Nemanja Gudelj|76","Lucien Agoumé|76","Rubén Vargas|76","Akor Adams|75","Chidera Ejuke|75"],
- "Tottenham":["Thomas Frank|81","Guglielmo Vicario|83","Destiny Udogie|81","Micky van de Ven|84","Cristian Romero|85","Pedro Porro|83","Rodrigo Bentancur|81","João Palhinha|83","Mohammed Kudus|82","Xavi Simons|83","Dominic Solanke|81","Brennan Johnson|79"],
- "Juventus":["Luciano Spalletti|84","Michele Di Gregorio|81","Andrea Cambiaso|81","Federico Gatti|80","Gleison Bremer|84","Pierre Kalulu|79","Teun Koopmeiners|81","Manuel Locatelli|82","Khéphren Thuram|80","Kenan Yıldız|83","Dušan Vlahović|82","Francisco Conceição|81"],
- "Bayern Munich":["Vincent Kompany|84","Manuel Neuer|86","Alphonso Davies|83","Jonathan Tah|85","Dayot Upamecano|85","Konrad Laimer|82","Aleksandar Pavlović|83","Joshua Kimmich|89","Jamal Musiala|89","Luis Díaz|86","Harry Kane|90","Michael Olise|88"],
- "FC Barcelone":["Hansi Flick|87","Joan García|84","Alejandro Balde|84","Ronald Araújo|84","Pau Cubarsí|85","Jules Koundé|86","Frenkie de Jong|86","Pedri|90","Dani Olmo|85","Raphinha|89","Robert Lewandowski|86","Lamine Yamal|92"],
- "Real Madrid":["Xabi Alonso|86","Thibaut Courtois|89","Álvaro Carreras|80","Dean Huijsen|83","Éder Militão|85","Trent Alexander-Arnold|85","Federico Valverde|88","Aurélien Tchouaméni|85","Jude Bellingham|90","Vinícius Júnior|90","Kylian Mbappé|92","Arda Güler|84"]
+const CLUB_XI={ // vérifié sur les compos probables de novembre 2026
+ "FC Lorient":["Olivier Pantaloni|72","Yvon Mvogo|75","Arsène Kouassi|70","Montassar Talbi|74","Isaak Touré|71","Sylla|69","Noah Cadiou|70","Arthur Avom|73","Jean-Victor Makengo|72","Isak Jensen|72","Mamadou Koné|71","Faye|70"],
+ "RC Lens":["Didier Digard|74","Robin Risser|79","Matthieu Udol|74","Jean-Clair Todibo|78","Samson Baidoo|76","Ruben Aguilar|74","Mickaël Cuisance|76","Amadou Haidara|77","Mesloub|72","Thorgan Hazard|75","Florian Sotoca|74","Florian Thauvin|80"],
+ "Stade Rennais":["Franck Haise|79","Brice Samba|82","Mahamadou Nagida|74","Charlie Cresswell|76","Anthony Rouault|77","Bryan Reynolds|73","Adrien Thomasson|77","Mahdi Camara|76","Valentin Rongier|78","Sebastian Szymański|78","Boulaye Dia|77","Mousa Al-Tamari|77"],
+ "LOSC":["Davide Ancelotti|77","Berke Özer|78","Calvin Verdonk|74","Tanguy Nianzou|75","Alexsandro Ribeiro|78","Nathan Ngoy|77","Ngal'ayel Mukau|76","Nabil Bentaleb|76","Benjamin André|78","Ethan Mbappé|76","Soriba Diaoune|74","Hákon Arnar Haraldsson|80"],
+ "AS Monaco":["Filipe Luís|80","Lukáš Hrádecký|80","Nazinho|72","Eric Dier|78","Sané|74","Vanderson|81","Lamine Camara|80","Denis Zakaria|81","Aleksandr Golovin|80","Detourbet|74","Matthis Abline|78","Paris Brunner|76"],
+ "Olympique de Marseille":["Bruno Genesio|80","Jeffrey de Lange|76","Emerson Palmieri|76","Nayef Aguerd|80","CJ Egan-Riley|76","Timothy Weah|77","Amine Harit|77","Pierre-Emile Højbjerg|81","Geoffrey Kondogbia|78","Igor Paixão|79","Amine Gouiri|79","Himad Abdelli|77"],
+ "Paris SG":["Luis Enrique|89","Matvey Safonov|82","Nuno Mendes|87","Willian Pacho|85","Ilya Zabarnyi|83","Achraf Hakimi|87","João Neves|87","Vitinha|89","Fabián Ruiz|84","Khvicha Kvaratskhelia|87","Ousmane Dembélé|89","Désiré Doué|85"],
+ "FC Porto":["Francesco Farioli|81","Diogo Costa|85","Zaidu Sanusi|75","Jakub Kiwior|80","Jan Bednarek|78","Alberto Costa|76","Victor Froholdt|78","Pablo Rosario|77","Gabri Veiga|80","Borja Sainz|78","Samu Aghehowa|80","Pepê|78"],
+ "Ajax":["Míchel Sánchez|77","Marc-André ter Stegen|84","Owen Wijndal|73","Youri Baas|78","Janse|72","Lucas Rosa|73","Davy Klaassen|75","Yves Bissouma|78","Jorthy Mokio|75","Oscar Gloukh|79","Tolu Arokodare|76","Ouazane|70"],
+ "Séville FC":["Luis García Plaza|76","Odysseas Vlachodimos|76","Gabriel Suazo|75","Kike Salas|75","Andrés Castrín|72","Juan Iglesias|74","Lucien Agoumé|77","Youssouf Fofana|78","Luka Kochorashvili|74","Félix Correia|75","Lucas Stassin|76","Rubén Vargas|77"],
+ "Tottenham":["Roberto De Zerbi|83","Antonín Kinský|78","Andy Robertson|80","Micky van de Ven|84","Jan Paul van Hecke|81","Pedro Porro|82","Sandro Tonali|84","Mateus Fernandes|78","Conor Gallagher|80","Mathys Tel|78","Dominic Solanke|80","Mohammed Kudus|82"],
+ "Juventus":["Luciano Spalletti|84","Guglielmo Vicario|83","Juan Cabal|76","Gleison Bremer|84","Jhon Lucumí|81","Federico Gatti|79","Teun Koopmeiners|80","Douglas Luiz|79","Weston McKennie|78","Kerim Alajbegović|77","Nick Woltemade|82","Randal Kolo Muani|81"],
+ "Bayern Munich":["Vincent Kompany|85","Jonas Urbig|78","Josip Stanišić|80","Jonathan Tah|85","Dayot Upamecano|85","Konrad Laimer|82","Lennart Karl|80","Joshua Kimmich|88","Aleksandar Pavlović|84","Nathaniel Brown|77","Harry Kane|90","Michael Olise|89"],
+ "FC Barcelone":["Hansi Flick|87","Joan García|85","João Cancelo|82","Pau Cubarsí|85","Gerard Martín|78","Brian Fariñas|72","Pedri|91","Marc Bernal|78","Fermín López|83","Anthony Gordon|83","Raphinha|89","Lamine Yamal|92"],
+ "Real Madrid":["José Mourinho|85","Thibaut Courtois|89","Marc Cucurella|83","Dean Huijsen|84","Ibrahima Konaté|85","Federico Valverde|88","Bernardo Silva|85","Aurélien Tchouaméni|86","Jude Bellingham|90","Arda Güler|86","Kylian Mbappé|92","Yan Diomandé|80"]
 };
 const CLUB_ROLES=["GB","DG","DC","DC","DD","MC","MDC","MC","AG","BU","AD"];
 const clubSlug=t=>t.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
@@ -3083,7 +3086,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-19n";
+const APP_V="2026-11-19o";
 let updShown=false;
 async function checkUpdate(){ if(updShown) return; try{ const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const APP_V="([^"]+)"/); if(m&&m[1]!==APP_V){ updShown=true;
