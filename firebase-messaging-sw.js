@@ -13,7 +13,7 @@ const messaging = firebase.messaging();
 messaging.onBackgroundMessage(payload => {
   const d = payload.data || {};
   if (payload.notification) return; // déjà affichée par le navigateur
-  self.registration.showNotification(d.title || "11 type OL", { body: d.body || "", icon: "icon-192.png", badge: "icon-192.png", data: { url: d.url || "./" } });
+  self.registration.showNotification(d.title || "Les Gones Legends", { body: d.body || "", icon: "icon-192.png", badge: "icon-192.png", data: { url: d.url || "./" } });
 });
 self.addEventListener("notificationclick", e => {
   e.notification.close();

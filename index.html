@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0b1530">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="11 type OL">
-<title>Notre 11 type OL</title>
+<meta name="apple-mobile-web-app-title" content="Gones Legends">
+<title>Les Gones Legends</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
 <style>
@@ -394,7 +394,7 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
 </head>
 <body>
 <div id="start">
-  <h1>Notre 11 type <span style="color:var(--rouge)">OL</span></h1>
+  <h1>Les Gones <span style="color:var(--rouge)">Legends</span></h1>
   <p id="aTitle">Connecte-toi pour jouer</p>
   <form class="auth" id="authForm" autocomplete="on">
     <input id="aName" name="username" placeholder="Pseudo" maxlength="16" autocomplete="username" autocapitalize="off">
@@ -408,7 +408,7 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
 
 <header>
   <button class="who" id="who">Changer</button><button class="coins" id="coins" style="display:none"></button>
-  <h1>Notre 11 type <span>OL</span></h1>
+  <h1>Les Gones <span>Legends</span></h1>
   <div class="sub">Tous les joueurs passés par Lyon depuis 2000</div>
   <div class="sync" id="sync">Connexion…</div>
 </header>
@@ -787,7 +787,7 @@ $("#aSignup").onclick=async()=>{
   pendingName=n;
   try{ $("#aSignup").disabled=true; await firebase.auth().createUserWithEmailAndPassword(pseudoEmail(n),pw); }catch(err){ pendingName=null; $("#aMsg").textContent=authErr(err); }
   $("#aSignup").disabled=false; };
-$("#shareBtn").onclick=async()=>{ const url=location.origin+location.pathname; try{ if(navigator.share){ await navigator.share({title:"Notre 11 type OL",text:"Crée ton compte, fais ton 11 type de l'OL et viens me défier !",url}); return; } }catch(e){ return; } try{ await navigator.clipboard.writeText(url); toast("Lien copié !"); }catch(e){ toast(url); } };
+$("#shareBtn").onclick=async()=>{ const url=location.origin+location.pathname; try{ if(navigator.share){ await navigator.share({title:"Les Gones Legends",text:"Crée ton compte, fais ton 11 type de l'OL et viens me défier !",url}); return; } }catch(e){ return; } try{ await navigator.clipboard.writeText(url); toast("Lien copié !"); }catch(e){ toast(url); } };
 $("#who").onclick=()=>openModal(`Connecté en tant que ${NAMES[me]||"?"}`,null,[[notifState()==="granted"?"🔔 Notifications activées":"🔔 Activer les notifications",()=>{ enableNotifs(); }],["📲 Installer l'appli",()=>{ setTimeout(()=>installGuide(true),200); }],["💡 Revoir les explications",()=>{ resetTips(); }],["Se déconnecter",()=>{ firebase.auth().signOut(); }],["Inviter quelqu'un",()=>$("#shareBtn").click(),true],["Fermer",null,true]]);
 
 // ---------- Rendu ----------
@@ -2772,7 +2772,7 @@ function renderJeux(){
 
 // ---------- 💡 Explications au premier contact ----------
 const TIPS={
- welcome:{t:"👋 Bienvenue dans Notre 11 type OL !",x:`Construis l'équipe ultime de l'OL avec tous les joueurs passés par Lyon depuis 2000.<br><br>
+ welcome:{t:"👋 Bienvenue dans Les Gones Legends !",x:`Construis l'équipe ultime de l'OL avec tous les joueurs passés par Lyon depuis 2000.<br><br>
   🎴 <b>Collectionne</b> des cartes en ouvrant des packs (un gratuit chaque jour).<br>⚽ <b>Compose</b> ton 11 type avec les cartes que tu possèdes.<br>
   🏟️ <b>Affronte</b> tes potes ou l'ordi dans des matchs simulés en direct.<br>🪙 <b>Gagne des pièces</b> à chaque match pour acheter d'autres packs.<br><br>
   Tu as reçu un <b>pack de départ</b> : une équipe complète est déjà dans ton 11 type. À chaque nouvel écran, une petite explication s'affichera.`},
@@ -2852,13 +2852,13 @@ function installGuide(force){
   if(P.inApp){ head="Ouvre d'abord le lien dans ton navigateur"; steps=[`Touche les <b>⋯</b> ou le bouton de partage de l'appli où tu as ouvert le lien`,`Choisis <b>« Ouvrir dans ${P.ios?"Safari":"le navigateur"} »</b>`,`Puis suis les étapes pour l'ajouter à l'écran d'accueil`]; }
   else if(P.ios){ head=P.iosOther?"Sur iPhone (Chrome / autre navigateur)":"Sur iPhone (Safari)";
     steps=[P.iosOther?`Touche le bouton <b>Partager <span class="igk">⬆️</span></b> dans la barre d'adresse`:`Touche le bouton <b>Partager <span class="igk">⬆️</span></b> (le carré avec la flèche, en bas de l'écran)`,
-      `Fais défiler et choisis <b>« Sur l'écran d'accueil » <span class="igk">➕</span></b>`,`Touche <b>« Ajouter »</b> en haut à droite`,`Ouvre l'appli depuis la nouvelle icône <b>11 type OL</b> 🎉 (il faudra te reconnecter une fois avec ton pseudo)`]; }
+      `Fais défiler et choisis <b>« Sur l'écran d'accueil » <span class="igk">➕</span></b>`,`Touche <b>« Ajouter »</b> en haut à droite`,`Ouvre l'appli depuis la nouvelle icône <b>Gones Legends</b> 🎉 (il faudra te reconnecter une fois avec ton pseudo)`]; }
   else if(P.samsung){ head="Sur Android (Samsung Internet)"; steps=[`Touche le menu <b><span class="igk">☰</span></b> en bas à droite`,`Choisis <b>« Ajouter la page à »</b> puis <b>« Écran d'accueil »</b>`,`Confirme avec <b>« Ajouter »</b>`]; }
   else if(P.android){ head="Sur Android (Chrome)"; steps=[`Touche le menu <b><span class="igk">⋮</span></b> en haut à droite`,`Choisis <b>« Ajouter à l'écran d'accueil »</b> ou <b>« Installer l'application »</b>`,`Confirme avec <b>« Installer »</b> ou <b>« Ajouter »</b>`]; }
   else { head="Sur ordinateur"; steps=[`Dans Chrome ou Edge, clique sur l'icône <b>Installer</b> à droite de la barre d'adresse`,`Sinon, ajoute simplement la page à tes favoris`]; }
   const was=tipOpen; tipOpen=true;
   const el=document.createElement("div"); el.className="tipov"; el.style.zIndex=130;
-  el.innerHTML=`<div class="tipbox"><h3>📲 Installe l'appli sur ton téléphone</h3><div class="tipx">Ajoute <b>Notre 11 type OL</b> à ton écran d'accueil : elle s'ouvrira en plein écran comme une vraie appli${P.ios?", et c'est obligatoire sur iPhone pour recevoir les notifications":""}.</div>
+  el.innerHTML=`<div class="tipbox"><h3>📲 Installe l'appli sur ton téléphone</h3><div class="tipx">Ajoute <b>Les Gones Legends</b> à ton écran d'accueil : elle s'ouvrira en plein écran comme une vraie appli${P.ios?", et c'est obligatoire sur iPhone pour recevoir les notifications":""}.</div>
     <h4 style="margin:0 0 8px">${head}</h4><ol class="igsteps">${steps.map(s=>`<li>${s}</li>`).join("")}</ol>
     <button class="btn big" id="igInstall" style="${installEvt?"":"display:none"}">📲 Installer maintenant</button>
     <button class="btn ${installEvt?"ghost":""} big" id="igOk">${installEvt?"Plus tard":"OK, compris"}</button>

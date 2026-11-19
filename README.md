@@ -1,4 +1,4 @@
-# Notre 11 type OL
+# Les Gones Legends
 
 Jeu ouvert à tous (profils créés à l'ouverture) : chacun compose son 11 type de l'Olympique Lyonnais (joueurs passés par le club depuis 2000), avec remplaçants et entraîneur. Les compos se synchronisent en direct (Firebase, projet partagé avec « Mon héroïne », document `families/ONZE-OL-THBVAL`).
 

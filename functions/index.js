@@ -1,4 +1,4 @@
-// Notifications push de « Notre 11 type OL » (Cloud Functions v2)
+// Notifications push de « Les Gones Legends » (Cloud Functions v2)
 const { onDocumentWritten, onDocumentCreated, onDocumentUpdated } = require("firebase-functions/v2/firestore");
 const { initializeApp } = require("firebase-admin/app");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
