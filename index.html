@@ -72,6 +72,7 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
 .pl{display:flex;justify-content:space-between;align-items:center;padding:11px 10px;border-radius:10px;cursor:pointer;gap:8px}
 .pl:active{background:#1c2c5c}
 .pl .n{font-weight:600;font-size:15px}
+.yr{display:block;font-weight:400;font-size:11.5px;color:var(--mute);margin-top:1px}
 .pl .tags{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
 .tag{font-size:10.5px;padding:2px 6px;border-radius:6px;background:#24345f;color:#c8d6ff;font-weight:700}
 .tag.cur{background:var(--rouge);color:#fff}
@@ -157,173 +158,171 @@ const ROOM = "ONZE-OL-THBVAL"; // 14 caractères : document families/ONZE-OL-THB
 
 // ---------- Joueurs (postes : GB DD DC DG MDC MC MOC AD AG BU) ----------
 const RAW = `
-Grégory Coupet|GB
-Hugo Lloris|GB
-Anthony Lopes|GB
-Rémy Vercoutre|GB
-Nicolas Puydebois|GB
-Mathieu Gorgelin|GB
-Ciprian Tătărușanu|GB
-Julian Pollersbeck|GB
-Lucas Perri|GB
-Rémy Riou|GB
-Dominik Greif|GB
-Rémy Descamps|GB
-Kayne Bonnevie|GB
-Patrick Müller|DC
-Edmílson|DC,MDC
-Claudio Caçapa|DC
-Cris|DC
-Florent Laville|DC
-Jacek Bąk|DC
-Jean-Marc Chanelet|DD
-Anthony Réveillère|DD
-Éric Abidal|DG,DC
-Sylvain Squillaci|DC
-Jean-Alain Boumsong|DC
-François Clerc|DD
-Jérémy Berthod|DG
-Fabio Grosso|DG
-Aly Cissokho|DG
-Dejan Lovren|DC
-Bakary Koné|DC
-Mouhamadou Dabo|DD
-Samuel Umtiti|DC,DG
-Christophe Jallet|DD
-Rafael|DD
-Jérémy Morel|DG,DC
-Mapou Yanga-Mbiwa|DC
-Emanuel Mammana|DC
-Nicolas Nkoulou|DC
-Mouctar Diakhaby|DC
-Marcelo|DC
-Ferland Mendy|DG
-Kenny Tete|DD
-Fernando Marçal|DG
-Jason Denayer|DC
-Léo Dubois|DD
-Joachim Andersen|DC
-Youssouf Koné|DG
-Mattia De Sciglio|DD
-Jérôme Boateng|DC
-Emerson Palmieri|DG
-Castello Lukeba|DC
-Sinaly Diomandé|DC
-Malo Gusto|DD
-Henrique|DG
-Damien Da Silva|DC
-Nicolás Tagliafico|DG
-Saël Kumbedi|DD
-Clinton Mata|DD,DC
-Jake O'Brien|DC
-Duje Ćaleta-Car|DC
-Ainsley Maitland-Niles|DD,MC
-Moussa Niakhaté|DC
-Abner Vinicius|DG
-Warmed Omari|DC
-Ruben Kluivert|DC,DD
-Zachary Athekame|DD
-Felix Bacher|DC
-Hans Hateboer|DD
-Philippe Violeau|MDC
-Vikash Dhorasoo|MC
-Éric Carrière|MOC,MC
-Juninho|MC,MOC
-Mahamadou Diarra|MDC
-Michael Essien|MC,MDC
-Tiago|MC
-Jérémy Toulalan|MDC
-Kim Källström|MC
-Jean II Makoun|MDC,MC
-Mathieu Bodmer|MC,DC
-Jérémy Clément|MC
-Miralem Pjanić|MOC,MC
-Ederson|MOC,AG
-Yoann Gourcuff|MOC
-Maxime Gonalons|MDC
-Clément Grenier|MC,MOC
-Steed Malbranque|MC,AG
-Yassine Benzia|MOC,AG
-Corentin Tolisso|MC,MDC
-Jordan Ferri|MC
-Mathieu Valbuena|MOC,AD
-Lucas Tousart|MDC
-Tanguy Ndombele|MC
-Houssem Aouar|MC,MOC
-Nabil Fekir|MOC,BU
-Pape Cheikh Diop|MDC
-Jean Lucas|MC
-Bruno Guimarães|MC,MDC
-Thiago Mendes|MDC
-Maxence Caqueret|MC
-Lucas Paquetá|MOC,MC
-Jeff Reine-Adélaïde|MOC,MC
-Rayan Cherki|MOC,AD
-Johann Lepenant|MDC
-Paul Akouokou|MDC
-Thiago Almada|MOC
-Nemanja Matić|MDC
-Orel Mangala|MC,MDC
-Jordan Veretout|MC
-Mahamadou Diawara|MC
-Tanner Tessmann|MDC,MC
-Tyler Morton|MDC,MC
-Pavel Šulc|MOC,BU
-Khalis Merah|MC
-Mads Bidstrup|MC
-Noah Nartey|MC
-Adam Karabec|MOC,AG
-Sonny Anderson|BU
-Sidney Govou|AD,BU
-Péguy Luyindula|BU
-Florent Malouda|AG
-Giovane Élber|BU
-John Carew|BU
-Sylvain Wiltord|AD,BU
-Hatem Ben Arfa|AD,AG
-Fred|BU
-Milan Baroš|BU
-Abdul Kader Keïta|AG
-Karim Benzema|BU
-Nilmar|BU
-Bryan Bergougnoux|BU
-Lisandro López|BU
-Michel Bastos|AG
-Bafétimbi Gomis|BU
-Jimmy Briand|AD,BU
-Alexandre Lacazette|BU
-Clinton N'Jie|AD
-Mohamed Yattara|BU
-Rachid Ghezzal|AD
-Claudio Beauvue|BU
-Maxwel Cornet|AG
-Mariano Díaz|BU
-Memphis Depay|AG,BU
-Bertrand Traoré|AD
-Myziane Maolida|BU
-Willem Geubbels|BU
-Amine Gouiri|BU,AG
-Moussa Dembélé|BU
-Martin Terrier|AG
-Karl Toko Ekambi|AG
-Tino Kadewere|AD,BU
-Islam Slimani|BU
-Bradley Barcola|AG
-Malick Fofana|AG
-Ernest Nuamah|AD
-Mama Baldé|AG,AD
-Said Benrahma|AG
-Gift Orban|BU
-Georges Mikautadze|BU
-Wilfried Zaha|AG
-Martín Satriano|BU
-Afonso Moreira|AG
-Keito Nakamura|AG
-Loïs Openda|BU
-Julien Duranville|AG,AD
-Rémi Himbert|AD
-Alejandro Rodriguez|BU
-Kail Boudache|AG
+Grégory Coupet|GB|1997
+Hugo Lloris|GB|2008
+Anthony Lopes|GB|2011
+Rémy Vercoutre|GB|2002
+Nicolas Puydebois|GB|1999
+Mathieu Gorgelin|GB|2011
+Ciprian Tătărușanu|GB|2018
+Julian Pollersbeck|GB|2020
+Lucas Perri|GB|2023
+Dominik Greif|GB|2025
+Rémy Descamps|GB|2024
+Kayne Bonnevie|GB|2022
+Patrick Müller|DC|2000
+Edmílson|DC,MDC|2000
+Claudio Caçapa|DC|2001
+Cris|DC|2004
+Florent Laville|DC|1998
+Jacek Bąk|DC|1995
+Jean-Marc Chanelet|DD|1998
+Anthony Réveillère|DD|2003
+Éric Abidal|DG,DC|2004
+Sylvain Squillaci|DC|2008
+Jean-Alain Boumsong|DC|2008
+François Clerc|DD|2003
+Jérémy Berthod|DG|2002
+Fabio Grosso|DG|2007
+Aly Cissokho|DG|2009
+Dejan Lovren|DC|2010
+Bakary Koné|DC|2011
+Mouhamadou Dabo|DD|2010
+Samuel Umtiti|DC,DG|2012
+Christophe Jallet|DD|2015
+Rafael|DD|2015
+Jérémy Morel|DG,DC|2015
+Mapou Yanga-Mbiwa|DC|2015
+Emanuel Mammana|DC|2016
+Nicolas Nkoulou|DC|2014
+Mouctar Diakhaby|DC|2016
+Marcelo|DC|2017
+Ferland Mendy|DG|2017
+Kenny Tete|DD|2017
+Fernando Marçal|DG|2017
+Jason Denayer|DC|2018
+Léo Dubois|DD|2018
+Joachim Andersen|DC|2019
+Youssouf Koné|DG|2018
+Mattia De Sciglio|DD|2020
+Jérôme Boateng|DC|2021
+Emerson Palmieri|DG|2021
+Castello Lukeba|DC|2021
+Sinaly Diomandé|DC|2020
+Malo Gusto|DD|2021
+Henrique|DG|2021
+Damien Da Silva|DC|2021
+Nicolás Tagliafico|DG|2022
+Saël Kumbedi|DD|2023
+Clinton Mata|DD,DC|2023
+Jake O'Brien|DC|2023
+Duje Ćaleta-Car|DC|2023
+Ainsley Maitland-Niles|DD,MC|2023
+Moussa Niakhaté|DC|2024
+Abner Vinicius|DG|2024
+Ruben Kluivert|DC,DD|2025
+Zachary Athekame|DD|2025
+Felix Bacher|DC|2026
+Hans Hateboer|DD|2024
+Philippe Violeau|MDC|1997
+Vikash Dhorasoo|MC|1998
+Éric Carrière|MOC,MC|2001
+Juninho|MC,MOC|2001
+Mahamadou Diarra|MDC|2002
+Michael Essien|MC,MDC|2003
+Tiago|MC|2005
+Jérémy Toulalan|MDC|2006
+Kim Källström|MC|2006
+Jean II Makoun|MDC,MC|2008
+Mathieu Bodmer|MC,DC|2007
+Jérémy Clément|MC|2005
+Miralem Pjanić|MOC,MC|2008
+Ederson|MOC,AG|2008
+Yoann Gourcuff|MOC|2010
+Maxime Gonalons|MDC|2008
+Clément Grenier|MC,MOC|2009
+Steed Malbranque|MC,AG|2011
+Yassine Benzia|MOC,AG|2013
+Corentin Tolisso|MC,MDC|2013
+Jordan Ferri|MC|2011
+Mathieu Valbuena|MOC,AD|2015
+Lucas Tousart|MDC|2016
+Tanguy Ndombele|MC|2017
+Houssem Aouar|MC,MOC|2017
+Nabil Fekir|MOC,BU|2013
+Pape Cheikh Diop|MDC|2018
+Jean Lucas|MC|2019
+Bruno Guimarães|MC,MDC|2020
+Thiago Mendes|MDC|2019
+Maxence Caqueret|MC|2019
+Lucas Paquetá|MOC,MC|2020
+Jeff Reine-Adélaïde|MOC,MC|2019
+Rayan Cherki|MOC,AD|2019
+Johann Lepenant|MDC|2022
+Paul Akouokou|MDC|2023
+Thiago Almada|MOC|2025
+Nemanja Matić|MDC|2023
+Orel Mangala|MC,MDC|2023
+Jordan Veretout|MC|2024
+Mahamadou Diawara|MC|2022
+Tanner Tessmann|MDC,MC|2025
+Tyler Morton|MDC,MC|2025
+Pavel Šulc|MOC,BU|2025
+Khalis Merah|MC|2025
+Mads Bidstrup|MC|2026
+Noah Nartey|MC|2026
+Adam Karabec|MOC,AG|2025
+Sonny Anderson|BU|1999
+Sidney Govou|AD,BU|1999
+Péguy Luyindula|BU|2001
+Florent Malouda|AG|2003
+Giovane Élber|BU|2003
+John Carew|BU|2005
+Sylvain Wiltord|AD,BU|2004
+Hatem Ben Arfa|AD,AG|2004
+Fred|BU|2005
+Milan Baroš|BU|2007
+Abdul Kader Keïta|AG|2007
+Karim Benzema|BU|2004
+Nilmar|BU|2004
+Bryan Bergougnoux|BU|2002
+Lisandro López|BU|2009
+Michel Bastos|AG|2009
+Bafétimbi Gomis|BU|2009
+Jimmy Briand|AD,BU|2010
+Alexandre Lacazette|BU|2010
+Clinton N'Jie|AD|2014
+Mohamed Yattara|BU|2014
+Rachid Ghezzal|AD|2012
+Claudio Beauvue|BU|2015
+Maxwel Cornet|AG|2015
+Mariano Díaz|BU|2016
+Memphis Depay|AG,BU|2017
+Bertrand Traoré|AD|2017
+Myziane Maolida|BU|2017
+Willem Geubbels|BU|2017
+Amine Gouiri|BU,AG|2017
+Moussa Dembélé|BU|2018
+Martin Terrier|AG|2018
+Karl Toko Ekambi|AG|2020
+Tino Kadewere|AD,BU|2020
+Islam Slimani|BU|2021
+Bradley Barcola|AG|2021
+Malick Fofana|AG|2024
+Ernest Nuamah|AD|2023
+Mama Baldé|AG,AD|2023
+Said Benrahma|AG|2024
+Gift Orban|BU|2024
+Georges Mikautadze|BU|2024
+Wilfried Zaha|AG|2024
+Martín Satriano|BU|2025
+Afonso Moreira|AG|2025
+Keito Nakamura|AG|2026
+Loïs Openda|BU|2026
+Julien Duranville|AG,AD|2025
+Rémi Himbert|AD|2024
+Alejandro Rodriguez|BU|2026
+Kail Boudache|AG|2026
 `;
 // Postes acceptés par case
 const ROLE_OK = {GB:["GB"],DC:["DC"],DD:["DD"],DG:["DG"],MDC:["MDC","MC"],MC:["MC","MDC","MOC"],MOC:["MOC","MC"],
@@ -342,9 +341,9 @@ const F = {
 
 
 const PLAYERS = RAW.trim().split("\n").map(l=>l.split("|")).filter(p=>p[1])
-  .map(([n,p])=>({id:slug(n),name:n,pos:p.split(",")}));
+  .map(([n,p,y])=>({id:slug(n),name:n,pos:p.split(","),year:+y||0}));
 const COACHES = ["Jacques Santini","Paul Le Guen","Gérard Houllier","Alain Perrin","Claude Puel","Rémi Garde","Hubert Fournier","Bruno Génésio","Sylvinho","Rudi Garcia","Peter Bosz","Laurent Blanc","Fabio Grosso","Pierre Sage","Paulo Fonseca","Jorge Maciel","Carlos Vicens"]
-  .map(n=>({id:"coach-"+slug(n),name:n,pos:["COACH"]}));
+  .map((n,i)=>({id:"coach-"+slug(n),name:n,pos:["COACH"],year:i}));
 const BY_ID = Object.fromEntries([...PLAYERS,...COACHES].map(p=>[p.id,p]));
 function slug(n){return n.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-");}
 const BENCH_N = 7;
@@ -455,13 +454,13 @@ function renderList(){
     return p.pos.includes(chip);
   });
   if(q) ps=ps.filter(p=>p.id.replace(/^coach-/,"").includes(q));
-  if(!isCoach) ps.sort((a,b)=>{const ra=ok.indexOf(a.pos[0]),rb=ok.indexOf(b.pos[0]);const A=ra<0?99:ra,B=rb<0?99:rb;return A-B||a.name.localeCompare(b.name,"fr");});
+  ps.sort((a,b)=>a.year-b.year||a.name.localeCompare(b.name,"fr"));
   const used=isCoach?new Set():usedIds();
   const L=$("#list"); L.innerHTML="";
   if(!ps.length){L.innerHTML=`<div style="padding:16px;color:var(--mute)">Personne trouvé.</div>`;return;}
   for(const p of ps){
     const d=document.createElement("div"); d.className="pl"+(used.has(p.id)?" used":"");
-    d.innerHTML=`<span class="n">${esc(p.name)}</span>`+(isCoach?"":`<span class="tags">${p.pos.map(x=>`<span class="tag ${ok.includes(x)?"cur":""}">${x}</span>`).join("")}</span>`);
+    d.innerHTML=`<span class="n">${esc(p.name)}${isCoach?"":`<span class="yr">arrivé en ${p.year<2000?"avant 2000":p.year}</span>`}</span>`+(isCoach?"":`<span class="tags">${p.pos.map(x=>`<span class="tag ${ok.includes(x)?"cur":""}">${x}</span>`).join("")}</span>`);
     d.onclick=()=>{ if(!used.has(p.id)) setPick(p.id); };
     L.appendChild(d);
   }
