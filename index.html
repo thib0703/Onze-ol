@@ -413,6 +413,9 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
 .xiavg{color:#ffd970}.vsavg{display:flex;align-items:center;justify-content:center;gap:16px;margin:8px 0 2px}.vsavg div{display:flex;flex-direction:column;align-items:center;background:rgba(255,255,255,.06);border-radius:12px;padding:6px 16px;min-width:90px}.vsavg b{font-size:26px}.vsavg small{opacity:.7;font-size:11px}.vsavg span{color:var(--rouge);font-weight:900}
 .dbtns{display:flex;gap:8px;justify-content:center;margin-top:10px}.dbtns .btn{flex:1}
 .cskill{display:block;font-size:11.5px;color:#ffd970;line-height:1.3;margin-top:3px;font-weight:500;white-space:normal;text-align:left}
+.sugg{margin:8px 0;background:#0f1d40;border:1px solid #1d2b55;border-radius:14px;padding:10px 12px}
+.sgh{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:6px}.sgl{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;padding:6px 0;border-top:1px solid #1d2b55}
+.sgl small{opacity:.7}.sgl em{color:#7ee2a0;font-style:normal;font-weight:800}
 .readyrow{display:flex;justify-content:space-around;gap:8px;margin:10px 0 6px;font-size:13px;font-weight:700}
 .chatfab{position:fixed;right:14px;bottom:calc(76px + env(safe-area-inset-bottom));z-index:30;width:54px;height:54px;border-radius:50%;border:0;background:var(--rouge);color:#fff;font-size:25px;box-shadow:0 6px 18px #0008;display:none}
 .chatfab b{position:absolute;top:-4px;right:-4px;background:#ffd970;color:#111;font-size:11px;font-weight:900;border-radius:999px;padding:2px 6px;display:none}
@@ -467,6 +470,7 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
     </svg>
   </div>
   <div class="count" id="count"></div>
+  <div class="sugg" id="sugg"></div>
   <button class="btn save" id="saveBtn">💾 Sauvegarder la compo</button>
   <div class="saved" id="savedInfo"></div>
   <div class="section" id="libSec"><h3>Mes compos enregistrées <small id="libCount"></small></h3><div class="lib" id="lib"></div></div>
@@ -832,6 +836,39 @@ $("#who").onclick=()=>openModal(`Connecté en tant que ${NAMES[me]||"?"}`,null,[
 // Note moyenne du 11 (cartes possédées, évolutions et forme réelle comprises)
 function xiAvg(w){ const c=C(w)||{}; const own=c.coll||{}; const v=Object.values(c.slots||{}).filter(id=>id&&own[id]&&BY_ID[id]).map(id=>BY_ID[id].ovr+evoOf(w,id)+liveMod(id)); return v.length?{avg:Math.round(v.reduce((a,b)=>a+b,0)/v.length),n:v.length}:{avg:0,n:0}; }
 const cmpTag=(a,b)=>a>b?`<b style="color:#7ee2a0">tu es au-dessus (+${a-b})</b>`:a<b?`<b style="color:#ff8a7a">tu es en dessous (${a-b})</b>`:`<b>à égalité</b>`;
+// ---------- 💡 Suggestions et compo auto (11 type, cartes possédées) ----------
+const effR=id=>BY_ID[id]?BY_ID[id].ovr+evoOf(me,id)+liveMod(id):0;
+const fitsRole=(p,role)=>p.pos.some(x=>(ROLE_OK[role]||[]).includes(x));
+function ownedPlayers(){ const own=W().coll||{}; return Object.keys(own).filter(id=>own[id]>0&&BY_ID[id]&&BY_ID[id].pos[0]!=="COACH"); }
+function bestCompo(form){ const roles=F[form], ids=ownedPlayers(), pairs=[];
+  roles.forEach(([r],i)=>ids.forEach(id=>{ const p=BY_ID[id]; if(fitsRole(p,r)) pairs.push([effR(id)+(ROLE_OK[r].includes(p.pos[0])?0.5:0),id,i]); }));
+  pairs.sort((a,b)=>b[0]-a[0]); const slots={}, bases=new Set();
+  for(const [,id,i] of pairs){ if(slots[i]||bases.has(baseOf(id))) continue; slots[i]=id; bases.add(baseOf(id)); }
+  const bench={}; ids.filter(id=>!bases.has(baseOf(id))).sort((a,b)=>effR(b)-effR(a)).forEach(id=>{ if(Object.keys(bench).length>=BENCH_N||bases.has(baseOf(id))) return; bench[Object.keys(bench).length]=id; bases.add(baseOf(id)); });
+  const own=W().coll||{}; const coach=COACHES.filter(c=>own[c.id]).sort((a,b)=>b.ovr-a.ovr)[0];
+  return {slots,bench,coach:coach?coach.id:null}; }
+function suggestions(){ const c=W(), roles=F[c.formation]; const xiBase=new Set(Object.values(c.slots).filter(Boolean).map(baseOf)); const S=[];
+  roles.forEach(([r],i)=>{ const cur=c.slots[i]; const curV=cur?effR(cur):0; let best=null;
+    for(const id of ownedPlayers()){ if(xiBase.has(baseOf(id))) continue; if(!fitsRole(BY_ID[id],r)) continue; const v=effR(id); if(v>curV&&(!best||v>best.v)) best={id,v}; }
+    if(best) S.push({i,role:r,cur,curV,id:best.id,v:best.v,gain:best.v-curV}); });
+  const own=c.coll||{}; const bc=COACHES.filter(x=>own[x.id]).sort((a,b)=>b.ovr-a.ovr)[0];
+  if(bc&&bc.id!==c.coach&&bc.ovr>(c.coach&&BY_ID[c.coach]?BY_ID[c.coach].ovr:0)) S.push({coach:true,cur:c.coach,curV:c.coach?BY_ID[c.coach].ovr:0,id:bc.id,v:bc.ovr,gain:bc.ovr-(c.coach?BY_ID[c.coach].ovr:0)});
+  // un même joueur ne peut être suggéré qu'une fois (au poste où il apporte le plus)
+  S.sort((a,b)=>b.gain-a.gain); const seen=new Set(); return S.filter(x=>{ if(seen.has(x.id)) return false; seen.add(x.id); return true; }); }
+let autoPrev=null, autoArm=false;
+function renderSugg(mine){ const el=$("#sugg"); if(!el) return; if(!mine){ el.innerHTML=""; return; }
+  const S=suggestions(); const short2=id=>id&&BY_ID[id]?esc(BY_ID[id].name):"vide";
+  el.innerHTML=`<div class="sgh"><b>💡 Suggestions</b><span>${autoPrev?`<button class="btn sm ghost" id="autoUndo">↩️ Annuler</button> `:""}<button class="btn sm" id="autoBtn">⚡ Compo auto</button></span></div>`+
+    (S.length?S.slice(0,4).map((x,k)=>`<div class="sgl"><span>${x.coach?"🧠 Entraîneur":`<b>${x.role}</b>`} : ${x.cur?`${short2(x.cur)} <small>(${x.curV})</small> → `:""}<b>${short2(x.id)}</b> <small>(${x.v})</small> <em>${x.cur?"+"+x.gain:"poste vide"}</em></span><button class="btn sm ghost" data-sg="${k}">Mettre</button></div>`).join("")
+     :`<div class="mute" style="font-size:12.5px">✅ Ton 11 est déjà le meilleur possible avec tes cartes.</div>`);
+  el.querySelectorAll("[data-sg]").forEach(b=>b.onclick=()=>{ const x=S[+b.dataset.sg], c=W();
+    if(x.coach) c.coach=x.id; else { for(const k in c.bench) if(c.bench[k]===x.id){ if(x.cur) c.bench[k]=x.cur; else delete c.bench[k]; } c.slots[x.i]=x.id; }
+    c.loadedId=null; render(); save(); toast("✅ "+BY_ID[x.id].name+" mis dans ton 11"); });
+  $("#autoBtn").onclick=e=>{ if(!autoArm){ autoArm=true; e.target.textContent="Remplacer mon 11 ? Re-touche"; setTimeout(()=>{ autoArm=false; const b=$("#autoBtn"); if(b) b.textContent="⚡ Compo auto"; },3000); return; }
+    autoArm=false; const c=W(); const B=bestCompo(c.formation); if(!Object.keys(B.slots).length){ toast("Pas assez de cartes : ouvre des packs !",true); return; }
+    autoPrev={slots:{...c.slots},bench:{...c.bench},coach:c.coach}; c.slots=B.slots; c.bench=B.bench; if(B.coach) c.coach=B.coach; c.loadedId=null; render(); save(); toast(`⚡ Meilleure compo en ${c.formation} mise en place`); };
+  const u=$("#autoUndo"); if(u) u.onclick=()=>{ const c=W(); Object.assign(c,autoPrev); autoPrev=null; render(); save(); toast("↩️ Ancienne compo remise"); };
+}
 function filled(c){return Object.values(c.slots).filter(Boolean).length;}
 function renderTabs(){
   viewing=me; $("#tabs").innerHTML=""; $("#tabs").style.display="none"; $("#who").textContent=(NAMES[me]||"?")+" · compte"; return; // les 11 des autres se voient depuis leur profil (Ligue → Joueurs)
@@ -866,6 +903,7 @@ function render(){
   const pitch=$("#pitch"); pitch.querySelectorAll(".slot").forEach(e=>e.remove());
   F[c.formation].forEach(([role,x,y],i)=>{ const b=slotBtn("xi",i,role,c.slots[i],mine); b.style.left=x+"%"; b.style.top=y+"%"; pitch.appendChild(b); });
   const n=filled(c);
+  renderSugg(mine);
   const xa=xiAvg(me); $("#count").innerHTML= (n===11 ? "✅ 11 complet !" : `${n}/11 titulaires`+(mine?" — touche une case pour choisir":""))+(xa.n?` · <span class="xiavg">⭐ Note moyenne : <b>${xa.avg}</b></span>`:"");
   const bench=$("#bench"); bench.innerHTML="";
   for(let i=0;i<BENCH_N;i++){ const pid=c.bench[i]; const p=pid&&BY_ID[pid]; bench.appendChild(slotBtn("bench",i,p?p.pos[0]:String(12+i),pid,mine)); }
@@ -3158,7 +3196,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-20f";
+const APP_V="2026-11-20g";
 let updShown=false;
 async function checkUpdate(){ if(updShown) return; try{ const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const APP_V="([^"]+)"/); if(m&&m[1]!==APP_V){
