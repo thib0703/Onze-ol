@@ -388,6 +388,7 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
 .tipbox{background:linear-gradient(160deg,#16295a,#0f1d40);border:1px solid rgba(255,217,112,.4);border-radius:18px;padding:18px 18px 14px;width:min(100%,440px);max-height:85vh;overflow:auto;box-shadow:0 10px 40px rgba(0,0,0,.5);animation:tipu .3s ease-out}
 .tipbox h3{margin:0 0 10px;font-size:19px}.tipx{font-size:14px;line-height:1.5;opacity:.92;margin-bottom:14px}
 @keyframes tipf{from{opacity:0}}@keyframes tipu{from{transform:translateY(40px);opacity:0}}
+.igtabs{display:flex;gap:6px}.igtabs .chip{flex:1;padding:9px;font-size:14px}
 .igsteps{margin:0 0 14px;padding-left:22px;font-size:14px;line-height:1.5}.igsteps li{margin-bottom:8px}
 .igk{display:inline-block;background:rgba(255,255,255,.12);border-radius:6px;padding:0 6px;margin:0 2px}
 </style>
@@ -2860,22 +2861,24 @@ function platformInfo(){ const ua=navigator.userAgent;
 function installGuide(force){
   const P=platformInfo(); if(isStandalone) { if(force) toast("L'appli est déjà sur ton écran d'accueil ✓"); return; }
   if(!force){ if(!P.ios&&!P.android) return; if(document.querySelector(".tipov.ig")) return; }
-  let steps, head;
-  if(P.inApp){ head="Ouvre d'abord le lien dans ton navigateur"; steps=[`Touche les <b>⋯</b> ou le bouton de partage de l'appli où tu as ouvert le lien`,`Choisis <b>« Ouvrir dans ${P.ios?"Safari":"le navigateur"} »</b>`,`Puis suis les étapes pour l'ajouter à l'écran d'accueil`]; }
-  else if(P.ios){ head=P.iosOther?"Sur iPhone (Chrome / autre navigateur)":"Sur iPhone (Safari)";
-    steps=[P.iosOther?`Touche le bouton <b>Partager <span class="igk">⬆️</span></b> dans la barre d'adresse`:`Touche le bouton <b>Partager <span class="igk">⬆️</span></b> (le carré avec la flèche, en bas de l'écran)`,
-      `Fais défiler et choisis <b>« Sur l'écran d'accueil » <span class="igk">➕</span></b>`,`Touche <b>« Ajouter »</b> en haut à droite`,`Ouvre l'appli depuis la nouvelle icône <b>Gones Legends</b> 🎉 (il faudra te reconnecter une fois avec ton pseudo)`]; }
-  else if(P.samsung){ head="Sur Android (Samsung Internet)"; steps=[`Touche le menu <b><span class="igk">☰</span></b> en bas à droite`,`Choisis <b>« Ajouter la page à »</b> puis <b>« Écran d'accueil »</b>`,`Confirme avec <b>« Ajouter »</b>`]; }
-  else if(P.android){ head="Sur Android (Chrome)"; steps=[`Touche le menu <b><span class="igk">⋮</span></b> en haut à droite`,`Choisis <b>« Ajouter à l'écran d'accueil »</b> ou <b>« Installer l'application »</b>`,`Confirme avec <b>« Installer »</b> ou <b>« Ajouter »</b>`]; }
-  else { head="Sur ordinateur"; steps=[`Dans Chrome ou Edge, clique sur l'icône <b>Installer</b> à droite de la barre d'adresse`,`Sinon, ajoute simplement la page à tes favoris`]; }
+  const G={
+    ios:{l:"🍎 iPhone",h:"Sur iPhone (Safari)",st:[`Touche le bouton <b>Partager <span class="igk">⬆️</span></b> (le carré avec la flèche, en bas de l'écran${P.iosOther?", ou dans la barre d'adresse sur Chrome":""})`,
+      `Fais défiler et choisis <b>« Sur l'écran d'accueil » <span class="igk">➕</span></b>`,`Touche <b>« Ajouter »</b> en haut à droite`,`Ouvre l'appli depuis la nouvelle icône <b>Gones Legends</b> 🎉 (il faudra te reconnecter une fois avec ton pseudo)`],
+      note:"Obligatoire sur iPhone pour recevoir les notifications."},
+    android:{l:"🤖 Android",h:"Sur Android (Chrome)",st:[`Touche le menu <b><span class="igk">⋮</span></b> en haut à droite`,`Choisis <b>« Ajouter à l'écran d'accueil »</b> ou <b>« Installer l'application »</b>`,`Confirme avec <b>« Installer »</b> ou <b>« Ajouter »</b>`,`Ouvre l'appli depuis la nouvelle icône <b>Gones Legends</b> 🎉`],
+      note:"Sur Samsung Internet : menu <b>☰</b> en bas → <b>« Ajouter la page à »</b> → <b>« Écran d'accueil »</b>."}};
+  let cur=P.android?"android":"ios";
+  const inApp=P.inApp?`<div class="evban" style="margin-bottom:10px"><b>⚠️ Ouvre d'abord le lien dans ${P.ios?"Safari":"Chrome"}</b><span>Tu es dans une appli (Instagram, Snapchat…) : touche <b>⋯</b> puis « Ouvrir dans ${P.ios?"Safari":"le navigateur"} ».</span></div>`:"";
+  const body=()=>`<div class="igtabs">${Object.entries(G).map(([k,g])=>`<button class="chip${k===cur?" on":""}" data-ig="${k}">${g.l}</button>`).join("")}</div>
+    <h4 style="margin:8px 0">${G[cur].h}</h4><ol class="igsteps">${G[cur].st.map(x=>`<li>${x}</li>`).join("")}</ol><div class="mute" style="font-size:12px;margin:-6px 0 12px">${G[cur].note}</div>`;
   const was=tipOpen; tipOpen=true;
   const el=document.createElement("div"); el.className="tipov ig"; el.style.zIndex=130;
-  el.innerHTML=`<div class="tipbox"><h3>📲 Installe l'appli sur ton téléphone</h3><div class="tipx">Ajoute <b>Les Gones Legends</b> à ton écran d'accueil : elle s'ouvrira en plein écran comme une vraie appli${P.ios?", et c'est obligatoire sur iPhone pour recevoir les notifications":""}.</div>
-    <h4 style="margin:0 0 8px">${head}</h4><ol class="igsteps">${steps.map(s=>`<li>${s}</li>`).join("")}</ol>
+  el.innerHTML=`<div class="tipbox"><h3>📲 Installe l'appli sur ton téléphone</h3><div class="tipx">Ajoute <b>Les Gones Legends</b> à ton écran d'accueil : elle s'ouvrira en plein écran comme une vraie appli. Choisis ton téléphone :</div>${inApp}<div id="igBody">${body()}</div>
     <button class="btn big" id="igInstall" style="${installEvt?"":"display:none"}">📲 Installer maintenant</button>
     <button class="btn ${installEvt?"ghost":""} big" id="igOk">${installEvt?"Plus tard":"OK, compris"}</button>
     <div class="mute" style="font-size:12px;text-align:center;margin-top:8px">Ce message s'affiche tant que l'appli est ouverte dans le navigateur. Tu retrouveras aussi ces explications en touchant ton pseudo → « 📲 Installer l'appli ».</div></div>`;
   document.body.appendChild(el);
+  const bind=()=>el.querySelectorAll("[data-ig]").forEach(b=>b.onclick=()=>{ cur=b.dataset.ig; el.querySelector("#igBody").innerHTML=body(); bind(); }); bind();
   const close=()=>{ el.remove(); tipOpen=was; if(!was){ const nx=tipQ.shift(); if(nx) setTimeout(()=>tip(nx[0],nx[1]),250); } };
   el.querySelector("#igOk").onclick=close;
   el.querySelector("#igInstall").onclick=async()=>{ if(!installEvt) return; installEvt.prompt(); try{ const r=await installEvt.userChoice; if(r.outcome==="accepted") toast("Appli installée 🎉"); }catch(e){} installEvt=null; close(); };
@@ -2883,7 +2886,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-19c";
+const APP_V="2026-11-19d";
 let updShown=false;
 async function checkUpdate(){ if(updShown) return; try{ const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const APP_V="([^"]+)"/); if(m&&m[1]!==APP_V){ updShown=true;
