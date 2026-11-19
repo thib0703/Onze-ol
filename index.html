@@ -7,6 +7,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="11 type OL">
 <title>Notre 11 type OL</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
 <style>
 :root{--bleu:#13306b;--bleu2:#1d4aa0;--rouge:#d3122d;--fond:#0b1530;--carte:#16244a;--txt:#eef2ff;--mute:#9fb0d8}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -472,6 +474,7 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-messaging-compat.js"></script>
 <script>
 // Projet Firebase partagé avec « Mon héroïne » (config publique ; la sécurité vient des règles Firestore).
 const FIREBASE_CONFIG = {
@@ -740,7 +743,7 @@ $("#aSignup").onclick=async()=>{
   try{ $("#aSignup").disabled=true; await firebase.auth().createUserWithEmailAndPassword(pseudoEmail(n),pw); }catch(err){ pendingName=null; $("#aMsg").textContent=authErr(err); }
   $("#aSignup").disabled=false; };
 $("#shareBtn").onclick=async()=>{ const url=location.origin+location.pathname; try{ if(navigator.share){ await navigator.share({title:"Notre 11 type OL",text:"Crée ton compte, fais ton 11 type de l'OL et viens me défier !",url}); return; } }catch(e){ return; } try{ await navigator.clipboard.writeText(url); toast("Lien copié !"); }catch(e){ toast(url); } };
-$("#who").onclick=()=>openModal(`Connecté en tant que ${NAMES[me]||"?"}`,null,[["Se déconnecter",()=>{ firebase.auth().signOut(); }],["Inviter quelqu'un",()=>$("#shareBtn").click(),true],["Fermer",null,true]]);
+$("#who").onclick=()=>openModal(`Connecté en tant que ${NAMES[me]||"?"}`,null,[[notifState()==="granted"?"🔔 Notifications activées":"🔔 Activer les notifications",()=>{ enableNotifs(); }],["Se déconnecter",()=>{ firebase.auth().signOut(); }],["Inviter quelqu'un",()=>$("#shareBtn").click(),true],["Fermer",null,true]]);
 
 // ---------- Rendu ----------
 function filled(c){return Object.values(c.slots).filter(Boolean).length;}
@@ -1515,6 +1518,23 @@ function simulate2(cA,SA,cB,SB){
 
 const MSPEED=600; // ms par minute de match
 function matchMinute(){ if(!match) return 0; if(mSkip===match.id) return 999; return (Date.now()-match.at)/MSPEED; }
+// ---------- 🔔 Notifications push ----------
+const VAPID_KEY=""; // clé « Web Push » de la console Firebase (Paramètres du projet → Cloud Messaging)
+const isIOS=/iPhone|iPad|iPod/.test(navigator.userAgent), isStandalone=window.matchMedia&&matchMedia("(display-mode: standalone)").matches||navigator.standalone;
+function notifState(){ if(!("Notification" in window)||!("serviceWorker" in navigator)) return isIOS&&!isStandalone?"install":"unsupported"; return Notification.permission; }
+async function enableNotifs(){
+  if(isIOS&&!isStandalone){ openModal("Sur iPhone : touche Partager ⬆️ puis « Sur l'écran d'accueil », ouvre l'appli depuis l'icône, et réessaie ici.",null,[["OK",null]]); return; }
+  if(!VAPID_KEY){ toast("Notifications pas encore activées par l'admin (clé Firebase manquante)",true); return; }
+  if(notifState()==="unsupported"){ toast("Ce navigateur ne gère pas les notifications",true); return; }
+  try{
+    const perm=await Notification.requestPermission(); if(perm!=="granted"){ toast("Notifications refusées dans les réglages",true); return; }
+    const reg=await navigator.serviceWorker.register("firebase-messaging-sw.js");
+    const token=await firebase.messaging().getToken({vapidKey:VAPID_KEY,serviceWorkerRegistration:reg});
+    const c=W(); c.fcm=[...new Set([...(c.fcm||[]),token])].slice(-5); save(); toast("🔔 Notifications activées !");
+  }catch(e){ toast("Impossible d'activer les notifications : "+(e.code||e.message),true); }
+}
+try{ if(firebase.messaging&&firebase.messaging.isSupported&&firebase.messaging.isSupported()) firebase.messaging().onMessage(p=>{ const n=p.notification||p.data||{}; toast(`${n.title||""} ${n.body||""}`); }); }catch(e){}
+
 // ---------- 🤖 Mode solo contre l'ordinateur ----------
 const CPU="cpu";
 const CPU_LV={facile:{l:"Facile",r:[58,71]},moyen:{l:"Moyen",r:[69,78]},difficile:{l:"Difficile",r:[76,84]},legende:{l:"Légende",r:[82,99]}};
@@ -2339,8 +2359,9 @@ function renderLigue(){
     <h4>Aujourd'hui</h4>${DAILY.map(x=>objRow("day",x)).join("")}
     <h4>Cette semaine</h4>${WEEKLY.map(x=>objRow("week",x)).join("")}
     <div class="rules" style="font-size:12px">Connecte-toi chaque jour : petits bonus, et un <b>Pack Épique offert tous les 7 jours</b> d'affilée.</div>`;
+  const ln=$("#lNotif"); if(ln) ln.onclick=enableNotifs;
   $("#lObj").querySelectorAll("[data-oc]").forEach(b=>b.onclick=()=>{ const [s,k]=b.dataset.oc.split(":"); claimObj(s,k); });
-  $("#lEvent").innerHTML=`<div class="evban"><b>${ev.name}</b><span>${ev.desc}</span><small>Pack Événement : 600 🪙 · 3 cartes du thème · 1 Rare min. — dans la Boutique</small></div>`;
+  $("#lEvent").innerHTML=(notifState()!=="granted"?`<button class="btn ghost big" id="lNotif" style="margin:8px 0 0">🔔 Activer les notifications (ton tour, défis, échanges…)</button>`:"")+`<div class="evban"><b>${ev.name}</b><span>${ev.desc}</span><small>Pack Événement : 600 🪙 · 3 cartes du thème · 1 Rare min. — dans la Boutique</small></div>`;
   $("#lLeague").innerHTML=`<h3>🏆 Championnat de la semaine <small>fin dans ${fmtLeft(endIn)}</small></h3>
     <div class="rules" style="font-size:12px;margin-top:0">Tous les matchs de la semaine entre joueurs comptent. Récompenses lundi : 1er Pack Légende, 2e Pack Épique, 3e Pack Classique.</div>
     ${S.length?`<div class="rk head"><span>#</span><span>Joueur</span><span>J</span><span>V</span><span>D</span><span>Pts</span></div>`+S.map((r,i)=>`<div class="rk${r.id===me?" me":""}"><span>${["🥇","🥈","🥉"][i]||i+1}</span><span>${esc(NAMES[r.id]||"?")}</span><span>${r.j}</span><span>${r.v}</span><span>${r.d}</span><b>${r.v*3+r.n}</b></div>`).join(""):`<div class="mute" style="font-size:13px">Aucun match cette semaine.</div>`}
