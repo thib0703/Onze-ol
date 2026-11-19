@@ -413,6 +413,16 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
 .xiavg{color:#ffd970}.vsavg{display:flex;align-items:center;justify-content:center;gap:16px;margin:8px 0 2px}.vsavg div{display:flex;flex-direction:column;align-items:center;background:rgba(255,255,255,.06);border-radius:12px;padding:6px 16px;min-width:90px}.vsavg b{font-size:26px}.vsavg small{opacity:.7;font-size:11px}.vsavg span{color:var(--rouge);font-weight:900}
 .dbtns{display:flex;gap:8px;justify-content:center;margin-top:10px}.dbtns .btn{flex:1}
 .readyrow{display:flex;justify-content:space-around;gap:8px;margin:10px 0 6px;font-size:13px;font-weight:700}
+.chatfab{position:fixed;right:14px;bottom:calc(76px + env(safe-area-inset-bottom));z-index:30;width:54px;height:54px;border-radius:50%;border:0;background:var(--rouge);color:#fff;font-size:25px;box-shadow:0 6px 18px #0008;display:none}
+.chatfab b{position:absolute;top:-4px;right:-4px;background:#ffd970;color:#111;font-size:11px;font-weight:900;border-radius:999px;padding:2px 6px;display:none}
+.chatp{position:fixed;left:0;right:0;bottom:0;z-index:46;max-width:560px;margin:0 auto;background:#101c3d;border-radius:18px 18px 0 0;box-shadow:0 -8px 30px #000a;display:none;flex-direction:column;height:62vh;padding-bottom:env(safe-area-inset-bottom)}
+.chatp.open{display:flex}.chath{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid #1d2b55;font-weight:800}
+.chatl{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+.cmsg{max-width:80%;padding:7px 11px;border-radius:14px;background:#1d2b55;font-size:14px;line-height:1.3;word-wrap:break-word;align-self:flex-start}
+.cmsg.me{align-self:flex-end;background:var(--rouge)}.cmsg small{display:block;font-size:10.5px;opacity:.7;font-weight:700}
+.chati{display:flex;gap:8px;padding:10px 12px;border-top:1px solid #1d2b55}.chati input{flex:1;min-width:0;padding:11px 12px;border-radius:12px;border:1px solid #2a3b6b;background:#0b1530;color:#fff;font-size:16px}
+.cprev{position:fixed;right:76px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:30;max-width:60vw;background:#101c3d;border:1px solid #2a3b6b;border-radius:12px;padding:7px 10px;font-size:13px;box-shadow:0 4px 14px #0008;animation:fadeo 4s forwards}
+@keyframes fadeo{0%,80%{opacity:1}100%{opacity:0}}
 </style>
 </head>
 <body>
@@ -523,6 +533,8 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
   <div class="section" id="lPlayers"></div>
 </div>
 <div class="packfx" id="packfx"></div>
+<button class="chatfab" id="chatFab">💬<b id="chatBadge"></b></button>
+<div class="chatp" id="chatP"><div class="chath"><span id="chatT">💬 Chat</span><button class="btn sm ghost" id="chatX">Fermer</button></div><div class="chatl" id="chatL"></div><div class="chati"><input id="chatIn" maxlength="200" placeholder="Écris un message…" autocomplete="off"><button class="btn" id="chatSend">Envoyer</button></div></div>
 <div class="tradeui" id="tradeUI"></div>
 <div class="toast" id="toast"></div>
 <div class="modal cardm" id="cardModal"></div>
@@ -2967,6 +2979,34 @@ function renderReactBar(){ const el=$("#mReact"); if(!el) return; const on=mode=
   el.innerHTML=`<div class="rbar">${REACTS.map(e=>`<button data-re="${e}">${e}</button>`).join("")}</div><div class="rbar ph">${PHRASES.map(p=>`<button data-re="${esc(p)}">${esc(p)}</button>`).join("")}</div>`;
   el.querySelectorAll("[data-re]").forEach(b=>b.onclick=()=>sendReact(b.dataset.re)); }
 setInterval(renderReactBar,1000);
+// ---------- 💬 Chat en direct (pendant un match ou une draft) ----------
+let chatRoom=null, chatUnsub=null, chatMsgs=[], chatSeen=0, chatOpen=false;
+function chatCtx(){
+  if(!db||!me) return null;
+  if(mode==="match"&&match&&match!==cpuMatch&&mClosed!==match.id&&!(match.teams||[]).some(t=>t.owner===CPU)) return {room:"m_"+match.id,title:"💬 Chat du match"};
+  if(mode==="draft"&&dOpp&&dOpp!==me){ const k=dSub==="budget"?bKey():dKey(); const ex=dSub==="budget"?budgets[k]:drafts[k]; if(ex) return {room:"d_"+k,title:"💬 Chat avec "+(NAMES[dOpp]||"ton adversaire")}; }
+  return null; }
+const chatDoc=r=>db.collection("onzeol_meta").doc("chat_"+r.replace(/[^\w-]/g,"_"));
+function chatTick(){ const c=chatCtx(), fab=$("#chatFab"); if(!fab) return;
+  fab.style.display=c&&!chatOpen?"block":"none"; if(!c&&chatOpen) chatClose();
+  const room=c?c.room:null; if(room===chatRoom) return;
+  if(chatUnsub){ chatUnsub(); chatUnsub=null; } chatRoom=room; chatMsgs=[]; chatSeen=0; chatBadge(); if(!room) return;
+  $("#chatT").textContent=c.title; let first=true;
+  chatUnsub=chatDoc(room).onSnapshot(sn=>{ const L=(sn.exists&&sn.data().L)||[]; let seen=0; try{ seen=+localStorage.getItem("gl_chat_"+room)||0; }catch(_){}
+    const fresh=L.filter(m=>m.at>(first?seen:chatLast())&&m.w!==me); chatMsgs=L; first=false;
+    if(chatOpen) chatRender(); else { if(fresh.length){ const m=fresh[fresh.length-1]; const el=document.createElement("div"); el.className="cprev"; el.textContent=(NAMES[m.w]||"?")+" : "+m.t; document.body.appendChild(el); setTimeout(()=>el.remove(),4000); } chatBadge(); } },()=>{}); }
+function chatLast(){ return chatMsgs.length?chatMsgs[chatMsgs.length-1].at:0; }
+function chatBadge(){ const b=$("#chatBadge"); if(!b) return; let seen=0; try{ seen=+localStorage.getItem("gl_chat_"+chatRoom)||0; }catch(_){}
+  const n=chatMsgs.filter(m=>m.at>seen&&m.w!==me).length; b.textContent=n>9?"9+":n; b.style.display=n?"block":"none"; }
+function chatRender(){ const L=$("#chatL"); L.innerHTML=chatMsgs.map(m=>`<div class="cmsg${m.w===me?" me":""}">${m.w===me?"":`<small>${esc(NAMES[m.w]||"?")}</small>`}${esc(m.t)}</div>`).join("")||`<div class="mute" style="text-align:center;font-size:13px;margin-top:20px">Aucun message. Lance la discussion !</div>`;
+  L.scrollTop=L.scrollHeight; try{ localStorage.setItem("gl_chat_"+chatRoom,String(chatLast())); }catch(_){} chatBadge(); }
+function chatClose(){ chatOpen=false; $("#chatP").classList.remove("open"); chatTick(); }
+async function chatSend(){ const i=$("#chatIn"), t=i.value.trim().slice(0,200); if(!t||!chatRoom) return; i.value="";
+  try{ await db.runTransaction(async tx=>{ const ref=chatDoc(chatRoom); const d=await tx.get(ref); const L=(d.exists&&d.data().L)||[]; L.push({w:me,t,at:Date.now()}); tx.set(ref,{L:L.slice(-80)}); }); }catch(e){ toast("Message non envoyé",true); i.value=t; } }
+$("#chatFab").onclick=()=>{ chatOpen=true; $("#chatP").classList.add("open"); $("#chatFab").style.display="none"; chatRender(); };
+$("#chatX").onclick=chatClose; $("#chatSend").onclick=chatSend; $("#chatIn").addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); chatSend(); } });
+setInterval(chatTick,1000);
+
 
 // ---------- Onglet Jeux ----------
 function renderJeux(){
@@ -3092,7 +3132,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-19u";
+const APP_V="2026-11-19v";
 let updShown=false;
 async function checkUpdate(){ if(updShown) return; try{ const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const APP_V="([^"]+)"/); if(m&&m[1]!==APP_V){
