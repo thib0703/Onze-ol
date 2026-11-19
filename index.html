@@ -58,6 +58,32 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
 .mbox input{width:100%;background:var(--carte);color:var(--txt);border:1px solid #2b3c6e;border-radius:10px;padding:11px;font-size:16px}
 .mbtns{display:flex;flex-direction:column;gap:8px;margin-top:12px}
 .mbtns .btn{padding:12px;font-size:15px}
+.sbar{display:flex;align-items:center;gap:8px;margin:7px 0}
+.sbar .sv{width:30px;text-align:center;font-weight:800;font-size:14px}
+.sbar .sl{flex:1}
+.sbar .sl span{display:block;text-align:center;font-size:11.5px;color:var(--mute);margin-bottom:3px}
+.track{height:8px;border-radius:6px;background:var(--bleu2);overflow:hidden}
+.track i{display:block;height:100%;background:var(--rouge)}
+.vs{display:flex;justify-content:space-between;font-size:13px;color:var(--mute);margin:12px 4px 2px}
+.vs b{color:var(--txt)}
+.score{display:flex;align-items:center;justify-content:space-between;gap:6px;text-align:center}
+.score .tm{flex:1;font-weight:800;font-size:17px}
+.score .tm small,.score .sc small{display:block;font-weight:400;font-size:11.5px;color:var(--mute);margin-top:2px}
+.score .sc{font-size:38px;font-weight:900;min-width:120px;letter-spacing:2px}
+.feed{max-height:260px;overflow-y:auto;margin-top:10px;border-top:1px solid #24345f}
+.ev{display:flex;gap:8px;font-size:13.5px;padding:7px 2px;border-bottom:1px solid #1d2b55}
+.ev b{min-width:30px;color:var(--mute)}
+.ev.goal{background:#1f8a4c33;border-radius:8px}
+.ev.red{background:#b4432b33;border-radius:8px}
+.mute{color:var(--mute)}
+.motm{margin:12px 0 6px;padding:10px;border-radius:10px;background:#c9a22722;color:#ffd970;font-size:14px;text-align:center}
+.notes{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.notes h4{margin:8px 0 4px;font-size:13px;color:var(--mute)}
+.nr{display:flex;justify-content:space-between;font-size:12.5px;padding:3px 0;border-bottom:1px solid #1d2b55}
+.nr .hi{color:#7ee2a0}.nr .lo{color:#ff9aa8}
+.tally{display:flex;gap:8px;margin-bottom:8px}
+.tally div{flex:1;text-align:center;background:#0f1d40;border-radius:10px;padding:8px;font-size:12px;color:var(--mute)}
+.tally b{display:block;font-size:24px;color:var(--txt)}
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#1f8a4c;color:#fff;padding:12px 18px;border-radius:12px;font-weight:700;z-index:30;box-shadow:0 6px 20px #0008;display:none}
 .count{font-size:13px;color:var(--mute);margin:8px 4px}
 .section{margin-top:14px;background:var(--carte);border-radius:14px;padding:12px}
@@ -135,7 +161,7 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
   <div class="sub">Tous les joueurs passés par Lyon depuis 2000</div>
   <div class="sync" id="sync">Connexion…</div>
 </header>
-<div class="modes"><button id="mCompo" class="on">Mon 11 type</button><button id="mDraft">⚡ Draft en direct</button></div>
+<div class="modes"><button id="mCompo" class="on">11 type</button><button id="mDraft">⚡ Draft</button><button id="mMatch">🏟️ Match</button></div>
 <div id="viewCompo">
 <div class="tabs" id="tabs"></div>
 <div class="wrap">
@@ -186,6 +212,11 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
     <button class="btn ghost big" id="dReset">Recommencer le draft</button>
   </div>
 </div>
+<div id="viewMatch" class="wrap" style="display:none">
+  <div class="section" id="mBoard" style="display:none"></div>
+  <div class="section" id="mSetup"></div>
+  <div class="section" id="mHist"></div>
+</div>
 <div class="toast" id="toast"></div>
 <div class="modal" id="modal"><div class="mbox"><h3 id="mTitle"></h3><input id="mInput" maxlength="40" autocomplete="off"><div class="mbtns" id="mBtns"></div></div></div>
 <div class="veil" id="veil"></div>
@@ -218,171 +249,194 @@ const ROOM = "ONZE-OL-THBVAL"; // 14 caractères : document families/ONZE-OL-THB
 
 // ---------- Joueurs (postes : GB DD DC DG MDC MC MOC AD AG BU) ----------
 const RAW = `
-Grégory Coupet|GB|1997
-Hugo Lloris|GB|2008
-Anthony Lopes|GB|2011
-Rémy Vercoutre|GB|2002
-Nicolas Puydebois|GB|1999
-Mathieu Gorgelin|GB|2011
-Ciprian Tătărușanu|GB|2018
-Julian Pollersbeck|GB|2020
-Lucas Perri|GB|2023
-Dominik Greif|GB|2025
-Rémy Descamps|GB|2024
-Kayne Bonnevie|GB|2022
-Patrick Müller|DC|2000
-Edmílson|DC,MDC|2000
-Claudio Caçapa|DC|2001
-Cris|DC|2004
-Florent Laville|DC|1998
-Jacek Bąk|DC|1995
-Jean-Marc Chanelet|DD|1998
-Anthony Réveillère|DD|2003
-Éric Abidal|DG,DC|2004
-Sylvain Squillaci|DC|2008
-Jean-Alain Boumsong|DC|2008
-François Clerc|DD|2003
-Jérémy Berthod|DG|2002
-Fabio Grosso|DG|2007
-Aly Cissokho|DG|2009
-Dejan Lovren|DC|2010
-Bakary Koné|DC|2011
-Mouhamadou Dabo|DD|2010
-Samuel Umtiti|DC,DG|2012
-Christophe Jallet|DD|2015
-Rafael|DD|2015
-Jérémy Morel|DG,DC|2015
-Mapou Yanga-Mbiwa|DC|2015
-Emanuel Mammana|DC|2016
-Nicolas Nkoulou|DC|2014
-Mouctar Diakhaby|DC|2016
-Marcelo|DC|2017
-Ferland Mendy|DG|2017
-Kenny Tete|DD|2017
-Fernando Marçal|DG|2017
-Jason Denayer|DC|2018
-Léo Dubois|DD|2018
-Joachim Andersen|DC|2019
-Youssouf Koné|DG|2018
-Mattia De Sciglio|DD|2020
-Jérôme Boateng|DC|2021
-Emerson Palmieri|DG|2021
-Castello Lukeba|DC|2021
-Sinaly Diomandé|DC|2020
-Malo Gusto|DD|2021
-Henrique|DG|2021
-Damien Da Silva|DC|2021
-Nicolás Tagliafico|DG|2022
-Saël Kumbedi|DD|2023
-Clinton Mata|DD,DC|2023
-Jake O'Brien|DC|2023
-Duje Ćaleta-Car|DC|2023
-Ainsley Maitland-Niles|DD,MC|2023
-Moussa Niakhaté|DC|2024
-Abner Vinicius|DG|2024
-Ruben Kluivert|DC,DD|2025
-Zachary Athekame|DD|2025
-Felix Bacher|DC|2026
-Hans Hateboer|DD|2024
-Philippe Violeau|MDC|1997
-Vikash Dhorasoo|MC|1998
-Éric Carrière|MOC,MC|2001
-Juninho|MC,MOC|2001
-Mahamadou Diarra|MDC|2002
-Michael Essien|MC,MDC|2003
-Tiago|MC|2005
-Jérémy Toulalan|MDC|2006
-Kim Källström|MC|2006
-Jean II Makoun|MDC,MC|2008
-Mathieu Bodmer|MC,DC|2007
-Jérémy Clément|MC|2005
-Miralem Pjanić|MOC,MC|2008
-Ederson|MOC,AG|2008
-Yoann Gourcuff|MOC|2010
-Maxime Gonalons|MDC|2008
-Clément Grenier|MC,MOC|2009
-Steed Malbranque|MC,AG|2011
-Yassine Benzia|MOC,AG|2013
-Corentin Tolisso|MC,MDC|2013
-Jordan Ferri|MC|2011
-Mathieu Valbuena|MOC,AD|2015
-Lucas Tousart|MDC|2016
-Tanguy Ndombele|MC|2017
-Houssem Aouar|MC,MOC|2017
-Nabil Fekir|MOC,BU|2013
-Pape Cheikh Diop|MDC|2018
-Jean Lucas|MC|2019
-Bruno Guimarães|MC,MDC|2020
-Thiago Mendes|MDC|2019
-Maxence Caqueret|MC|2019
-Lucas Paquetá|MOC,MC|2020
-Jeff Reine-Adélaïde|MOC,MC|2019
-Rayan Cherki|MOC,AD|2019
-Johann Lepenant|MDC|2022
-Paul Akouokou|MDC|2023
-Thiago Almada|MOC|2025
-Nemanja Matić|MDC|2023
-Orel Mangala|MC,MDC|2023
-Jordan Veretout|MC|2024
-Mahamadou Diawara|MC|2022
-Tanner Tessmann|MDC,MC|2025
-Tyler Morton|MDC,MC|2025
-Pavel Šulc|MOC,BU|2025
-Khalis Merah|MC|2025
-Mads Bidstrup|MC|2026
-Noah Nartey|MC|2026
-Adam Karabec|MOC,AG|2025
-Sonny Anderson|BU|1999
-Sidney Govou|AD,BU|1999
-Péguy Luyindula|BU|2001
-Florent Malouda|AG|2003
-Giovane Élber|BU|2003
-John Carew|BU|2005
-Sylvain Wiltord|AD,BU|2004
-Hatem Ben Arfa|AD,AG|2004
-Fred|BU|2005
-Milan Baroš|BU|2007
-Abdul Kader Keïta|AG|2007
-Karim Benzema|BU|2004
-Nilmar|BU|2004
-Bryan Bergougnoux|BU|2002
-Lisandro López|BU|2009
-Michel Bastos|AG|2009
-Bafétimbi Gomis|BU|2009
-Jimmy Briand|AD,BU|2010
-Alexandre Lacazette|BU|2010
-Clinton N'Jie|AD|2014
-Mohamed Yattara|BU|2014
-Rachid Ghezzal|AD|2012
-Claudio Beauvue|BU|2015
-Maxwel Cornet|AG|2015
-Mariano Díaz|BU|2016
-Memphis Depay|AG,BU|2017
-Bertrand Traoré|AD|2017
-Myziane Maolida|BU|2017
-Willem Geubbels|BU|2017
-Amine Gouiri|BU,AG|2017
-Moussa Dembélé|BU|2018
-Martin Terrier|AG|2018
-Karl Toko Ekambi|AG|2020
-Tino Kadewere|AD,BU|2020
-Islam Slimani|BU|2021
-Bradley Barcola|AG|2021
-Malick Fofana|AG|2024
-Ernest Nuamah|AD|2023
-Mama Baldé|AG,AD|2023
-Said Benrahma|AG|2024
-Gift Orban|BU|2024
-Georges Mikautadze|BU|2024
-Wilfried Zaha|AG|2024
-Martín Satriano|BU|2025
-Afonso Moreira|AG|2025
-Keito Nakamura|AG|2026
-Loïs Openda|BU|2026
-Julien Duranville|AG,AD|2025
-Rémi Himbert|AD|2024
-Alejandro Rodriguez|BU|2026
-Kail Boudache|AG|2026
+Grégory Coupet|GB|1997|86|519|0
+Hugo Lloris|GB|2008|87|202|0
+Anthony Lopes|GB|2012|84|489|0
+Rémy Vercoutre|GB|2002|72|112|0
+Nicolas Puydebois|GB|1999|68||
+Mathieu Gorgelin|GB|2011|68||
+Ciprian Tătărușanu|GB|2018|76||
+Julian Pollersbeck|GB|2020|70||
+Lucas Perri|GB|2024|79|49|0
+Dominik Greif|GB|2025|76||
+Rémy Descamps|GB|2024|72||
+Kayne Bonnevie|GB|2022|60||
+Patrick Müller|DC|2000|80|220|7
+Edmílson|DC,MDC|2000|82|157|5
+Claudio Caçapa|DC|2000|81|112|7
+Cris|DC|2004|85|310|27
+Florent Laville|DC|1993|74|268|4
+Jacek Bąk|DC|1995|76|154|7
+Jean-Marc Chanelet|DD|2000|72|83|3
+Anthony Réveillère|DD|2003|80|400|6
+Éric Abidal|DG,DC|2004|82|105|2
+Sébastien Squillaci|DC|2006|78|87|3
+Jean-Alain Boumsong|DC|2008|76|89|4
+François Clerc|DD|2004|78|114|2
+Jérémy Berthod|DG|2003|73|99|2
+Fabio Grosso|DG|2007|80|77|2
+Aly Cissokho|DG|2009|78|136|2
+Dejan Lovren|DC|2010|79|134|4
+Bakary Koné|DC|2011|75|141|8
+Mouhamadou Dabo|DD|2011|72|91|1
+Samuel Umtiti|DC,DG|2011|81|170|5
+Christophe Jallet|DD|2014|77|92|4
+Rafael|DD|2015|78|139|2
+Jérémy Morel|DG,DC|2015|75|139|1
+Mapou Yanga-Mbiwa|DC|2015|74|72|2
+Emanuel Mammana|DC|2016|72||
+Nicolas Nkoulou|DC|2014|77||
+Mouctar Diakhaby|DC|2016|74|55|7
+Marcelo|DC|2017|79|167|8
+Ferland Mendy|DG|2017|82|79|3
+Kenny Tete|DD|2017|76|80|1
+Fernando Marçal|DG|2017|76|75|0
+Jason Denayer|DC|2018|79|137|8
+Léo Dubois|DD|2018|78|129|5
+Joachim Andersen|DC|2019|78|35|2
+Youssouf Koné|DG|2018|70||
+Mattia De Sciglio|DD|2020|74|33|0
+Jérôme Boateng|DC|2021|78|35|0
+Emerson Palmieri|DG|2021|77|36|1
+Castello Lukeba|DC|2021|79|68|4
+Sinaly Diomandé|DC|2020|72|85|0
+Malo Gusto|DD|2021|79|61|0
+Henrique|DG|2021|73|45|1
+Damien Da Silva|DC|2021|74||
+Nicolás Tagliafico|DG|2022|81|104|9
+Saël Kumbedi|DD|2022|72|62|0
+Clinton Mata|DD,DC|2023|75|77|0
+Jake O'Brien|DC|2023|74|32|5
+Duje Ćaleta-Car|DC|2023|74|56|1
+Ainsley Maitland-Niles|DD,MC|2023|73|77|3
+Moussa Niakhaté|DC|2024|79|46|0
+Abner Vinicius|DG|2024|74|31|2
+Ruben Kluivert|DC,DD|2025|73||
+Zachary Athekame|DD|2025|73||
+Felix Bacher|DC|2026|72||
+Hans Hateboer|DD|2024|73||
+Philippe Violeau|MDC|1997|75|269|11
+Vikash Dhorasoo|MC|1993|78|224|13
+Éric Carrière|MOC,MC|2001|80|114|16
+Juninho|MC,MOC|2001|90|344|100
+Mahamadou Diarra|MDC|2002|84|198|14
+Michael Essien|MC,MDC|2003|85|96|13
+Tiago|MC|2005|82|101|14
+Jérémy Toulalan|MDC|2006|84|210|1
+Kim Källström|MC|2006|82|281|22
+Jean II Makoun|MDC,MC|2008|79|105|12
+Mathieu Bodmer|MC,DC|2007|77|91|8
+Jérémy Clément|MC|2004|72|54|1
+Miralem Pjanić|MOC,MC|2008|82|121|16
+Ederson|MOC,AG|2008|80|114|11
+Yoann Gourcuff|MOC|2010|80|128|19
+Maxime Gonalons|MDC|2009|80|334|12
+Clément Grenier|MC,MOC|2009|79|152|18
+Steed Malbranque|MC,AG|1997|75|238|19
+Yassine Benzia|MOC,AG|2012|72|54|6
+Corentin Tolisso|MC,MDC|2013|83|274|44
+Jordan Ferri|MC|2011|76|213|12
+Mathieu Valbuena|MOC,AD|2015|80|76|12
+Lucas Tousart|MDC|2015|77|165|6
+Tanguy Ndombele|MC|2017|82|111|5
+Houssem Aouar|MC,MOC|2017|82|233|41
+Nabil Fekir|MOC,BU|2013|85|193|69
+Pape Cheikh Diop|MDC|2018|70||
+Jean Lucas|MC|2019|72||
+Bruno Guimarães|MC,MDC|2020|82|71|3
+Thiago Mendes|MDC|2019|79|143|2
+Maxence Caqueret|MC|2018|78|184|7
+Lucas Paquetá|MOC,MC|2020|84|80|21
+Jeff Reine-Adélaïde|MOC,MC|2019|75|48|2
+Rayan Cherki|MOC,AD|2019|83|185|28
+Johann Lepenant|MDC|2022|74|40|1
+Paul Akouokou|MDC|2023|72||
+Thiago Almada|MOC|2025|80||
+Nemanja Matić|MDC|2024|79|58|1
+Orel Mangala|MC,MDC|2023|75||
+Jordan Veretout|MC|2024|78|38|2
+Mahamadou Diawara|MC|2022|68||
+Tanner Tessmann|MDC,MC|2024|76|39|1
+Tyler Morton|MDC,MC|2025|77||
+Pavel Šulc|MOC,BU|2025|80||
+Khalis Merah|MC|2025|68||
+Mads Bidstrup|MC|2026|73||
+Noah Nartey|MC|2026|70||
+Adam Karabec|MOC,AG|2025|74||
+Sonny Anderson|BU|1999|86|160|94
+Sidney Govou|AD,BU|1999|80|412|77
+Péguy Luyindula|BU|2001|75|126|46
+Florent Malouda|AG|2003|83|193|33
+Giovane Élber|BU|2003|80|43|17
+John Carew|BU|2005|78|54|17
+Sylvain Wiltord|AD,BU|2004|81|114|32
+Hatem Ben Arfa|AD,AG|2004|79|92|12
+Fred|BU|2005|81|125|43
+Milan Baroš|BU|2007|75|34|7
+Abdul Kader Keïta|AG|2007|77|72|8
+Karim Benzema|BU|2004|86|148|66
+Nilmar|BU|2004|76|46|7
+Bryan Bergougnoux|BU|2001|68|48|6
+Lisandro López|BU|2009|85|168|82
+Michel Bastos|AG|2009|81|142|35
+Bafétimbi Gomis|BU|2009|80|244|95
+Jimmy Briand|AD,BU|2010|77|160|34
+Alexandre Lacazette|BU|2010|85|391|201
+Clinton N'Jie|AD|2012|72|43|8
+Mohamed Yattara|BU|2014|68||
+Rachid Ghezzal|AD|2012|76|120|14
+Claudio Beauvue|BU|2015|68||
+Maxwel Cornet|AG|2015|76|252|51
+Mariano Díaz|BU|2017|79|48|22
+Memphis Depay|AG,BU|2017|85|178|76
+Bertrand Traoré|AD|2017|79|123|33
+Myziane Maolida|BU|2017|70||
+Willem Geubbels|BU|2017|68||
+Amine Gouiri|BU,AG|2017|71||
+Moussa Dembélé|BU|2018|81|172|70
+Martin Terrier|AG|2018|75|77|17
+Karl Toko Ekambi|AG|2020|80|114|38
+Tino Kadewere|AD,BU|2020|75|64|11
+Islam Slimani|BU|2021|74|37|8
+Bradley Barcola|AG|2021|77|47|7
+Malick Fofana|AG|2024|79|66|16
+Ernest Nuamah|AD|2023|76|66|9
+Mama Baldé|AG,AD|2023|74||
+Said Benrahma|AG|2024|77|36|6
+Gift Orban|BU|2024|72||
+Georges Mikautadze|BU|2024|78|49|18
+Wilfried Zaha|AG|2024|74||
+Martín Satriano|BU|2025|73||
+Afonso Moreira|AG|2025|74||
+Keito Nakamura|AG|2026|76||
+Loïs Openda|BU|2026|81||
+Julien Duranville|AG,AD|2025|74||
+Rémi Himbert|AD|2024|66||
+Alejandro Rodriguez|BU|2026|66||
+Kail Boudache|AG|2026|66||
+Christophe Delmotte|MC,MDC|1997|74|222|16
+David Linarès|DC|1996|74|206|5
+Jérémie Bréchet|DG,DC|1998|76|169|0
+Eric Deflandre|DD|2000|76|126|0
+Pierre Laigle|MC|1999|74|107|11
+Marc-Vivien Foé|MDC|2000|80|91|8
+Steve Marlet|AD,BU|2000|78|53|19
+Tony Vairelles|BU,AG|1999|74|98|22
+Milan Biševac|DC|2012|76|103|1
+Henri Bedimo|DG|2013|74|103|1
+Arnold Mvuemba|MC|2012|73|83|3
+Gueïda Fofana|MDC,MC|2011|75|104|9
+César Delgado|AD,MOC|2008|77|101|9
+Sergi Darder|MC|2015|76|73|5
+Jérémy Pied|DD,AD|2010|70|56|4
+Pierre-Alain Frau|BU|2004|73|51|9
+Frédéric Née|BU|2001|70|38|6
+Benoît Pedretti|MC|2005|76|30|2
+Miguel Lopes|DD|2013|70|31|0
+Tetê|AD|2022|76|30|8
+Serge Blanc|DG|1998|70|46|4
+Alain Caveglia|BU|1996|76|137|61
+Frédéric Kanouté|BU|1997|75|55|11
 `;
 // Postes acceptés par case
 const ROLE_OK = {GB:["GB"],DC:["DC"],DD:["DD"],DG:["DG"],MDC:["MDC","MC"],MC:["MC","MDC","MOC"],MOC:["MOC","MC"],
@@ -401,10 +455,11 @@ const F = {
 
 
 const PLAYERS = RAW.trim().split("\n").map(l=>l.split("|")).filter(p=>p[1])
-  .map(([n,p,y])=>({id:slug(n),name:n,pos:p.split(","),year:+y||0}));
-const COACHES = ["Jacques Santini","Paul Le Guen","Gérard Houllier","Alain Perrin","Claude Puel","Rémi Garde","Hubert Fournier","Bruno Génésio","Sylvinho","Rudi Garcia","Peter Bosz","Laurent Blanc","Fabio Grosso","Pierre Sage","Paulo Fonseca","Jorge Maciel","Carlos Vicens"]
-  .map((n,i)=>({id:"coach-"+slug(n),name:n,pos:["COACH"],year:i}));
+  .map(([n,p,y,r,m,g])=>({id:slug(n),name:n,pos:p.split(","),year:+y||0,ovr:+r||70,m:m===""||m==null?null:+m,g:g===""||g==null?null:+g}));
+const COACHES = [["Jacques Santini",80],["Paul Le Guen",85],["Gérard Houllier",84],["Alain Perrin",79],["Claude Puel",78],["Rémi Garde",77],["Hubert Fournier",75],["Bruno Génésio",77],["Sylvinho",68],["Rudi Garcia",78],["Peter Bosz",74],["Laurent Blanc",75],["Fabio Grosso",66],["Pierre Sage",76],["Paulo Fonseca",79],["Jorge Maciel",68],["Carlos Vicens",74]]
+  .map(([n,r],i)=>({id:"coach-"+slug(n),name:n,pos:["COACH"],year:i,ovr:r}));
 const BY_ID = Object.fromEntries([...PLAYERS,...COACHES].map(p=>[p.id,p]));
+BY_ID["sylvain-squillaci"]=BY_ID["sebastien-squillaci"];
 function slug(n){return n.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-");}
 const BENCH_N = 7;
 const NAMES = {thib:"Thib", val:"Val"};
@@ -528,7 +583,7 @@ function renderList(){
   if(!ps.length){L.innerHTML=`<div style="padding:16px;color:var(--mute)">Personne trouvé.</div>`;return;}
   for(const p of ps){
     const d=document.createElement("div"); d.className="pl"+(used.has(p.id)?" used":"");
-    d.innerHTML=`<span class="n">${esc(p.name)}${isCoach?"":`<span class="yr">arrivé en ${p.year<2000?"avant 2000":p.year}</span>`}${used.has(p.id)?`<span class="tk">${takenMap?(takenMap[p.id]===me?"dans ton équipe":"pris par "+NAMES[takenMap[p.id]]):"déjà dans ta compo"}</span>`:""}</span>`+(isCoach?"":`<span class="tags">${p.pos.map(x=>`<span class="tag ${ok.includes(x)?"cur":""}">${x}</span>`).join("")}</span>`);
+    d.innerHTML=`<span class="n">${esc(p.name)}<span class="yr">${isCoach?"":`arrivé en ${p.year<2000?"avant 2000":p.year} · ${p.m!=null?`${p.m} matchs · ${p.g} but${p.g>1?"s":""} · `:""}`}note <b style="color:${p.ovr>=85?"#ffd970":p.ovr>=80?"#7ee2a0":"#c8d6ff"}">${p.ovr}</b></span>${used.has(p.id)?`<span class="tk">${takenMap?(takenMap[p.id]===me?"dans ton équipe":"pris par "+NAMES[takenMap[p.id]]):"déjà dans ta compo"}</span>`:""}</span>`+(isCoach?"":`<span class="tags">${p.pos.map(x=>`<span class="tag ${ok.includes(x)?"cur":""}">${x}</span>`).join("")}</span>`);
     d.onclick=()=>{ if(!used.has(p.id)) setPick(p.id); };
     L.appendChild(d);
   }
@@ -654,8 +709,8 @@ function dRestart(){ const d=dNorm(draft); dWrite({draft:{...dDefault(),format:d
 let dResetArm=false;
 $("#dReset").onclick=e=>{ if(!dResetArm){dResetArm=true;e.target.textContent="Sûr ? Tout le draft sera effacé (re-touche)";setTimeout(()=>{dResetArm=false;e.target.textContent="Recommencer le draft";},3500);return;} dResetArm=false; e.target.textContent="Recommencer le draft"; dRestart(); };
 $("#dNew").onclick=dRestart;
-function setMode(m){ mode=m; $("#mCompo").classList.toggle("on",m==="compo"); $("#mDraft").classList.toggle("on",m==="draft"); $("#viewCompo").style.display=m==="compo"?"":"none"; $("#viewDraft").style.display=m==="draft"?"":"none"; if(m==="draft") renderDraft(); else render(); }
-$("#mCompo").onclick=()=>setMode("compo"); $("#mDraft").onclick=()=>setMode("draft");
+function setMode(m){ mode=m; for(const [b,v,k] of [["#mCompo","#viewCompo","compo"],["#mDraft","#viewDraft","draft"],["#mMatch","#viewMatch","match"]]){ $(b).classList.toggle("on",m===k); $(v).style.display=m===k?"":"none"; } if(m==="draft") renderDraft(); else if(m==="match") renderMatch(); else render(); window.scrollTo(0,0); }
+$("#mCompo").onclick=()=>setMode("compo"); $("#mDraft").onclick=()=>setMode("draft"); $("#mMatch").onclick=()=>setMode("match");
 function renderDraft(){
   if(!me) return;
   const d=draft||dDefault(); const f=FORMATS[d.format]; const N=dNeeded(d); const o=other(me);
@@ -702,6 +757,172 @@ function renderDraft(){
   $("#dReset").style.display=d.status==="done"?"none":"block";
 }
 
+// ---------- Simulation de match ----------
+const LINE={GB:"gk",DC:"def",DD:"def",DG:"def",PG:"def",PD:"def",MDC:"mid",MC:"mid",MG:"mid",MD:"mid",MOC:"mo",AG:"att",AD:"att",BU:"att"};
+let match=null, matches=[], selA="cur", selB="cur", mTimer=null, mSkip=null, lastMatchId=null;
+function fit(p,role){
+  if(p.pos.includes(role)) return 1;
+  const ok=ROLE_OK[role]||[];
+  if(ok.includes(p.pos[0])) return .95;
+  if(p.pos.some(x=>ok.includes(x))) return .9;
+  if(role==="GB"||p.pos[0]==="GB") return .4;
+  return .74;
+}
+const FIN_DEF={BU:.3,AG:.18,AD:.18,MOC:.15,MC:.07,MG:.12,MD:.12,MDC:.04,DC:.04,DD:.03,DG:.03,PG:.04,PD:.04,GB:0};
+function finOf(p,role){ if(p.pos[0]==="GB") return 0; if(p.m!=null&&p.m>=30) return p.g/p.m; return FIN_DEF[p.pos[0]]??.08; }
+function teamOptions(w){
+  const c=compos[w]; const o=[{key:"cur",label:"11 type actuel",get:()=>c}];
+  for(const l of c.library) o.push({key:"lib:"+l.id,label:"💾 "+l.name,get:()=>l});
+  if(draft&&dCount(draft.teams[w])>0) o.push({key:"draft",label:"⚡ Équipe du draft",get:()=>({formation:draft.form[w],slots:draft.teams[w].slots,bench:draft.teams[w].bench,coach:draft.teams[w].coach})});
+  return o;
+}
+function pickTeam(w,key){ const o=teamOptions(w); return (o.find(x=>x.key===key)||o[0]); }
+function strength(c){
+  const form=F[c.formation]||F["4-3-3"];
+  const lineup=form.map(([role],i)=>{ const p=BY_ID[(c.slots||{})[i]]; return {role,pid:p?p.id:null,eff:p?(p.ovr+Math.min(3,(p.m||0)/150))*fit(p,role):35,fin:p?finOf(p,role):0}; });
+  const acc={gk:[],def:[],mid:[],att:[]};
+  for(const l of lineup){ const g=LINE[l.role]||"mid"; if(g==="mo"){acc.mid.push(l.eff);acc.att.push(l.eff);} else acc[g].push(l.eff); }
+  const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:35;
+  const co=BY_ID[c.coach]; const cb=co?(co.ovr-75)/4:-2;
+  const r={gk:avg(acc.gk)+cb,def:avg(acc.def)+cb,mid:avg(acc.mid)+cb,att:avg(acc.att)+cb,coach:co?co.ovr:0,lineup,coachId:co?co.id:null};
+  r.global=Math.round(r.gk*.12+r.def*.3+r.mid*.3+r.att*.28);
+  return r;
+}
+function wpick(arr,wf){ let t=0; const ws=arr.map(x=>{const w=Math.max(0,wf(x));t+=w;return w;}); if(t<=0) return null; let r=Math.random()*t; for(let i=0;i<arr.length;i++){ r-=ws[i]; if(r<=0) return arr[i]; } return arr[arr.length-1]; }
+const SCORE_W={BU:5,AG:3,AD:3,MOC:2.6,MC:1.1,MG:1.6,MD:1.6,MDC:.45,DC:.35,DD:.3,DG:.3,PG:.5,PD:.5,GB:0};
+const ASSIST_W={MOC:4,AG:3,AD:3,MC:2.4,MG:2.6,MD:2.6,BU:1.6,DD:1.4,DG:1.4,PG:1.8,PD:1.8,MDC:.9,DC:.3,GB:.05};
+const CARD_W={DC:3,MDC:3,DD:2,DG:2,PG:2,PD:2,MC:1.5,MG:1,MD:1,MOC:.8,AG:.7,AD:.7,BU:.8,GB:.2};
+function simulate(A,B){
+  const S=[A,B]; const red=[0,0]; const ev=[]; const shots=[0,0], onT=[0,0], score=[0,0];
+  const stats=S.map(s=>Object.fromEntries(s.lineup.filter(l=>l.pid).map(l=>[l.pid,{g:0,a:0,sv:0,y:0,r:0}])));
+  const sentOff=[new Set(),new Set()];
+  const midShare=A.mid/(A.mid+B.mid);
+  const xg=[0,1].map(t=>{ const me=S[t], op=S[1-t]; const atk=me.att*.62+me.mid*.38, def=op.def*.7+op.gk*.3; const ms=t===0?midShare:1-midShare;
+    return Math.min(3.2,Math.max(.3,1.3*Math.exp((atk-def)/20)*(.75+.5*ms))); });
+  const extra=2+Math.floor(Math.random()*4);
+  const players=t=>S[t].lineup.filter(l=>l.pid&&!sentOff[t].has(l.pid));
+  for(let m=1;m<=90+extra;m++){
+    for(const t of [0,1]){
+      const mult=Math.pow(.8,red[t])/Math.pow(.88,red[1-t]);
+      if(Math.random()<xg[t]*8.5/(90+extra)*mult){
+        shots[t]++;
+        const sh=wpick(players(t),l=>((SCORE_W[l.role]||.5)*.5+l.fin*12)*Math.pow(l.eff/80,2));
+        if(!sh) continue;
+        const gkq=S[1-t].gk; const pGoal=Math.min(.3,.118*Math.pow(sh.eff/78,1.2)*Math.pow(78/Math.max(45,gkq),.8)*Math.min(1.35,Math.max(.75,.75+sh.fin*1.1)));
+        const onTarget=Math.random()<.42;
+        if(onTarget) onT[t]++;
+        if(onTarget && Math.random()<pGoal/.42){
+          score[t]++; stats[t][sh.pid].g++;
+          let as=null; if(Math.random()<.78){ const c=wpick(players(t).filter(l=>l.pid!==sh.pid),l=>(ASSIST_W[l.role]||.5)*Math.pow(l.eff/80,2)); if(c){as=c.pid;stats[t][as].a++;} }
+          const fk = sh.pid==="juninho" && Math.random()<.55;
+          ev.push({m,t,k:"goal",p:sh.pid,a:fk?null:as,fk});
+        } else if(onTarget){
+          const g=S[1-t].lineup.find(l=>l.role==="GB"&&l.pid&&!sentOff[1-t].has(l.pid));
+          if(g){ stats[1-t][g.pid].sv++; if(Math.random()<.45) ev.push({m,t:1-t,k:"save",p:g.pid,s:sh.pid}); }
+        } else if(Math.random()<.18) ev.push({m,t,k:"miss",p:sh.pid});
+      }
+      if(Math.random()<.028){ const c=wpick(players(t),l=>CARD_W[l.role]||1); if(c){ const st=stats[t][c.pid];
+        if(st.y===1&&Math.random()<.25){ st.y=2; st.r=1; red[t]++; sentOff[t].add(c.pid); ev.push({m,t,k:"red",p:c.pid,second:true}); }
+        else if(st.y===0){ st.y=1; ev.push({m,t,k:"yellow",p:c.pid}); } } }
+      if(Math.random()<.0018){ const c=wpick(players(t),l=>CARD_W[l.role]||1); if(c&&!stats[t][c.pid].r){ stats[t][c.pid].r=1; red[t]++; sentOff[t].add(c.pid); ev.push({m,t,k:"red",p:c.pid}); } }
+    }
+    if(m===45) ev.push({m:45.5,t:-1,k:"ht"});
+  }
+  ev.push({m:90+extra+.5,t:-1,k:"ft"});
+  let poss=Math.round(50+(A.mid-B.mid)*1.6+(Math.random()*6-3)); poss=Math.min(72,Math.max(28,poss));
+  // notes /10
+  const notes=[0,1].map(t=>{ const o={}; const conceded=score[1-t]; const res=Math.sign(score[t]-score[1-t]);
+    for(const l of S[t].lineup){ if(!l.pid) continue; const st=stats[t][l.pid]; const g=LINE[l.role];
+      let n=6+(l.eff-75)/12+st.g*1.1+st.a*.6+st.sv*.25+res*.3-st.y*.2-st.r*1.5+(Math.random()*.8-.4);
+      if(g==="gk"||g==="def") n-=conceded*.25; if((g==="gk"||g==="def")&&conceded===0) n+=.5;
+      o[l.pid]=Math.round(Math.min(10,Math.max(3,n))*10)/10; }
+    return o; });
+  let motm=null,best=-1; for(const t of [0,1]) for(const [pid,n] of Object.entries(notes[t])) if(n>best){best=n;motm={t,pid};}
+  return {ev,score,shots,onT,poss,notes,motm,len:90+extra,xg:xg.map(x=>Math.round(x*100)/100)};
+}
+const MSPEED=280; // ms par minute de match
+function matchMinute(){ if(!match) return 0; if(mSkip===match.id) return 999; return (Date.now()-match.at)/MSPEED; }
+async function launchMatch(){
+  if(!ref){toast("Pas connecté",true);return;}
+  const tA=pickTeam("thib",selA), tB=pickTeam("val",selB);
+  const cA=tA.get(), cB=tB.get();
+  const A=strength(cA), B=strength(cB);
+  if(A.lineup.filter(l=>l.pid).length<7||B.lineup.filter(l=>l.pid).length<7){ toast("Il faut au moins 7 joueurs dans chaque équipe",true); return; }
+  const r=simulate(A,B);
+  const snap=(c,s,label)=>({label,formation:c.formation,lineup:s.lineup.map(l=>({role:l.role,pid:l.pid})),coach:s.coachId,global:s.global});
+  const m={id:Date.now().toString(36),at:Date.now()+1500,by:me,teams:[snap(cA,A,tA.label),snap(cB,B,tB.label)],...r};
+  const hist=[{id:m.id,at:m.at,score:r.score,labels:[tA.label,tB.label]},...matches].slice(0,30);
+  try{ await ref.update({match:m,matches:hist}); }catch(e){ try{ await ref.set({match:m,matches:hist},{merge:true}); }catch(e2){ toast("Pas de connexion, réessaie",true); } }
+}
+function onMatchData(m,h){
+  matches=Array.isArray(h)?h:[];
+  const isNew=m&&m.id!==lastMatchId;
+  if(isNew&&lastMatchId!==null&&m.by!==me){ toast(`🏟️ ${NAMES[m.by]} a lancé un match !`); }
+  if(m) lastMatchId=m.id; else lastMatchId=lastMatchId||"";
+  match=m||null;
+  if(mode==="match") renderMatch();
+}
+const pn=pid=>{const p=BY_ID[pid];return p?short(p.name):"?";};
+const TEAMN=["Thib","Val"];
+function evText(e){
+  const T=e.t>=0?TEAMN[e.t]:"";
+  if(e.k==="goal") return `⚽ <b>BUT pour ${T} !</b> ${esc(pn(e.p))}${e.fk?" sur coup franc 🎯":""}${e.a?` <span class="mute">(passe de ${esc(pn(e.a))})</span>`:""}`;
+  if(e.k==="save") return `🧤 Arrêt de ${esc(pn(e.p))} devant ${esc(pn(e.s))}`;
+  if(e.k==="miss") return `😬 ${esc(pn(e.p))} (${T}) manque le cadre`;
+  if(e.k==="yellow") return `🟨 Carton jaune pour ${esc(pn(e.p))} (${T})`;
+  if(e.k==="red") return `🟥 ${e.second?"Deuxième jaune, ":""}${esc(pn(e.p))} (${T}) est expulsé !`;
+  if(e.k==="ht") return `⏸️ Mi-temps`;
+  if(e.k==="ft") return `🏁 Coup de sifflet final`;
+  return "";
+}
+function bar(label,a,b,raw){ const w=raw?(a/((a+b)||1)*100):Math.min(92,Math.max(8,50+(a-b)*2.5)); return `<div class="sbar"><div class="sv">${Math.round(a)}</div><div class="sl"><span>${label}</span><div class="track"><i style="width:${w}%"></i></div></div><div class="sv">${Math.round(b)}</div></div>`; }
+function renderMatch(){
+  if(!me) return;
+  // setup
+  const oa=teamOptions("thib"), ob=teamOptions("val");
+  if(!oa.some(o=>o.key===selA)) selA="cur"; if(!ob.some(o=>o.key===selB)) selB="cur";
+  const A=strength(pickTeam("thib",selA).get()), B=strength(pickTeam("val",selB).get());
+  const live=match&&matchMinute()<match.len+1&&matchMinute()>=-6;
+  $("#mSetup").innerHTML=`<h3>🏟️ Simulation de match</h3>
+   <div class="field"><span>Équipe de Thib</span><select id="selA">${oa.map(o=>`<option value="${esc(o.key)}" ${o.key===selA?"selected":""}>${esc(o.label)}</option>`).join("")}</select></div>
+   <div class="field"><span>Équipe de Val</span><select id="selB">${ob.map(o=>`<option value="${esc(o.key)}" ${o.key===selB?"selected":""}>${esc(o.label)}</option>`).join("")}</select></div>
+   <div class="vs"><b>Thib</b><span>Force</span><b>Val</b></div>
+   ${bar("Global",A.global,B.global)}${bar("Attaque",A.att,B.att)}${bar("Milieu",A.mid,B.mid)}${bar("Défense",A.def,B.def)}${bar("Gardien",A.gk,B.gk)}${bar("Coach",A.coach,B.coach)}
+   <button class="btn big" id="mGo" ${live?"disabled":""}>${live?"Match en cours…":"▶️ Lancer le match"}</button>
+   <div class="rules" style="font-size:12px;margin-bottom:0">Le résultat dépend des notes des joueurs, de leurs vraies stats à l'OL (matchs joués = expérience, ratio buts/match = efficacité devant le but), de leur placement (un joueur hors de son poste perd du niveau) et de l'entraîneur… avec une part de hasard, comme au vrai foot.</div>`;
+  $("#selA").onchange=e=>{selA=e.target.value;renderMatch();};
+  $("#selB").onchange=e=>{selB=e.target.value;renderMatch();};
+  $("#mGo").onclick=launchMatch;
+  renderBoard();
+  // historique
+  const w={thib:0,val:0,n:0}; for(const h of matches){ const [a,b]=h.score; if(a>b)w.thib++; else if(b>a)w.val++; else w.n++; }
+  $("#mHist").innerHTML=`<h3>Bilan <small>${matches.length} match${matches.length>1?"s":""}</small></h3>
+    <div class="tally"><div><b>${w.thib}</b>Thib</div><div><b>${w.n}</b>Nuls</div><div><b>${w.val}</b>Val</div></div>
+    ${matches.slice(0,10).map(h=>`<div class="logrow"><span style="flex:1">${esc(h.labels[0])}</span><b style="min-width:auto">${h.score[0]} - ${h.score[1]}</b><span style="flex:1;text-align:right">${esc(h.labels[1])}</span></div>`).join("")}`;
+}
+function renderBoard(){
+  const el=$("#mBoard");
+  if(!match){ el.style.display="none"; clearInterval(mTimer); mTimer=null; return; }
+  el.style.display="";
+  const cur=matchMinute(); const done=cur>=match.len+.5;
+  const shown=match.ev.filter(e=>e.m<=cur);
+  const sc=[0,0]; shown.forEach(e=>{if(e.k==="goal")sc[e.t]++;});
+  const clock= cur<0?"Coup d'envoi…": done?"Terminé": cur>=45&&cur<45.5?"45'":`${Math.min(Math.floor(cur)||1,match.len)}'`;
+  let h=`<div class="score"><div class="tm">Thib<small>${esc(match.teams[0].label)}</small></div><div class="sc">${sc[0]} - ${sc[1]}<small>${clock}</small></div><div class="tm">Val<small>${esc(match.teams[1].label)}</small></div></div>`;
+  h+=`<div class="feed">${shown.slice().reverse().map(e=>`<div class="ev ${e.k}"><b>${e.k==="ht"||e.k==="ft"?"":Math.floor(e.m)+"'"}</b><span>${evText(e)}</span></div>`).join("")||`<div class="ev"><span class="mute">Les joueurs entrent sur la pelouse…</span></div>`}</div>`;
+  if(!done) h+=`<button class="btn ghost big" id="mSkipBtn">⏩ Voir le résultat</button>`;
+  else{
+    const M=match;
+    h+=`<div class="vs" style="margin-top:12px"><b>Thib</b><span>Stats</span><b>Val</b></div>`+bar("Possession %",M.poss,100-M.poss,1)+bar("Tirs",M.shots[0],M.shots[1],1)+bar("Tirs cadrés",M.onT[0],M.onT[1],1);
+    const mo=M.motm; if(mo) h+=`<div class="motm">⭐ Homme du match : <b>${esc(BY_ID[mo.pid]?.name||"?")}</b> (${TEAMN[mo.t]}) · ${M.notes[mo.t][mo.pid]}/10</div>`;
+    h+=`<div class="notes">${[0,1].map(t=>`<div><h4>Notes ${TEAMN[t]}</h4>${M.teams[t].lineup.filter(l=>l.pid).map(l=>`<div class="nr"><span>${l.role} ${esc(pn(l.pid))}</span><b class="${M.notes[t][l.pid]>=7.5?"hi":M.notes[t][l.pid]<5.5?"lo":""}">${M.notes[t][l.pid]}</b></div>`).join("")}</div>`).join("")}</div>`;
+  }
+  el.innerHTML=h;
+  const sk=$("#mSkipBtn"); if(sk) sk.onclick=()=>{mSkip=match.id;renderMatch();};
+  if(!done&&!mTimer) mTimer=setInterval(()=>{ if(mode!=="match") return; const d=matchMinute()>=match.len+.5; renderBoard(); if(d){clearInterval(mTimer);mTimer=null;renderMatch();} },MSPEED);
+  if(done&&mTimer){clearInterval(mTimer);mTimer=null;}
+}
+
 // ---------- Synchro Firebase ----------
 let ref=null, saveT=null, dirty=false;
 function setSync(t,cls){ const s=$("#sync"); s.textContent=t; s.className="sync "+(cls||""); }
@@ -723,6 +944,7 @@ try{
       for(const w of ["thib","val"]){ if(w===me && dirty) continue; compos[w]=norm(d[w]); }
       cache(); setSync("✓ Synchronisé","ok"); render();
       onDraftData(d.draft);
+      onMatchData(d.match,d.matches);
       if(dirty) push();
     }, ()=>setSync("⚠️ Synchro coupée — recharge la page","err"));
   }).catch(()=>setSync("⚠️ Pas de connexion — compo gardée sur ce téléphone","err"));
