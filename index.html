@@ -2745,13 +2745,15 @@ function clubTeam(club){
 const clubAvg=club=>{ const L=CLUB_XI[club]; return L?Math.round(L.slice(1).reduce((a,x)=>a+ +x.split("|")[1],0)/11):0; };
 
 const careerOpp=i=>clubTeam(CAREER[i].n)||genTeam(CAREER[i].r[0],CAREER[i].r[1],rng(hashS("carriere"+i)));
+const CAREER_MAX=5; // matchs de carrière par jour
 function careerState(){ const c=W(); return c.career=c.career||{lvl:0,best:0}; }
+function careerLeft(){ const k=careerState(); if(k.day!==DAYK()){ k.day=DAYK(); k.n=0; } return CAREER_MAX-(k.n||0); }
 async function careerPlay(){
-  const k=careerState(); if(k.lvl>=CAREER.length) return; const i=k.lvl, O=CAREER[i];
+  const k=careerState(); if(k.lvl>=CAREER.length) return; if(careerLeft()<=0){ toast(`Plus de match de carrière aujourd'hui (${CAREER_MAX}/jour) : reviens demain !`,true); return; } const i=k.lvl, O=CAREER[i];
   const mine=W(), A=strength(mine,me,true); if(!enough(A)){ toast("Il te faut au moins 7 joueurs possédés dans ton 11 type",true); return; }
   const oc=careerOpp(i), B=strength(oc,null,false);
   const m=buildMatch([{c:mine,S:A,label:"11 type",owner:me,name:NAMES[me]},{c:oc,S:B,label:O.comp,owner:CPU,name:O.n}]);
-  const [a,b]=m.score;
+  const [a,b]=m.score; k.n=(k.n||0)+1;
   if(a>b){ k.lvl=i+1; if(i+1>k.best){ k.best=i+1; later({coins:40+15*i},`Carrière : victoire contre ${O.n}`,m); if(CAREER_END[i]) later(CAREER_END[i],`🏆 ${O.comp} remportée`,m); if(i===CAREER.length-1) post(`🧗 ${NAMES[me]} a terminé la Carrière en battant le Real Madrid !`); } }
   save(); saveReplay(m); addHist(histOf(m,{nr:1,mode:"carriere"})); playLocal(m);
 }
@@ -2759,10 +2761,10 @@ function careerHTML(){
   const k=careerState(); const i=k.lvl; const fin=i>=CAREER.length;
   const comps=[...new Set(CAREER.map(x=>x.comp))];
   return `<h3>🧗 Carrière solo <small>${Math.min(i,CAREER.length)}/${CAREER.length}</small></h3>
-  <div class="rules" style="font-size:12px;margin-top:0">Ton 11 type (cartes possédées) affronte le vrai 11 de clubs de plus en plus forts. Gagne pour passer au suivant (nul ou défaite : tu rejoues). Pièces à chaque première victoire, pack à la fin de chaque compétition.</div>
+  <div class="rules" style="font-size:12px;margin-top:0">Ton 11 type (cartes possédées) affronte le vrai 11 de clubs de plus en plus forts. Gagne pour passer au suivant (nul ou défaite : tu rejoues). Ta progression est gardée, mais tu as ${CAREER_MAX} matchs par jour. Pièces à chaque première victoire, pack à la fin de chaque compétition.</div>
   ${comps.map(cp=>`<h4>${cp}</h4><div class="car">${CAREER.map((x,j)=>x.comp!==cp?"":`<span class="${j<i?"ok":j===i?"cur":""}" title="${esc(x.n)}">${j<i?"✅":j===i?"⚔️":"🔒"} ${esc(x.n)} <small style="opacity:.75">${clubAvg(x.n)}</small></span>`).join("")}</div>`).join("")}
   ${fin?`<div class="motm">🏆 Carrière terminée ! Tu as battu le Real Madrid.</div><button class="btn ghost big" id="jCarReset">🔁 Recommencer (sans récompenses déjà gagnées)</button>`
-   :`<button class="btn big" id="jCarGo">▶️ Affronter ${esc(CAREER[i].n)}</button>${(()=>{ const ta=xiAvg(me).avg, oa=clubAvg(CAREER[i].n); return `<div class="vsavg"><div><small>Ton 11</small><b>${ta||"–"}</b></div><span>VS</span><div><small>${esc(CAREER[i].n)}</small><b>${oa}</b></div></div><div class="mute" style="font-size:12px;text-align:center">${ta?cmpTag(ta,oa):"Complète ton 11 type"}</div>`; })()}`}`;
+   :careerLeft()<=0?`<div class="motm">⏳ Tes ${CAREER_MAX} matchs de carrière du jour sont joués. Reviens demain pour affronter ${esc(CAREER[i].n)} !</div>`:`<button class="btn big" id="jCarGo">▶️ Affronter ${esc(CAREER[i].n)} <small style="opacity:.8">(${careerLeft()}/${CAREER_MAX} aujourd'hui)</small></button>${(()=>{ const ta=xiAvg(me).avg, oa=clubAvg(CAREER[i].n); return `<div class="vsavg"><div><small>Ton 11</small><b>${ta||"–"}</b></div><span>VS</span><div><small>${esc(CAREER[i].n)}</small><b>${oa}</b></div></div><div class="mute" style="font-size:12px;text-align:center">${ta?cmpTag(ta,oa):"Complète ton 11 type"}</div>`; })()}`}`;
 }
 
 // ---------- 🏆 Coupe à élimination ----------
@@ -3132,7 +3134,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-19v";
+const APP_V="2026-11-20a";
 let updShown=false;
 async function checkUpdate(){ if(updShown) return; try{ const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const APP_V="([^"]+)"/); if(m&&m[1]!==APP_V){
