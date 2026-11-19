@@ -41,6 +41,10 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
 .empty .shirt b{background:none;color:#fff}
 .nm{margin-top:3px;font-size:11.5px;font-weight:700;line-height:1.15;text-shadow:0 1px 3px #000;background:#0009;border-radius:6px;padding:2px 4px;display:inline-block;max-width:84px}
 .ro{cursor:default}
+.save{display:block;width:100%;padding:14px;font-size:16px;margin:4px 0 2px;border-radius:12px}
+.save.done{background:#1f8a4c}
+.saved{text-align:center;font-size:12px;color:var(--mute);margin-bottom:4px}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#1f8a4c;color:#fff;padding:12px 18px;border-radius:12px;font-weight:700;z-index:30;box-shadow:0 6px 20px #0008;display:none}
 .count{font-size:13px;color:var(--mute);margin:8px 4px}
 .section{margin-top:14px;background:var(--carte);border-radius:14px;padding:12px}
 .section h3{margin:0 0 10px;font-size:15px;display:flex;justify-content:space-between}
@@ -123,11 +127,14 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
     </svg>
   </div>
   <div class="count" id="count"></div>
+  <button class="btn save" id="saveBtn">💾 Sauvegarder la compo</button>
+  <div class="saved" id="savedInfo"></div>
   <div class="section"><h3>Remplaçants <small id="benchCount"></small></h3><div class="bench" id="bench"></div></div>
   <div class="section"><h3>Entraîneur</h3><div class="coach" id="coach"></div></div>
   <div class="section" id="compare"></div>
 </div>
 
+<div class="toast" id="toast"></div>
 <div class="veil" id="veil"></div>
 <div class="sheet" id="sheet">
   <div class="sh-head">
@@ -356,8 +363,8 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"
 const short = n => { const parts=n.split(" "); return parts.length>1 && n.length>13 ? parts.slice(1).join(" ") : n; };
 let me=null, viewing=null, editing=null, chip=null;
 let compos={thib:blank(), val:blank()};
-function blank(){return {formation:"4-3-3",slots:{},bench:{},coach:null};}
-function norm(c){c=c||{};return {formation:F[c.formation]?c.formation:"4-3-3",slots:c.slots||{},bench:c.bench||{},coach:c.coach||null};}
+function blank(){return {formation:"4-3-3",slots:{},bench:{},coach:null,savedAt:null};}
+function norm(c){c=c||{};return {formation:F[c.formation]?c.formation:"4-3-3",slots:c.slots||{},bench:c.bench||{},coach:c.coach||null,savedAt:c.savedAt||null};}
 const other = w => w==="thib"?"val":"thib";
 try{ const l=JSON.parse(localStorage.getItem("onze-ol-cache")||"null"); if(l){compos.thib=norm(l.thib);compos.val=norm(l.val);} }catch(e){}
 
@@ -400,6 +407,9 @@ function render(){
   const bench=$("#bench"); bench.innerHTML="";
   for(let i=0;i<BENCH_N;i++){ const pid=c.bench[i]; const p=pid&&BY_ID[pid]; bench.appendChild(slotBtn("bench",i,p?p.pos[0]:String(12+i),pid,mine)); }
   $("#benchCount").textContent=`${Object.values(c.bench).filter(Boolean).length}/${BENCH_N}`;
+  $("#saveBtn").style.display=mine?"block":"none";
+  const sv=c.savedAt?new Date(c.savedAt):null;
+  $("#savedInfo").textContent= sv ? (mine?"Dernière sauvegarde":"Sauvegardée")+" le "+sv.toLocaleDateString("fr-FR",{day:"numeric",month:"short"})+" à "+sv.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}) : (mine?"Pas encore sauvegardée":"Pas encore sauvegardée par "+NAMES[viewing]);
   const co=$("#coach"); co.innerHTML=""; co.appendChild(slotBtn("coach",0,"COACH",c.coach,mine));
   renderCompare();
 }
@@ -481,17 +491,27 @@ let resetArm=false;
 $("#reset").onclick=e=>{ if(!resetArm){resetArm=true;e.target.textContent="Sûr ? Re-touche";setTimeout(()=>{resetArm=false;e.target.textContent="Tout effacer";},3000);return;}
   resetArm=false;e.target.textContent="Tout effacer"; compos[me]=blank(); render(); save(); };
 
+function toast(t,bad){ const el=$("#toast"); el.textContent=t; el.style.background=bad?"#b4432b":"#1f8a4c"; el.style.display="block"; clearTimeout(toast.t); toast.t=setTimeout(()=>el.style.display="none",2500); }
+$("#saveBtn").onclick=async()=>{
+  const b=$("#saveBtn"); b.disabled=true; b.textContent="Sauvegarde…";
+  compos[me].savedAt=Date.now(); cache(); clearTimeout(saveT); dirty=true;
+  const ok=await push();
+  b.disabled=false;
+  if(ok){ b.textContent="✓ Compo sauvegardée"; b.classList.add("done"); toast("Compo sauvegardée ✓"); setTimeout(()=>{b.textContent="💾 Sauvegarder la compo";b.classList.remove("done");},2500); }
+  else { b.textContent="💾 Sauvegarder la compo"; toast("Pas de connexion : gardée sur ce téléphone, réessaie",true); }
+  render();
+};
 // ---------- Synchro Firebase ----------
 let ref=null, saveT=null, dirty=false;
 function setSync(t,cls){ const s=$("#sync"); s.textContent=t; s.className="sync "+(cls||""); }
 function cache(){ try{localStorage.setItem("onze-ol-cache",JSON.stringify(compos));}catch(e){} }
 function save(){ cache(); dirty=true; clearTimeout(saveT); saveT=setTimeout(push,400); }
 async function push(){
-  if(!ref||!me){ return; }
+  if(!ref||!me){ return false; }
   const data={...compos[me], updated:Date.now()};
   try{ await ref.update({[me]:data}); }
-  catch(e){ try{ await ref.set({[me]:data},{merge:true}); }catch(e2){ setSync("⚠️ Enregistrement impossible, réessaie","err"); return; } }
-  dirty=false; setSync("✓ Synchronisé","ok");
+  catch(e){ try{ await ref.set({[me]:data},{merge:true}); }catch(e2){ setSync("⚠️ Enregistrement impossible, réessaie","err"); return false; } }
+  dirty=false; setSync("✓ Synchronisé","ok"); return true;
 }
 try{
   firebase.initializeApp(FIREBASE_CONFIG);
