@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b1530">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="11 type OL">
+<title>Notre 11 type OL</title>
+<style>
+:root{--bleu:#13306b;--bleu2:#1d4aa0;--rouge:#d3122d;--fond:#0b1530;--carte:#16244a;--txt:#eef2ff;--mute:#9fb0d8}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--fond);color:var(--txt);padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+header{padding:14px 16px 6px;text-align:center;position:relative}
+h1{margin:0;font-size:22px;letter-spacing:.5px}
+h1 span{color:var(--rouge)}
+.sub{color:var(--mute);font-size:13px;margin-top:4px}
+.who{position:absolute;right:12px;top:14px;font-size:12px;color:var(--mute);background:var(--carte);border:1px solid #2b3c6e;border-radius:999px;padding:5px 10px;cursor:pointer}
+.sync{font-size:11px;color:var(--mute);text-align:center;margin-top:2px}
+.sync.ok{color:#7ee2a0}.sync.err{color:#ffb38a}
+.tabs{display:flex;gap:8px;padding:8px 16px}
+.tab{flex:1;padding:10px;border-radius:12px;border:1px solid #2b3c6e;background:var(--carte);color:var(--txt);font-weight:700;font-size:15px;cursor:pointer}
+.tab.on{background:var(--bleu2);border-color:#5d86e0}
+.tab small{display:block;font-weight:400;color:var(--mute);font-size:11px}
+.tab.on small{color:#d6e2ff}
+.wrap{max-width:560px;margin:0 auto;padding:0 12px 40px}
+.bar{display:flex;gap:8px;align-items:center;margin:8px 4px;flex-wrap:wrap}
+.bar label{font-size:13px;color:var(--mute)}
+select,input[type=search]{background:var(--carte);color:var(--txt);border:1px solid #2b3c6e;border-radius:10px;padding:9px 10px;font-size:16px}
+.btn{background:var(--rouge);color:#fff;border:0;border-radius:10px;padding:9px 12px;font-weight:600;font-size:14px;cursor:pointer}
+.btn.ghost{background:transparent;border:1px solid #2b3c6e;color:var(--mute)}
+.pitch{position:relative;width:100%;aspect-ratio:68/100;border-radius:14px;overflow:hidden;margin-top:6px;
+ background:repeating-linear-gradient(180deg,#1f7a3a 0 10%,#1b6e34 10% 20%);box-shadow:0 6px 24px #0008}
+.pitch .lines{position:absolute;inset:0;pointer-events:none}
+.slot{position:absolute;transform:translate(-50%,-50%);width:84px;text-align:center;cursor:pointer;border:0;background:none;padding:0;color:#fff;font:inherit}
+.shirt{width:44px;height:44px;margin:0 auto;border-radius:50%;background:#fff;border:3px solid var(--bleu2);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;color:var(--bleu);box-shadow:0 2px 6px #0007;position:relative;overflow:hidden}
+.shirt::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent 40%,var(--rouge) 40% 50%,var(--bleu2) 50% 60%,transparent 60%);opacity:.9}
+.shirt b{position:relative;background:#fff;border-radius:6px;padding:0 3px}
+.empty .shirt{background:#ffffff22;border:2px dashed #ffffffaa;color:#fff}
+.empty .shirt::before{display:none}
+.empty .shirt b{background:none;color:#fff}
+.nm{margin-top:3px;font-size:11.5px;font-weight:700;line-height:1.15;text-shadow:0 1px 3px #000;background:#0009;border-radius:6px;padding:2px 4px;display:inline-block;max-width:84px}
+.ro{cursor:default}
+.count{font-size:13px;color:var(--mute);margin:8px 4px}
+.section{margin-top:14px;background:var(--carte);border-radius:14px;padding:12px}
+.section h3{margin:0 0 10px;font-size:15px;display:flex;justify-content:space-between}
+.section h3 small{color:var(--mute);font-weight:400}
+.bench{display:grid;grid-template-columns:repeat(4,1fr);gap:8px 4px}
+.bench .slot,.coach .slot{position:static;transform:none;width:auto}
+.bench .nm,.coach .nm{background:#0006}
+.coach{display:flex;justify-content:center}
+.coach .shirt{background:#1b2a55;border-color:#c9a227;color:#ffd970}
+.coach .shirt::before{display:none}
+.coach .shirt b{background:none;color:#ffd970}
+.coach .nm{max-width:160px;font-size:13px}
+.crow{display:grid;grid-template-columns:44px 1fr 1fr;gap:6px;font-size:13px;padding:6px 0;border-top:1px solid #24345f}
+.crow.head{font-weight:700;border-top:0;color:var(--mute)}
+.crow .p{color:var(--mute);font-weight:700}
+.same{color:#7ee2a0;font-weight:700}
+/* sheet */
+.veil{position:fixed;inset:0;background:#000a;display:none;z-index:10}
+.sheet{position:fixed;left:0;right:0;bottom:0;max-height:85vh;background:#101c3d;border-radius:18px 18px 0 0;z-index:11;display:none;flex-direction:column;max-width:560px;margin:0 auto;padding-bottom:env(safe-area-inset-bottom)}
+.sheet.open,.veil.open{display:flex}
+.sh-head{padding:14px 16px 8px;border-bottom:1px solid #24345f}
+.sh-head h2{margin:0 0 8px;font-size:17px}
+.sh-head .row{display:flex;gap:8px;align-items:center}
+.sh-head input{flex:1;min-width:0}
+.chips{display:flex;gap:6px;margin-top:8px;overflow-x:auto;padding-bottom:2px}
+.chip{flex:none;font-size:12px;font-weight:700;padding:5px 9px;border-radius:999px;border:1px solid #2b3c6e;background:transparent;color:var(--mute);cursor:pointer}
+.chip.on{background:var(--bleu2);color:#fff;border-color:#5d86e0}
+.list{overflow-y:auto;padding:6px 8px 20px}
+.pl{display:flex;justify-content:space-between;align-items:center;padding:11px 10px;border-radius:10px;cursor:pointer;gap:8px}
+.pl:active{background:#1c2c5c}
+.pl .n{font-weight:600;font-size:15px}
+.pl .tags{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+.tag{font-size:10.5px;padding:2px 6px;border-radius:6px;background:#24345f;color:#c8d6ff;font-weight:700}
+.tag.cur{background:var(--rouge);color:#fff}
+.pl.used{opacity:.4}
+.pl.used .n::after{content:" · déjà pris";font-weight:400;font-size:12px;color:var(--mute)}
+/* accueil */
+#start{position:fixed;inset:0;z-index:20;background:radial-gradient(circle at 50% 20%,#1d4aa0 0,#0b1530 70%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}
+#start h1{font-size:30px}
+#start p{color:#c8d6ff;margin:8px 0 28px}
+.pick{display:flex;gap:16px;width:100%;max-width:420px}
+.pick button{flex:1;padding:28px 10px;border-radius:18px;border:2px solid #ffffff33;background:#ffffff14;color:#fff;font-size:24px;font-weight:800;cursor:pointer}
+.pick button span{display:block;font-size:13px;font-weight:400;color:#c8d6ff;margin-top:6px}
+.pick button:active{background:var(--rouge)}
+</style>
+</head>
+<body>
+<div id="start">
+  <h1>Notre 11 type <span style="color:var(--rouge)">OL</span></h1>
+  <p>Qui joue ?</p>
+  <div class="pick">
+    <button data-me="thib">Thib<span>2e de la fratrie</span></button>
+    <button data-me="val">Val<span>le grand frère</span></button>
+  </div>
+</div>
+
+<header>
+  <button class="who" id="who">Changer</button>
+  <h1>Notre 11 type <span>OL</span></h1>
+  <div class="sub">Tous les joueurs passés par Lyon depuis 2000</div>
+  <div class="sync" id="sync">Connexion…</div>
+</header>
+<div class="tabs" id="tabs"></div>
+<div class="wrap">
+  <div class="bar" id="bar">
+    <label for="formation">Système</label>
+    <select id="formation"></select>
+    <button class="btn ghost" id="reset">Tout effacer</button>
+  </div>
+  <div class="pitch" id="pitch">
+    <svg class="lines" viewBox="0 0 68 100" preserveAspectRatio="none">
+      <g fill="none" stroke="#ffffff66" stroke-width=".35">
+        <rect x="2" y="2" width="64" height="96"/>
+        <line x1="2" y1="50" x2="66" y2="50"/>
+        <circle cx="34" cy="50" r="8"/>
+        <rect x="16" y="2" width="36" height="15"/><rect x="25" y="2" width="18" height="5.5"/>
+        <rect x="16" y="83" width="36" height="15"/><rect x="25" y="92.5" width="18" height="5.5"/>
+      </g>
+    </svg>
+  </div>
+  <div class="count" id="count"></div>
+  <div class="section"><h3>Remplaçants <small id="benchCount"></small></h3><div class="bench" id="bench"></div></div>
+  <div class="section"><h3>Entraîneur</h3><div class="coach" id="coach"></div></div>
+  <div class="section" id="compare"></div>
+</div>
+
+<div class="veil" id="veil"></div>
+<div class="sheet" id="sheet">
+  <div class="sh-head">
+    <h2 id="shTitle">Choisir</h2>
+    <div class="row">
+      <input type="search" id="q" placeholder="Rechercher…" autocomplete="off">
+      <button class="btn ghost" id="clearSlot">Vider</button>
+    </div>
+    <div class="chips" id="chips"></div>
+  </div>
+  <div class="list" id="list"></div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+<script>
+// Projet Firebase partagé avec « Mon héroïne » (config publique ; la sécurité vient des règles Firestore).
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyBCoTYkIl1786h0J99s9qVXpoj9DCdATOY",
+  authDomain: "mon-heroine.firebaseapp.com",
+  projectId: "mon-heroine",
+  storageBucket: "mon-heroine.firebasestorage.app",
+  messagingSenderId: "574707720618",
+  appId: "1:574707720618:web:319d95161ca14e98ae0bd3"
+};
+const ROOM = "ONZE-OL-THBVAL"; // 14 caractères : document families/ONZE-OL-THBVAL
+
+// ---------- Joueurs (postes : GB DD DC DG MDC MC MOC AD AG BU) ----------
+const RAW = `
+Grégory Coupet|GB
+Hugo Lloris|GB
+Anthony Lopes|GB
+Rémy Vercoutre|GB
+Nicolas Puydebois|GB
+Mathieu Gorgelin|GB
+Ciprian Tătărușanu|GB
+Julian Pollersbeck|GB
+Lucas Perri|GB
+Rémy Riou|GB
+Dominik Greif|GB
+Rémy Descamps|GB
+Kayne Bonnevie|GB
+Patrick Müller|DC
+Edmílson|DC,MDC
+Claudio Caçapa|DC
+Cris|DC
+Florent Laville|DC
+Jacek Bąk|DC
+Jean-Marc Chanelet|DD
+Anthony Réveillère|DD
+Éric Abidal|DG,DC
+Sylvain Squillaci|DC
+Jean-Alain Boumsong|DC
+François Clerc|DD
+Jérémy Berthod|DG
+Fabio Grosso|DG
+Aly Cissokho|DG
+Dejan Lovren|DC
+Bakary Koné|DC
+Mouhamadou Dabo|DD
+Samuel Umtiti|DC,DG
+Christophe Jallet|DD
+Rafael|DD
+Jérémy Morel|DG,DC
+Mapou Yanga-Mbiwa|DC
+Emanuel Mammana|DC
+Nicolas Nkoulou|DC
+Mouctar Diakhaby|DC
+Marcelo|DC
+Ferland Mendy|DG
+Kenny Tete|DD
+Fernando Marçal|DG
+Jason Denayer|DC
+Léo Dubois|DD
+Joachim Andersen|DC
+Youssouf Koné|DG
+Mattia De Sciglio|DD
+Jérôme Boateng|DC
+Emerson Palmieri|DG
+Castello Lukeba|DC
+Sinaly Diomandé|DC
+Malo Gusto|DD
+Henrique|DG
+Damien Da Silva|DC
+Nicolás Tagliafico|DG
+Saël Kumbedi|DD
+Clinton Mata|DD,DC
+Jake O'Brien|DC
+Duje Ćaleta-Car|DC
+Ainsley Maitland-Niles|DD,MC
+Moussa Niakhaté|DC
+Abner Vinicius|DG
+Warmed Omari|DC
+Ruben Kluivert|DC,DD
+Zachary Athekame|DD
+Felix Bacher|DC
+Hans Hateboer|DD
+Philippe Violeau|MDC
+Vikash Dhorasoo|MC
+Éric Carrière|MOC,MC
+Juninho|MC,MOC
+Mahamadou Diarra|MDC
+Michael Essien|MC,MDC
+Tiago|MC
+Jérémy Toulalan|MDC
+Kim Källström|MC
+Jean II Makoun|MDC,MC
+Mathieu Bodmer|MC,DC
+Jérémy Clément|MC
+Miralem Pjanić|MOC,MC
+Ederson|MOC,AG
+Yoann Gourcuff|MOC
+Maxime Gonalons|MDC
+Clément Grenier|MC,MOC
+Steed Malbranque|MC,AG
+Yassine Benzia|MOC,AG
+Corentin Tolisso|MC,MDC
+Jordan Ferri|MC
+Mathieu Valbuena|MOC,AD
+Lucas Tousart|MDC
+Tanguy Ndombele|MC
+Houssem Aouar|MC,MOC
+Nabil Fekir|MOC,BU
+Pape Cheikh Diop|MDC
+Jean Lucas|MC
+Bruno Guimarães|MC,MDC
+Thiago Mendes|MDC
+Maxence Caqueret|MC
+Lucas Paquetá|MOC,MC
+Jeff Reine-Adélaïde|MOC,MC
+Rayan Cherki|MOC,AD
+Johann Lepenant|MDC
+Paul Akouokou|MDC
+Thiago Almada|MOC
+Nemanja Matić|MDC
+Orel Mangala|MC,MDC
+Jordan Veretout|MC
+Mahamadou Diawara|MC
+Tanner Tessmann|MDC,MC
+Tyler Morton|MDC,MC
+Pavel Šulc|MOC,BU
+Khalis Merah|MC
+Mads Bidstrup|MC
+Noah Nartey|MC
+Adam Karabec|MOC,AG
+Sonny Anderson|BU
+Sidney Govou|AD,BU
+Péguy Luyindula|BU
+Florent Malouda|AG
+Giovane Élber|BU
+John Carew|BU
+Sylvain Wiltord|AD,BU
+Hatem Ben Arfa|AD,AG
+Fred|BU
+Milan Baroš|BU
+Abdul Kader Keïta|AG
+Karim Benzema|BU
+Nilmar|BU
+Bryan Bergougnoux|BU
+Lisandro López|BU
+Michel Bastos|AG
+Bafétimbi Gomis|BU
+Jimmy Briand|AD,BU
+Alexandre Lacazette|BU
+Clinton N'Jie|AD
+Mohamed Yattara|BU
+Rachid Ghezzal|AD
+Claudio Beauvue|BU
+Maxwel Cornet|AG
+Mariano Díaz|BU
+Memphis Depay|AG,BU
+Bertrand Traoré|AD
+Myziane Maolida|BU
+Willem Geubbels|BU
+Amine Gouiri|BU,AG
+Moussa Dembélé|BU
+Martin Terrier|AG
+Karl Toko Ekambi|AG
+Tino Kadewere|AD,BU
+Islam Slimani|BU
+Bradley Barcola|AG
+Malick Fofana|AG
+Ernest Nuamah|AD
+Mama Baldé|AG,AD
+Said Benrahma|AG
+Gift Orban|BU
+Georges Mikautadze|BU
+Wilfried Zaha|AG
+Martín Satriano|BU
+Afonso Moreira|AG
+Keito Nakamura|AG
+Loïs Openda|BU
+Julien Duranville|AG,AD
+Rémi Himbert|AD
+Alejandro Rodriguez|BU
+Kail Boudache|AG
+`;
+// Postes acceptés par case
+const ROLE_OK = {GB:["GB"],DC:["DC"],DD:["DD"],DG:["DG"],MDC:["MDC","MC"],MC:["MC","MDC","MOC"],MOC:["MOC","MC"],
+  AG:["AG","AD","MOC"],AD:["AD","AG","MOC"],BU:["BU"],MG:["AG","MC","DG"],MD:["AD","MC","DD"],PG:["DG","AG"],PD:["DD","AD"]};
+const ROLE_LABEL = {GB:"Gardien",DC:"Défenseur central",DD:"Latéral droit",DG:"Latéral gauche",MDC:"Milieu défensif",MC:"Milieu",MOC:"Meneur de jeu",AG:"Ailier gauche",AD:"Ailier droit",BU:"Avant-centre",MG:"Milieu gauche",MD:"Milieu droit",PG:"Piston gauche",PD:"Piston droit"};
+
+// Formations : [role, x%, y%]
+const F = {
+ "4-3-3":[["GB",50,91],["DG",14,72],["DC",37,77],["DC",63,77],["DD",86,72],["MC",24,50],["MDC",50,57],["MC",76,50],["AG",17,23],["BU",50,15],["AD",83,23]],
+ "4-2-3-1":[["GB",50,91],["DG",14,72],["DC",37,77],["DC",63,77],["DD",86,72],["MDC",33,58],["MDC",67,58],["AG",16,34],["MOC",50,38],["AD",84,34],["BU",50,14]],
+ "4-4-2":[["GB",50,91],["DG",14,72],["DC",37,77],["DC",63,77],["DD",86,72],["MG",14,46],["MC",37,52],["MC",63,52],["MD",86,46],["BU",35,18],["BU",65,18]],
+ "4-4-2 losange":[["GB",50,91],["DG",14,72],["DC",37,77],["DC",63,77],["DD",86,72],["MDC",50,60],["MC",24,48],["MC",76,48],["MOC",50,36],["BU",35,16],["BU",65,16]],
+ "3-5-2":[["GB",50,91],["DC",25,76],["DC",50,79],["DC",75,76],["PG",11,48],["MC",32,52],["MDC",50,60],["MC",68,52],["PD",89,48],["BU",35,18],["BU",65,18]],
+ "3-4-3":[["GB",50,91],["DC",25,76],["DC",50,79],["DC",75,76],["PG",12,52],["MC",37,55],["MC",63,55],["PD",88,52],["AG",18,23],["BU",50,15],["AD",82,23]]
+};
+
+
+const PLAYERS = RAW.trim().split("\n").map(l=>l.split("|")).filter(p=>p[1])
+  .map(([n,p])=>({id:slug(n),name:n,pos:p.split(",")}));
+const COACHES = ["Jacques Santini","Paul Le Guen","Gérard Houllier","Alain Perrin","Claude Puel","Rémi Garde","Hubert Fournier","Bruno Génésio","Sylvinho","Rudi Garcia","Peter Bosz","Laurent Blanc","Fabio Grosso","Pierre Sage","Paulo Fonseca","Jorge Maciel","Carlos Vicens"]
+  .map(n=>({id:"coach-"+slug(n),name:n,pos:["COACH"]}));
+const BY_ID = Object.fromEntries([...PLAYERS,...COACHES].map(p=>[p.id,p]));
+function slug(n){return n.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-");}
+const BENCH_N = 7;
+const NAMES = {thib:"Thib", val:"Val"};
+const POS_CHIPS = ["GB","DD","DC","DG","MDC","MC","MOC","AD","AG","BU"];
+
+// ---------- État ----------
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const short = n => { const parts=n.split(" "); return parts.length>1 && n.length>13 ? parts.slice(1).join(" ") : n; };
+let me=null, viewing=null, editing=null, chip=null;
+let compos={thib:blank(), val:blank()};
+function blank(){return {formation:"4-3-3",slots:{},bench:{},coach:null};}
+function norm(c){c=c||{};return {formation:F[c.formation]?c.formation:"4-3-3",slots:c.slots||{},bench:c.bench||{},coach:c.coach||null};}
+const other = w => w==="thib"?"val":"thib";
+try{ const l=JSON.parse(localStorage.getItem("onze-ol-cache")||"null"); if(l){compos.thib=norm(l.thib);compos.val=norm(l.val);} }catch(e){}
+
+// ---------- Accueil ----------
+function choose(w){ me=w; viewing=w; try{localStorage.setItem("onze-ol-me",w);}catch(e){} $("#start").style.display="none"; render(); }
+document.querySelectorAll("#start button").forEach(b=>b.onclick=()=>choose(b.dataset.me));
+$("#who").onclick=()=>{$("#start").style.display="flex";};
+// L'écran de choix s'affiche à chaque ouverture, le dernier choix est juste mis en avant
+try{ const last=localStorage.getItem("onze-ol-me"); if(last){ const b=document.querySelector(`#start button[data-me="${last}"]`); if(b) b.style.borderColor="#fff"; } }catch(e){}
+
+// ---------- Rendu ----------
+function filled(c){return Object.values(c.slots).filter(Boolean).length;}
+function renderTabs(){
+  $("#tabs").innerHTML="";
+  for(const w of [me,other(me)]){
+    const c=compos[w]; const b=document.createElement("button"); b.className="tab"+(w===viewing?" on":"");
+    b.innerHTML=(w===me?"Ma compo":"Compo de "+NAMES[w])+`<small>${esc(c.formation)} · ${filled(c)}/11 · ${Object.values(c.bench).filter(Boolean).length}/${BENCH_N} remplaçants</small>`;
+    b.onclick=()=>{viewing=w;render();};
+    $("#tabs").appendChild(b);
+  }
+  $("#who").textContent=NAMES[me]+" · changer";
+}
+function slotBtn(kind,i,role,pid,mine){
+  const p=pid&&BY_ID[pid]; const b=document.createElement("button");
+  b.className="slot"+(p?"":" empty")+(mine?"":" ro");
+  b.innerHTML=`<div class="shirt"><b>${esc(role)}</b></div>`+(p?`<div class="nm">${esc(kind==="coach"?p.name:short(p.name))}</div>`:(mine?`<div class="nm">+ Choisir</div>`:`<div class="nm">—</div>`));
+  if(mine) b.onclick=()=>openSheet(kind,i,role);
+  return b;
+}
+function render(){
+  if(!me) return;
+  renderTabs();
+  const c=compos[viewing]; const mine=viewing===me;
+  $("#bar").style.display=mine?"flex":"none";
+  $("#formation").value=c.formation;
+  const pitch=$("#pitch"); pitch.querySelectorAll(".slot").forEach(e=>e.remove());
+  F[c.formation].forEach(([role,x,y],i)=>{ const b=slotBtn("xi",i,role,c.slots[i],mine); b.style.left=x+"%"; b.style.top=y+"%"; pitch.appendChild(b); });
+  const n=filled(c);
+  $("#count").textContent= n===11 ? "✅ 11 complet !" : `${n}/11 titulaires`+(mine?" — touche une case pour choisir":"");
+  const bench=$("#bench"); bench.innerHTML="";
+  for(let i=0;i<BENCH_N;i++){ const pid=c.bench[i]; const p=pid&&BY_ID[pid]; bench.appendChild(slotBtn("bench",i,p?p.pos[0]:String(12+i),pid,mine)); }
+  $("#benchCount").textContent=`${Object.values(c.bench).filter(Boolean).length}/${BENCH_N}`;
+  const co=$("#coach"); co.innerHTML=""; co.appendChild(slotBtn("coach",0,"COACH",c.coach,mine));
+  renderCompare();
+}
+function renderCompare(){
+  const a=compos[me], b=compos[other(me)];
+  const all=c=>new Set([...Object.values(c.slots),...Object.values(c.bench)].filter(Boolean));
+  const sa=all(a), sb=all(b);
+  const common=[...sa].filter(x=>sb.has(x)).map(x=>BY_ID[x]?.name).filter(Boolean);
+  const la=F[a.formation].map(([r],i)=>({r,p:BY_ID[a.slots[i]]})), lb=F[b.formation].map(([r],i)=>({r,p:BY_ID[b.slots[i]]}));
+  const cell=(x,s)=>`<div class="${x.p&&s.has(x.p.id)?"same":""}">${esc(x.r)} · ${x.p?esc(x.p.name):"—"}</div>`;
+  let h=`<h3>Face à face</h3>`;
+  h+=`<div style="font-size:13px;margin-bottom:8px">${common.length?`<span class="same">${common.length} joueur(s) en commun :</span> ${esc(common.join(", "))}`:"Aucun joueur en commun pour l'instant."}</div>`;
+  h+=`<div class="crow head"><div></div><div>${NAMES[me]} (${esc(a.formation)})</div><div>${NAMES[other(me)]} (${esc(b.formation)})</div></div>`;
+  for(let i=0;i<11;i++) h+=`<div class="crow"><div class="p">${i+1}</div>${cell(la[i],sb)}${cell(lb[i],sa)}</div>`;
+  for(let i=0;i<BENCH_N;i++){ const x={r:"R"+(i+1),p:BY_ID[a.bench[i]]}, y={r:"R"+(i+1),p:BY_ID[b.bench[i]]}; if(x.p||y.p) h+=`<div class="crow"><div class="p">R${i+1}</div>${cell(x,sb)}${cell(y,sa)}</div>`; }
+  const ca=BY_ID[a.coach], cb=BY_ID[b.coach];
+  h+=`<div class="crow"><div class="p">🧠</div><div class="${ca&&cb&&ca===cb?"same":""}">${ca?esc(ca.name):"—"}</div><div class="${ca&&cb&&ca===cb?"same":""}">${cb?esc(cb.name):"—"}</div></div>`;
+  $("#compare").innerHTML=h;
+}
+
+// ---------- Sélection ----------
+function openSheet(kind,i,role){
+  editing={kind,i,role};
+  $("#shTitle").textContent= kind==="coach"?"Entraîneur" : kind==="bench"?`Remplaçant n°${i+1}` : `${ROLE_LABEL[role]||role} (${role})`;
+  $("#q").value=""; chip = kind==="xi" ? "poste" : "tous";
+  $("#q").placeholder= kind==="coach"?"Rechercher un entraîneur…":"Rechercher un joueur…";
+  $("#sheet").classList.add("open"); $("#veil").classList.add("open");
+  renderChips(); renderList();
+}
+function closeSheet(){ $("#sheet").classList.remove("open"); $("#veil").classList.remove("open"); editing=null; }
+function renderChips(){
+  const el=$("#chips"); el.innerHTML="";
+  if(editing.kind==="coach"){el.style.display="none";return;} el.style.display="flex";
+  const opts=(editing.kind==="xi"?["poste"]:[]).concat(["tous"],POS_CHIPS);
+  for(const o of opts){ const b=document.createElement("button"); b.className="chip"+(chip===o?" on":""); b.textContent=o==="poste"?"Poste conseillé":o==="tous"?"Tous":o; b.onclick=()=>{chip=o;renderChips();renderList();}; el.appendChild(b); }
+}
+function usedIds(){
+  const c=compos[me]; const s=new Set();
+  Object.entries(c.slots).forEach(([k,v])=>{ if(v && !(editing.kind==="xi"&&+k===editing.i)) s.add(v); });
+  Object.entries(c.bench).forEach(([k,v])=>{ if(v && !(editing.kind==="bench"&&+k===editing.i)) s.add(v); });
+  return s;
+}
+function renderList(){
+  if(!editing) return;
+  const q=slug($("#q").value.trim()).replace(/^-|-$/g,"");
+  const isCoach=editing.kind==="coach";
+  const ok = editing.kind==="xi" ? (ROLE_OK[editing.role]||[]) : [];
+  let ps = isCoach ? COACHES.slice() : PLAYERS.filter(p=>{
+    if(q) return true;
+    if(chip==="poste") return p.pos.some(x=>ok.includes(x));
+    if(chip==="tous") return true;
+    return p.pos.includes(chip);
+  });
+  if(q) ps=ps.filter(p=>p.id.replace(/^coach-/,"").includes(q));
+  if(!isCoach) ps.sort((a,b)=>{const ra=ok.indexOf(a.pos[0]),rb=ok.indexOf(b.pos[0]);const A=ra<0?99:ra,B=rb<0?99:rb;return A-B||a.name.localeCompare(b.name,"fr");});
+  const used=isCoach?new Set():usedIds();
+  const L=$("#list"); L.innerHTML="";
+  if(!ps.length){L.innerHTML=`<div style="padding:16px;color:var(--mute)">Personne trouvé.</div>`;return;}
+  for(const p of ps){
+    const d=document.createElement("div"); d.className="pl"+(used.has(p.id)?" used":"");
+    d.innerHTML=`<span class="n">${esc(p.name)}</span>`+(isCoach?"":`<span class="tags">${p.pos.map(x=>`<span class="tag ${ok.includes(x)?"cur":""}">${x}</span>`).join("")}</span>`);
+    d.onclick=()=>{ if(!used.has(p.id)) setPick(p.id); };
+    L.appendChild(d);
+  }
+}
+function setPick(pid){
+  const c=compos[me];
+  if(editing.kind==="xi"){ if(pid) c.slots[editing.i]=pid; else delete c.slots[editing.i]; }
+  else if(editing.kind==="bench"){ if(pid) c.bench[editing.i]=pid; else delete c.bench[editing.i]; }
+  else c.coach=pid||null;
+  closeSheet(); render(); save();
+}
+$("#clearSlot").onclick=()=>setPick(null);
+$("#veil").onclick=closeSheet;
+$("#q").oninput=renderList;
+$("#formation").innerHTML=Object.keys(F).map(f=>`<option>${f}</option>`).join("");
+$("#formation").onchange=e=>{ compos[me].formation=e.target.value; render(); save(); };
+let resetArm=false;
+$("#reset").onclick=e=>{ if(!resetArm){resetArm=true;e.target.textContent="Sûr ? Re-touche";setTimeout(()=>{resetArm=false;e.target.textContent="Tout effacer";},3000);return;}
+  resetArm=false;e.target.textContent="Tout effacer"; compos[me]=blank(); render(); save(); };
+
+// ---------- Synchro Firebase ----------
+let ref=null, saveT=null, dirty=false;
+function setSync(t,cls){ const s=$("#sync"); s.textContent=t; s.className="sync "+(cls||""); }
+function cache(){ try{localStorage.setItem("onze-ol-cache",JSON.stringify(compos));}catch(e){} }
+function save(){ cache(); dirty=true; clearTimeout(saveT); saveT=setTimeout(push,400); }
+async function push(){
+  if(!ref||!me){ return; }
+  const data={...compos[me], updated:Date.now()};
+  try{ await ref.update({[me]:data}); }
+  catch(e){ try{ await ref.set({[me]:data},{merge:true}); }catch(e2){ setSync("⚠️ Enregistrement impossible, réessaie","err"); return; } }
+  dirty=false; setSync("✓ Synchronisé","ok");
+}
+try{
+  firebase.initializeApp(FIREBASE_CONFIG);
+  firebase.auth().signInAnonymously().then(()=>{
+    ref=firebase.firestore().collection("families").doc(ROOM);
+    ref.onSnapshot(snap=>{
+      const d=snap.exists?snap.data():{};
+      for(const w of ["thib","val"]){ if(w===me && dirty) continue; compos[w]=norm(d[w]); }
+      cache(); setSync("✓ Synchronisé","ok"); render();
+      if(dirty) push();
+    }, ()=>setSync("⚠️ Synchro coupée — recharge la page","err"));
+  }).catch(()=>setSync("⚠️ Pas de connexion — compo gardée sur ce téléphone","err"));
+}catch(e){ setSync("⚠️ Synchro indisponible","err"); }
+</script>
+</body>
+</html>
