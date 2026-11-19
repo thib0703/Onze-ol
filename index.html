@@ -204,6 +204,15 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
 .wo-skip{position:absolute;bottom:40px}
 .walk.boom{animation:boom .45s ease-in forwards}
 @keyframes boom{0%{background:#02040c}50%{background:#fff}100%{opacity:0;background:#fff}}
+.pk-pack.gold-charge{animation:goldCharge 1.9s ease-in forwards}
+@keyframes goldCharge{0%{transform:none}30%{transform:rotate(-4deg) scale(1.03)}50%{transform:rotate(5deg) scale(1.06);filter:brightness(1.3)}70%{transform:rotate(-6deg) scale(1.1);filter:brightness(1.8) drop-shadow(0 0 30px #ffd970)}100%{transform:scale(1.15);filter:brightness(3)}}
+.gold-flash{position:absolute;inset:0;background:#fff;animation:gflash .9s ease-out forwards;pointer-events:none;z-index:2}
+@keyframes gflash{0%{opacity:1}100%{opacity:0}}
+.gold-rays{background:repeating-conic-gradient(#ffd97055 0 6deg,transparent 6deg 14deg)!important}
+.pk-pack.goldpack{background:linear-gradient(150deg,#fff8d6,#ffd24a 35%,#b8860b 70%,#fff1a8);box-shadow:0 0 60px #ffd970,0 20px 50px #000c;animation:pkShake 1.1s ease-in-out infinite,glow 1s ease-in-out infinite alternate}
+.pk-pack.goldpack span{font-size:19px}.pk-pack.goldpack em{font-style:normal;font-size:11px;font-weight:700;margin-top:6px;opacity:.85}
+.gold-title{position:absolute;top:12%;width:100%;text-align:center;font-size:38px;font-weight:900;font-style:italic;color:#ffd970;text-shadow:0 0 20px #c9a227,0 4px 0 #0008;animation:pop .6s cubic-bezier(.2,1.6,.4,1) both;pointer-events:none}
+.gold-title small{display:block;font-size:14px;font-style:normal;color:#fff;margin-top:6px;letter-spacing:.1em}
 .pk-sum{position:relative;display:flex;flex-direction:column;align-items:center;padding:16px;width:100%;max-width:420px}
 .pk-sum h3{margin:0 0 12px}
 .pk-row{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:12px}
@@ -661,7 +670,7 @@ let me=null, viewing=null, editing=null, chip=null;
 let compos={};
 const C = w => compos[w]||(compos[w]=blank());
 function blank(){return {formation:"4-3-3",slots:{},bench:{},coach:null,savedAt:null,library:[],loadedId:null,coins:0,coll:{},claimed:[],daily:null,opened:0};}
-function norm(c){c=c||{};return {formation:F[c.formation]?c.formation:"4-3-3",slots:c.slots||{},bench:c.bench||{},coach:c.coach||null,savedAt:c.savedAt||null,library:Array.isArray(c.library)?c.library:[],loadedId:c.loadedId||null,coins:+c.coins||0,coll:c.coll||{},claimed:Array.isArray(c.claimed)?c.claimed:[],daily:c.daily||null,opened:+c.opened||0,mday:c.mday||null};}
+function norm(c){c=c||{};return {formation:F[c.formation]?c.formation:"4-3-3",slots:c.slots||{},bench:c.bench||{},coach:c.coach||null,savedAt:c.savedAt||null,library:Array.isArray(c.library)?c.library:[],loadedId:c.loadedId||null,coins:+c.coins||0,coll:c.coll||{},claimed:Array.isArray(c.claimed)?c.claimed:[],daily:c.daily||null,opened:+c.opened||0,mday:c.mday||null,goldPacks:+c.goldPacks||0};}
 try{ const l=JSON.parse(localStorage.getItem("onze-ol-cache2")||"null"); if(l){ for(const k in l) compos[k]=norm(l[k]); } const n=JSON.parse(localStorage.getItem("onze-ol-names2")||"null"); if(n) NAMES=Object.assign(NAMES,n); }catch(e){}
 
 // ---------- Accueil ----------
@@ -1555,24 +1564,33 @@ function drawCard(pack,force){
   const P=PACKS[pack]; let tier=force||wpick(Object.keys(P.w),k=>P.w[k]);
   let arr=POOL[tier]; if(!arr.length) arr=POOL.icon; return arr[Math.floor(Math.random()*arr.length)];
 }
+const GOLD_RATE=0.001;
 function openPack(pack){
   const P=PACKS[pack]; const c=W();
   if(pack==="jour"){ if(c.daily===today()){ toast("Pack du jour déjà ouvert : reviens demain !",true); return; } c.daily=today(); }
   else { if((c.coins||0)<P.price){ toast(`Il te manque ${P.price-(c.coins||0)} 🪙 : joue des matchs ou vends tes doublons !`,true); return; } c.coins-=P.price; }
-  const ids=[]; for(let i=0;i<P.n;i++) ids.push(drawCard(pack));
   const rank={bronze:0,silver:1,gold:2,icon:3,myth:4};
-  if(P.guarantee&&!ids.some(id=>rank[cardTier(BY_ID[id])]>=rank[P.guarantee])) ids[ids.length-1]=drawCard(pack,P.guarantee);
+  // ✨ GOLD PACK : 1 chance sur 1000, dans n'importe quel pack → 1 Épique + 1 Légendaire + 1 Mythique
+  const gold=Math.random()<GOLD_RATE;
+  let ids=[];
+  if(gold){ ids=[drawCard(pack,"gold"),drawCard(pack,"icon"),drawCard(pack,"myth")]; c.goldPacks=(c.goldPacks||0)+1; }
+  else { for(let i=0;i<P.n;i++) ids.push(drawCard(pack));
+    if(P.guarantee&&!ids.some(id=>rank[cardTier(BY_ID[id])]>=rank[P.guarantee])) ids[ids.length-1]=drawCard(pack,P.guarantee); }
   ids.sort((a,b)=>rank[cardTier(BY_ID[a])]-rank[cardTier(BY_ID[b])]||BY_ID[a].ovr-BY_ID[b].ovr);
   c.coll=c.coll||{}; const isNew=ids.map(id=>!c.coll[id]);
   for(const id of ids) c.coll[id]=(c.coll[id]||0)+1;
   c.opened=(c.opened||0)+1;
-  save(); renderCoins(); packFx(pack,ids,isNew);
+  save(); renderCoins(); packFx(pack,ids,isNew,gold);
 }
-function packFx(pack,ids,isNew){
+function packFx(pack,ids,isNew,gold){
   const P=PACKS[pack]; const F=$("#packfx"); F.className="packfx open";
   F.innerHTML=`<div class="pk-bg"></div><div class="pk-pack" style="--pc:${P.color}"><div class="pk-foil"></div><b>OL</b><span>${P.name}</span><small>Touche pour ouvrir</small></div>`;
-  const pk=F.querySelector(".pk-pack"); let opened=false;
-  const go=()=>{ if(opened) return; opened=true; pk.classList.add("tear"); setTimeout(()=>reveal(0),700); };
+  const pk=F.querySelector(".pk-pack"); let opened=false, ready=!gold;
+  if(gold){ pk.classList.add("gold-charge");
+    setTimeout(()=>{ F.querySelector(".pk-bg").insertAdjacentHTML("afterend",`<div class="rays gold-rays"></div><div class="gold-flash"></div>`);
+      pk.className="pk-pack goldpack"; pk.innerHTML=`<div class="pk-foil"></div><b>OL</b><span>✨ GOLD PACK ✨</span><em>Épique · Légendaire · Mythique</em><small>Touche pour ouvrir</small>`;
+      F.insertAdjacentHTML("beforeend",`<div class="gold-title">INCROYABLE !<small>1 chance sur ${Math.round(1/GOLD_RATE)}</small></div>`); ready=true; },1900); }
+  const go=()=>{ if(opened||!ready) return; opened=true; const gt=F.querySelector(".gold-title"); if(gt) gt.remove(); pk.classList.add("tear"); setTimeout(()=>reveal(0),700); };
   pk.onclick=go;
   const reveal=(i,skipWalk)=>{
     if(i>=ids.length) return summary();
@@ -1602,7 +1620,7 @@ function packFx(pack,ids,isNew){
   const summary=()=>{
     const old=F.querySelector(".pk-show"); if(old) old.remove();
     const s=document.createElement("div"); s.className="pk-sum";
-    s.innerHTML=`<h3>${P.name}</h3><div class="pk-row">${ids.map((id,i)=>`<div class="pk-mini">${cardHTML(id,{w:96})}${isNew[i]?`<i>NEW</i>`:""}</div>`).join("")}</div><button class="btn big" id="pkOk">Ajouter à ma collection</button>`;
+    s.innerHTML=`<h3>${gold?"✨ GOLD PACK ✨":P.name}</h3><div class="pk-row">${ids.map((id,i)=>`<div class="pk-mini">${cardHTML(id,{w:96})}${isNew[i]?`<i>NEW</i>`:""}</div>`).join("")}</div><button class="btn big" id="pkOk">Ajouter à ma collection</button>`;
     F.appendChild(s); $("#pkOk").onclick=()=>{ F.className="packfx"; F.innerHTML=""; renderCollec(); };
   };
 }
