@@ -1,5 +1,6 @@
 // Notifications push de « Les Gones Legends » (Cloud Functions v2)
 const { onDocumentWritten, onDocumentCreated, onDocumentUpdated } = require("firebase-functions/v2/firestore");
+const { onSchedule } = require("firebase-functions/v2/scheduler");
 const { initializeApp } = require("firebase-admin/app");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 const { getMessaging } = require("firebase-admin/messaging");
@@ -56,4 +57,59 @@ exports.auctionOutbid = onDocumentUpdated({ document: "onzeol_auctions/{id}", re
   const b = ev.data.before.data(), a = ev.data.after.data();
   if (b.bidder && a.bidder && b.bidder !== a.bidder) await notify(b.bidder, "🔨 Surenchère !", `${await nameOf(a.bidder)} a proposé ${a.bid} pièces. Reprends la tête !`);
   if (!b.bidder && a.bidder) await notify(a.seller, "🔨 Première offre", `${await nameOf(a.bidder)} propose ${a.bid} pièces pour ta carte.`);
+});
+
+// ---------- Notifications ajoutées ----------
+async function allUsers() { const qs = await db.collection("onzeol_users").get(); return qs.docs.map(d => ({ id: d.id, ...d.data() })); }
+async function notifyAll(title, body, except) { for (const u of await allUsers()) if (u.id !== except && (u.fcm || []).length) await notify(u.id, title, body); }
+const todayParis = () => new Date().toLocaleDateString("fr-CA", { timeZone: "Europe/Paris" });
+
+// 🎁 Rappel du pack du jour (18h) s'il n'a pas été ouvert
+exports.dailyPackReminder = onSchedule({ schedule: "0 18 * * *", timeZone: "Europe/Paris", region: REGION }, async () => {
+  const d = todayParis();
+  for (const u of await allUsers()) if ((u.fcm || []).length && u.daily !== d) await notify(u.id, "🎁 Ton pack du jour t'attend !", "Il est gratuit : ouvre-le avant minuit dans 🎴 Collec.");
+});
+
+// 🏆 Nouveau championnat / nouvelle coupe
+exports.leagueCreated = onDocumentCreated({ document: "onzeol_leagues/{id}", region: REGION }, async ev => {
+  const L = ev.data.data(); await notifyAll("🏆 Nouveau championnat !", `${await nameOf(L.owner)} a créé « ${L.name} ». Rejoins-le dans l'onglet Ligue.`, L.owner);
+});
+exports.cupCreated = onDocumentCreated({ document: "onzeol_cups/{id}", region: REGION }, async ev => {
+  const K = ev.data.data(); await notifyAll("🏆 Nouvelle coupe !", `${await nameOf(K.owner)} a créé la coupe « ${K.name} » (${K.size} joueurs). Inscris-toi dans 🎮 Jeux.`, K.owner);
+});
+
+// ⚔️ Match de coupe prêt (tirage, tour suivant, match retour)
+exports.cupTieReady = onDocumentUpdated({ document: "onzeol_cups/{id}", region: REGION }, async ev => {
+  const b = ev.data.before.data(), a = ev.data.after.data(); if (a.status !== "running" && a.status !== "done") return;
+  if (a.status === "done" && b.status !== "done") { for (const m of a.members || []) if (m !== a.winner) await notify(m, "🏆 Coupe terminée", `${await nameOf(a.winner)} remporte la coupe « ${a.name} » !`); return; }
+  const R = a.rounds || [], last = R[R.length - 1]; if (!last) return;
+  const prev = (b.rounds || [])[R.length - 1];
+  for (let i = 0; i < last.ties.length; i++) {
+    const t = last.ties[i], p = prev && prev.ties[i]; if (t.w) continue;
+    const isNew = !p || (p.legs || []).length !== (t.legs || []).length; if (!isNew) continue;
+    const leg = (t.legs || []).length ? "retour" : "aller";
+    for (const [x, y] of [[t.a, t.b], [t.b, t.a]]) await notify(x, "⚔️ Ton match de coupe est prêt", `Match ${leg} contre ${await nameOf(y)} dans « ${a.name} ». Lance-le dans 🎮 Jeux !`);
+  }
+});
+
+// 🌈 Carte Mythique ou ✨ Gold Pack tiré par un pote (via le fil d'actu)
+exports.bigPull = onDocumentCreated({ document: "onzeol_feed/{id}", region: REGION }, async ev => {
+  const f = ev.data.data(); const t = f.text || "";
+  if (/GOLD PACK/.test(t)) await notifyAll("✨ GOLD PACK !", t, f.who);
+  else if (t.startsWith("🌈")) await notifyAll("🌈 Carte Mythique !", t, f.who);
+});
+
+// 🤕 Forme réelle : un de tes joueurs se blesse ou est suspendu (lecture de live.json, 2× par jour)
+exports.liveInjuries = onSchedule({ schedule: "30 10,19 * * *", timeZone: "Europe/Paris", region: REGION }, async () => {
+  let live; try { const r = await fetch(URL + "live.json?t=" + Date.now()); if (!r.ok) return; live = await r.json(); } catch (e) { return; }
+  const ref = db.collection("onzeol_meta").doc("liveSeen"); const seenDoc = await ref.get(); const seen = (seenDoc.exists && seenDoc.data().players) || {};
+  const P = live.players || {}; const fresh = Object.entries(P).filter(([id, x]) => (x.st === "inj" || x.st === "sus") && seen[id] !== x.st);
+  await ref.set({ players: Object.fromEntries(Object.entries(P).map(([id, x]) => [id, x.st])), at: Date.now() });
+  if (!fresh.length || !seenDoc.exists) return; // première lecture : on mémorise sans notifier
+  const base = id => String(id).split("--")[0];
+  for (const u of await allUsers()) {
+    if (!(u.fcm || []).length) continue;
+    const mine = new Set([...Object.values(u.slots || {}), ...Object.values(u.bench || {})].filter(Boolean).map(base));
+    for (const [id, x] of fresh) if (mine.has(id)) await notify(u.id, x.st === "inj" ? "🤕 Un de tes joueurs est blessé" : "🟥 Un de tes joueurs est suspendu", `${id.split("-").map(w => w[0].toUpperCase() + w.slice(1)).join(" ")} : ${x.note || ""} (${x.mod > 0 ? "+" : ""}${x.mod} dans le jeu)`);
+  }
 });
