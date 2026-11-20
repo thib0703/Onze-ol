@@ -55,6 +55,7 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
 .sm{font-size:12.5px;padding:7px 9px;border-radius:9px}
 .modal{position:fixed;inset:0;z-index:40;background:#000b;display:none;align-items:center;justify-content:center;padding:20px}
 .modal.open{display:flex}
+.peekbar{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;padding:8px 12px;background:rgba(255,217,112,.1);border:1px solid rgba(255,217,112,.3);border-radius:12px;font-size:14px}
 /* Fenêtres plus hautes que l'écran : elles défilent elles-mêmes, et la page derrière ne bouge plus */
 .modal{overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding-top:calc(20px + env(safe-area-inset-top));padding-bottom:calc(20px + env(safe-area-inset-bottom))}
 .modal>*{margin-top:auto;margin-bottom:auto;flex-shrink:0}
@@ -881,7 +882,7 @@ const POS_CHIPS = ["GB","DD","DC","DG","MDC","MC","MOC","AD","AG","BU"];
 const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const short = n => { const parts=n.split(" "); return parts.length>1 && n.length>10 ? parts.slice(1).join(" ") : n; };
-let me=null, viewing=null, editing=null, chip=null;
+let me=null, viewing=null, editing=null, chip=null, peek=null; // peek : joueur dont on regarde le 11 type
 let compos={};
 const C = w => compos[w]||(compos[w]=blank());
 function blank(){return {formation:"4-3-3",slots:{},bench:{},coach:null,savedAt:null,library:[],loadedId:null,coins:0,coll:{},claimed:[],daily:null,opened:0};}
@@ -940,7 +941,7 @@ function suggestions(){ const c=W(), roles=F[c.formation]; const xiBase=new Set(
   // un même joueur ne peut être suggéré qu'une fois (au poste où il apporte le plus)
   S.sort((a,b)=>b.gain-a.gain); const seen=new Set(); return S.filter(x=>{ if(seen.has(x.id)) return false; seen.add(x.id); return true; }); }
 let autoPrev=null, autoArm=false;
-function renderSugg(mine){ const el=$("#sugg"); if(!el) return; if(!mine){ el.innerHTML=""; return; }
+function renderSugg(mine){ const el=$("#sugg"); if(!el) return; el.style.display=mine?"":"none"; if(!mine){ el.innerHTML=""; return; }
   const S=suggestions(); const short2=id=>id&&BY_ID[id]?esc(BY_ID[id].name):"vide";
   el.innerHTML=`<div class="sgh"><b>💡 Suggestions</b><span>${autoPrev?`<button class="btn sm ghost" id="autoUndo">↩️ Annuler</button> `:""}<button class="btn sm" id="autoBtn">⚡ Compo auto</button></span></div>`+
     (S.length?S.slice(0,4).map((x,k)=>`<div class="sgl"><span>${x.coach?"🧠 Entraîneur":`<b>${x.role}</b>`} : ${x.cur?`${short2(x.cur)} <small>(${x.curV})</small> → `:""}<b>${short2(x.id)}</b> <small>(${x.v})</small> <em>${x.cur?"+"+x.gain:"poste vide"}</em></span><button class="btn sm ghost" data-sg="${k}">Mettre</button></div>`).join("")
@@ -955,6 +956,9 @@ function renderSugg(mine){ const el=$("#sugg"); if(!el) return; if(!mine){ el.in
 }
 function filled(c){return Object.values(c.slots).filter(Boolean).length;}
 function renderTabs(){
+  if(peek&&C(peek)){ viewing=peek; $("#tabs").style.display="";
+    $("#tabs").innerHTML=`<div class="peekbar"><span>👀 11 type de <b>${esc(NAMES[peek]||"?")}</b></span><button class="btn sm ghost" id="peekBack">← Retour</button></div>`;
+    $("#peekBack").onclick=()=>{ const id=peek; peek=null; setMode("ligue"); showProfile(id); }; return; }
   viewing=me; $("#tabs").innerHTML=""; $("#tabs").style.display="none"; $("#who").textContent=(NAMES[me]||"?")+" · compte"; return; // les 11 des autres se voient depuis leur profil (Ligue → Joueurs)
   for(const w of [me,...others()]){
     const c=C(w); const b=document.createElement("button"); b.className="tab"+(w===viewing?" on":"");
@@ -970,7 +974,7 @@ function slotBtn(kind,i,role,pid,mine,onclick){
   if(p){
     const lock=mode==="compo"&&viewing===me&&me&&!((C(me).coll||{})[p.id]);
     if(lock) b.classList.add("unowned");
-    b.innerHTML=(lock?`<span class="lockb">🔒</span>`:"")+cardHTML(p.id,{w:kind==="coach"?54:42,mini:true,role:kind==="xi"?role:null,ovr:me&&mode==="compo"&&viewing===me?p.ovr+evoOf(me,p.id):undefined})+`<div class="nm">${esc(kind==="coach"?p.name:short(p.name))}</div>`;
+    b.innerHTML=(lock?`<span class="lockb">🔒</span>`:"")+cardHTML(p.id,{w:kind==="coach"?54:42,mini:true,role:kind==="xi"?role:null,ovr:me&&mode==="compo"?p.ovr+evoOf(viewing,p.id):undefined})+`<div class="nm">${esc(kind==="coach"?p.name:short(p.name))}</div>`;
     b.onclick=()=>showCard(p.id,(mine&&!onclick)?{change:()=>openSheet(kind,i,role),remove:()=>{editing={kind,i,role,mode:"compo"};setPick(null);}}:null);
   } else {
     b.innerHTML=`<div class="shirt"><b>${esc(role)}</b></div>`+(mine?`<div class="nm">+ Choisir</div>`:`<div class="nm">—</div>`);
@@ -981,14 +985,16 @@ function slotBtn(kind,i,role,pid,mine,onclick){
 function render(){
   if(!me) return;
   renderTabs();
-  const c=C(viewing); const mine=viewing===me;
+  let c=C(viewing); const mine=viewing===me;
+  if(!mine){ const own=c.coll||{}, keep=o=>Object.fromEntries(Object.entries(o||{}).filter(([k,v])=>v&&own[v])); // cartes possédées seulement
+    c={...c,slots:keep(c.slots),bench:keep(c.bench),coach:c.coach&&own[c.coach]?c.coach:null,library:c.library||[]}; }
   $("#bar").style.display=mine?"flex":"none";
   $("#formation").value=c.formation;
   const pitch=$("#pitch"); pitch.querySelectorAll(".slot").forEach(e=>e.remove());
   F[c.formation].forEach(([role,x,y],i)=>{ const b=slotBtn("xi",i,role,c.slots[i],mine); b.style.left=x+"%"; b.style.top=y+"%"; b.style.zIndex=Math.round(y); pitch.appendChild(b); });
   const n=filled(c);
   renderSugg(mine);
-  const xa=xiAvg(me); $("#count").innerHTML= (n===11 ? "✅ 11 complet !" : `${n}/11 titulaires`+(mine?" — touche une case pour choisir":""))+(xa.n?` · <span class="xiavg">⭐ Note moyenne : <b>${xa.avg}</b></span>`:"");
+  const xa=xiAvg(viewing); $("#count").innerHTML= (n===11 ? "✅ 11 complet !" : `${n}/11 titulaires`+(mine?" — touche une case pour choisir":""))+(xa.n?` · <span class="xiavg">⭐ Note moyenne : <b>${xa.avg}</b></span>`:"");
   const bench=$("#bench"); bench.innerHTML="";
   for(let i=0;i<BENCH_N;i++){ const pid=c.bench[i]; const p=pid&&BY_ID[pid]; bench.appendChild(slotBtn("bench",i,p?p.pos[0]:String(12+i),pid,mine)); }
   $("#benchCount").textContent=`${Object.values(c.bench).filter(Boolean).length}/${BENCH_N}`;
@@ -1247,7 +1253,7 @@ function dRestart(){ const ex=drafts[dKey()]; const d=dNorm(ex||draft,me,dOpp); 
 let dResetArm=false;
 $("#dReset").onclick=e=>{ if(!dResetArm){dResetArm=true;e.target.textContent="Sûr ? Tout le draft sera effacé (re-touche)";setTimeout(()=>{dResetArm=false;e.target.textContent="Recommencer le draft";},3500);return;} dResetArm=false; e.target.textContent="Recommencer le draft"; dRestart(); };
 $("#dNew").onclick=dRestart; $("#dPlay").onclick=()=>playDraftMatch("classic");
-function setMode(m){ mode=m; setTimeout(()=>{ if(tipSeen("welcome")) tip("tab_"+m); },350); for(const [b,v,k] of [["#mCompo","#viewCompo","compo"],["#mDraft","#viewDraft","draft"],["#mMatch","#viewMatch","match"],["#mCollec","#viewCollec","collec"],["#mLigue","#viewLigue","ligue"],["#mJeux","#viewJeux","jeux"]]){ $(b).classList.toggle("on",m===k); $(v).style.display=m===k?"":"none"; } $("#dHistWrap").style.display=m==="draft"?"":"none"; if(m==="jeux") renderJeux(); else if(m==="draft"){ renderDraft(); renderDraftHist(); } else if(m==="match") renderMatch(); else if(m==="collec") renderCollec(); else if(m==="ligue") renderLigue(); else render(); window.scrollTo(0,0); }
+function setMode(m){ mode=m; peek=null; setTimeout(()=>{ if(tipSeen("welcome")) tip("tab_"+m); },350); for(const [b,v,k] of [["#mCompo","#viewCompo","compo"],["#mDraft","#viewDraft","draft"],["#mMatch","#viewMatch","match"],["#mCollec","#viewCollec","collec"],["#mLigue","#viewLigue","ligue"],["#mJeux","#viewJeux","jeux"]]){ $(b).classList.toggle("on",m===k); $(v).style.display=m===k?"":"none"; } $("#dHistWrap").style.display=m==="draft"?"":"none"; if(m==="jeux") renderJeux(); else if(m==="draft"){ renderDraft(); renderDraftHist(); } else if(m==="match") renderMatch(); else if(m==="collec") renderCollec(); else if(m==="ligue") renderLigue(); else render(); window.scrollTo(0,0); }
 $("#mCompo").onclick=()=>setMode("compo"); $("#mDraft").onclick=()=>setMode("draft"); $("#mMatch").onclick=()=>setMode("match"); $("#mCollec").onclick=()=>setMode("collec"); $("#mLigue").onclick=()=>setMode("ligue"); $("#mJeux").onclick=()=>setMode("jeux");
 function renderDraft(){
   if(!me) return;
@@ -2983,11 +2989,7 @@ function showProfile(id){
     ${id!==me?`<div class="mbtns"><button class="btn" id="pfXI">⚽ Voir son 11 type</button></div>`:""}<div id="pfXIbox"></div>
     <div class="mbtns"><button class="btn ghost" id="pfClose">Fermer</button></div></div>`;
   M.classList.add("open"); $("#pfClose").onclick=()=>M.classList.remove("open");
-  const xb=$("#pfXI"); if(xb) xb.onclick=()=>{ const own=c.coll||{}; const f=F[c.formation]||F["4-3-3"];
-    $("#pfXIbox").innerHTML=`<div class="mute" style="font-size:12px;margin:6px 0">${esc(c.formation||"4-3-3")} · cartes possédées seulement</div><div class="pitch bp">${($("#pitch .lines")||{}).outerHTML||""}${f.map(([r,x,y],i)=>{ const pid=(c.slots||{})[i]; const ok=pid&&own[pid];
-      return `<div class="slot ${ok?"has":"empty"}" style="left:${x}%;top:${y}%;z-index:${Math.round(y)};cursor:default">${ok?cardHTML(pid,{w:42,mini:true,role:r,ovr:BY_ID[pid].ovr+evoOf(id,pid)})+`<div class="nm">${esc(short(BY_ID[pid].name))}</div>`:`<div class="shirt"><b>${r}</b></div><div class="nm">—</div>`}</div>`; }).join("")}</div>
-      ${c.coach&&own[c.coach]?`<div class="mute" style="font-size:12px;margin-top:6px">Entraîneur : <b>${esc(BY_ID[c.coach].name)}</b></div>`:""}`;
-    xb.style.display="none"; };
+  const xb=$("#pfXI"); if(xb) xb.onclick=()=>{ M.classList.remove("open"); setMode("compo"); peek=id; render(); window.scrollTo(0,0); };
 }
 
 // ======================================================================
@@ -3480,7 +3482,7 @@ function tip(k,then){
 }
 document.addEventListener("click",e=>{
   if(!me||tipOpen||e.target.closest(".tipov")) return;
-  for(const [sel,k] of TIP_CLICK){ const t=e.target.closest(sel); if(!t||tipSeen(k)) continue;
+  for(const [sel,k] of TIP_CLICK){ const t=e.target.closest(sel); if(!t||tipSeen(k)||(k==="slot"&&peek)) continue;
     e.preventDefault(); e.stopPropagation(); const id=t.id, ds=JSON.stringify({...t.dataset});
     tip(k,()=>{ const x=document.body.contains(t)?t:(id?document.getElementById(id):[...document.querySelectorAll(sel)].find(y=>JSON.stringify({...y.dataset})===ds)); if(x) x.click(); }); return; }
 },true);
@@ -3521,7 +3523,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-20u"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-20v"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
