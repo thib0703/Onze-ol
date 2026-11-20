@@ -55,6 +55,11 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
 .sm{font-size:12.5px;padding:7px 9px;border-radius:9px}
 .modal{position:fixed;inset:0;z-index:40;background:#000b;display:none;align-items:center;justify-content:center;padding:20px}
 .modal.open{display:flex}
+/* Fenêtres plus hautes que l'écran : elles défilent elles-mêmes, et la page derrière ne bouge plus */
+.modal{overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding-top:calc(20px + env(safe-area-inset-top));padding-bottom:calc(20px + env(safe-area-inset-bottom))}
+.modal>*{margin-top:auto;margin-bottom:auto;flex-shrink:0}
+.cardm{background:#000e}
+html:has(.modal.open),body:has(.modal.open){overflow:hidden}
 .mbox{background:#101c3d;border:1px solid #2b3c6e;border-radius:16px;padding:16px;width:100%;max-width:380px}
 .mbox h3{margin:0 0 12px;font-size:17px}
 .mbox input{width:100%;background:var(--carte);color:var(--txt);border:1px solid #2b3c6e;border-radius:10px;padding:11px;font-size:16px}
@@ -3516,7 +3521,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-20t"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-20u"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
