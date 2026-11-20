@@ -1888,33 +1888,98 @@ setInterval(restoreStarter2,3000);
 // ---------- 🔥 Séries du moment (bandeau d'accueil animé) ----------
 let HYPE=[], hypeI=0, hypeT=null;
 function hypeList(){
-  const L=matches.filter(h=>isPvP(h)&&h.score&&Date.now()-(h.at||0)<14*86400000).sort((a,b)=>(b.at||0)-(a.at||0));
-  const st={}; // par joueur : série en cours, depuis le match le plus récent
-  for(const h of L) for(let i=0;i<2;i++){ const u=h.owners[i]; const a=h.score[i], b=h.score[1-i]; const r=a>b?"W":a<b?"L":"D";
-    const s=st[u]=st[u]||{w:0,l:0,u:0,stopW:false,stopL:false,stopU:false,last:h.at};
-    if(!s.stopW){ if(r==="W") s.w++; else s.stopW=true; }
-    if(!s.stopL){ if(r==="L") s.l++; else s.stopL=true; }
-    if(!s.stopU){ if(r!=="L") s.u++; else s.stopU=true; } }
-  const out=[];
-  for(const u in st){ const s=st[u], n=esc(NAMES[u]||"?"); if(Date.now()-s.last>7*86400000) continue;
-    if(s.w>=7) out.push({k:u+"w"+s.w,t:`👑 ${n} est INARRÊTABLE !`,d:`${s.w} victoires d'affilée`,big:`${n}<br>INARRÊTABLE`,ic:"👑",p:100+s.w});
-    else if(s.w>=5) out.push({k:u+"w"+s.w,t:`🚀 ${n} est en feu, personne ne l'arrête !`,d:`${s.w} victoires de suite`,big:`${n}<br>EN FEU`,ic:"🚀",p:80+s.w});
-    else if(s.w>=3) out.push({k:u+"w"+s.w,t:`🔥 ${n} est on fire !`,d:`${s.w} victoires de suite`,big:`${n}<br>ON FIRE`,ic:"🔥",p:60+s.w});
-    else if(s.u>=5) out.push({k:u+"u"+s.u,t:`🛡️ ${n} est invaincu depuis ${s.u} matchs`,d:"Qui va le faire tomber ?",p:40+s.u});
-    if(s.l>=3) out.push({k:u+"l"+s.l,t:`🥶 ${n} est dans le dur…`,d:`${s.l} défaites de suite, qui lui tend la main ?`,cold:true,p:20+s.l}); }
-  const big=L.find(h=>Date.now()-(h.at||0)<86400000&&Math.abs(h.score[0]-h.score[1])>=4);
-  if(big){ const w=big.score[0]>big.score[1]?0:1; out.push({k:"x"+big.id,t:`💥 ${esc(NAMES[big.owners[w]]||"?")} a atomisé ${esc(NAMES[big.owners[1-w]]||"?")}`,d:`${Math.max(...big.score)}-${Math.min(...big.score)} · la photo du jour`,p:50}); }
-  return out.sort((a,b)=>b.p-a.p);
+  const now=Date.now(), H=3600000, D=86400000, out=[]; const N=u=>esc(NAMES[u]||"?"); const P=id=>esc((BY_ID[id]||{}).name||"?");
+  const add=(p,t,d,x)=>out.push(Object.assign({p,t,d:d||"",k:t},x||{}));
+  const L=matches.filter(h=>isPvP(h)&&h.score&&now-(h.at||0)<14*D).sort((a,b)=>(b.at||0)-(a.at||0));
+  // --- Séries par joueur (du match le plus récent vers le plus ancien)
+  const st={};
+  for(const h of L) for(let i=0;i<2;i++){ const u=h.owners[i], a=h.score[i], b=h.score[1-i], r=a>b?"W":a<b?"L":"D";
+    const s=st[u]=st[u]||{w:0,l:0,u:0,nw:0,cs:0,g:[],sw:0,sl:0,su:0,snw:0,scs:0,last:h.at,today:0};
+    if(now-h.at<D) s.today++; if(s.g.length<3) s.g.push(a);
+    if(!s.sw){ if(r==="W") s.w++; else s.sw=1; } if(!s.sl){ if(r==="L") s.l++; else s.sl=1; }
+    if(!s.su){ if(r!=="L") s.u++; else s.su=1; } if(!s.snw){ if(r!=="W") s.nw++; else s.snw=1; }
+    if(!s.scs){ if(b===0) s.cs++; else s.scs=1; } }
+  for(const u in st){ const s=st[u], n=N(u); if(now-s.last>7*D) continue;
+    if(s.w>=10) add(110+s.w,`🐐 ${n} est en mode LÉGENDE !`,`${s.w} victoires d'affilée, du jamais vu`,{big:`${n}<br>LÉGENDE`,ic:"🐐",k:u+"w"+s.w});
+    else if(s.w>=7) add(100+s.w,`👑 ${n} est INARRÊTABLE !`,`${s.w} victoires d'affilée`,{big:`${n}<br>INARRÊTABLE`,ic:"👑",k:u+"w"+s.w});
+    else if(s.w>=5) add(80+s.w,`🚀 ${n} est en feu, personne ne l'arrête !`,`${s.w} victoires de suite`,{big:`${n}<br>EN FEU`,ic:"🚀",k:u+"w"+s.w});
+    else if(s.w>=3) add(60+s.w,`🔥 ${n} est on fire !`,`${s.w} victoires de suite`,{big:`${n}<br>ON FIRE`,ic:"🔥",k:u+"w"+s.w});
+    else if(s.u>=5) add(40+s.u,`🛡️ ${n} est invaincu depuis ${s.u} matchs`,"Qui va le faire tomber ?");
+    if(s.l>=5) add(30+s.l,`🧊 ${n} est en chute libre…`,`${s.l} défaites de suite, il faut l'aider !`,{cold:1});
+    else if(s.l>=3) add(20+s.l,`🥶 ${n} est dans le dur…`,`${s.l} défaites de suite, qui lui tend la main ?`,{cold:1});
+    else if(s.nw>=5) add(18,`🙈 ${n} attend toujours sa victoire`,`${s.nw} matchs sans gagner`,{cold:1});
+    if(s.cs>=3) add(35+s.cs,`🧱 ${n} a construit un mur !`,`${s.cs} matchs sans encaisser de but`);
+    if(s.g.length===3&&s.g.reduce((a,b)=>a+b,0)>=12) add(34,`💣 L'attaque de ${n} fait des ravages`,`${s.g.reduce((a,b)=>a+b,0)} buts sur ses 3 derniers matchs`);
+    if(s.today>=5) add(15,`🎮 ${n} ne lâche plus la manette`,`${s.today} matchs joués en 24 h`); }
+  // --- Matchs récents marquants
+  const R=L.filter(h=>now-h.at<2*D);
+  for(const h of R.slice(0,15)){ const [a,b]=h.score, w=a>b?0:a<b?1:-1, A=N(h.owners[0]), B=N(h.owners[1]);
+    if(w>=0&&Math.abs(a-b)>=4) add(50,`💥 ${N(h.owners[w])} a atomisé ${N(h.owners[1-w])}`,`${Math.max(a,b)}-${Math.min(a,b)} · la claque du jour`);
+    else if(a+b>=7) add(45,`🎢 Match de fou entre ${A} et ${B} !`,`${a}-${b}, ${a+b} buts, les défenses étaient en vacances`);
+    else if(w<0&&a>=3) add(42,`🤯 ${A} et ${B} se quittent sur un ${a}-${b}`,"Un nul spectaculaire");
+    for(let t=0;t<2;t++) for(const [pid,g] of Object.entries(((h.st||[])[t]||{}).g||{})) if(g>=3&&BY_ID[pid]) add(44+g,`🎩 ${g>=4?"Quadruplé":"Coup du chapeau"} de ${P(pid)} !`,`Avec l'équipe de ${N(h.owners[t])} contre ${N(h.owners[1-t])}`);
+    if(h.motm&&+h.motm.note>=9&&BY_ID[h.motm.pid]) add(38,`⭐ ${P(h.motm.pid)} a régalé : ${h.motm.note}/10`,`Homme du match pour ${N(h.owners[h.motm.t])}`); }
+  // --- Séries cassées et duels
+  for(const h of R.slice(0,10)){ const [a,b]=h.score; if(a===b) continue; const w=a>b?0:1, wu=h.owners[w], lu=h.owners[1-w];
+    let n=0; for(const x of L){ if(x===h||!x.owners.includes(lu)) continue; if(x.at>h.at) continue; const i=x.owners.indexOf(lu); if(x.score[i]>x.score[1-i]) n++; else break; }
+    if(n>=3){ add(55,`✋ ${N(wu)} a stoppé la série de ${N(lu)} !`,`Fin d'une série de ${n} victoires`); break; } }
+  const pairs={}; for(const h of L){ const k=h.owners.slice().sort().join("|"); (pairs[k]=pairs[k]||[]).push(h); }
+  let top=null; for(const k in pairs) if(!top||pairs[k].length>pairs[top].length) top=k;
+  if(top&&pairs[top].length>=4){ const [u,v]=top.split("|"); let wu=0,wv=0; for(const h of pairs[top]){ const i=h.owners.indexOf(u); if(h.score[i]>h.score[1-i]) wu++; else if(h.score[i]<h.score[1-i]) wv++; }
+    add(25,`📺 Le grand classique : ${N(u)} vs ${N(v)}`,`${pairs[top].length} matchs en 2 semaines · ${wu} victoires à ${wv}`); }
+  for(const k in pairs){ const M=pairs[k]; if(M.length<3) continue; const f=M[0], i0=f.score[0]>f.score[1]?0:f.score[1]>f.score[0]?1:-1; if(i0<0) continue; const wu=f.owners[i0];
+    let n=0; for(const h of M){ const i=h.owners.indexOf(wu); if(h.score[i]>h.score[1-i]) n++; else break; }
+    if(n>=3) add(30+n,`😈 ${N(wu)} est le cauchemar de ${N(f.owners[1-i0])}`,`${n} victoires de suite contre lui`);
+    if(M.length>=2){ const s=M[1], j=s.owners.indexOf(wu); if(s.score[j]<s.score[1-j]&&now-f.at<D) add(36,`⚔️ ${N(wu)} a pris sa revanche sur ${N(f.owners[1-i0])} !`,`${Math.max(...f.score)}-${Math.min(...f.score)}`); } }
+  // --- Classement du mois
+  const mk=MONTHK(), RM=((RANK||{}).months||{})[mk]||{}; const T=Object.entries(RM).filter(([u,r])=>r.j>=RANK_MIN&&NAMES[u]).sort((a,b)=>b[1].p-a[1].p||(b[1].bp-b[1].bc)-(a[1].bp-a[1].bc));
+  const mois=new Date().toLocaleDateString("fr-FR",{month:"long"}); const end=new Date(); end.setMonth(end.getMonth()+1,1); end.setHours(0,0,0,0); const left=Math.ceil((end-now)/D);
+  if(T.length){ add(28,`👑 ${N(T[0][0])} mène le classement de ${mois}`,`${T[0][1].p} pts · ${T[0][1].w} victoires`);
+    if(T.length>1&&T[0][1].p-T[1][1].p<=3) add(33,`🏁 Lutte au sommet entre ${N(T[0][0])} et ${N(T[1][0])} !`,`${T[0][1].p} pts contre ${T[1][1].p}${left<=7?` · plus que ${left} jour${left>1?"s":""}`:""}`);
+    if(left<=3) add(40,`⏳ Plus que ${left} jour${left>1?"s":""} avant la fin du classement !`,"Le 1er gagne un Pack Légende");
+    const att=T.slice().sort((a,b)=>b[1].bp/b[1].j-a[1].bp/a[1].j)[0]; add(14,`⚽ Meilleure attaque du mois : ${N(att[0])}`,`${(att[1].bp/att[1].j).toFixed(1)} buts par match`);
+    const def=T.slice().sort((a,b)=>a[1].bc/a[1].j-b[1].bc/b[1].j)[0]; add(13,`🧤 Meilleure défense du mois : ${N(def[0])}`,`${(def[1].bc/def[1].j).toFixed(1)} but encaissé par match`); }
+  // --- Fil d'actu (Gold Packs, Mythiques, coupes…)
+  for(const f of (feed||[]).filter(x=>now-x.at<D).slice(0,8)){ const t=String(f.text); const gold=/GOLD PACK/i.test(t), myth=t.startsWith("🌈"), cup=t.startsWith("🏆");
+    add(gold?75:myth?58:cup?65:24,esc(t),gold?"1 chance sur 1000 !":myth?"Carte Mythique tirée !":cup?"Champion !":"Il y a "+Math.max(1,Math.round((now-f.at)/H))+" h",gold?{big:`GOLD PACK<br>${N(f.who)}`,ic:"✨",k:"g"+f.at}:{}); }
+  // --- Marché et enchères
+  const sold=Object.values(market||{}).filter(l=>l.status==="sold"&&now-(l.soldAt||0)<D&&BY_ID[l.pid]).sort((a,b)=>b.price-a.price);
+  if(sold[0]&&sold[0].price>=200) add(26,`🏪 Gros transfert : ${P(sold[0].pid)} file chez ${N(sold[0].buyer)}`,`Vendu par ${N(sold[0].seller)} pour ${sold[0].price} 🪙`);
+  for(const a of Object.values(auctions||{}).filter(a=>a.ends>now&&BY_ID[a.pid]).sort((a,b)=>a.ends-b.ends).slice(0,2)){
+    const m=Math.round((a.ends-now)/60000); if(m<=120) add(37,`🔨 Dernières minutes pour ${P(a.pid)} !`,`${a.bid?`${a.bid} 🪙 par ${N(a.bidder)}`:"Aucune offre pour l'instant"} · fin dans ${m<60?m+" min":Math.round(m/60)+" h"}`);
+    else if((a.bids||0)>=4) add(27,`🔥 Ça s'arrache pour ${P(a.pid)}`,`${a.bids} offres, ${a.bid} 🪙 actuellement`); }
+  // --- Joueurs (comptes)
+  const us=Object.keys(NAMES).filter(u=>u!==CPU&&compos[u]); const by=f=>us.slice().sort((a,b)=>f(b)-f(a))[0];
+  if(us.length>1){ const r=by(u=>+compos[u].coins||0); if((compos[r].coins||0)>=1000) add(12,`💰 ${N(r)} est le plus riche du club`,`${compos[r].coins} 🪙 en banque`);
+    const c=by(u=>Object.keys(compos[u].coll||{}).length); add(11,`📚 ${N(c)} a le plus bel album`,`${Object.keys(compos[c].coll||{}).length}/${ALL_CARDS.length} cartes`);
+    const o=by(u=>+compos[u].opened||0); if((compos[o].opened||0)>=10) add(9,`🎴 ${N(o)} est accro aux packs`,`${compos[o].opened} packs ouverts`);
+    const g=by(u=>+compos[u].goldPacks||0); if((compos[g].goldPacks||0)>0) add(16,`✨ ${N(g)} a déjà ouvert ${compos[g].goldPacks} Gold Pack${compos[g].goldPacks>1?"s":""}`,"Le chanceux du club");
+    const s=by(u=>((compos[u].streak||{}).last===DAYK()||(compos[u].streak||{}).last===new Date(now-D).toLocaleDateString("fr-CA"))?((compos[u].streak||{}).n||0):0); const sn=(compos[s].streak||{}).n||0; if(sn>=5) add(10,`📅 ${N(s)} ne rate pas un jour`,`${sn} jours de connexion d'affilée`);
+    const hz=by(u=>(compos[u].heroes||[]).length); if((compos[hz].heroes||[]).length>=3) add(8,`🦸 ${N(hz)} collectionne les héros`,`${compos[hz].heroes.length} cartes Héros du match`); }
+  // --- Le vrai OL
+  const F=fxOf(); const nx=F.find(f=>!f.score&&new Date(f.date).getTime()>now);
+  if(nx){ const t=new Date(nx.date).getTime(), h=(t-now)/H, hm=new Date(t).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}); const nP=Object.keys(PREDS[nx.id]||{}).length;
+    if(h<36) add(h<6?48:32,`🔴🔵 ${esc(nx.home)}-${esc(nx.away)} ${new Date(t).toDateString()===new Date().toDateString()?"aujourd'hui":"demain"} à ${hm} !`,`${esc(nx.comp)} · ${nP?nP+" prono"+(nP>1?"s":"")+" déjà posé"+(nP>1?"s":""):"Personne n'a encore pronostiqué"} — fais le tien dans 🎮 Jeux`);
+    else add(7,`📆 Prochain match de l'OL : ${esc(nx.home)}-${esc(nx.away)}`,`${esc(nx.comp)} · ${new Date(t).toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})}`); }
+  const ls=F.filter(f=>f.score&&now-new Date(f.date).getTime()<3*D).pop();
+  if(ls){ const ol=ls.home==="OL"?0:1, r=sgn(ls.score[ol],ls.score[1-ol]); add(r>0?31:22,`${r>0?"🎉 Victoire de l'OL":r<0?"😤 Défaite de l'OL":"🤝 Nul de l'OL"} : ${esc(ls.home)} ${ls.score[0]}-${ls.score[1]} ${esc(ls.away)}`,(()=>{ const ex=Object.entries(PREDS[ls.id]||{}).filter(([u,p])=>predPts(p,ls.score)==="exact").map(([u])=>N(u)); return ex.length?`🔮 Score exact trouvé par ${ex.join(", ")} !`:"Personne n'a trouvé le score exact"; })(),r<0?{cold:1}:{}); }
+  const LP=Object.entries((LIVE&&LIVE.players)||{}).filter(([id])=>BY_ID[id]);
+  const hot=LP.filter(([,x])=>x.st==="up").sort((a,b)=>b[1].mod-a[1].mod)[0]; if(hot) add(6,`📈 ${P(hot[0])} est en forme dans la vraie vie`,`${esc(hot[1].note)} · bonus +${hot[1].mod} sur sa carte`);
+  const inj=LP.filter(([,x])=>x.st==="inj"); if(inj.length) add(5,`🚑 Infirmerie de l'OL : ${inj.map(([id])=>P(id)).join(", ")}`,"Leurs cartes sont affaiblies",{cold:1});
+  try{ const tf=tfWeek(); if(tf.length) add(4,`🔥 Cartes en forme cette semaine : ${tf.map(P).join(", ")}`,"8 % de chances dans le Pack Légende"); }catch(e){}
+  try{ const ev=curEvent(); if(ev&&ev.name) add(3,`🎉 Événement : ${esc(ev.name)}`,esc(ev.desc||"")); }catch(e){}
+  const seen=new Set(); return out.filter(x=>!seen.has(x.t)&&seen.add(x.t)).sort((a,b)=>b.p-a.p).slice(0,25);
 }
-function renderHype(){ const el=$("#hype"); if(!el) return; HYPE=hypeList(); clearInterval(hypeT);
+function renderHype(){ const el=$("#hype"); if(!el) return; try{ HYPE=hypeList(); }catch(e){ HYPE=[]; } clearInterval(hypeT);
   if(!me||!HYPE.length){ el.style.display="none"; return; } el.style.display="block";
   const show=()=>{ const x=HYPE[hypeI%HYPE.length]; el.classList.toggle("cold",!!x.cold); el.innerHTML=`<span>${x.t}<small>${x.d}</small></span>`; };
-  hypeI=0; show(); if(HYPE.length>1) hypeT=setInterval(()=>{ hypeI++; show(); },4500);
+  show(); if(HYPE.length>1) hypeT=setInterval(()=>{ hypeI++; show(); },4500);
   el.onclick=()=>{ hypeI++; show(); };
   // grosse animation plein écran, une seule fois par série (par appareil)
   const top=HYPE.find(x=>x.big); if(!top) return; let seen={}; try{ seen=JSON.parse(localStorage.getItem("onze-ol-hype")||"{}"); }catch(e){}
   if(seen[top.k]) return; seen[top.k]=Date.now(); try{ localStorage.setItem("onze-ol-hype",JSON.stringify(seen)); }catch(e){}
   const d=document.createElement("div"); d.className="hypePop"; d.innerHTML=`<i>${top.ic}</i><b>${top.big}</b><small>${top.d}</small>`; document.body.appendChild(d); setTimeout(()=>d.remove(),3400); }
+setInterval(()=>{ if(!document.hidden) renderHype(); },60000); // recalcul local (aucune requête réseau)
 function onMatchData(m,h){
   matches=Array.isArray(h)?h:[]; setTimeout(claimRewards,0); setTimeout(renderHype,600);
   const isNew=m&&m.id!==lastMatchId;
@@ -3625,7 +3690,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-21c"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-21d"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
