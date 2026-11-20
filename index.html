@@ -324,6 +324,19 @@ html:has(.modal.open),body:has(.modal.open){overflow:hidden}
 .tag.cur{background:var(--rouge);color:#fff}
 .pl.used{opacity:.4}
 .tk{display:block;font-weight:600;font-size:11.5px;color:#ff9aa8;margin-top:1px}
+.hype{margin:8px 16px 0;border-radius:12px;padding:9px 12px;font-weight:800;font-size:14px;text-align:center;color:#fff;background:linear-gradient(90deg,#b4232b,#ff7a1a,#ffb21a,#ff7a1a,#b4232b);background-size:300% 100%;animation:hypeBg 6s linear infinite;box-shadow:0 4px 18px #ff6a0055;cursor:pointer;overflow:hidden;display:none}
+.hype.cold{background:linear-gradient(90deg,#1b3d8a,#3ea0ff,#9fe0ff,#3ea0ff,#1b3d8a);background-size:300% 100%;box-shadow:0 4px 18px #3ea0ff55}
+.hype span{display:inline-block;animation:hypeIn .5s cubic-bezier(.2,1.6,.4,1)}
+.hype small{display:block;font-weight:600;font-size:11.5px;opacity:.9}
+@keyframes hypeBg{to{background-position:300% 0}}
+@keyframes hypeIn{from{transform:scale(.4) translateY(10px);opacity:0}to{transform:none;opacity:1}}
+.hypePop{position:fixed;inset:0;z-index:70;display:flex;align-items:center;justify-content:center;flex-direction:column;background:radial-gradient(circle,#ff6a0088,#000d 70%);color:#fff;text-align:center;padding:20px;animation:hypeFade 3.2s forwards;pointer-events:none}
+.hypePop b{font-size:clamp(30px,10vw,58px);line-height:1.05;text-shadow:0 0 24px #ff9a1a,0 4px 0 #b4232b;animation:hypeZoom .7s cubic-bezier(.2,1.6,.4,1)}
+.hypePop i{font-style:normal;font-size:64px;animation:hypeShake .4s ease-in-out infinite alternate}
+.hypePop small{font-size:16px;margin-top:8px;opacity:.9}
+@keyframes hypeZoom{from{transform:scale(3);opacity:0}to{transform:none;opacity:1}}
+@keyframes hypeShake{from{transform:rotate(-8deg) scale(1)}to{transform:rotate(8deg) scale(1.15)}}
+@keyframes hypeFade{0%{opacity:0}8%{opacity:1}80%{opacity:1}100%{opacity:0;visibility:hidden}}
 .modes{display:flex;gap:6px;margin:6px 16px 0;background:#0f1d40;border-radius:12px;padding:4px}
 .modes button{flex:1;padding-left:2px!important;padding-right:2px!important;font-size:13px!important;border:0;background:none;color:var(--mute);font-weight:700;font-size:14px;padding:9px;border-radius:9px;cursor:pointer}
 .modes button.on{background:var(--rouge);color:#fff}
@@ -533,6 +546,7 @@ html:has(.modal.open),body:has(.modal.open){overflow:hidden}
   <div class="sync" id="sync">Connexion…</div><div id="appV" style="text-align:center;font-size:10px;opacity:.45;margin-top:2px"></div>
 </header>
 <div class="modes"><button id="mCompo" class="on">11 type</button><button id="mDraft">⚡ Draft</button><button id="mMatch">🏟️ Match</button><button id="mCollec">🎴 Collec</button><button id="mLigue">🏆 Ligue</button><button id="mJeux">🎮 Jeux</button></div>
+<div class="hype" id="hype"></div>
 <div id="viewCompo">
 <div class="tabs" id="tabs"></div>
 <div class="wrap">
@@ -1871,8 +1885,38 @@ function restoreStarter2(){ if(me!=="EMx6WLN3DtazTVDRozJmdvUHnVE2"||!compos[me])
   c.bench=c.bench||{}; if(!Object.values(c.bench).includes("sergi-darder")&&!c.bench[3]) c.bench[3]="sergi-darder";
   c.fixStarter2r=1; save(); render(); toast("Dabo, Darder, Boudache et Himbert sont de retour dans ta collection"); }
 setInterval(restoreStarter2,3000);
+// ---------- 🔥 Séries du moment (bandeau d'accueil animé) ----------
+let HYPE=[], hypeI=0, hypeT=null;
+function hypeList(){
+  const L=matches.filter(h=>isPvP(h)&&h.score&&Date.now()-(h.at||0)<14*86400000).sort((a,b)=>(b.at||0)-(a.at||0));
+  const st={}; // par joueur : série en cours, depuis le match le plus récent
+  for(const h of L) for(let i=0;i<2;i++){ const u=h.owners[i]; const a=h.score[i], b=h.score[1-i]; const r=a>b?"W":a<b?"L":"D";
+    const s=st[u]=st[u]||{w:0,l:0,u:0,stopW:false,stopL:false,stopU:false,last:h.at};
+    if(!s.stopW){ if(r==="W") s.w++; else s.stopW=true; }
+    if(!s.stopL){ if(r==="L") s.l++; else s.stopL=true; }
+    if(!s.stopU){ if(r!=="L") s.u++; else s.stopU=true; } }
+  const out=[];
+  for(const u in st){ const s=st[u], n=esc(NAMES[u]||"?"); if(Date.now()-s.last>7*86400000) continue;
+    if(s.w>=7) out.push({k:u+"w"+s.w,t:`👑 ${n} est INARRÊTABLE !`,d:`${s.w} victoires d'affilée`,big:`${n}<br>INARRÊTABLE`,ic:"👑",p:100+s.w});
+    else if(s.w>=5) out.push({k:u+"w"+s.w,t:`🚀 ${n} est en feu, personne ne l'arrête !`,d:`${s.w} victoires de suite`,big:`${n}<br>EN FEU`,ic:"🚀",p:80+s.w});
+    else if(s.w>=3) out.push({k:u+"w"+s.w,t:`🔥 ${n} est on fire !`,d:`${s.w} victoires de suite`,big:`${n}<br>ON FIRE`,ic:"🔥",p:60+s.w});
+    else if(s.u>=5) out.push({k:u+"u"+s.u,t:`🛡️ ${n} est invaincu depuis ${s.u} matchs`,d:"Qui va le faire tomber ?",p:40+s.u});
+    if(s.l>=3) out.push({k:u+"l"+s.l,t:`🥶 ${n} est dans le dur…`,d:`${s.l} défaites de suite, qui lui tend la main ?`,cold:true,p:20+s.l}); }
+  const big=L.find(h=>Date.now()-(h.at||0)<86400000&&Math.abs(h.score[0]-h.score[1])>=4);
+  if(big){ const w=big.score[0]>big.score[1]?0:1; out.push({k:"x"+big.id,t:`💥 ${esc(NAMES[big.owners[w]]||"?")} a atomisé ${esc(NAMES[big.owners[1-w]]||"?")}`,d:`${Math.max(...big.score)}-${Math.min(...big.score)} · la photo du jour`,p:50}); }
+  return out.sort((a,b)=>b.p-a.p);
+}
+function renderHype(){ const el=$("#hype"); if(!el) return; HYPE=hypeList(); clearInterval(hypeT);
+  if(!me||!HYPE.length){ el.style.display="none"; return; } el.style.display="block";
+  const show=()=>{ const x=HYPE[hypeI%HYPE.length]; el.classList.toggle("cold",!!x.cold); el.innerHTML=`<span>${x.t}<small>${x.d}</small></span>`; };
+  hypeI=0; show(); if(HYPE.length>1) hypeT=setInterval(()=>{ hypeI++; show(); },4500);
+  el.onclick=()=>{ hypeI++; show(); };
+  // grosse animation plein écran, une seule fois par série (par appareil)
+  const top=HYPE.find(x=>x.big); if(!top) return; let seen={}; try{ seen=JSON.parse(localStorage.getItem("onze-ol-hype")||"{}"); }catch(e){}
+  if(seen[top.k]) return; seen[top.k]=Date.now(); try{ localStorage.setItem("onze-ol-hype",JSON.stringify(seen)); }catch(e){}
+  const d=document.createElement("div"); d.className="hypePop"; d.innerHTML=`<i>${top.ic}</i><b>${top.big}</b><small>${top.d}</small>`; document.body.appendChild(d); setTimeout(()=>d.remove(),3400); }
 function onMatchData(m,h){
-  matches=Array.isArray(h)?h:[]; setTimeout(claimRewards,0);
+  matches=Array.isArray(h)?h:[]; setTimeout(claimRewards,0); setTimeout(renderHype,600);
   const isNew=m&&m.id!==lastMatchId;
   if(isNew&&lastMatchId!==null&&m.by!==me&&m.teams&&m.teams.some(t=>t.owner===me||(t.owners||[]).includes(me))&&Date.now()-m.at<60000){ mClosed=null; setTimeout(()=>{ setMode("match"); window.scrollTo(0,0); },300); }
   if(isNew&&lastMatchId!==null&&m.by!==me){ toast(`🏟️ ${NAMES[m.by]||"Quelqu'un"} a lancé un match : ${tn(m,0)} vs ${tn(m,1)} !`); }
@@ -3581,7 +3625,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-21b"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-21c"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
