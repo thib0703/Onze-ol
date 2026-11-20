@@ -527,7 +527,7 @@ html:has(.modal.open),body:has(.modal.open){overflow:hidden}
 </div>
 
 <header>
-  <button class="who" id="who">Changer</button><button class="coins" id="coins" style="display:none"></button>
+  <button class="who" id="who">Changer</button><button class="who" id="admBtn" style="display:none;top:40px;color:#ffd970;border-color:#6b5a1e">🛠️ Admin</button><button class="coins" id="coins" style="display:none"></button>
   <h1>Les Gones <span>Legends</span></h1>
   <div class="sub">Tous les joueurs passés par Lyon depuis 2000</div>
   <div class="sync" id="sync">Connexion…</div><div id="appV" style="text-align:center;font-size:10px;opacity:.45;margin-top:2px"></div>
@@ -916,6 +916,7 @@ $("#aSignup").onclick=async()=>{
   try{ $("#aSignup").disabled=true; await firebase.auth().createUserWithEmailAndPassword(pseudoEmail(n),pw); }catch(err){ pendingName=null; $("#aMsg").textContent=authErr(err); }
   $("#aSignup").disabled=false; };
 $("#shareBtn").onclick=async()=>{ const url=location.origin+location.pathname; try{ if(navigator.share){ await navigator.share({title:"Les Gones Legends",text:"Crée ton compte, fais ton 11 type de l'OL et viens me défier !",url}); return; } }catch(e){ return; } try{ await navigator.clipboard.writeText(url); toast("Lien copié !"); }catch(e){ toast(url); } };
+$("#admBtn").onclick=()=>adminPanel();
 $("#who").onclick=()=>openModal(`Connecté en tant que ${NAMES[me]||"?"}`,null,[[notifState()==="granted"?"🔔 Notifications activées":"🔔 Activer les notifications",()=>{ enableNotifs(); }],["📲 Installer l'appli",()=>{ setTimeout(()=>installGuide(true),200); }],["💡 Revoir les explications",()=>{ resetTips(); }],...(me===ADMIN?[["🛠️ Panneau admin",()=>{ setTimeout(adminPanel,150); }]]:[]),["Se déconnecter",()=>{ firebase.auth().signOut(); }],["Inviter quelqu'un",()=>$("#shareBtn").click(),true],["Fermer",null,true]]);
 
 // ---------- Rendu ----------
@@ -2563,7 +2564,7 @@ const BK_DAY=()=>new Date().toLocaleDateString("fr-CA");
 async function makeBackup(manual){ const qs=await db.collection("onzeol_users").get(); const users={}; qs.forEach(d=>{ const x={...d.data()}; delete x.fcm; users[d.id]=x; });
   await db.collection("onzeol_backups").doc(BK_DAY()).set({at:Date.now(),by:manual?"admin":"auto",users}); return Object.keys(users).length; }
 async function autoBackup(){ try{ const d=await db.collection("onzeol_backups").doc(BK_DAY()).get(); if(!d.exists) await makeBackup(false); }catch(e){} }
-async function adminOp(o){ await db.collection("onzeol_admin").add({...o,by:me,at:Date.now(),done:false}); }
+async function adminOp(o){ try{ await db.collection("onzeol_admin").add({...o,by:me,at:Date.now(),done:false}); }catch(e){ toast("Admin refusé ("+(e.code||e.message)+") : les règles Firestore ne sont peut-être pas publiées",true); throw e; } }
 async function adminPanel(){ if(me!==ADMIN) return; const T=$("#tradeUI"); T.classList.add("open");
   const users=Object.keys(NAMES).filter(u=>u!==CPU).sort((a,b)=>(NAMES[a]||"").localeCompare(NAMES[b]||"","fr"));
   let bks=[]; try{ const qs=await db.collection("onzeol_backups").get(); qs.forEach(d=>bks.push(d.id)); bks.sort().reverse(); }catch(e){}
@@ -3570,7 +3571,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-20y"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-20z"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
@@ -3638,6 +3639,7 @@ function startListeners(){
   unsubs.push(db.collection("onzeol_leagues").onSnapshot(qs=>{ const all={}; const now=Date.now(); qs.forEach(doc=>{ const L=doc.data(); if(L&&L.end>now-30*86400000) all[doc.id]=L; }); onLeagues(all); },()=>{}));
   try{ unsubs.push(db.collection("onzeol_admin").where("to","==",me).onSnapshot(qs=>{ qs.forEach(doc=>applyAdminOp(doc.id,doc.data())); },()=>{})); }catch(e){}
   if(me===ADMIN) setTimeout(autoBackup,8000);
+  $("#admBtn").style.display=me===ADMIN?"":"none";
   unsubs.push(db.collection("onzeol_meta").doc("rank").onSnapshot(sn=>{ RANK=sn.exists?sn.data():{}; claimRank(); if(mode==="ligue") renderLigue(); },()=>{}));
   unsubs.push(db.collection("onzeol_meta").doc("preds").onSnapshot(sn=>{ PREDS=sn.exists?sn.data():{}; settlePreds(); if(mode==="jeux") renderJeux(); },()=>{}));
   unsubs.push(db.collection("onzeol_cups").onSnapshot(qs=>{ const all={}; qs.forEach(doc=>{ const K=doc.data(); if(K&&K.name) all[doc.id]=K; }); onCups(all); },()=>{}));
