@@ -477,6 +477,8 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
 .fcard.mini .fc-glow{opacity:.5}
 .fcard.mini .fc-tex{opacity:.6}
 
+.slot.has .nm{font-size:10px;padding:1px 5px;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:76px;background:#000b;line-height:1.3}
+.slot.empty .nm{font-size:10.5px}
 .readyrow{display:flex;justify-content:space-around;gap:8px;margin:10px 0 6px;font-size:13px;font-weight:700}
 .chatfab{position:fixed;right:14px;bottom:calc(76px + env(safe-area-inset-bottom));z-index:30;width:54px;height:54px;border-radius:50%;border:0;background:var(--rouge);color:#fff;font-size:25px;box-shadow:0 6px 18px #0008;display:none}
 .chatfab b{position:absolute;top:-4px;right:-4px;background:#ffd970;color:#111;font-size:11px;font-weight:900;border-radius:999px;padding:2px 6px;display:none}
@@ -860,7 +862,7 @@ const POS_CHIPS = ["GB","DD","DC","DG","MDC","MC","MOC","AD","AG","BU"];
 // ---------- État ----------
 const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const short = n => { const parts=n.split(" "); return parts.length>1 && n.length>13 ? parts.slice(1).join(" ") : n; };
+const short = n => { const parts=n.split(" "); return parts.length>1 && n.length>10 ? parts.slice(1).join(" ") : n; };
 let me=null, viewing=null, editing=null, chip=null;
 let compos={};
 const C = w => compos[w]||(compos[w]=blank());
@@ -965,7 +967,7 @@ function render(){
   $("#bar").style.display=mine?"flex":"none";
   $("#formation").value=c.formation;
   const pitch=$("#pitch"); pitch.querySelectorAll(".slot").forEach(e=>e.remove());
-  F[c.formation].forEach(([role,x,y],i)=>{ const b=slotBtn("xi",i,role,c.slots[i],mine); b.style.left=x+"%"; b.style.top=y+"%"; pitch.appendChild(b); });
+  F[c.formation].forEach(([role,x,y],i)=>{ const b=slotBtn("xi",i,role,c.slots[i],mine); b.style.left=x+"%"; b.style.top=y+"%"; b.style.zIndex=Math.round(y); pitch.appendChild(b); });
   const n=filled(c);
   renderSugg(mine);
   const xa=xiAvg(me); $("#count").innerHTML= (n===11 ? "✅ 11 complet !" : `${n}/11 titulaires`+(mine?" — touche une case pour choisir":""))+(xa.n?` · <span class="xiavg">⭐ Note moyenne : <b>${xa.avg}</b></span>`:"");
@@ -1271,7 +1273,7 @@ function renderDraft(){
   F[d.form[dView]].forEach(([role,x,y],i)=>{ const pid=t.slots[i]; const clickable=can&&!pid;
     const b=slotBtn("xi",i,role,pid,clickable||(mine&&!!pid),clickable?()=>openSheet("xi",i,role,"draft"):()=>{});
     if(!clickable&&!pid) b.classList.add("ro"); if(!clickable&&!pid&&!mine) b.querySelector(".nm")&&(b.querySelector(".nm").textContent="—");
-    b.style.left=x+"%"; b.style.top=y+"%"; P.appendChild(b); });
+    b.style.left=x+"%"; b.style.top=y+"%"; b.style.zIndex=Math.round(y); P.appendChild(b); });
   $("#dBenchSec").style.display=f.bench?"":"none";
   const BE=$("#dBench"); BE.innerHTML="";
   for(let i=0;i<f.bench;i++){ const pid=t.bench[i]; const p=pid&&BY_ID[pid]; const clickable=can&&!pid;
@@ -2336,7 +2338,7 @@ function renderBudget(){
   const N=bSlots(d).length, can=d.status==="running"&&d.turn===me;
   const left=d.budget-myT.spent;
   const slotHTML=(w)=>{ const t=d.teams[w]; const P=`<div class="pitch bp">${$("#pitch .lines").outerHTML}${F[d.formation].map(([r,x,y],i)=>{ const pid=t.slots[i]; const s={key:"s"+i,i,role:r}; const opened=d.offers[s.key];
-        return `<button class="slot ${pid?"has":"empty"}" style="left:${x}%;top:${y}%" ${w===me&&can&&!pid&&(d.v!==2||!d.cur||d.cur.key===s.key)?`data-bs="${i}"`:pid?`data-card="${pid}"`:""}>${pid?cardHTML(pid,{w:42,mini:true,role:r})+`<div class="nm">${esc(short(BY_ID[pid].name))} · ${priceOf(pid)}</div>`:`<div class="shirt"><b>${r}</b></div><div class="nm">${opened?(d.opener[s.key]===me?"ouvert":"🎯 4 restants"):w===me&&can?"+ Ouvrir":"—"}</div>`}</button>`; }).join("")}</div>`;
+        return `<button class="slot ${pid?"has":"empty"}" style="left:${x}%;top:${y}%;z-index:${Math.round(y)}" ${w===me&&can&&!pid&&(d.v!==2||!d.cur||d.cur.key===s.key)?`data-bs="${i}"`:pid?`data-card="${pid}"`:""}>${pid?cardHTML(pid,{w:42,mini:true,role:r})+`<div class="nm">${esc(short(BY_ID[pid].name))} · ${priceOf(pid)}</div>`:`<div class="shirt"><b>${r}</b></div><div class="nm">${opened?(d.opener[s.key]===me?"ouvert":"🎯 4 restants"):w===me&&can?"+ Ouvrir":"—"}</div>`}</button>`; }).join("")}</div>`;
       const co=t.coach; return P+`<div class="bcoach">${co?`<button class="slot has" data-card="${co}" style="position:static;transform:none">${cardHTML(co,{w:54,mini:true})}<div class="nm">${esc(BY_ID[co].name)} · ${priceOf(co)}</div></button><div class="skl">🧠 ${esc(skillOf(co).n||"")}<small>${esc(skillOf(co).d||"")}</small></div>`:`<button class="slot empty" style="position:static;transform:none" ${w===me&&can?`data-bs="coach"`:""}><div class="shirt"><b>COA</b></div><div class="nm">${d.offers.coach?(d.opener.coach===me?"ouvert":"🎯 restants"):w===me&&can?"+ Ouvrir":"—"}</div></button><div class="skl mute">Entraîneur à choisir</div>`}</div>`; };
   const view=bViewSel&&d.players.includes(bViewSel)?bViewSel:me;
   el.innerHTML=`<div class="dbanner${can?" me":""}">${d.status==="done"?"🏁 Équipes complètes !":can?(d.v===2?(d.cur?`💰 À toi : choisis ton ${esc(bRoleName(d,d.cur.key))} parmi les 4 restants`:"💰 À toi d'ouvrir un poste et de choisir en premier"):"💰 À toi de choisir !"):`⏳ ${esc(NAMES[d.turn]||"?")} ${d.v===2&&!d.cur?"ouvre un poste…":"choisit…"}`}<small>${d.status==="done"?"Lance le match !":`Budget restant : ${left} / ${d.budget} pts · ${bFilled(d,me)}/${N} choisis`}</small></div>
@@ -2945,7 +2947,7 @@ function showProfile(id){
   M.classList.add("open"); $("#pfClose").onclick=()=>M.classList.remove("open");
   const xb=$("#pfXI"); if(xb) xb.onclick=()=>{ const own=c.coll||{}; const f=F[c.formation]||F["4-3-3"];
     $("#pfXIbox").innerHTML=`<div class="mute" style="font-size:12px;margin:6px 0">${esc(c.formation||"4-3-3")} · cartes possédées seulement</div><div class="pitch mini-pitch">${f.map(([r,x,y],i)=>{ const pid=(c.slots||{})[i]; const ok=pid&&own[pid];
-      return `<div class="mp-slot" style="left:${x}%;top:${4+y*.86}%">${ok?cardHTML(pid,{w:40,mini:true,role:r,ovr:BY_ID[pid].ovr+evoOf(id,pid)}):`<span class="mp-empty">${r}</span>`}<small>${ok?esc(short(BY_ID[pid].name)):""}</small></div>`; }).join("")}</div>
+      return `<div class="mp-slot" style="left:${x}%;top:${4+y*.86}%;z-index:${Math.round(y)}">${ok?cardHTML(pid,{w:40,mini:true,role:r,ovr:BY_ID[pid].ovr+evoOf(id,pid)}):`<span class="mp-empty">${r}</span>`}<small>${ok?esc(short(BY_ID[pid].name)):""}</small></div>`; }).join("")}</div>
       ${c.coach&&own[c.coach]?`<div class="mute" style="font-size:12px;margin-top:6px">Entraîneur : <b>${esc(BY_ID[c.coach].name)}</b></div>`:""}`;
     xb.style.display="none"; };
 }
@@ -3481,7 +3483,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-20l";
+const APP_V="2026-11-20m";
 let updShown=false;
 async function checkUpdate(){ if(updShown) return; try{ const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const APP_V="([^"]+)"/); if(m&&m[1]!==APP_V){
