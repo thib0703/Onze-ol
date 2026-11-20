@@ -993,13 +993,14 @@ function slotBtn(kind,i,role,pid,mine,onclick){
     const lock=mode==="compo"&&viewing===me&&me&&!((C(me).coll||{})[p.id]);
     if(lock) b.classList.add("unowned");
     b.innerHTML=(lock?`<span class="lockb">🔒</span>`:"")+cardHTML(p.id,{w:kind==="coach"?54:42,mini:true,role:kind==="xi"?role:null,ovr:me&&mode==="compo"?p.ovr+evoOf(viewing,p.id):undefined})+`<div class="nm">${esc(kind==="coach"?p.name:short(p.name))}</div>`;
-    b.onclick=()=>showCard(p.id,(mine&&!onclick)?{change:()=>openSheet(kind,i,role),remove:()=>{editing={kind,i,role,mode:"compo"};setPick(null);}}:null);
+    b.onclick=()=>showCard(p.id,(mine&&!onclick)?{change:()=>openSheet(kind,i,role),swap:kind!=="coach"&&mode==="compo"?()=>{ cSwap={kind,i}; render(); toast("🔀 Touche la place où le mettre (joueur ou case vide)"); }:null,remove:()=>{editing={kind,i,role,mode:"compo"};setPick(null);}}:null);
   } else {
     b.innerHTML=`<div class="shirt"><b>${esc(role)}</b></div>`+(mine?`<div class="nm">+ Choisir</div>`:`<div class="nm">—</div>`);
     if(mine) b.onclick=onclick||(()=>openSheet(kind,i,role));
   }
   return b;
 }
+let cSwap=null;
 function render(){
   if(!me) return;
   renderTabs();
@@ -1009,12 +1010,16 @@ function render(){
   $("#bar").style.display=mine?"flex":"none";
   $("#formation").value=c.formation;
   const pitch=$("#pitch"); pitch.querySelectorAll(".slot").forEach(e=>e.remove());
-  F[c.formation].forEach(([role,x,y],i)=>{ const b=slotBtn("xi",i,role,c.slots[i],mine); b.style.left=x+"%"; b.style.top=y+"%"; b.style.zIndex=Math.round(y); pitch.appendChild(b); });
+  if(!mine) cSwap=null;
+  const sw=(b,kind,i)=>{ if(!cSwap) return; b.classList.add(cSwap.kind===kind&&cSwap.i===i?"swsel":"swcan"); b.onclick=()=>{ const A=cSwap; cSwap=null; const box=k=>k==="xi"?c.slots:c.bench;
+      if(!(A.kind===kind&&A.i===i)){ const a=box(A.kind)[A.i], b2=box(kind)[i]; if(b2) box(A.kind)[A.i]=b2; else delete box(A.kind)[A.i]; box(kind)[i]=a; save(); toast(`🔀 ${BY_ID[a]?.name||""}${b2?" ⇄ "+(BY_ID[b2]?.name||""):" déplacé"}`); }
+      render(); }; };
+  F[c.formation].forEach(([role,x,y],i)=>{ const b=slotBtn("xi",i,role,c.slots[i],mine); sw(b,"xi",i); b.style.left=x+"%"; b.style.top=y+"%"; b.style.zIndex=Math.round(y); pitch.appendChild(b); });
   const n=filled(c);
   renderSugg(mine);
   const xa=xiAvg(viewing); $("#count").innerHTML= (n===11 ? "✅ 11 complet !" : `${n}/11 titulaires`+(mine?" — touche une case pour choisir":""))+(xa.n?` · <span class="xiavg">⭐ Note moyenne : <b>${xa.avg}</b></span>`:"");
   const bench=$("#bench"); bench.innerHTML="";
-  for(let i=0;i<BENCH_N;i++){ const pid=c.bench[i]; const p=pid&&BY_ID[pid]; bench.appendChild(slotBtn("bench",i,p?p.pos[0]:String(12+i),pid,mine)); }
+  for(let i=0;i<BENCH_N;i++){ const pid=c.bench[i]; const p=pid&&BY_ID[pid]; const bb=slotBtn("bench",i,p?p.pos[0]:String(12+i),pid,mine); sw(bb,"bench",i); bench.appendChild(bb); }
   $("#benchCount").textContent=`${Object.values(c.bench).filter(Boolean).length}/${BENCH_N}`;
   $("#saveBtn").style.display=mine?"block":"none";
   const sv=c.savedAt?new Date(c.savedAt):null;
@@ -1495,6 +1500,7 @@ function showCard(pid,act,lv){
   const B=$("#cmBtns");
   const mk=(t,fn,ghost)=>{const b=document.createElement("button");b.className="btn"+(ghost?" ghost":"");b.textContent=t;b.onclick=()=>{M.classList.remove("open");fn&&fn();};B.appendChild(b);};
   if(act&&act.change) mk("🔁 Changer de joueur",act.change);
+  if(act&&act.swap) mk("🔀 Échanger de place",act.swap);
   if(act&&act.evo){ mk(act.evo.label,act.evo.fn); if(act.evo.dis) B.lastChild.disabled=true; }
   if(act&&act.sell) mk(act.sell.label,act.sell.fn);
   if(act&&act.remove) mk("Retirer",act.remove,true);
@@ -3443,6 +3449,7 @@ function defiBoard(d){ const L=[]; for(const id of Object.keys(NAMES)){ const c=
 function claimDefi(){ const c=W(); const y=yday(); if(c.dchWon===y) return; const B=defiBoard(y); if(!B.length) return; c.dchWon=y;
   const gd=r=>r.s[0]-r.s[1]; const best=B.length>=2&&B[0].id===me&&(gd(B[0])>gd(B[1])||(gd(B[0])===gd(B[1])&&B[0].s[0]>B[1].s[0]));
   if(best) grant({pack:"or"},"🎯 Meilleur score du défi d'hier"); else save(); }
+let defiSw=null;
 function pickDefi(i,role){
   const D=defiState(), df=defiOf(D.day); const used=new Set(Object.values(D.slots)); const cur=D.slots[i];
   const left=df.budget?df.budget-bCost(Object.entries(D.slots).filter(([k])=>+k!==i).map(([,v])=>v)):null;
@@ -3470,9 +3477,10 @@ function defiHTML(){
   return `<h3>🎯 Défi du jour</h3><div class="evban"><b>${df.t}</b><span>Adversaire du jour : <b>${esc(defiClub(D.day))}</b> (note moyenne ${clubAvg(defiClub(D.day))}) · le même pour tout le monde · 1 seul essai · tous les joueurs du jeu sont dispo</span></div>
   ${D.done?`<div class="motm">Ton score : <b>${D.score[0]} - ${D.score[1]}</b></div>`:`
    <div class="field"><span>Formation</span><select id="dfForm">${Object.keys(F).map(f=>`<option ${f===D.formation?"selected":""}>${f}</option>`).join("")}</select></div>
-   <div class="dslots">${form.map(([role],i)=>{ const p=BY_ID[D.slots[i]]; return `<button class="dslot${p?" on "+cardTier(p):""}" data-ds="${i}|${role}"><small>${role}</small><b>${p?esc(short(p.name)):"+"}</b>${p?`<i>${Math.round(p.ovr*fit(p,role))}</i>`:""}</button>`; }).join("")}</div>
+   <div class="dslots">${form.map(([role],i)=>{ const p=BY_ID[D.slots[i]]; return `<button class="dslot${p?" on "+cardTier(p):""}${defiSw!=null&&defiSw!==true&&defiSw===i?" swsel":""}" data-ds="${i}|${role}"><small>${role}</small><b>${p?esc(short(p.name)):"+"}</b>${p?`<i>${Math.round(p.ovr*fit(p,role))}</i>`:""}</button>`; }).join("")}</div>
    ${df.budget?`<div class="mute" style="font-size:12px;text-align:center">Budget : ${bCost(ids)}/${df.budget}</div>`:""}
    ${ids.length?(()=>{ const a=Math.round(ids.reduce((t,id)=>t+BY_ID[id].ovr,0)/ids.length), oa=clubAvg(defiClub(D.day)); return `<div class="vsavg"><div><small>Ton équipe</small><b>${a}</b></div><span>VS</span><div><small>${esc(defiClub(D.day))}</small><b>${oa}</b></div></div>`; })():""}
+   ${ids.length>=2?`<button class="btn ghost" id="dfSw" style="width:100%;margin:6px 0">${defiSw==null?"🔀 Échanger deux joueurs de place":"✖ Annuler l'échange (touche 2 joueurs)"}</button>`:""}
    <button class="btn big" id="dfGo" ${ids.length<11?"disabled":""}>▶️ Jouer le défi (${ids.length}/11)</button>`}
   <h4>Classement du jour</h4>${B.length?B.map((r,i)=>`<div class="rk${r.id===me?" me":""}" style="grid-template-columns:30px 1fr 60px"><span>${["🥇","🥈","🥉"][i]||i+1}</span><span>${esc(NAMES[r.id]||"?")}</span><b>${r.s[0]}-${r.s[1]}</b></div>`).join(""):`<div class="mute" style="font-size:13px">Personne n'a encore joué.</div>`}
   <div class="rules" style="font-size:12px">40 🪙 pour participer, +60 si victoire. Le meilleur score du jour (écart de buts) gagne un Pack Épique le lendemain.</div>`;
@@ -3538,13 +3546,14 @@ function sofaPlay(){ const S=sofa; const sides=S.t.map((t,i)=>{ const c={formati
   saveReplay(m); try{ db.collection("onzeol_drafthist").doc(m.id).set({players:[me],names:S.n,mode:"sofa",at:Date.now(),score:m.score,mid:m.id,
     teams:{p0:{formation:SOFA_FORM,slots:S.t[0].slots,coach:S.t[0].coach},p1:{formation:SOFA_FORM,slots:S.t[1].slots,coach:S.t[1].coach}}}); }catch(e){}
   playLocal(m); }
+let sofaSw=null;
 function sofaHTML(){
   if(!sofa) return `<h3>🛋️ Canapé (2 joueurs, 1 téléphone)</h3><div class="rules" style="font-size:12px;margin-top:0">Draft express côte à côte : à chaque poste 5 joueurs, un choisit, l'autre prend parmi les 4 restants, puis on alterne. Ensuite le match se joue sur ce téléphone. Pas besoin de connexion.</div>
     <div class="field"><input id="sfA" placeholder="Joueur 1" maxlength="14" value="${esc(NAMES[me]||"")}"><input id="sfB" placeholder="Joueur 2" maxlength="14"></div><button class="btn big" id="sfGo">🛋️ Commencer</button>`;
   const S=sofa; const done=S.step>11;
-  const team=i=>`<div class="sft"><h4>${esc(S.n[i])}</h4>${F[SOFA_FORM].map(([r],k)=>`<div><small>${r}</small> ${S.t[i].slots[k]?esc(short(BY_ID[S.t[i].slots[k]].name)):"–"}</div>`).join("")}<div><small>COA</small> ${S.t[i].coach?esc(short(BY_ID[S.t[i].coach].name)):"–"}</div></div>`;
+  const team=i=>`<div class="sft"><h4>${esc(S.n[i])}</h4>${F[SOFA_FORM].map(([r],k)=>{ const p=BY_ID[S.t[i].slots[k]]; const hp=p&&hpPen(p,r); return `<div ${done&&p?`data-sfs="${i}|${k}" style="cursor:pointer;border-radius:6px;${sofaSw&&sofaSw[0]===i&&sofaSw[1]===k?"background:#ffd97055;":""}"`:""}><small>${r}</small> ${p?esc(short(p.name))+(hp?` <small style="color:#ffb21a">⚠️−${hp}%</small>`:""):"–"}</div>`; }).join("")}<div><small>COA</small> ${S.t[i].coach?esc(short(BY_ID[S.t[i].coach].name)):"–"}</div></div>`;
   let h=`<h3>🛋️ Canapé <small>${esc(S.n[0])} vs ${esc(S.n[1])}</small></h3>`;
-  if(done) h+=`<button class="btn big" id="sfPlay">▶️ Lancer le match</button>`;
+  if(done) h+=`<div class="swhint">🔀 Avant de lancer : touche 2 joueurs d'une même équipe pour les échanger de place.</div><button class="btn big" id="sfPlay">▶️ Lancer le match</button>`;
   else{ const O=sofaOffer(); const who=(S.step%2+O.phase)%2; const role=S.step===11?"COACH":F[SOFA_FORM][S.step][0];
     h+=`<div class="dbanner">À <b>${esc(S.n[who])}</b> de choisir<small>${S.step===11?"Entraîneur":(ROLE_LABEL[role]||role)+" ("+role+")"} · ${O.phase?"l'autre a déjà pris le sien":"premier choix"}</small></div>
     <div class="sfoff">${O.ids.map(id=>`<button class="sfc${id===O.taken?" gone":""}" data-sf="${id}" ${id===O.taken?"disabled":""}>${cardHTML(id,{w:104,role:S.step===11?null:role})}${S.step===11&&COACH_SKILL[id]?`<span class="cskill" style="width:104px">🧠 <b>${esc(COACH_SKILL[id].n)}</b><br>${esc(COACH_SKILL[id].d)}</span>`:""}</button>`).join("")}</div>`; }
@@ -3621,11 +3630,18 @@ function renderJeux(){
   J.querySelectorAll("[data-cd]").forEach(b=>b.onclick=()=>openModal(`Supprimer la coupe « ${cups[b.dataset.cd]?.name||""} » ?`,null,[["Supprimer",()=>{ db.collection("onzeol_cups").doc(b.dataset.cd).delete().catch(()=>toast("Impossible",true)); }],["Annuler",null,true]]));
   J.querySelectorAll("[data-rp]").forEach(b=>b.onclick=()=>openReplay(b.dataset.rp));
   const fs=$("#dfForm"); if(fs) fs.onchange=e=>{ const D=defiState(); D.formation=e.target.value; D.slots={}; save(); renderJeux(); };
-  J.querySelectorAll("[data-ds]").forEach(b=>b.onclick=()=>{ const [i,r]=b.dataset.ds.split("|"); pickDefi(+i,r); });
+  J.querySelectorAll("[data-ds]").forEach(b=>b.onclick=()=>{ const [i,r]=b.dataset.ds.split("|"); if(defiSw==null){ pickDefi(+i,r); return; }
+    const D=defiState(); if(defiSw===true){ if(!D.slots[+i]) return; defiSw=+i; renderJeux(); return; }
+    const a=D.slots[defiSw], c=D.slots[+i]; if(defiSw!==+i){ if(c) D.slots[defiSw]=c; else delete D.slots[defiSw]; D.slots[+i]=a; save(); toast(`🔀 ${BY_ID[a]?.name||""}${c?" ⇄ "+(BY_ID[c]?.name||""):" déplacé"}`); } defiSw=null; renderJeux(); });
+  on("#dfSw",()=>{ defiSw=defiSw==null?true:null; if(defiSw) toast("Touche le 1er joueur, puis sa nouvelle place"); renderJeux(); });
   on("#dfGo",defiPlay); on("#jQuiz",quizStart);
   on("#sfGo",()=>{ const a=$("#sfA").value.trim()||"Joueur 1", b=$("#sfB").value.trim()||"Joueur 2"; sofa={n:[a,b],step:0,t:[{slots:{},coach:null,ids:[]},{slots:{},coach:null,ids:[]}],offer:null}; sofaSave(); renderJeux(); });
   J.querySelectorAll("[data-sf]").forEach(b=>b.onclick=()=>sofaPick(b.dataset.sf));
-  on("#sfPlay",sofaPlay); on("#sfStop",()=>{ sofa=null; sofaSave(); renderJeux(); });
+  on("#sfPlay",sofaPlay);
+  J.querySelectorAll("[data-sfs]").forEach(b=>b.onclick=()=>{ const [i,k]=b.dataset.sfs.split("|").map(Number);
+    if(!sofaSw||sofaSw[0]!==i){ sofaSw=[i,k]; renderJeux(); return; }
+    if(sofaSw[1]!==k){ const sl=sofa.t[i].slots; const a=sl[sofaSw[1]]; sl[sofaSw[1]]=sl[k]; sl[k]=a; sofaSave(); }
+    sofaSw=null; renderJeux(); }); on("#sfStop",()=>{ sofa=null; sofaSave(); renderJeux(); });
 }
 
 // ---------- 💡 Explications au premier contact ----------
@@ -3731,7 +3747,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-21e"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-21f"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
