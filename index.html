@@ -2979,8 +2979,8 @@ function showProfile(id){
     <div class="mbtns"><button class="btn ghost" id="pfClose">Fermer</button></div></div>`;
   M.classList.add("open"); $("#pfClose").onclick=()=>M.classList.remove("open");
   const xb=$("#pfXI"); if(xb) xb.onclick=()=>{ const own=c.coll||{}; const f=F[c.formation]||F["4-3-3"];
-    $("#pfXIbox").innerHTML=`<div class="mute" style="font-size:12px;margin:6px 0">${esc(c.formation||"4-3-3")} · cartes possédées seulement</div><div class="pitch mini-pitch">${f.map(([r,x,y],i)=>{ const pid=(c.slots||{})[i]; const ok=pid&&own[pid];
-      return `<div class="mp-slot" style="left:${x}%;top:${4+y*.86}%;z-index:${Math.round(y)}">${ok?cardHTML(pid,{w:40,mini:true,role:r,ovr:BY_ID[pid].ovr+evoOf(id,pid)}):`<span class="mp-empty">${r}</span>`}<small>${ok?esc(short(BY_ID[pid].name)):""}</small></div>`; }).join("")}</div>
+    $("#pfXIbox").innerHTML=`<div class="mute" style="font-size:12px;margin:6px 0">${esc(c.formation||"4-3-3")} · cartes possédées seulement</div><div class="pitch bp">${($("#pitch .lines")||{}).outerHTML||""}${f.map(([r,x,y],i)=>{ const pid=(c.slots||{})[i]; const ok=pid&&own[pid];
+      return `<div class="slot ${ok?"has":"empty"}" style="left:${x}%;top:${y}%;z-index:${Math.round(y)};cursor:default">${ok?cardHTML(pid,{w:42,mini:true,role:r,ovr:BY_ID[pid].ovr+evoOf(id,pid)})+`<div class="nm">${esc(short(BY_ID[pid].name))}</div>`:`<div class="shirt"><b>${r}</b></div><div class="nm">—</div>`}</div>`; }).join("")}</div>
       ${c.coach&&own[c.coach]?`<div class="mute" style="font-size:12px;margin-top:6px">Entraîneur : <b>${esc(BY_ID[c.coach].name)}</b></div>`:""}`;
     xb.style.display="none"; };
 }
@@ -3516,7 +3516,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-20s"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-20t"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
