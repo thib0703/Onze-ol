@@ -1960,7 +1960,7 @@ const PACKS={
   jour:{name:"Pack du jour",price:0,n:2,w:{bronze:72,silver:24,gold:3.6,icon:.4,myth:0},color:"#7ee2a0"},
   bronze:{name:"Pack Classique",price:300,n:3,w:{bronze:66,silver:27,gold:6,icon:.9,myth:.1},color:"#c98a52"},
   or:{name:"Pack Épique",price:900,n:3,w:{bronze:35,silver:40,gold:20,icon:4.5,myth:.5},guarantee:"gold",color:"#e7c45a"},
-  legende:{name:"Pack Légende",price:2500,n:3,w:{bronze:15,silver:35,gold:34,icon:13,myth:3},guarantee:"icon",color:"#f4ecd2"}
+  legende:{name:"Pack Légende",price:2500,n:3,w:{gold:68,icon:26,myth:6},guarantee:"icon",color:"#f4ecd2"}
 };
 PACKS.starter={name:"Pack de départ",price:0,n:12,w:{bronze:100},color:"#7ec8ff"};
 const SELL={bronze:4,silver:12,gold:32,icon:100,myth:300};
@@ -2028,6 +2028,7 @@ function openPack(pack,free){
   c.coll=c.coll||{}; const isNew=ids.map(id=>!c.coll[id]);
   for(const id of ids) c.coll[id]=(c.coll[id]||0)+1;
   c.opened=(c.opened||0)+1;
+  c.packLog=[...(c.packLog||[]),{p:pack,ids,at:Date.now(),paid:free||pack==="jour"?0:P.price}].slice(-10); // historique pour l'admin
   save(); renderCoins(); track("pack");
   if(gold) post(`✨ ${NAMES[me]} a ouvert un GOLD PACK !!!`);
   for(const id of ids){ const t=cardTier(BY_ID[id]); if(t==="myth"||t==="icon") post(`${t==="myth"?"🌈":"🌟"} ${NAMES[me]} a tiré ${BY_ID[id].name} (${TIER_NAME[t]}) !`); }
@@ -2571,11 +2572,27 @@ async function adminPanel(){ if(me!==ADMIN) return; const T=$("#tradeUI"); T.cla
    <div class="adm"><label>Joueur</label><select id="aU">${opt}</select><div id="aInfo" class="mute" style="font-size:12.5px;margin:6px 0"></div>
    <h4>🪙 Pièces</h4><div class="arow"><input id="aCoins" type="number" value="200" inputmode="numeric"><button class="btn sm" id="aCoinsGo">Donner</button><button class="btn sm ghost" id="aCoinsRm">Retirer</button></div>
    <h4>🎁 Pack offert</h4><div class="arow"><select id="aPack">${Object.entries(PACKS).map(([k,v])=>`<option value="${k}">${esc(v.name)}</option>`).join("")}</select><input id="aPackN" type="number" value="1" style="width:60px"><button class="btn sm" id="aPackGo">Offrir</button></div>
+   <h4>📦 Derniers packs ouverts</h4><div id="aPk"></div>
+   <h4>🆕 Cartes gagnées depuis une sauvegarde</h4><div class="arow"><select id="aDiffBk">${bks.map(b=>`<option>${b}</option>`).join("")||"<option value=''>Aucune</option>"}</select><button class="btn sm ghost" id="aDiffGo">Comparer</button></div><div id="aDiffL"></div>
    <h4>🎴 Carte</h4><div class="arow"><input id="aCardQ" placeholder="Nom du joueur…" autocomplete="off"></div><div id="aCardL"></div>
    <h4>💾 Sauvegardes <small class="mute">(une par jour, automatique)</small></h4><div class="arow"><select id="aBk">${bks.map(b=>`<option>${b}</option>`).join("")||"<option value=''>Aucune</option>"}</select><button class="btn sm ghost" id="aBkGo">Restaurer ce joueur</button></div>
    <button class="btn sm ghost" id="aBkNow" style="margin-top:6px">💾 Sauvegarder maintenant</button></div></div>`;
   const U=()=>$("#aU").value; const info=()=>{ const c=compos[U()]||{}; $("#aInfo").textContent=`${c.coins||0} 🪙 · ${Object.keys(c.coll||{}).length} cartes · carrière ${(c.career||{}).lvl||0}/${CAREER.length}`; }; info();
-  $("#aU").onchange=()=>{ info(); $("#aCardQ").oninput(); };
+  const cardRow=(id,own)=>{ const p=BY_ID[id]; if(!p) return ""; return `<div class="sgl"><span>${esc(p.name)} <small>${TIER_NAME[cardTier(p)]} · ${p.ovr} · possède ${own[id]||0}</small></span><span><button class="btn sm ghost" data-rm="${id}" ${own[id]?"":"disabled"}>−1</button></span></div>`; };
+  const bindRm=box=>box.querySelectorAll("[data-rm]").forEach(b=>b.onclick=async()=>{ b.disabled=true; await adminOp({to:U(),type:"card",card:b.dataset.rm,n:-1}); done(`−1 ${BY_ID[b.dataset.rm].name} pour ${NAMES[U()]}`); });
+  const pks=()=>{ const c=compos[U()]||{}, own=c.coll||{}, L=(c.packLog||[]).slice().reverse(), box=$("#aPk");
+    box.innerHTML=L.map((x,i)=>`<div style="margin:6px 0;padding:6px;border:1px solid #fff2;border-radius:8px"><b>${esc((PACKS[x.p]||{}).name||x.p)}</b> <small class="mute">${new Date(x.at).toLocaleString("fr-FR")}${x.paid?` · payé ${x.paid} 🪙`:" · offert"}</small>${x.ids.map(id=>cardRow(id,own)).join("")}<button class="btn sm" data-undo="${i}">↩️ Annuler ce pack (retire les ${x.ids.length} cartes${x.paid?` + rembourse ${x.paid} 🪙`:" + le réoffre"})</button></div>`).join("")||`<div class="mute" style="font-size:12.5px">Aucun pack enregistré (l'historique existe depuis la version 2026-11-20y). Utilise la comparaison avec une sauvegarde ci-dessous.</div>`;
+    bindRm(box);
+    box.querySelectorAll("[data-undo]").forEach(b=>{ let arm=false; b.onclick=async()=>{ if(!arm){ arm=true; b.textContent="Sûr ? Re-touche"; return; } b.disabled=true; const x=L[+b.dataset.undo];
+      for(const id of x.ids) await adminOp({to:U(),type:"card",card:id,n:-1});
+      if(x.paid) await adminOp({to:U(),type:"coins",n:x.paid}); else await adminOp({to:U(),type:"pack",pack:x.p,n:1});
+      done(`Pack annulé pour ${NAMES[U()]}`); }; }); };
+  $("#aDiffGo").onclick=async()=>{ const d=$("#aDiffBk").value, box=$("#aDiffL"); if(!d) return; box.innerHTML=`<div class="mute">Chargement…</div>`;
+    const sn=await db.collection("onzeol_backups").doc(d).get(); const old=(sn.exists&&sn.data().users[U()]||{}).coll||{}; const own=(compos[U()]||{}).coll||{};
+    const add=Object.keys(own).filter(id=>(own[id]||0)>(old[id]||0));
+    box.innerHTML=add.map(id=>cardRow(id,own).replace("</small>",` · +${own[id]-(old[id]||0)} depuis le ${d}</small>`)).join("")||`<div class="mute">Aucune nouvelle carte depuis le ${d}.</div>`; bindRm(box); };
+  pks();
+  $("#aU").onchange=()=>{ info(); pks(); $("#aDiffL").innerHTML=""; $("#aCardQ").oninput(); };
   $("#tClose").onclick=()=>T.classList.remove("open");
   const done=t=>{ toast("✅ "+t+" — appliqué à sa prochaine ouverture"); };
   $("#aCoinsGo").onclick=async()=>{ const n=Math.abs(+$("#aCoins").value||0); if(!n) return; await adminOp({to:U(),type:"coins",n}); done(`+${n} 🪙 pour ${NAMES[U()]}`); };
@@ -3553,7 +3570,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-20x"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-20y"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
