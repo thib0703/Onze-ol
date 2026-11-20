@@ -1,5 +1,5 @@
 {
-  "updated": "19/11/2026",
+  "updated": "20/11/2026",
   "matches": "OL 2-0 Angers (01/11), Brest 2-0 OL (08/11) — notes Maxifoot",
   "rules": "Blessé -3 à -6 selon la durée, suspendu -2 ; moyenne des 2 derniers matchs : >=7.5 +3, >=7 +2, >=6.5 +1, <=4 -2, <=5 -1",
   "players": {
@@ -57,10 +57,18 @@
   "fixtures": [
     {
       "id": "2026-11-21-lille-ol",
-      "date": "2026-11-21T17:00:00+01:00",
+      "date": "2026-11-21T20:45:00+01:00",
       "home": "Lille",
       "away": "OL",
       "comp": "Ligue 1 · J11",
+      "score": null
+    },
+    {
+      "id": "2026-11-26-ol-lillestrom",
+      "date": "2026-11-26T21:00:00+01:00",
+      "home": "OL",
+      "away": "Lillestrøm",
+      "comp": "Ligue Europa · J5",
       "score": null
     },
     {
@@ -69,6 +77,22 @@
       "home": "OL",
       "away": "Monaco",
       "comp": "Ligue 1 · J12",
+      "score": null
+    },
+    {
+      "id": "2026-12-06-troyes-ol",
+      "date": "2026-12-06T17:00:00+01:00",
+      "home": "Troyes",
+      "away": "OL",
+      "comp": "Ligue 1 · J13",
+      "score": null
+    },
+    {
+      "id": "2026-12-10-ol-union-saint-gilloise",
+      "date": "2026-12-10T17:00:00+01:00",
+      "home": "OL",
+      "away": "Union Saint-Gilloise",
+      "comp": "Ligue Europa · J6",
       "score": null
     }
   ]
