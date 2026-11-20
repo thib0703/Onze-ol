@@ -486,9 +486,9 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
 .cf-front,.cf-back{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden}
 .cf-back{transform:rotateY(180deg)}
 .cf-back .fc-glow{display:none}
-.bk{position:absolute;z-index:2;left:9%;right:9%;top:11%;bottom:15%;overflow-y:auto;font-size:11.5px;line-height:1.35;text-align:center;color:var(--ink);display:flex;flex-direction:column;gap:5px;scrollbar-width:none}
+.bk{position:absolute;z-index:2;left:9%;right:9%;top:11%;bottom:15%;overflow-y:auto;line-height:1.35;text-align:center;color:var(--ink);display:flex;flex-direction:column;gap:5px;scrollbar-width:none}
 .bk::-webkit-scrollbar{display:none}
-.bk-h{font-weight:900;font-size:14px;text-transform:uppercase;letter-spacing:.04em;padding-bottom:4px;border-bottom:1px solid var(--acc)}
+.bk-h{font-weight:900;font-size:1.2em;text-transform:uppercase;letter-spacing:.04em;padding-bottom:4px;border-bottom:1px solid var(--acc)}
 .bk .mute{color:inherit;opacity:.75}.bk .cm-palm{display:flex;flex-direction:column;gap:4px;align-items:center}.bk .livel{background:#0002;border-radius:8px;padding:4px}
 .bk div[style*="ffd970"]{color:var(--acc)!important;font-weight:700}
 .cm-hint{text-align:center;font-size:12px;color:var(--mute);margin:8px 0 2px}
@@ -1382,7 +1382,7 @@ function cardHTML(pid,opts={}){
   const pos=opts.role&&p.pos[0]!=="COACH"?opts.role:(p.pos[0]==="COACH"?"COA":p.pos[0]);
   const shortN=p.name.split(" ").length>1&&p.name.length>11?p.name.split(" ").slice(1).join(" "):p.name;
   const lm=liveMod(pid), lic=liveIcon(pid); const ovr=(opts.ovr!=null?opts.ovr:p.ovr)+lm;
-  return `<div class="fcard ${cls}${mini?" mini":""}${!mini&&w<140?" sm":""}${opts.cls?" "+opts.cls:""}" style="--w:${w}px">
+  return `<div data-pid="${pid}" class="fcard ${cls}${mini?" mini":""}${!mini&&w<140?" sm":""}${opts.cls?" "+opts.cls:""}" style="--w:${w}px">
    <div class="fc-bg"></div><div class="fc-tex"></div><div class="fc-glow"></div><div class="fc-shine"></div>${opts.role&&hpPen(p,opts.role)?`<div class="fc-hp" title="Hors poste">⚠️</div>`:""}
    <div class="fc-top"><div class="fc-ovr">${ovr}${lic?`<i class="fc-live${lm<0?" neg":""}">${lic}</i>`:""}</div><div class="fc-pos${opts.role&&hpPen(p,opts.role)?" hp":""}">${esc(pos)}</div>${mini?"":`<div class="fc-club">OL</div>${w>=140?`<div class="fc-flag">${flag(NAT[p.id])}</div>`:""}`}</div>
    <div class="fc-face">${PORTRAITS.has(p.base||p.id)?`<img class="fc-img" src="img/cartes/${p.base||p.id}.webp?v=${IMGV}" alt="" loading="lazy">`:`<svg viewBox="0 0 100 100"><circle cx="50" cy="36" r="19" fill="currentColor" opacity=".28"/><path d="M12 100c2-24 18-36 38-36s36 12 38 36z" fill="currentColor" opacity=".28"/>${mini?"":`<text x="50" y="43" text-anchor="middle" font-size="18" font-weight="900" fill="currentColor" opacity=".55">${esc(initials(p.name))}</text>`}</svg>`}</div>
@@ -1391,9 +1391,8 @@ function cardHTML(pid,opts={}){
    ${mini?(p.v?`<div class="fc-vmini">${VAR_INFO[p.v].ic}</div>`:""):(opts.tag?`<div class="fc-tag">${p.v?VAR_INFO[p.v].ic+" "+VAR_INFO[p.v].l:(p.pos[0]==="COACH"?"🧠 COACH":TIER_TAG[t])}</div>`:"")}
   </div>`;
 }
-function showCard(pid,act,lv){
-  const p=BY_ID[pid]; if(!p) return;
-  const M=$("#cardModal");
+function cardBackInfo(pid,lv){
+  const p=BY_ID[pid]; if(!p) return "";
   const info=p.pos[0]==="COACH"?`<div>Entraîneur de l'OL · note ${p.ovr}</div>${COACH_SKILL[p.id]?`<div style="color:#ffd970">🧠 ${esc(COACH_SKILL[p.id].n)} : ${esc(COACH_SKILL[p.id].d)}</div>`:""}`:
     `<div>${p.pos.join(" · ")} · arrivé à l'OL ${p.year<2000?"avant 2000":"en "+p.year}</div>${p.m!=null?`<div><b>${p.m}</b> matchs · <b>${p.g}</b> but${p.g>1?"s":""} à l'OL</div>`:`<div class="mute">Moins de 30 matchs à l'OL : pas de stats officielles</div>`}`;
   const pt=palmText(p); const rt=cardTier(p);
@@ -1401,11 +1400,28 @@ function showCard(pid,act,lv){
   const lv_=liveOf(pid); const liveLine=lv_?`<div class="livel${(lv_.mod|0)<0?" neg":""}">${liveIcon(pid)} <b>Forme réelle ${(lv_.mod|0)>0?"+":""}${lv_.mod|0}</b> · ${esc(lv_.note||"")}<br><small class="mute">Mis à jour le ${esc(LIVE.updated||"?")}</small></div>`:"";
   const ps=priceStats(pid);
   const extra=(lv?`<div style="color:#7ee2a0">⬆️ Évoluée +${lv}</div>`:"")+(ps?`<div>💹 Prix moyen ${ps.avg} 🪙 ${ps.trend} · dernier ${ps.last} 🪙 (${ps.n} vente${ps.n>1?"s":""})</div>`:"");
+  return info+liveLine+extra+palm; }
+function cardBackHTML(pid,w,lv){ const p=BY_ID[pid]; if(!p) return ""; const t_=cardTier(p), bcls=(p.pos[0]==="COACH"?"coach r-"+t_:t_)+(p.v?" v-"+p.v:"");
+  return `<div class="fcard ${bcls}" style="--w:${w}px"><div class="fc-bg"></div><div class="fc-tex"></div><div class="bk" style="font-size:${Math.max(9,Math.round(w/20))}px"><div class="bk-h">${esc(p.name)}</div>${cardBackInfo(pid,lv)}</div></div>`; }
+// 🔄 Toute carte affichée en grand se retourne d'un toucher (infos au dos)
+document.addEventListener("click",ev=>{
+  const fl=ev.target.closest(".cflip");
+  if(fl){ ev.stopPropagation(); ev.preventDefault(); fl.classList.remove("flip-in"); fl.classList.toggle("on"); const h=fl.parentElement&&fl.parentElement.parentElement&&fl.parentElement.parentElement.querySelector(".cm-hint"); if(h) h.textContent=fl.classList.contains("on")?"👆 Touche pour revoir la face":"👆 Touche la carte pour la retourner"; return; }
+  const c=ev.target.closest(".fcard"); if(!c||c.classList.contains("mini")||!c.dataset.pid) return;
+  if(c.offsetWidth<140||c.closest("#fx,.walk,.slot,.tline,.cardbtn,.pk-mini")) return;
+  ev.stopPropagation(); ev.preventDefault();
+  const w=c.offsetWidth, h=c.offsetHeight; const wrap=document.createElement("div"); wrap.className="cflip"; wrap.style.cssText=`width:${w}px;height:${h}px`;
+  c.parentNode.insertBefore(wrap,c); const fr=document.createElement("div"); fr.className="cf-front"; fr.appendChild(c);
+  const bk=document.createElement("div"); bk.className="cf-back"; bk.innerHTML=cardBackHTML(c.dataset.pid,w); wrap.appendChild(fr); wrap.appendChild(bk);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>wrap.classList.add("on")));
+},true);
+function showCard(pid,act,lv){
+  const p=BY_ID[pid]; if(!p) return;
+  const M=$("#cardModal");
   const t_=cardTier(p), bcls=(p.pos[0]==="COACH"?"coach r-"+t_:t_)+(p.v?" v-"+p.v:"");
   M.innerHTML=`<div class="cm-box"><div class="cm-card"><div class="cflip flip-in" id="cmFlip"><div class="cf-front">${cardHTML(pid,{w:230,ovr:p.ovr+(lv||0)})}</div>
-    <div class="cf-back"><div class="fcard ${bcls}" style="--w:230px"><div class="fc-bg"></div><div class="fc-tex"></div><div class="bk"><div class="bk-h">${esc(p.name)}</div>${info}${liveLine}${extra}${palm}</div></div></div></div></div>
+    <div class="cf-back">${cardBackHTML(pid,230,lv)}</div></div></div>
     <div class="cm-hint">👆 Touche la carte pour la retourner</div><div class="mbtns" id="cmBtns"></div><div class="cm-note">Stats inspirées des jeux FIFA/FC (note, poste, profil). Rareté selon le palmarès : titres avec l'OL et grands trophées en carrière.</div></div>`;
-  const fl=$("#cmFlip"); fl.onclick=()=>{ fl.classList.remove("flip-in"); fl.classList.toggle("on"); const h=M.querySelector(".cm-hint"); if(h) h.textContent=fl.classList.contains("on")?"👆 Touche pour revoir la face":"👆 Touche la carte pour la retourner"; };
   const B=$("#cmBtns");
   const mk=(t,fn,ghost)=>{const b=document.createElement("button");b.className="btn"+(ghost?" ghost":"");b.textContent=t;b.onclick=()=>{M.classList.remove("open");fn&&fn();};B.appendChild(b);};
   if(act&&act.change) mk("🔁 Changer de joueur",act.change);
@@ -3500,7 +3516,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-20p";
+const APP_V="2026-11-20q";
 let updShown=false;
 async function checkUpdate(){ if(updShown) return; try{ const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const APP_V="([^"]+)"/); if(m&&m[1]!==APP_V){
