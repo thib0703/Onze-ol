@@ -2023,7 +2023,7 @@ function openPack(pack,free){
     if(!ids.some(id=>rank[cardTier(BY_ID[id])]>=rank[P.guarantee])) ids[ids.length-1]=drawFrom(f,P.w,P.guarantee); }
   else { for(let i=0;i<P.n;i++) ids.push(drawCard(pack));
     if(P.guarantee&&!ids.some(id=>rank[cardTier(BY_ID[id])]>=rank[P.guarantee])) ids[ids.length-1]=drawCard(pack,P.guarantee); }
-  if(!gold&&((pack==="event"&&Math.random()<.2)||(pack==="legende"&&Math.random()<.08))){ const L=tfWeek(); ids[ids.length-1]=L[Math.floor(Math.random()*L.length)]; }
+  if(!gold&&((pack==="event"&&Math.random()<.2)||(pack==="legende"&&Math.random()<.08))){ const L=tfWeek(); let lo=0; ids.forEach((id,i)=>{ if(rank[cardTier(BY_ID[id])]<rank[cardTier(BY_ID[ids[lo]])]) lo=i; }); ids[lo]=L[Math.floor(Math.random()*L.length)]; } // remplace la carte la plus faible (jamais la Légendaire garantie)
   if(pack!=="starter") ids.sort((a,b)=>rank[cardTier(BY_ID[a])]-rank[cardTier(BY_ID[b])]||BY_ID[a].ovr-BY_ID[b].ovr);
   c.coll=c.coll||{}; const isNew=ids.map(id=>!c.coll[id]);
   for(const id of ids) c.coll[id]=(c.coll[id]||0)+1;
@@ -3553,7 +3553,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-20w"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-20x"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
