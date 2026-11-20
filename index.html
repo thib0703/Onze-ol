@@ -427,6 +427,8 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
 .h2h{margin:10px 0;font-size:13px}.h2hb{display:flex;gap:6px;justify-content:center;margin-top:6px}.h2hb span{border-radius:10px;padding:6px 12px;font-weight:800}.h2hb .v{background:#1f8a4c}.h2hb .n{background:#2a3b6b}.h2hb .d{background:#a33}
 .bdg{margin:10px 0;text-align:left}.bdgl{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}.bdgl span{background:#0f1d40;border:1px solid #1d2b55;border-radius:10px;padding:6px 8px;font-size:12px;font-weight:700;opacity:.5}.bdgl span.ok{opacity:1;border-color:#ffd970}.bdgl small{display:block;font-weight:500;color:var(--mute);font-size:10.5px}
 .duog{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin:6px 0}.duog small{display:block;color:var(--mute);font-size:11px;margin-bottom:2px}.duog select{width:100%;padding:8px 4px;border-radius:10px;border:1px solid #2a3b6b;background:#0b1530;color:#fff;font-size:13px}
+.fc-hp{position:absolute;right:2px;top:2px;z-index:3;font-size:calc(var(--w)*.2);line-height:1;filter:drop-shadow(0 1px 2px #000)}.fc-pos.hp{color:#ffb020!important}
+.hpt{display:inline-block;color:#ffb020;font-weight:700;font-size:11px;margin-right:4px}
 .readyrow{display:flex;justify-content:space-around;gap:8px;margin:10px 0 6px;font-size:13px;font-weight:700}
 .chatfab{position:fixed;right:14px;bottom:calc(76px + env(safe-area-inset-bottom));z-index:30;width:54px;height:54px;border-radius:50%;border:0;background:var(--rouge);color:#fff;font-size:25px;box-shadow:0 6px 18px #0008;display:none}
 .chatfab b{position:absolute;top:-4px;right:-4px;background:#ffd970;color:#111;font-size:11px;font-weight:900;border-radius:999px;padding:2px 6px;display:none}
@@ -1027,7 +1029,7 @@ function renderList(){
   if(!ps.length){L.insertAdjacentHTML("beforeend",`<div style="padding:18px 16px;text-align:center;color:var(--mute)">${clubPick?(q?"Aucune de tes cartes ne correspond à ta recherche.":`<b style="color:#fff">Aucun joueur dispo à ce poste</b><br>Ouvre des packs dans 🎴 Collec pour en débloquer, ou touche « Tous » pour voir tes autres cartes.`):"Personne trouvé."}</div>`);return;}
   for(const p of ps){
     const isUsed=used.has(p.id)||used.has(baseOf(p.id)); const d=document.createElement("div"); d.className="pl"+(isUsed?" used":"");
-    d.innerHTML=`<span class="n">${esc(p.name)}<span class="yr"><span class="rar r-${cardTier(p)}" style="font-size:9px;padding:0 5px;margin:0 4px 0 0">${TIER_NAME[cardTier(p)]}</span>${isCoach?"":`arrivé en ${p.year<2000?"avant 2000":p.year} · ${p.m!=null?`${p.m} matchs · ${p.g} but${p.g>1?"s":""} · `:""}`}note <b style="color:${p.ovr>=85?"#ffd970":p.ovr>=80?"#7ee2a0":"#c8d6ff"}">${p.ovr}</b></span>${isCoach&&COACH_SKILL[p.id]?`<span class="cskill">🧠 <b>${esc(COACH_SKILL[p.id].n)}</b> : ${esc(COACH_SKILL[p.id].d)}</span>`:""}${used.has(p.id)?`<span class="tk">${takenMap?(takenMap[p.id]===me?"dans ton équipe":"pris par "+NAMES[takenMap[p.id]]):"déjà dans ta compo"}</span>`:""}</span>`+(isCoach?"":`<span class="tags">${p.pos.map(x=>`<span class="tag ${ok.includes(x)?"cur":""}">${x}</span>`).join("")}</span>`);
+    d.innerHTML=`<span class="n">${esc(p.name)}<span class="yr"><span class="rar r-${cardTier(p)}" style="font-size:9px;padding:0 5px;margin:0 4px 0 0">${TIER_NAME[cardTier(p)]}</span>${!isCoach&&editing.kind==="xi"?hpTxt(p,editing.role):""}${isCoach?"":`arrivé en ${p.year<2000?"avant 2000":p.year} · ${p.m!=null?`${p.m} matchs · ${p.g} but${p.g>1?"s":""} · `:""}`}note <b style="color:${p.ovr>=85?"#ffd970":p.ovr>=80?"#7ee2a0":"#c8d6ff"}">${p.ovr}</b></span>${isCoach&&COACH_SKILL[p.id]?`<span class="cskill">🧠 <b>${esc(COACH_SKILL[p.id].n)}</b> : ${esc(COACH_SKILL[p.id].d)}</span>`:""}${used.has(p.id)?`<span class="tk">${takenMap?(takenMap[p.id]===me?"dans ton équipe":"pris par "+NAMES[takenMap[p.id]]):"déjà dans ta compo"}</span>`:""}</span>`+(isCoach?"":`<span class="tags">${p.pos.map(x=>`<span class="tag ${ok.includes(x)?"cur":""}">${x}</span>`).join("")}</span>`);
     const cb=document.createElement("button"); cb.className="cardbtn"; cb.innerHTML=cardHTML(p.id,{w:30,mini:true}); cb.onclick=ev=>{ev.stopPropagation(); showCard(p.id,null);};
     d.prepend(cb);
     d.onclick=()=>{ if(!isUsed) setPick(p.id); };
@@ -1308,6 +1310,9 @@ const LIVE_IC={inj:"🤕",sus:"🟥",up:"📈",down:"📉"};
 const liveIcon=id=>{ const x=liveOf(id); if(!x) return ""; return LIVE_IC[x.st]||(x.mod>0?"📈":x.mod<0?"📉":""); };
 async function loadLive(){ try{ const r=await fetch("live.json?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const d=await r.json(); if(d&&d.players){ LIVE=d; try{ render(); settlePreds(); if(mode==="jeux") renderJeux(); }catch(e){} } }catch(e){} }
 loadLive(); setInterval(loadLive,30*60000);
+// ⚠️ Joueur hors de son poste naturel (perd des points dans le moteur de match)
+function hpPen(p,role){ if(!p||!role||p.pos[0]==="COACH"||role==="COACH"||!F) return 0; const f=fit(p,role); return f<1?Math.round((1-f)*100):0; }
+const hpTxt=(p,role)=>{ const x=hpPen(p,role); return x?`<span class="hpt">⚠️ hors poste${x>5?` (−${x} %)`:""} · ${esc(p.pos.join("/"))}</span>`:""; };
 function cardHTML(pid,opts={}){
   const p=BY_ID[pid]; if(!p) return "";
   const t=cardTier(p); const st=cardStats(p); const w=opts.w||160; const mini=!!opts.mini; const cls=(p.pos[0]==="COACH"?"coach r-"+t:t)+(p.v?" v-"+p.v:"");
@@ -1315,8 +1320,8 @@ function cardHTML(pid,opts={}){
   const shortN=p.name.split(" ").length>1&&p.name.length>11?p.name.split(" ").slice(1).join(" "):p.name;
   const lm=liveMod(pid), lic=liveIcon(pid); const ovr=(opts.ovr!=null?opts.ovr:p.ovr)+lm;
   return `<div class="fcard ${cls}${mini?" mini":""}${opts.cls?" "+opts.cls:""}" style="--w:${w}px">
-   <div class="fc-shine"></div>
-   <div class="fc-top"><div class="fc-ovr">${ovr}${lic?`<i class="fc-live${lm<0?" neg":""}">${lic}</i>`:""}</div><div class="fc-pos">${esc(pos)}</div>${mini?"":`<div class="fc-club">OL</div>${w>=140?`<div class="fc-flag">${flag(NAT[p.id])}</div>`:""}`}</div>
+   <div class="fc-shine"></div>${opts.role&&hpPen(p,opts.role)?`<div class="fc-hp" title="Hors poste">⚠️</div>`:""}
+   <div class="fc-top"><div class="fc-ovr">${ovr}${lic?`<i class="fc-live${lm<0?" neg":""}">${lic}</i>`:""}</div><div class="fc-pos${opts.role&&hpPen(p,opts.role)?" hp":""}">${esc(pos)}</div>${mini?"":`<div class="fc-club">OL</div>${w>=140?`<div class="fc-flag">${flag(NAT[p.id])}</div>`:""}`}</div>
    <div class="fc-face">${PORTRAITS.has(p.base||p.id)?`<img class="fc-img" src="img/cartes/${p.base||p.id}.webp?v=${IMGV}" alt="" loading="lazy">`:`<svg viewBox="0 0 100 100"><circle cx="50" cy="36" r="19" fill="currentColor" opacity=".28"/><path d="M12 100c2-24 18-36 38-36s36 12 38 36z" fill="currentColor" opacity=".28"/>${mini?"":`<text x="50" y="43" text-anchor="middle" font-size="18" font-weight="900" fill="currentColor" opacity=".55">${esc(initials(p.name))}</text>`}</svg>`}</div>
    ${mini?"":`<div class="fc-name">${esc(shortN)}</div>`}
    ${mini||!st?(!mini&&p.pos[0]==="COACH"?`<div class="fc-coach">${esc(p.name)}<small>Entraîneur de l'OL</small></div>`:""):`<div class="fc-stats">${[0,3,1,4,2,5].map(i=>`<span><b>${st.vals[i]}</b>${st.labels[i]}</span>`).join("")}</div>`}
@@ -1394,6 +1399,7 @@ function fit(p,role){
   if(ok.includes(p.pos[0])) return .95;
   if(p.pos.some(x=>ok.includes(x))) return .9;
   if(role==="GB"||p.pos[0]==="GB") return .4;
+  if(ZONE[p.pos[0]]&&ZONE[p.pos[0]]===ZONE[role]) return .9; // même zone (ex. DC en latéral) : petite perte
   return .74;
 }
 const FIN_DEF={BU:.3,AG:.18,AD:.18,MOC:.15,MC:.07,MG:.12,MD:.12,MDC:.04,DC:.04,DD:.03,DG:.03,PG:.04,PD:.04,GB:0};
@@ -2309,7 +2315,7 @@ async function openBudgetSlot(k){
   T.innerHTML=`<div class="tui-box"><div class="tui-head"><b>${s.role==="COACH"?"Entraîneur":ROLE_LABEL[s.role]||s.role}</b><button class="btn sm ghost" id="tClose">Fermer</button></div>
     <div class="mute" style="font-size:12.5px;margin-bottom:6px">Budget restant : <b>${left}</b> pts · il faut garder au moins ${minN} pts pour compléter l'équipe.</div>
     ${ids.map(id=>{ const p=BY_ID[id], t=cardTier(p), pr=priceOf(id), taken=id===otherPick, tooMuch=left-pr<minN;
-      return `<div class="tline${taken?" used":""}"><span class="tmini" data-cv="${id}">${cardHTML(id,{w:40,mini:true})}</span><span class="tname">${esc(p.name)}<small><span class="rar r-${t}">${TIER_NAME[t]}</span> note ${p.ovr}${s.role==="COACH"&&COACH_SKILL[id]?` · 🧠 ${esc(COACH_SKILL[id].n)} : ${esc(COACH_SKILL[id].d)}`:""}${taken?` · <b style="color:#ff9aa8">pris par ${esc(NAMES[o])}</b>`:""}</small></span><button class="btn sm" data-bp="${id}" ${taken||tooMuch?"disabled":""}>${pr} pts</button></div>`; }).join("")}</div>`;
+      return `<div class="tline${taken?" used":""}"><span class="tmini" data-cv="${id}">${cardHTML(id,{w:40,mini:true,role:s.role==="COACH"?null:s.role})}</span><span class="tname">${esc(p.name)}<small><span class="rar r-${t}">${TIER_NAME[t]}</span> note ${p.ovr} · ${esc(p.pos.join("/"))}${s.role!=="COACH"?" "+hpTxt(p,s.role):""}${s.role==="COACH"&&COACH_SKILL[id]?` · 🧠 ${esc(COACH_SKILL[id].n)} : ${esc(COACH_SKILL[id].d)}`:""}${taken?` · <b style="color:#ff9aa8">pris par ${esc(NAMES[o])}</b>`:""}</small></span><button class="btn sm" data-bp="${id}" ${taken||tooMuch?"disabled":""}>${pr} pts</button></div>`; }).join("")}</div>`;
   $("#tClose").onclick=()=>T.classList.remove("open");
   T.querySelectorAll("[data-cv]").forEach(x=>x.onclick=()=>showCard(x.dataset.cv,null));
   T.querySelectorAll("[data-bp]").forEach(b=>b.onclick=()=>{ T.classList.remove("open"); bPick(s,b.dataset.bp); });
@@ -3427,7 +3433,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-20i";
+const APP_V="2026-11-20j";
 let updShown=false;
 async function checkUpdate(){ if(updShown) return; try{ const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const APP_V="([^"]+)"/); if(m&&m[1]!==APP_V){
