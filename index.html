@@ -3516,10 +3516,13 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-20q";
-let updShown=false;
-async function checkUpdate(){ if(updShown) return; try{ const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
-  const m=t.match(/const APP_V="([^"]+)"/); if(m&&m[1]!==APP_V){
+const APP_V="2026-11-20r"; // ⚠️ à garder identique à version.json
+let updShown=false, lastUpdCheck=0;
+// Vérifie un petit fichier version.json (quelques octets) au lieu de retélécharger tout index.html,
+// et jamais plus d'une fois par minute, pour ne pas déclencher la limite de requêtes de GitHub Pages.
+async function checkUpdate(){ if(updShown) return; const now=Date.now(); if(now-lastUpdCheck<60000) return; lastUpdCheck=now;
+  try{ const r=await fetch("version.json?u="+now,{cache:"no-store"}); if(!r.ok) return; const j=await r.json();
+  const m=j&&j.v?[0,String(j.v)]:null; if(m&&m[1]!==APP_V){
     // Mise à jour automatique et silencieuse si rien d'important n'est en cours (une seule tentative par version)
     let tried=""; try{ tried=localStorage.getItem("gl_upd_try")||""; }catch(_){}
     const busy=(typeof sharedLive==="function"&&sharedLive())||document.querySelector(".modal.open,.tradeui.open,.tipov");
@@ -3532,7 +3535,7 @@ async function checkUpdate(){ if(updShown) return; try{ const t=await (await fet
     const el=document.createElement("div"); el.className="tipov"; el.style.zIndex=140; el.innerHTML=`<div class="tipbox"><h3>🆕 Nouvelle version disponible</h3><div class="tipx">L'appli a été mise à jour avec des nouveautés ou des corrections.</div><button class="btn big" id="updGo">Mettre à jour</button></div>`;
     document.body.appendChild(el); el.querySelector("#updGo").onclick=()=>{ location.replace(location.pathname+"?v="+m[1]); }; } }catch(e){} }
 try{ document.getElementById("appV").textContent="version "+APP_V; }catch(_){}
-setTimeout(checkUpdate,1500); setInterval(checkUpdate,2*60000);
+setTimeout(checkUpdate,1500); setInterval(checkUpdate,10*60000);
 window.addEventListener("pageshow",()=>setTimeout(checkUpdate,500)); window.addEventListener("focus",()=>checkUpdate()); window.addEventListener("online",()=>checkUpdate());
 // service worker toujours enregistré : il force le chargement de la dernière version (et sert aux notifications)
 try{ if("serviceWorker" in navigator) navigator.serviceWorker.register("firebase-messaging-sw.js?v=2",{updateViaCache:"none"}).then(r=>r.update()).catch(()=>{}); }catch(e){}
