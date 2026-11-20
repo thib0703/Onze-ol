@@ -451,7 +451,8 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
 .fc-stats::before{content:"";position:absolute;left:50%;top:6%;bottom:6%;width:.06em;background:linear-gradient(180deg,transparent,var(--acc),transparent);opacity:.7}
 .fc-stats b{color:inherit}
 .fc-stats span{color:inherit;opacity:.95}
-.fc-tag{opacity:.85!important;color:var(--acc);letter-spacing:.22em!important}
+.fc-tag{opacity:1!important;width:auto!important;left:50%;transform:translateX(-50%);bottom:6.3%!important;white-space:nowrap;font-size:.6em!important;font-weight:900;letter-spacing:.16em!important;padding:.28em .9em .26em 1.06em;border-radius:99px;background:linear-gradient(180deg,color-mix(in srgb,var(--acc) 82%,#fff),var(--acc));color:var(--tagc,#fff);box-shadow:0 .08em .25em #0005,inset 0 .06em 0 #ffffff55;text-shadow:none}
+.fcard.myth,.fcard.coach,.fcard.v-fs,.fcard.v-tf,.fcard.v-ml,.fcard.hero{--tagc:#1a1206}
 /* Commune : cuivre brossé */
 .fcard.bronze{--rim:linear-gradient(160deg,#ffd7b0,#b8743d 35%,#5e3212 60%,#e2a774 85%,#7a4319);--bgc:linear-gradient(165deg,#f2c79e 0%,#d0915a 40%,#a5622e 75%,#e0a674 100%);--ink:#2a1405;--acc:#6b3a14;--glow:#ffe2c2;--tex:repeating-linear-gradient(100deg,#ffffff10 0 1px,transparent 1px 3px)}
 /* Rare : acier poli */
@@ -3480,7 +3481,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-20k";
+const APP_V="2026-11-20l";
 let updShown=false;
 async function checkUpdate(){ if(updShown) return; try{ const t=await (await fetch(location.pathname+"?u="+Date.now(),{cache:"no-store"})).text();
   const m=t.match(/const APP_V="([^"]+)"/); if(m&&m[1]!==APP_V){
