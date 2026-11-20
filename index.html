@@ -3516,24 +3516,27 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-20r"; // ⚠️ à garder identique à version.json
-let updShown=false, lastUpdCheck=0;
-// Vérifie un petit fichier version.json (quelques octets) au lieu de retélécharger tout index.html,
-// et jamais plus d'une fois par minute, pour ne pas déclencher la limite de requêtes de GitHub Pages.
+const APP_V="2026-11-20s"; // affichage seulement : la détection des mises à jour est automatique
+let updShown=false, lastUpdCheck=0, pageTag=null;
+// Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
+// version, son ETag / date de modification change. Rien à mettre à jour à la main.
+// Jamais plus d'une fois par minute, pour ne pas déclencher la limite de requêtes de GitHub Pages.
 async function checkUpdate(){ if(updShown) return; const now=Date.now(); if(now-lastUpdCheck<60000) return; lastUpdCheck=now;
-  try{ const r=await fetch("version.json?u="+now,{cache:"no-store"}); if(!r.ok) return; const j=await r.json();
-  const m=j&&j.v?[0,String(j.v)]:null; if(m&&m[1]!==APP_V){
+  try{ const r=await fetch(location.pathname+"?u="+now,{method:"HEAD",cache:"no-store"}); if(!r.ok) return;
+  const tag=r.headers.get("etag")||r.headers.get("last-modified"); if(!tag) return;
+  if(pageTag===null){ pageTag=tag; return; } // première vérif : on note la version actuelle
+  const m=[0,tag]; if(m[1]!==pageTag){
     // Mise à jour automatique et silencieuse si rien d'important n'est en cours (une seule tentative par version)
     let tried=""; try{ tried=localStorage.getItem("gl_upd_try")||""; }catch(_){}
     const busy=(typeof sharedLive==="function"&&sharedLive())||document.querySelector(".modal.open,.tradeui.open,.tipov");
     if(tried!==m[1]&&!busy){ try{ localStorage.setItem("gl_upd_try",m[1]); }catch(_){} try{ if(typeof dirty!=="undefined"&&dirty) await push(); }catch(_){}
       try{ const ks=await caches.keys(); await Promise.all(ks.map(k=>caches.delete(k))); }catch(_){}
       try{ const r=await navigator.serviceWorker?.getRegistration(); await r?.update(); }catch(_){}
-      location.replace(location.pathname+"?v="+m[1]+"&t="+Date.now()); return; }
+      location.replace(location.pathname+"?v="+encodeURIComponent(m[1])+"&t="+Date.now()); return; }
     if(busy&&tried!==m[1]) return; // on réessaiera au prochain contrôle, quand ce sera calme
     updShown=true;
     const el=document.createElement("div"); el.className="tipov"; el.style.zIndex=140; el.innerHTML=`<div class="tipbox"><h3>🆕 Nouvelle version disponible</h3><div class="tipx">L'appli a été mise à jour avec des nouveautés ou des corrections.</div><button class="btn big" id="updGo">Mettre à jour</button></div>`;
-    document.body.appendChild(el); el.querySelector("#updGo").onclick=()=>{ location.replace(location.pathname+"?v="+m[1]); }; } }catch(e){} }
+    document.body.appendChild(el); el.querySelector("#updGo").onclick=()=>{ location.replace(location.pathname+"?v="+encodeURIComponent(m[1])); }; } }catch(e){} }
 try{ document.getElementById("appV").textContent="version "+APP_V; }catch(_){}
 setTimeout(checkUpdate,1500); setInterval(checkUpdate,10*60000);
 window.addEventListener("pageshow",()=>setTimeout(checkUpdate,500)); window.addEventListener("focus",()=>checkUpdate()); window.addEventListener("online",()=>checkUpdate());
