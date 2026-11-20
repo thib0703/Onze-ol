@@ -31,6 +31,22 @@ exports.draftTurn = onDocumentWritten({ document: "onzeol_drafts/{id}", region: 
   const who = await nameOf(other); const kind = after.mode === "budget" ? "💰 Mode Budget" : "⚡ Draft";
   await notify(after.turn, `${kind} : à toi de jouer !`, `${who} attend ton choix.`);
 });
+// Draft / Budget : invitation, refus, acceptation
+exports.draftInvite = onDocumentWritten({ document: "onzeol_drafts/{id}", region: REGION }, async ev => {
+  const before = ev.data.before.exists ? ev.data.before.data() : null, after = ev.data.after.exists ? ev.data.after.data() : null;
+  if (!after) return;
+  const kind = after.mode === "budget" ? "💰 Partie Budget" : "⚡ Draft";
+  const bi = before && before.inv, ai = after.inv;
+  if (ai && after.status === "lobby" && (!bi || bi.at !== ai.at)) {
+    const to = (after.players || []).find(p => p !== ai.by);
+    return notify(to, `${kind} : invitation`, `${await nameOf(ai.by)} t'invite à jouer. Accepte ou refuse dans l'onglet Draft.`);
+  }
+  if (bi && !ai) {
+    const other = (after.players || []).find(p => p !== bi.by);
+    if (after.refused && after.refused.by === other && after.refused.at > bi.at) return notify(bi.by, `${kind} : invitation refusée`, `${await nameOf(other)} a refusé ton invitation.`);
+    if (after.status === "running" && after.turn !== bi.by) return notify(bi.by, `${kind} : invitation acceptée`, `${await nameOf(other)} a accepté, la partie commence !`);
+  }
+});
 // Match lancé contre toi
 exports.matchLaunched = onDocumentWritten({ document: "onzeol_meta/main", region: REGION }, async ev => {
   const before = ev.data.before.exists ? ev.data.before.data() : {}, after = ev.data.after.exists ? ev.data.after.data() : {};

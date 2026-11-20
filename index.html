@@ -55,6 +55,7 @@ select,input[type=search]{background:var(--carte);color:var(--txt);border:1px so
 .sm{font-size:12.5px;padding:7px 9px;border-radius:9px}
 .modal{position:fixed;inset:0;z-index:40;background:#000b;display:none;align-items:center;justify-content:center;padding:20px}
 .modal.open{display:flex}
+.invst{text-align:center;font-weight:800;font-size:15px;padding:12px;margin:10px 0 8px;border-radius:12px;background:rgba(255,255,255,.06)}.invst small{display:block;font-weight:500;font-size:12px;opacity:.75;margin-top:3px}.invst.me{background:rgba(255,217,112,.12);border:1px solid rgba(255,217,112,.35)}
 .peekbar{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;padding:8px 12px;background:rgba(255,217,112,.1);border:1px solid rgba(255,217,112,.3);border-radius:12px;font-size:14px}
 /* Fenêtres plus hautes que l'écran : elles défilent elles-mêmes, et la page derrière ne bouge plus */
 .modal{overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding-top:calc(20px + env(safe-area-inset-top));padding-bottom:calc(20px + env(safe-area-inset-bottom))}
@@ -1206,8 +1207,25 @@ async function dWrite(obj){ if(!db||!me){toast("Pas connecté",true);return;} co
   try{ if(""in obj) await dref.set(obj[""]); else { try{ await dref.update(obj); }catch(e){ await dref.set(dNorm(draft,me,dOpp)); await dref.update(obj); } } }
   catch(e){ toast("Impossible d'enregistrer le draft, réessaie",true); } }
 let dPrevStatus={}, dOppManual=false;
+// 📨 Invitations de draft : prévenir l'invité, et l'inviteur s'il y a un refus
+let invPrev=null;
+function invWatch(all){
+  const cur={}; for(const [k,x] of Object.entries(all||{})){ if(x&&Array.isArray(x.players)&&x.players.includes(me)) cur[k]=x; }
+  if(invPrev){ for(const [k,x] of Object.entries(cur)){ const was=invPrev[k]||{}; const kind=x.mode==="budget"?"partie Budget":"draft";
+    if(x.inv&&x.inv.by!==me&&(!was.inv||was.inv.at!==x.inv.at)) toast(`📨 ${NAMES[x.inv.by]||"?"} t'invite à un ${kind} (onglet Draft)`);
+    if(was.inv&&was.inv.by===me&&!x.inv&&x.refused&&x.refused.by!==me&&x.refused.at>was.inv.at) toast(`❌ ${NAMES[x.refused.by]||"?"} a refusé ton invitation au ${kind}`,true);
+    if(was.inv&&was.inv.by===me&&!x.inv&&x.status==="running") toast(`✅ ${NAMES[x.players.find(p=>p!==me)]||"?"} a accepté : le ${kind} commence !`); } }
+  invPrev={}; for(const [k,x] of Object.entries(cur)) invPrev[k]={inv:x.inv||null};
+}
+const invFor=(x)=>x&&x.status==="lobby"&&x.inv&&x.inv.by; // qui a invité (ou rien)
+function invBox(x,o,kind,{onInvite,onCancel,onAccept,onRefuse,extra}){ // bloc d'invitation du salon
+  const by=invFor(x); const N=esc(NAMES[o]||"?");
+  if(!by) return {html:`<button class="btn big" id="invGo">📨 Inviter ${N}</button><div class="mute" style="font-size:12px;text-align:center;margin-top:6px">${N} devra accepter pour que le ${kind} commence.</div>`, bind:()=>{ $("#invGo").onclick=onInvite; }};
+  if(by===me) return {html:`<div class="invst">⏳ Invitation envoyée à <b>${N}</b><small>Le ${kind} commencera dès qu'il aura accepté.</small></div><button class="btn ghost big" id="invCancel">Annuler l'invitation</button>`, bind:()=>{ $("#invCancel").onclick=onCancel; }};
+  return {html:`<div class="invst me">📨 <b>${N}</b> t'invite à un ${kind} !${extra?`<small>${extra}</small>`:""}</div><div class="dbtns"><button class="btn big" id="invYes">✅ Accepter</button><button class="btn ghost big" id="invNo">❌ Refuser</button></div>`, bind:()=>{ $("#invYes").onclick=onAccept; $("#invNo").onclick=onRefuse; }};
+}
 function onDraftData(all){
-  all=Object.assign({},all||{}); const bud={}; for(const k of Object.keys(all)) if(all[k]&&all[k].mode==="budget"){ bud[k]=all[k]; delete all[k]; }
+  all=Object.assign({},all||{}); try{ invWatch(all); }catch(_){} const bud={}; for(const k of Object.keys(all)) if(all[k]&&all[k].mode==="budget"){ bud[k]=all[k]; delete all[k]; }
   onBudgetData(bud);
   drafts=all;
   for(const [k,x] of Object.entries(drafts)){
@@ -1224,7 +1242,7 @@ function onDraftData(all){
   }
   dPrevStatus={}; for(const [k,x] of Object.entries(drafts)) dPrevStatus[k]=(x||{}).status;
   if(!dOppManual||!dOpp||!NAMES[dOpp]||dOpp===me){
-    const score=x=>x.status==="running"?(x.turn===me?3:2):x.status==="lobby"?1:0;
+    const score=x=>x.status==="running"?(x.turn===me?3:2):invFor(x)&&invFor(x)!==me?3:x.status==="lobby"?1:0;
     const mine=Object.values(drafts).filter(x=>x&&Array.isArray(x.players)&&x.players.includes(me)).sort((a,b)=>score(b)-score(a)||(b.started||0)-(a.started||0));
     const best= mine.length&&score(mine[0])>0 ? mine[0].players.find(p=>p!==me) : null;
     if(best) dOpp=best; else if(!dOpp||!NAMES[dOpp]||dOpp===me) dOpp= mine.length? mine[0].players.find(p=>p!==me) : (others()[0]||null);
@@ -1259,7 +1277,7 @@ function renderDraft(){
   if(!me) return;
   const ops=others();
   const OB=$("#dOpp");
-  OB.innerHTML= ops.length? `<span>Adversaire</span><select id="dOppSel">${ops.map(x=>{ const dd=drafts[pairKey(me,x)]; const tag=dd&&dd.status==="running"?(dd.turn===me?" · ⚡ à toi":" · en cours"):""; return `<option value="${esc(x)}" ${x===dOpp?"selected":""}>${esc(NAMES[x])}${tag}</option>`; }).join("")}</select>` : "";
+  OB.innerHTML= ops.length? `<span>Adversaire</span><select id="dOppSel">${ops.map(x=>{ const dd=drafts[pairKey(me,x)]; const tag=dd&&dd.status==="running"?(dd.turn===me?" · ⚡ à toi":" · en cours"):invFor(dd)&&invFor(dd)!==me?" · 📨 t'invite":invFor(dd)===me?" · invité":""; return `<option value="${esc(x)}" ${x===dOpp?"selected":""}>${esc(NAMES[x])}${tag}</option>`; }).join("")}</select>` : "";
   if(ops.length) $("#dOppSel").onchange=e=>{ dOpp=e.target.value; dOppManual=true; try{localStorage.setItem("onze-ol-opp",dOpp);}catch(_){} dView=null; draft=drafts[dKey()]?dNorm(drafts[dKey()]):null; renderDraft(); };
   if(ops.length&&(!dOpp||!NAMES[dOpp]||dOpp===me)){ dOpp=ops[0]; draft=drafts[dKey()]?dNorm(drafts[dKey()]):null; }
   renderDraftSwitch(); if(dSub==="budget"){ if(ops.length&&(!dOpp||!NAMES[dOpp]||dOpp===me)) dOpp=ops[0]; renderBudget(); return; }
@@ -1268,23 +1286,29 @@ function renderDraft(){
   if(dView&&!d.players.includes(dView)) dView=null;
   const B=$("#dBanner");
   B.className="dbanner"+(d.status==="running"&&d.turn===me?" me":"");
-  if(d.status==="lobby") B.innerHTML=`Préparez le draft<small>Réglez vos systèmes, puis lancez</small>`;
+  if(d.status==="lobby"){ const ib=invFor(drafts[dKey()]); B.className="dbanner"+(ib&&ib!==me?" me":""); B.innerHTML= ib===me?`⏳ En attente de ${esc(NAMES[o]||"?")}<small>Il doit accepter ton invitation</small>`: ib?`📨 ${esc(NAMES[o]||"?")} t'invite à un draft<small>Accepte ou refuse plus bas</small>`:`Préparez le draft<small>Réglez vos systèmes, puis invite ton adversaire</small>`; }
   else if(d.status==="running") B.innerHTML= d.turn===me?`⚡ À toi de choisir !<small>Touche une case vide de ton équipe</small>`:`⏳ ${esc(NAMES[d.turn]||"?")} choisit…<small>Tour ${d.picks.length+1} · tu verras son choix en direct</small>`;
   else{ B.innerHTML=`🏁 Draft terminé !<small>Le match se lance quand vous êtes prêts tous les deux</small>${readyHTML(d,"dPlay2")}<div class="dbtns"><button class="btn ghost" id="dNew2">🆕 Nouveau draft</button></div>`; const rb=$("#dPlay2"); if(rb) rb.onclick=()=>setReady("classic"); $("#dNew2").onclick=dRestart; }
   $("#dLobby").style.display=d.status==="lobby"?"":"none";
   $("#dGame").style.display=d.status==="lobby"?"none":"";
   if(d.status==="lobby"){
     const L=$("#dLobby");
+    const start=()=>{ const first=Math.random()<.5?me:dOpp; const cur=dNorm(drafts[dKey()]||draft,me,dOpp); delete cur.inv; dWrite({"":{...cur,status:"running",turn:first,teams:{[me]:dBlankTeam(),[dOpp]:dBlankTeam()},picks:[],offers:{},started:Date.now()}}); };
+    const IB=invBox(drafts[dKey()],o,"draft",{
+      onInvite:()=>{ const cur=dNorm(drafts[dKey()]||draft,me,dOpp); dWrite({"":{...cur,status:"lobby",inv:{by:me,at:Date.now()}}}); toast("📨 Invitation envoyée à "+(NAMES[o]||"?")); },
+      onCancel:()=>dWrite({inv:null}),
+      onAccept:start,
+      onRefuse:()=>dWrite({inv:null,refused:{by:me,at:Date.now()}}),
+      extra:`${esc(FORMATS[d.format].label)} · son système : ${esc(d.form[o])}`});
     L.innerHTML=`<h3>⚡ Nouveau draft</h3>${oppPickHTML()}
       <div class="rules">Contre ${esc(NAMES[o])} : chacun votre tour, vous choisissez <b>un</b> joueur pour une case de votre équipe. Un joueur pris par l'un est bloqué pour l'autre. Un tirage au sort décide qui commence.</div>
       <div class="field"><span>Format</span><select id="dFormat">${Object.entries(FORMATS).map(([k,v])=>`<option value="${k}" ${k===d.format?"selected":""}>${v.label}</option>`).join("")}</select></div>
       <div class="field"><span>Ton système</span><select id="dForm">${Object.keys(F).map(x=>`<option ${x===d.form[me]?"selected":""}>${x}</option>`).join("")}</select></div>
       <div class="field"><span>Système de ${esc(NAMES[o])}</span><b>${esc(d.form[o])}</b></div>
-      <button class="btn big" id="dStart">🪙 Lancer le draft</button>`;
-    bindOppPick(L); const ensure=()=> drafts[dKey()]?null:dNorm(null,me,dOpp);
+      ${IB.html}`;
+    bindOppPick(L); IB.bind(); const ensure=()=> drafts[dKey()]?null:dNorm(null,me,dOpp);
     $("#dFormat").onchange=e=>{ const base=ensure(); base?dWrite({"":{...base,format:e.target.value}}):dWrite({"format":e.target.value,"status":"lobby"}); };
     $("#dForm").onchange=e=>{ const base=ensure(); if(base){ base.form[me]=e.target.value; dWrite({"":base}); } else dWrite({["form."+me]:e.target.value,"status":"lobby"}); };
-    $("#dStart").onclick=()=>{ const first=Math.random()<.5?me:dOpp; const cur=dNorm(draft,me,dOpp); dWrite({"":{...cur,status:"running",turn:first,teams:{[me]:dBlankTeam(),[dOpp]:dBlankTeam()},picks:[],offers:{},started:Date.now()}}); };
     return;
   }
   if(!dView) dView=me;
@@ -2361,22 +2385,28 @@ function renderDraftSwitch(){
   el.querySelectorAll("[data-ds]").forEach(b=>b.onclick=()=>{ dSub=b.dataset.ds; renderDraft(); });
   $("#dClassic").style.display=dSub==="classic"?"":"none"; $("#bView").style.display=dSub==="budget"?"":"none";
 }
-function oppPickHTML(){ const ops=others(); return `<div class="field oppf"><span>👥 Jouer contre</span><select class="oppPick">${ops.map(x=>{ const dd=drafts[pairKey(me,x)], bb=budgets["budget__"+pairKey(me,x)]; const tag=[dd,bb].some(z=>z&&z.status==="running")?" · en cours":""; return `<option value="${esc(x)}" ${x===dOpp?"selected":""}>${esc(NAMES[x])}${tag}</option>`; }).join("")}</select></div>`; }
+function oppPickHTML(){ const ops=others(); return `<div class="field oppf"><span>👥 Jouer contre</span><select class="oppPick">${ops.map(x=>{ const dd=drafts[pairKey(me,x)], bb=budgets["budget__"+pairKey(me,x)]; const tag=[dd,bb].some(z=>invFor(z)&&invFor(z)!==me)?" · 📨 t'invite":[dd,bb].some(z=>z&&z.status==="running")?" · en cours":[dd,bb].some(z=>invFor(z)===me)?" · invité":""; return `<option value="${esc(x)}" ${x===dOpp?"selected":""}>${esc(NAMES[x])}${tag}</option>`; }).join("")}</select></div>`; }
 function bindOppPick(root){ root.querySelectorAll(".oppPick").forEach(sel=>sel.onchange=e=>{ dOpp=e.target.value; dOppManual=true; try{localStorage.setItem("onze-ol-opp",dOpp);}catch(_){} dView=null; draft=drafts[dKey()]?dNorm(drafts[dKey()]):null; renderDraft(); }); }
 function renderBudget(){
   const el=$("#bView"); if(!me) return;
   if(!dOpp||!NAMES[dOpp]){ el.innerHTML=`<div class="section mute">Personne à affronter pour l'instant.</div>`; return; }
   const raw=budgets[bKey()]; const d=bNorm(raw,me,dOpp); bView=d; const o=dOpp; const myT=d.teams[me], oT=d.teams[o];
   if(!raw||d.status==="lobby"){
+    const BIB=invBox(raw,o,"partie Budget",{
+      onInvite:()=>{ const x=bNorm(budgets[bKey()],me,dOpp); bWrite({...x,status:"lobby",inv:{by:me,at:Date.now()}},true); toast("📨 Invitation envoyée à "+(NAMES[o]||"?")); },
+      onCancel:()=>bWrite({inv:null}),
+      onAccept:()=>bStart(),
+      onRefuse:()=>bWrite({inv:null,refused:{by:me,at:Date.now()}}),
+      extra:`Budget ${d.budget} · système ${esc(d.formation)}`});
     el.innerHTML=`<div class="section"><h3>💰 Nouvelle partie Budget</h3>${oppPickHTML()}
       <div class="rules">Chacun a le même budget pour 11 joueurs + 1 entraîneur. À ton tour, tu ouvres un poste (5 joueurs tirés au sort) et tu en prends un, ou tu prends un joueur dans un poste déjà ouvert par l'adversaire (parmi ceux qu'il a laissés). Prix : Commune 4 · Rare 7 · Épique 10 · Légendaire 14 · Mythique 20.</div>
       <div class="field"><span>Budget</span><select id="bBud">${[60,80,100,120,150].map(v=>`<option ${v===d.budget?"selected":""}>${v}</option>`).join("")}</select></div>
       <div class="field"><span>Système (pour les deux)</span><select id="bForm">${Object.keys(F).map(x=>`<option ${x===d.formation?"selected":""}>${x}</option>`).join("")}</select></div>
-      <button class="btn big" id="bStart">🪙 Lancer la partie</button></div>`;
-    const base=()=>bNorm(budgets[bKey()],me,dOpp); bindOppPick(el);
+      ${BIB.html}</div>`;
+    const base=()=>bNorm(budgets[bKey()],me,dOpp); bindOppPick(el); BIB.bind();
     $("#bBud").onchange=e=>{ const x=base(); x.budget=+e.target.value; bWrite(x,true); };
     $("#bForm").onchange=e=>{ const x=base(); x.formation=e.target.value; bWrite(x,true); };
-    $("#bStart").onclick=()=>{ const x=base(); const pl=x.players; bWrite({...x,v:2,cur:null,ready:{},status:"running",turn:Math.random()<.5?pl[0]:pl[1],teams:{[pl[0]]:{slots:{},coach:null,spent:0},[pl[1]]:{slots:{},coach:null,spent:0}},offers:{},opener:{},picks:[],budget:+$("#bBud").value,formation:$("#bForm").value,started:Date.now()},true); };
+    function bStart(){ const x=base(); delete x.inv; const pl=x.players; bWrite({...x,v:2,cur:null,ready:{},status:"running",turn:Math.random()<.5?pl[0]:pl[1],teams:{[pl[0]]:{slots:{},coach:null,spent:0},[pl[1]]:{slots:{},coach:null,spent:0}},offers:{},opener:{},picks:[],budget:+$("#bBud").value,formation:$("#bForm").value,started:Date.now()},true); }
     return;
   }
   const N=bSlots(d).length, can=d.status==="running"&&d.turn===me;
@@ -2931,7 +2961,7 @@ function badgeAll(){
     const packs=c.daily!==today()||Object.values(c.freePacks||{}).some(n=>n>0);
     const trade=Object.values(trades||{}).some(t=>t&&t.to===me&&t.status==="open");
     set("#mCollec",packs||trade);
-    const myTurn=[...Object.values(drafts||{}),...Object.values(budgets||{})].some(d=>d&&d.status==="running"&&d.turn===me);
+    const myTurn=[...Object.values(drafts||{}),...Object.values(budgets||{})].some(d=>d&&Array.isArray(d.players)&&d.players.includes(me)&&((d.status==="running"&&d.turn===me)||(invFor(d)&&invFor(d)!==me)));
     set("#mDraft",myTurn);
     const D=c.dch; const defi=!(D&&D.day===today()&&D.done);
     const cup=Object.values(cups||{}).some(K=>K.status==="running"&&K.rounds.length&&K.rounds[K.rounds.length-1].ties.some(T=>!T.w&&(T.a===me||T.b===me)));
@@ -3523,7 +3553,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-20v"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-20w"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
