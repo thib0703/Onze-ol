@@ -1,5 +1,5 @@
 {
-  "updated": "20/11/2026",
+  "updated": "21/11/2026",
   "matches": "OL 2-0 Angers (01/11), Brest 2-0 OL (08/11) — notes Maxifoot",
   "rules": "Blessé -3 à -6 selon la durée, suspendu -2 ; moyenne des 2 derniers matchs : >=7.5 +3, >=7 +2, >=6.5 +1, <=4 -2, <=5 -1",
   "players": {
@@ -11,7 +11,7 @@
     "lois-openda": {
       "st": "inj",
       "mod": -3,
-      "note": "Fissure du péroné (09/10), retour attendu fin novembre"
+      "note": "Fissure du péroné (09/10), dernière phase de rééducation, forfait à Lille"
     },
     "ernest-nuamah": {
       "st": "up",
@@ -52,6 +52,16 @@
       "st": "down",
       "mod": -1,
       "note": "4,5/10 contre Angers"
+    },
+    "tyler-morton": {
+      "st": "inj",
+      "mod": -5,
+      "note": "Opéré de l'adducteur gauche (17/11), retour prévu courant février"
+    },
+    "clinton-mata": {
+      "st": "inj",
+      "mod": -3,
+      "note": "Gêne musculaire, forfait à Lille"
     }
   },
   "fixtures": [
