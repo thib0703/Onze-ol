@@ -1069,6 +1069,7 @@ details.fold>summary{cursor:pointer;list-style:none;font-weight:800}details.fold
 .trz .btn{margin-top:16px;min-width:160px}
 .tui-box.home .todor{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #ffffff10}.tui-box.home .tdt{flex:1;font-size:13px}.tui-box.home .tdi{font-size:18px}
 details.fold#libSec>summary::after{float:right}
+.tile.timg{justify-content:flex-end;min-height:150px}.tile.timg .ti,.tile.timg .tw{display:none}.tile.timg b{text-shadow:0 2px 6px #000}.tile.timg small{text-shadow:0 1px 4px #000;opacity:.95}
 </style>
 </head>
 <body>
@@ -1958,7 +1959,8 @@ function renderTopStrip(){ const el=$("#topStrip"); if(!el||!me) return; el.inne
 function objMiniHTML(){ try{ const o=objState(), oc=objClaimable();
   return `<button class="objmini" data-objmini="1"><div class="omh"><b>🎯 Objectifs du jour</b><span>${oc?`<i class="num">${oc} à récupérer</i>`:"Tout voir ›"}</span></div>${DAILY.map(x=>{ const v=Math.min(x.n,o.day.p[x.k]||0), done=o.day.done.includes(x.k); return `<div class="omr${done?" done":""}"><span>${done?"✅":v>=x.n?"🎁":"▫️"} ${x.t}</span><small>${done?"fait":`${v}/${x.n}`}</small><div class="track"><i style="width:${v/x.n*100}%"></i></div></div>`; }).join("")}</button>`; }catch(e){ return ""; } }
 function bindObjMini(root){ root.querySelectorAll("[data-objmini]").forEach(b=>b.onclick=()=>{ olSel="obj"; setMode("ol"); }); root.querySelectorAll("[data-passmini]").forEach(b=>b.onclick=()=>{ olSel="pass"; setMode("ol"); }); }
-function hubTile(k,ic,title,st,grad,badge,wide){ return `<button class="tile${wide?" wide":""}" data-tile="${k}" style="background:${grad}"><span class="tw">${ic}</span><span class="ti">${ic}</span><span><b>${title}</b><small>${st||""}</small></span>${badge?`<span class="tb">${badge}</span>`:""}</button>`; }
+const TILE_IMG=new Set(["draft","budget","duo","league","cup","match","career","defi","quiz","sofa","div","cpu"]);
+function hubTile(k,ic,title,st,grad,badge,wide){ const im=TILE_IMG.has(k); return `<button class="tile${wide?" wide":""}${im?" timg":""}" data-tile="${k}" style="background:${im?`linear-gradient(180deg,#0000 30%,#000c 100%),url(img/tuiles/${k}.webp) ${wide?"85% 30%":"72% center"}/cover no-repeat,${grad}`:grad}"><span class="tw">${ic}</span><span class="ti">${ic}</span><span><b>${title}</b><small>${st||""}</small></span>${badge?`<span class="tb">${badge}</span>`:""}</button>`; }
 function drStatus(list){ const mine=list.filter(d=>d&&Array.isArray(d.players)&&d.players.includes(me)); const o=d=>NAMES[d.players.find(x=>x!==me)]||"?";
   const t=mine.find(d=>d.status==="running"&&d.turn===me); if(t) return ["⚡ À toi de jouer vs "+o(t),"À toi !"];
   const iv=mine.find(d=>invFor(d)&&invFor(d)!==me); if(iv) return ["📨 "+(NAMES[invFor(iv)]||"?")+" t'invite","📨"];
@@ -5547,7 +5549,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-25b"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-25c"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
