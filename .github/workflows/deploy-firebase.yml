@@ -1,0 +1,51 @@
+# Déploie automatiquement les Cloud Functions (notifications push) et les règles Firestore
+# à chaque mise à jour de main qui les touche. Lancement manuel possible dans l'onglet Actions.
+# Nécessite le secret FIREBASE_SERVICE_ACCOUNT (clé JSON d'un compte de service du projet onze-ol).
+name: Déployer Firebase (fonctions + règles)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "functions/**"
+      - "firestore.rules"
+      - "firebase.json"
+      - ".github/workflows/deploy-firebase.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-firebase
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Installer les dépendances des fonctions
+        working-directory: functions
+        run: npm install --no-audit --no-fund
+
+      - name: Vérifier la clé Firebase
+        env:
+          SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          if [ -z "$SA" ]; then
+            echo "::error::Secret FIREBASE_SERVICE_ACCOUNT manquant (Settings > Secrets and variables > Actions)."
+            exit 1
+          fi
+          printf '%s' "$SA" > "$RUNNER_TEMP/sa.json"
+
+      - name: Déployer
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/sa.json
+        run: npx --yes firebase-tools@latest deploy --only functions,firestore:rules --project onze-ol --non-interactive --force
+
+      - name: Nettoyer la clé
+        if: always()
+        run: rm -f "$RUNNER_TEMP/sa.json"
