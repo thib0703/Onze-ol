@@ -2233,7 +2233,7 @@ function nextFx(){
 const LINE={GB:"gk",DC:"def",DD:"def",DG:"def",PG:"def",PD:"def",MDC:"mid",MC:"mid",MG:"mid",MD:"mid",MOC:"mo",AG:"att",AD:"att",BU:"att"};
 let mClosed=null, match=null, matches=[], selA="cur", selB="cur", pA=null, pB=null, clubMode=false, mTimer=null, mSkip=null, lastMatchId=null;
 // aucune carte n'a MG/MD/PG/PD : l'ailier ou le latéral du même côté y joue à son vrai poste
-const ROLE_EQ={MG:["AG"],MD:["AD"],PG:["DG"],PD:["DD"]};
+const ROLE_EQ={MG:["AG"],MD:["AD"],PG:["DG","AG"],PD:["DD","AD"]}; // pistons : latéraux ET ailiers à 100 %
 // 🧭 Milieux selon le dispositif : un MDC joue MC à 100 % si le système n'a pas de case MDC (4-4-2, 3-4-3),
 // un MOC joue MC à 100 % si le système n'a pas de case MOC (4-3-3, 4-4-2, 3-5-2, 3-4-3). Losange / 4-2-3-1 : −5 % comme avant.
 let FIT_FORM=null;
@@ -5393,7 +5393,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-24i"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-24j"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
