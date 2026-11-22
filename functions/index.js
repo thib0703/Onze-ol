@@ -25,7 +25,7 @@ async function notify(uid, title, body) {
 // Draft / Budget : c'est ton tour
 exports.draftTurn = onDocumentWritten({ document: "onzeol_drafts/{id}", region: REGION }, async ev => {
   const before = ev.data.before.exists ? ev.data.before.data() : null, after = ev.data.after.exists ? ev.data.after.data() : null;
-  if (!after || after.status !== "running" || !after.turn) return;
+  if (!after || after.mode === "duo" || after.status !== "running" || !after.turn) return;
   if (before && before.status === "running" && before.turn === after.turn) return;
   const other = (after.players || []).find(p => p !== after.turn);
   const who = await nameOf(other); const kind = after.mode === "budget" ? "💰 Mode Budget" : "⚡ Draft";
@@ -34,7 +34,7 @@ exports.draftTurn = onDocumentWritten({ document: "onzeol_drafts/{id}", region: 
 // Draft / Budget : invitation, refus, acceptation
 exports.draftInvite = onDocumentWritten({ document: "onzeol_drafts/{id}", region: REGION }, async ev => {
   const before = ev.data.before.exists ? ev.data.before.data() : null, after = ev.data.after.exists ? ev.data.after.data() : null;
-  if (!after) return;
+  if (!after || after.mode === "duo") return;
   const kind = after.mode === "budget" ? "💰 Partie Budget" : "⚡ Draft";
   const bi = before && before.inv, ai = after.inv;
   if (ai && after.status === "lobby" && (!bi || bi.at !== ai.at)) {
@@ -45,6 +45,31 @@ exports.draftInvite = onDocumentWritten({ document: "onzeol_drafts/{id}", region
     const other = (after.players || []).find(p => p !== bi.by);
     if (after.refused && after.refused.by === other && after.refused.at > bi.at) return notify(bi.by, `${kind} : invitation refusée`, `${await nameOf(other)} a refusé ton invitation.`);
     if (after.status === "running" && after.turn !== bi.by) return notify(bi.by, `${kind} : invitation acceptée`, `${await nameOf(other)} a accepté, la partie commence !`);
+  }
+});
+// 👥 2 contre 2 : invitation, refus/annulation, début du draft, ton tour, draft terminé
+exports.duoDraft = onDocumentWritten({ document: "onzeol_drafts/{id}", region: REGION }, async ev => {
+  const before = ev.data.before.exists ? ev.data.before.data() : null, after = ev.data.after.exists ? ev.data.after.data() : null;
+  if (!after || after.mode !== "duo") return;
+  const pl = after.players || [], bs = before && before.status;
+  const nm = async u => await nameOf(u);
+  if (!before && after.status === "lobby") {
+    const by = await nm(after.by);
+    for (const u of pl) if (u !== after.by) await notify(u, "👥 2 contre 2 : invitation", `${by} t'invite à un 2 contre 2. Accepte ou refuse dans l'onglet Jeux.`);
+    return;
+  }
+  if (after.status === "cancelled" && bs !== "cancelled") {
+    const w = (after.refused || after.cancelled || {}).by; const who = await nm(w);
+    for (const u of pl) if (u !== w) await notify(u, "👥 2 contre 2 annulé", `${who} ${after.refused ? "a refusé l'invitation" : "a annulé la partie"}.`);
+    return;
+  }
+  if (after.status === "done" && bs === "running") {
+    for (const u of pl) await notify(u, "👥 2 contre 2 : draft terminé", "Les équipes sont prêtes. Appuie sur « Prêt » dans l'onglet Jeux.");
+    return;
+  }
+  if (after.status === "running" && after.turn && !(bs === "running" && before.turn === after.turn)) {
+    const prev = bs === "running" ? await nm(before.turn) : null;
+    await notify(after.turn, "👥 2 contre 2 : à toi de choisir !", prev ? `${prev} a fait son choix, c'est ton tour.` : "Les 4 ont accepté, tu choisis en premier !");
   }
 });
 // Match lancé contre toi

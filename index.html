@@ -423,7 +423,7 @@ html:has(.modal.open),body:has(.modal.open){overflow:hidden}
 .fc-vmini{position:absolute;right:4%;top:3%;font-size:calc(var(--w)/4);line-height:1;z-index:3}
 .evban.tfban{background:linear-gradient(120deg,#5a0d06,#b3200e,#ff7a1a);margin-top:8px}
 .fc-ovr{position:relative}.fc-live{position:absolute;left:100%;top:0;font-style:normal;font-size:.42em;margin-left:2px}
-.duol{display:flex;flex-direction:column;gap:4px}.duor{display:grid;grid-template-columns:40px 1fr auto;align-items:center;gap:6px;text-align:left;background:#1d2b55;border:0;border-radius:8px;padding:6px 8px;color:inherit;font:inherit;font-size:13px;cursor:pointer}.duor small{display:block;color:var(--mute);font-size:11px}.duor em{font-style:normal;font-weight:700}
+.duol{display:flex;flex-direction:column;gap:4px}.duor{display:grid;grid-template-columns:40px 1fr auto;align-items:center;gap:6px;text-align:left;background:#1d2b55;border:0;border-radius:8px;padding:6px 8px;color:inherit;font:inherit;font-size:13px;cursor:pointer}.duor small{display:block;color:var(--mute);font-size:11px}.duor:disabled{cursor:default;opacity:1}.duor.duocan{outline:2px dashed #7ee2a0;outline-offset:-2px}.duor em{font-style:normal;font-weight:700}
 .otherlive{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 10px;padding:8px 10px;border-radius:10px;background:#1d2b55;font-size:13px}
 .livel{margin:6px 0;padding:6px 8px;border-radius:8px;background:rgba(31,138,76,.22);font-size:13px}.livel.neg{background:rgba(180,67,43,.25)}
 .nws{display:flex;flex-direction:column;gap:8px;margin-top:8px}.nw{display:block;background:#16244a;border:1px solid #2b3c6e;border-radius:12px;padding:10px 12px;color:var(--txt);text-decoration:none}.nw b{display:block;font-size:14px;line-height:1.3}.nw p{margin:4px 0 0;font-size:12.5px;color:#c8d6ff;line-height:1.4}.nw small{display:block;margin-top:5px;font-size:11px;color:var(--mute)}.nw.new{border-color:#ffd970}.nwf{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.nwf button{background:#1d2b55;border:0;color:var(--mute);border-radius:999px;padding:4px 10px;font-size:12px;cursor:pointer}.nwf button.on{background:var(--rouge);color:#fff}
@@ -1072,6 +1072,11 @@ function draftOffer(kind,i,role){
   const key=kind+i; const d=draft; const mine=((d&&d.offers)||{})[me]||{};
   const taken=dTaken(d);
   if(mine[key]&&mine[key].some(id=>!taken[id])) return mine[key];
+  const ids=genOffer(kind,role,taken);
+  dWrite({[`offers.${me}.${key}`]:ids});
+  return ids;
+}
+function genOffer(kind,role,taken){
   const okR=kind==="xi"?(ROLE_OK[role]||[]):null;
   let base=(kind==="coach"?COACHES:PLAYERS).filter(p=>!taken[p.id]&&(!okR||zoneOK(p,role)));
   if(okR&&base.length<5) base=PLAYERS.filter(p=>!taken[p.id]&&p.pos.some(x=>okR.includes(x)));
@@ -1087,30 +1092,31 @@ function draftOffer(kind,i,role){
     if(p){ used.add(p.id); ids.push(p.id); }
   }
   if(kind==="xi") ensureRole(ids,role,PLAYERS.filter(p=>!taken[p.id]));
-  dWrite({[`offers.${me}.${key}`]:ids});
   return ids;
 }
 function openSheet(kind,i,role,mode,partner){
   editing={kind,i,role,mode:mode||"compo",partner:partner||null}; $("#q").style.display="";
-  $("#clearSlot").style.display=editing.mode==="draft"?"none":"";
+  if(editing.mode==="duo4"){ editing.id=partner; editing.partner=null; const d4=duos[partner]; if(!d4){ editing=null; return; } editing.pool=d4.pool; }
+  $("#clearSlot").style.display=editing.mode==="draft"||editing.mode==="duo4"?"none":"";
   $("#shTitle").textContent= kind==="coach"?"Entraîneur" : kind==="bench"?`Remplaçant n°${i+1}` : `${ROLE_LABEL[role]||role} (${role})`;
   $("#q").value=""; chip = kind==="xi" ? "poste" : "tous";
   $("#q").placeholder= kind==="coach"?"Rechercher un entraîneur…":"Rechercher un joueur…";
   $("#sheet").classList.add("open"); $("#veil").classList.add("open");
-  const isDraft=editing.mode==="draft"; $("#q").style.display=isDraft?"none":"";
-  if(isDraft) editing.offer=draftOffer(kind,i,role);
+  const isDraft=sheetDraft(); $("#q").style.display=isDraft?"none":"";
+  if(isDraft) editing.offer=editing.mode==="duo4"?duoOffer(duos[editing.id],kind,i,role):draftOffer(kind,i,role);
   renderChips(); renderList();
 }
+const sheetDraft=()=>!!editing&&(editing.mode==="draft"||(editing.mode==="duo4"&&editing.pool==="draft"));
 function closeSheet(){ $("#sheet").classList.remove("open"); $("#veil").classList.remove("open"); editing=null; }
 function renderChips(){
   const el=$("#chips"); el.innerHTML="";
-  if(editing.kind==="coach"||editing.mode==="draft"){el.style.display="none";return;} el.style.display="flex";
+  if(editing.kind==="coach"||sheetDraft()){el.style.display="none";return;} el.style.display="flex";
   const opts=(editing.kind==="xi"?["poste"]:[]).concat(["tous"],POS_CHIPS);
   for(const o of opts){ const b=document.createElement("button"); b.className="chip"+(chip===o?" on":""); b.textContent=o==="poste"?"Poste conseillé":o==="tous"?"Tous":o; b.onclick=()=>{chip=o;renderChips();renderList();}; el.appendChild(b); }
 }
-const duoCur=()=>{ const d=duoSaved(me,editing.partner)||duoAuto(me,editing.partner); return {slots:d.slots||{},bench:{},coach:d.coach}; };
+const duoCur=()=>{ const d=duos[editing.id]; return d?d.teams[duoSide(d,me)]:dBlankTeam(); };
 function usedIds(){
-  const c=editing&&editing.mode==="duo"?duoCur():compos[me]; const s=new Set();
+  const c=editing&&editing.mode==="duo4"?duoCur():compos[me]; const s=new Set();
   Object.entries(c.slots).forEach(([k,v])=>{ if(v && !(editing.kind==="xi"&&+k===editing.i)){ s.add(v); s.add(baseOf(v)); } });
   Object.entries(c.bench).forEach(([k,v])=>{ if(v && !(editing.kind==="bench"&&+k===editing.i)){ s.add(v); s.add(baseOf(v)); } });
   return s;
@@ -1120,23 +1126,24 @@ function renderList(){
   const q=slug($("#q").value.trim()).replace(/^-|-$/g,"");
   const isCoach=editing.kind==="coach";
   const ok = editing.kind==="xi" ? (ROLE_OK[editing.role]||[]) : [];
-  let ps = isCoach ? COACHES.slice() : (editing.mode!=="draft"?[...PLAYERS,...VARIANTS]:PLAYERS).filter(p=>{
+  const isDr=sheetDraft();
+  let ps = isCoach ? COACHES.slice() : (!isDr?[...PLAYERS,...VARIANTS]:PLAYERS).filter(p=>{
     if(q) return true;
     if(chip==="poste") return p.pos.some(x=>ok.includes(x));
     if(chip==="tous") return true;
     return p.pos.includes(chip);
   });
   if(q) ps=ps.filter(p=>p.id.replace(/^coach-/,"").includes(q));
-  const clubPick=editing.mode!=="draft";
-  if(editing.mode==="draft"&&editing.offer){ ps=editing.offer.map(id=>BY_ID[id]).filter(Boolean); }
-  const isDuo=editing.mode==="duo";
-  if(clubPick){ const own=isDuo?duoOwn(me,editing.partner):(id=>!!(C(me).coll||{})[id]); ps=ps.filter(p=>own(p.id)); }
+  const clubPick=!isDr;
+  if(isDr&&editing.offer){ ps=editing.offer.map(id=>BY_ID[id]).filter(Boolean); }
+  const isDuo=editing.mode==="duo4";
+  if(clubPick){ const own=id=>!!(C(me).coll||{})[id]; ps=ps.filter(p=>own(p.id)); }
   if(clubPick) ps.sort((a,b)=>a.year-b.year||a.name.localeCompare(b.name,"fr"));
-  const takenMap = editing.mode==="draft" ? dTaken(draft) : null;
+  const takenMap = editing.mode==="draft" ? dTaken(draft) : isDr ? duoTaken(duos[editing.id]) : null;
   const used = takenMap ? new Set(Object.keys(takenMap)) : (isCoach?new Set():usedIds());
   const L=$("#list"); L.innerHTML="";
   if(!clubPick) L.insertAdjacentHTML("beforeend",`<div class="mute" style="font-size:12px;padding:6px 10px">🎲 5 joueurs tirés au sort pour ce poste, de raretés différentes. Choisis-en un !</div>`);
-  if(clubPick) L.insertAdjacentHTML("beforeend",`<div class="mute" style="font-size:12px;padding:6px 10px">${isDuo?`👥 Duo : tes cartes + celles de ${esc(NAMES[editing.partner]||"ton coéquipier")}.`:"🔒 Mode Club : seules tes cartes apparaissent. Le Draft, lui, propose tous les joueurs."}</div>`);
+  if(clubPick) L.insertAdjacentHTML("beforeend",`<div class="mute" style="font-size:12px;padding:6px 10px">${isDuo?"👥 2 contre 2 : choisis parmi tes cartes (celles déjà dans votre équipe sont retirées).":"🔒 Mode Club : seules tes cartes apparaissent. Le Draft, lui, propose tous les joueurs."}</div>`);
   if(clubPick){ const cc=isDuo?duoCur():(compos[me]||{}); const curId=editing.kind==="xi"?(cc.slots||{})[editing.i]:editing.kind==="bench"?(cc.bench||{})[editing.i]:cc.coach;
     ps=ps.filter(p=>p.id!==curId&&!(used.has(p.id)||used.has(baseOf(p.id)))); } // ni le joueur déjà en place, ni ceux déjà alignés
   if(!ps.length){L.insertAdjacentHTML("beforeend",`<div style="padding:18px 16px;text-align:center;color:var(--mute)">${clubPick?(q?"Aucune de tes cartes ne correspond à ta recherche.":`<b style="color:#fff">Aucun joueur dispo à ce poste</b><br>Ouvre des packs dans 🎴 Collec pour en débloquer, ou touche « Tous » pour voir tes autres cartes.`):"Personne trouvé."}</div>`);return;}
@@ -1151,7 +1158,7 @@ function renderList(){
 }
 function setPick(pid){
   if(editing && editing.mode==="draft"){ const e=editing; closeSheet(); if(pid) dPick(e.kind,e.i,pid); return; }
-  if(editing && editing.mode==="duo"){ const e=editing; const d=duoEdit(e.partner); if(e.kind==="coach") d.coach=pid||null; else if(pid) d.slots[e.i]=pid; else delete d.slots[e.i]; d.at=Date.now(); closeSheet(); save(); renderJeux(); return; }
+  if(editing && editing.mode==="duo4"){ const e=editing; closeSheet(); if(pid) duoPick(e.id,e.kind,e.i,pid); return; }
   const c=compos[me];
   if(editing.kind==="xi"){ if(pid) c.slots[editing.i]=pid; else delete c.slots[editing.i]; }
   else if(editing.kind==="bench"){ if(pid) c.bench[editing.i]=pid; else delete c.bench[editing.i]; }
@@ -1257,7 +1264,7 @@ let dPrevStatus={}, dOppManual=false;
 // 📨 Invitations de draft : prévenir l'invité, et l'inviteur s'il y a un refus
 let invPrev=null;
 function invWatch(all){
-  const cur={}; for(const [k,x] of Object.entries(all||{})){ if(x&&Array.isArray(x.players)&&x.players.includes(me)) cur[k]=x; }
+  const cur={}; for(const [k,x] of Object.entries(all||{})){ if(x&&x.mode!=="duo"&&Array.isArray(x.players)&&x.players.includes(me)) cur[k]=x; }
   if(invPrev){ for(const [k,x] of Object.entries(cur)){ const was=invPrev[k]||{}; const kind=x.mode==="budget"?"partie Budget":"draft";
     if(x.inv&&x.inv.by!==me&&(!was.inv||was.inv.at!==x.inv.at)) toast(`📨 ${NAMES[x.inv.by]||"?"} t'invite à un ${kind} (onglet Draft)`);
     if(was.inv&&was.inv.by===me&&!x.inv&&x.refused&&x.refused.by!==me&&x.refused.at>was.inv.at) toast(`❌ ${NAMES[x.refused.by]||"?"} a refusé ton invitation au ${kind}`,true);
@@ -1272,8 +1279,8 @@ function invBox(x,o,kind,{onInvite,onCancel,onAccept,onRefuse,extra}){ // bloc d
   return {html:`<div class="invst me">📨 <b>${N}</b> t'invite à un ${kind} !${extra?`<small>${extra}</small>`:""}</div><div class="dbtns"><button class="btn big" id="invYes">✅ Accepter</button><button class="btn ghost big" id="invNo">❌ Refuser</button></div>`, bind:()=>{ $("#invYes").onclick=onAccept; $("#invNo").onclick=onRefuse; }};
 }
 function onDraftData(all){
-  all=Object.assign({},all||{}); try{ invWatch(all); }catch(_){} const bud={}; for(const k of Object.keys(all)) if(all[k]&&all[k].mode==="budget"){ bud[k]=all[k]; delete all[k]; }
-  onBudgetData(bud);
+  all=Object.assign({},all||{}); try{ invWatch(all); }catch(_){} const bud={}, duo={}; for(const k of Object.keys(all)){ if(all[k]&&all[k].mode==="budget"){ bud[k]=all[k]; delete all[k]; } else if(all[k]&&all[k].mode==="duo"){ duo[k]=all[k]; delete all[k]; } }
+  onBudgetData(bud); try{ onDuoData(duo); }catch(e){ console.error(e); }
   drafts=all;
   for(const [k,x] of Object.entries(drafts)){
     if(!x||!Array.isArray(x.players)) continue;
@@ -2611,55 +2618,159 @@ async function openBudgetSlot(k){
 
 // =================== EXTRAS (suite) ===================
 
-// =================== 👥 Duo : 2 contre 2 ===================
-const duoOwn=(u1,u2)=>{ const a=(C(u1)||{}).coll||{}, b=(C(u2)||{}).coll||{}; return id=>!!(a[id]||b[id]); };
-const duoWho=(u1,u2,id)=>{ const a=((C(u1)||{}).coll||{})[id], b=((C(u2)||{}).coll||{})[id]; return a&&b?"vous 2":a?(NAMES[u1]||"?"):b?(NAMES[u2]||"?"):"🔒"; };
-// 11 composé à la main par l'un des deux (le plus récent des deux gagne)
-function duoSaved(u1,u2){ const L=[((C(u1)||{}).duo||{})[u2],((C(u2)||{}).duo||{})[u1]].filter(z=>z&&z.slots); return L.sort((x,y)=>(y.at||0)-(x.at||0))[0]||null; }
-function duoPool(u1,u2){ const pool=new Map();
-  for(const u of [u1,u2]){ const own=(C(u)||{}).coll||{}; for(const id of Object.keys(own)) if(own[id]&&BY_ID[id]&&BY_ID[id].pos[0]!=="COACH"){ const v=BY_ID[id].ovr+evoOf(u,id)+liveMod(id); if(!pool.has(id)||pool.get(id).v<v) pool.set(id,{v,u}); } }
-  return pool; }
-function duoAuto(u1,u2,form){ const pool=duoPool(u1,u2);
-  form=F[form]?form:((C(u1)||{}).formation||"4-3-3"); const roles=F[form]||F["4-3-3"]; const pairs=[];
-  roles.forEach(([r],i)=>pool.forEach((x,id)=>{ const p=BY_ID[id]; if(fitsRole(p,r)) pairs.push([x.v+(ROLE_OK[r].includes(p.pos[0])?.5:0),id,i]); }));
-  pairs.sort((a,b)=>b[0]-a[0]); const slots={}, bases=new Set(); for(const [,id,i] of pairs){ if(slots[i]||bases.has(baseOf(id))) continue; slots[i]=id; bases.add(baseOf(id)); }
-  const own=duoOwn(u1,u2); const co=COACHES.filter(c=>own(c.id)).sort((a,b)=>b.ovr-a.ovr)[0];
-  return {formation:form,slots,coach:co?co.id:null}; }
-function duoTeam(u1,u2){ const s=duoSaved(u1,u2)||duoAuto(u1,u2); const own=duoOwn(u1,u2); const form=F[s.formation]?s.formation:"4-3-3";
-  const slots={}, bases=new Set(); for(const [k,id] of Object.entries(s.slots||{})) if(id&&BY_ID[id]&&own(id)&&!bases.has(baseOf(id))&&+k<F[form].length){ slots[k]=id; bases.add(baseOf(id)); }
-  const pool=duoPool(u1,u2); const bench={}; [...pool.entries()].filter(([id])=>!bases.has(baseOf(id))).sort((a,b)=>b[1].v-a[1].v).forEach(([id])=>{ if(Object.keys(bench).length>=BENCH_N||bases.has(baseOf(id))) return; bench[Object.keys(bench).length]=id; bases.add(baseOf(id)); });
-  return {formation:form,slots,bench,coach:s.coach&&own(s.coach)?s.coach:null,hand:!!duoSaved(u1,u2)}; }
-// ✏️ mon brouillon de 11 duo avec ce coéquipier (part du 11 actuel, auto ou fait par lui)
-function duoEdit(a){ const c=W(); c.duo=c.duo||{}; const t=duoTeam(me,a); c.duo[a]={formation:t.formation,slots:{...t.slots},coach:t.coach||null,at:Date.now(),by:me}; return c.duo[a]; }
-let duoSel={a:null,b:null,c:null};
-function duoHTML(){ const us=Object.keys(NAMES).filter(u=>u!==me&&u!==CPU&&compos[u]); const opt=(k,lab)=>`<select data-du="${k}"><option value="">${lab}</option>${us.map(u=>`<option value="${u}"${duoSel[k]===u?" selected":""}>${esc(NAMES[u])}</option>`).join("")}</select>`;
-  const ok=duoSel.a&&duoSel.b&&duoSel.c&&new Set([me,duoSel.a,duoSel.b,duoSel.c]).size===4;
-  let pre=""; if(ok){ const A=strength(duoTeam(me,duoSel.a),null,false), B=strength(duoTeam(duoSel.b,duoSel.c),null,false); pre=`<div class="vsavg"><div><small>${esc(NAMES[me])} & ${esc(NAMES[duoSel.a])}</small><b>${A.global}</b></div><span>VS</span><div><small>${esc(NAMES[duoSel.b])} & ${esc(NAMES[duoSel.c])}</small><b>${B.global}</b></div></div>`; }
-  const pa=duoSel.a&&duoSel.a!==me?duoSel.a:null; let ed="";
-  if(pa){ const T=duoTeam(me,pa), sv=duoSaved(me,pa), roles=F[T.formation];
-    const row=(k,role,pid)=>{ const p=BY_ID[pid]; const hp=p&&role!=="COA"?hpPen(p,role):0; return `<button class="duor" data-dslot="${k}" data-drole="${role}"><b>${role}</b><span>${p?esc(p.name):`<i class="mute">+ Choisir</i>`}${p?`<small>${esc(duoWho(me,pa,pid))}</small>`:""}</span><em>${p?(role==="COA"?p.ovr:(effR(pid)||p.ovr))+(hp?` ⚠️−${hp}%`:""):""}</em></button>`; };
-    ed=`<h4 style="margin:12px 0 4px">🧩 Notre 11 · ${esc(NAMES[me])} & ${esc(NAMES[pa])}</h4>
-    <div class="mute" style="font-size:12px;margin-bottom:6px">${sv?`Composé à la main par ${esc(NAMES[sv.by]||"?")} · ${fmtWhen(sv.at)}`:"11 automatique (meilleures cartes de vos 2 collections)"} · touche un poste pour choisir parmi vos 2 collections. Le banc se remplit tout seul avec les meilleurs restants.</div>
-    <div class="arow"><select id="duoForm">${Object.keys(F).map(f=>`<option ${f===T.formation?"selected":""}>${f}</option>`).join("")}</select><button class="btn sm ghost" id="duoAutoB">✨ Meilleur 11 auto</button></div>
-    <div class="duol">${roles.map(([r],i)=>row(i,r,T.slots[i])).join("")}${row("coach","COA",T.coach)}</div>`; }
-  return `<h3>👥 Duo · 2 contre 2</h3><div class="rules" style="font-size:12px;margin-top:0">Choisis ton coéquipier et vos 2 adversaires. Chaque duo <b>compose son 11 en piochant dans les collections des deux joueurs</b> (sinon, le meilleur 11 possible est fait automatiquement). Le match se joue en direct chez les 4.</div>
-   <div class="duog"><div><small>Ton coéquipier</small>${opt("a","Choisir…")}</div><div><small>Adversaire 1</small>${opt("b","Choisir…")}</div><div><small>Adversaire 2</small>${opt("c","Choisir…")}</div></div>
-   ${us.length<3?`<div class="mute" style="font-size:12.5px">Il faut au moins 4 joueurs inscrits pour jouer en duo.</div>`:""}${ed}${pre}${ok?`<div class="mute" style="font-size:12px;text-align:center">11 adverse : ${duoSaved(duoSel.b,duoSel.c)?"composé à la main par eux":"automatique"}</div>`:""}
-   <button class="btn big" id="duoGo" ${ok?"":"disabled"}>▶️ Lancer le match en duo</button>`; }
-function bindDuo(){ document.querySelectorAll("[data-du]").forEach(x=>x.onchange=()=>{ duoSel[x.dataset.du]=x.value||null; renderJeux(); }); const g=$("#duoGo"); if(g) g.onclick=duoPlay;
-  const pa=duoSel.a; if(!pa) return;
-  document.querySelectorAll("[data-dslot]").forEach(b=>b.onclick=()=>{ const k=b.dataset.dslot; if(k==="coach") openSheet("coach",0,"COACH","duo",pa); else openSheet("xi",+k,b.dataset.drole,"duo",pa); });
-  const f=$("#duoForm"); if(f) f.onchange=()=>{ const d=duoEdit(pa); d.formation=f.value; save(); renderJeux(); };
-  const au=$("#duoAutoB"); if(au) au.onclick=()=>{ const A=duoAuto(me,pa,(duoSaved(me,pa)||{}).formation); const c=W(); c.duo=c.duo||{}; c.duo[pa]={...A,at:Date.now(),by:me}; save(); renderJeux(); toast("✨ Meilleur 11 de vos 2 collections mis en place"); }; }
-async function duoPlay(){ const {a,b,c}=duoSel; if(!a||!b||!c||new Set([me,a,b,c]).size<4) return; if(sharedLive()){ toast("Un match est déjà en cours, attends la fin",true); return; }
-  const tA=duoTeam(me,a), tB=duoTeam(b,c); const SA=strength(tA,null,false), SB=strength(tB,null,false);
-  if(!enough(SA)||!enough(SB)){ toast("Un des duos n'a pas assez de joueurs (7 minimum)",true); return; }
-  const nA=`${NAMES[me]} & ${NAMES[a]}`, nB=`${NAMES[b]} & ${NAMES[c]}`;
-  const m=buildMatch([{c:tA,S:SA,label:"👥 Duo",owner:me,name:nA},{c:tB,S:SB,label:"👥 Duo",owner:b,name:nB}]);
-  m.teams[0].owners=[me,a]; m.teams[1].owners=[b,c]; m.duo=true;
+// =================== 👥 Duo : 2 contre 2 — salon à 4 (chacun accepte) puis draft chacun son tour ===================
+const DUO_POOL={coll:"🎴 Chacun ses cartes (collections)",draft:"🎲 Draft libre (5 joueurs tirés au sort)"};
+let duos={}, duoCurId=null, duoNew=false, duoView=null, duoPrev=null, duoResetArm=false;
+let duoSel={a:null,b:null,c:null,format:"xic",pool:"coll",form:"4-3-3"};
+const duoRef=id=>db.collection("onzeol_drafts").doc(id);
+const duoSide=(d,u)=>(d.sides.A||[]).includes(u)?"A":(d.sides.B||[]).includes(u)?"B":null;
+const duoNeed=d=>{ const f=FORMATS[d.format]||FORMATS.xic; return 11+f.bench+(f.coach?1:0); };
+const duoNames=(d,s)=>(d.sides[s]||[]).map(u=>NAMES[u]||"?").join(" & ");
+function duoNorm(x){
+  const d=Object.assign({status:"lobby",format:"xic",pool:"coll",picks:[],order:[],turn:null},x||{});
+  d.sides=Object.assign({A:[],B:[]},d.sides||{}); d.form=Object.assign({A:"4-3-3",B:"4-3-3"},d.form||{});
+  d.teams=Object.assign({},d.teams||{});
+  for(const s of ["A","B"]){ if(!F[d.form[s]]) d.form[s]="4-3-3"; const t=Object.assign(dBlankTeam(),d.teams[s]||{}); t.slots=Object.assign({},t.slots||{}); t.bench=Object.assign({},t.bench||{}); d.teams[s]=t; }
+  d.picks=Array.isArray(d.picks)?d.picks.slice():[]; d.acc=Object.assign({},d.acc||{}); d.ready=Object.assign({},d.ready||{}); d.out=Object.assign({},d.out||{}); d.offers=Object.assign({},d.offers||{});
+  if(!FORMATS[d.format]) d.format="xic"; if(!DUO_POOL[d.pool]) d.pool="coll"; return d; }
+const duoActive=d=>d&&["lobby","running","done"].includes(d.status)&&Date.now()-(d.created||0)<(d.status==="lobby"?3:10)*86400000;
+// cartes déjà prises (dans une équipe, ou dans les 2)
+function duoTaken(d,side){ const m={}; for(const s of side?[side]:["A","B"]){ const t=d.teams[s]; [...Object.values(t.slots),...Object.values(t.bench),t.coach].forEach(x=>{ if(x){ m[x]=s; m[baseOf(x)]=s; } }); } return m; }
+function duoNext(d,from){ const o=d.order||[]; const k=o.indexOf(from); for(let j=1;j<=o.length;j++){ const u=o[(k+j)%o.length]; const s=duoSide(d,u); if(!d.out[u]&&dCount(d.teams[s])<duoNeed(d)) return u; } return null; }
+function duoAdvance(d){ const n=duoNext(d,d.turn); if(n) d.turn=n; else { d.status="done"; d.turn=null; d.ended=Date.now(); } }
+// ce que j'ai à faire dans cette partie (pour le point d'exclamation et l'ordre d'affichage)
+function duoTodo(d){ if(!d||!duoActive(d)) return 0; if(d.status==="lobby") return d.acc[me]?1:3; if(d.status==="running") return d.turn===me?4:2; return d.ready[me]?1:3; }
+const duoAttn=()=>Object.values(duos).some(d=>duoTodo(d)>=3);
+async function duoTx(id,fn){ if(!db||!me){ toast("Pas connecté",true); return false; }
+  try{ let out; await db.runTransaction(async tx=>{ const sn=await tx.get(duoRef(id)); if(!sn.exists) throw new Error("Partie introuvable"); const d=duoNorm(sn.data()); out=fn(d); tx.set(duoRef(id),JSON.parse(JSON.stringify(d))); }); return out===undefined?true:out; }
+  catch(e){ toast(e&&e.message&&!/permission|network|offline/i.test(e.message)?e.message:"Pas de connexion, réessaie",true); return false; } }
+async function duoCreate(){ const {a,b,c}=duoSel; if(!a||!b||!c||new Set([me,a,b,c]).size<4){ toast("Choisis 3 joueurs différents",true); return; }
+  const id="duo_"+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+  const d=duoNorm({mode:"duo",id,by:me,created:Date.now(),players:[me,a,b,c],sides:{A:[me,a],B:[b,c]},format:duoSel.format,pool:duoSel.pool,form:{A:duoSel.form,B:"4-3-3"},acc:{[me]:true}});
+  try{ await duoRef(id).set(JSON.parse(JSON.stringify(d))); duoCurId=id; duoNew=false; duoView=null; toast("📨 Invitations envoyées à "+[a,b,c].map(u=>NAMES[u]||"?").join(", ")); renderDuo(); }
+  catch(e){ toast("Pas de connexion, réessaie",true); } }
+function duoStartIn(d){ const first=Math.random()<.5?"A":"B", sec=first==="A"?"B":"A"; const mix=L=>Math.random()<.5?[L[0],L[1]]:[L[1],L[0]];
+  const x=mix(d.sides[first]), y=mix(d.sides[sec]); d.order=[x[0],y[0],x[1],y[1]]; d.turn=d.order[0]; d.status="running"; d.started=Date.now();
+  d.picks=[]; d.teams={A:dBlankTeam(),B:dBlankTeam()}; d.offers={}; d.out={}; d.ready={}; }
+const duoAccept=id=>duoTx(id,d=>{ if(d.status!=="lobby") throw new Error("Cette partie n'attend plus de réponse"); d.acc[me]=true; if(d.players.every(u=>d.acc[u])) duoStartIn(d); });
+const duoRefuse=id=>duoTx(id,d=>{ if(d.status!=="lobby") throw new Error("Trop tard, la partie a commencé"); d.status="cancelled"; d.refused={by:me,at:Date.now()}; });
+const duoCancel=id=>duoTx(id,d=>{ if(d.status==="played") throw new Error("Le match a déjà été joué"); d.status="cancelled"; d.cancelled={by:me,at:Date.now()}; });
+const duoSetForm=(id,f)=>duoTx(id,d=>{ if(d.status!=="lobby") throw new Error("Le draft a commencé, système bloqué"); d.form[duoSide(d,me)]=f; });
+const duoPass=id=>duoTx(id,d=>{ if(d.status!=="running"||d.turn!==me) throw new Error("Ce n'est pas ton tour"); d.out[me]=true; d.picks.push({by:me,pass:true,at:Date.now()}); duoAdvance(d); });
+function duoPick(id,kind,i,pid){ return duoTx(id,d=>{
+  if(d.status!=="running") throw new Error("Le draft n'est pas en cours"); if(d.turn!==me) throw new Error("Ce n'est pas ton tour");
+  const s=duoSide(d,me), t=d.teams[s]; if(!BY_ID[pid]) throw new Error("Carte inconnue");
+  if(d.pool==="coll"){ if(!(C(me).coll||{})[pid]) throw new Error("Tu n'as pas cette carte"); const tk=duoTaken(d,s); if(tk[pid]||tk[baseOf(pid)]) throw new Error("Déjà dans votre équipe"); }
+  else if(duoTaken(d)[pid]) throw new Error("Trop tard, déjà pris !");
+  if(kind==="xi"){ if(t.slots[i]) throw new Error("Case déjà remplie"); t.slots[i]=pid; }
+  else if(kind==="bench"){ if(t.bench[i]) throw new Error("Case déjà remplie"); t.bench[i]=pid; }
+  else { if(t.coach) throw new Error("Vous avez déjà un entraîneur"); t.coach=pid; }
+  d.picks.push({by:me,pid,kind,i,at:Date.now()}); duoAdvance(d); }); }
+// 🎲 Draft libre : 5 joueurs proposés pour la case (gardés, pour ne pas relancer le tirage)
+function duoOffer(d,kind,i,role){ const key=kind+i; const mine=(d.offers[me]||{})[key]; const taken=duoTaken(d);
+  if(mine&&mine.some(id=>!taken[id])) return mine; const ids=genOffer(kind,role,taken);
+  duoRef(d.id).update({[`offers.${me}.${key}`]:ids}).catch(()=>{}); return ids; }
+const duoLaunchable=d=>d.status==="done"&&d.players.every(u=>d.ready[u])&&(!d.launched||Date.now()-(d.launchedAt||0)>120000);
+async function duoReady(id){ let go=false;
+  const ok=await duoTx(id,d=>{ if(d.status!=="done") throw new Error("Le draft n'est pas terminé"); d.ready[me]=true; go=duoLaunchable(d)&&!sharedLive(); if(go){ d.launched=me; d.launchedAt=Date.now(); } });
+  if(!ok) return; if(go) duoLaunch(id); else toast("✅ Prêt ! Le match démarre dès que les 4 sont prêts."); }
+async function duoLaunchBtn(id){ if(sharedLive()){ toast("Un match est déjà en cours, attends la fin",true); return; }
+  let go=false; const ok=await duoTx(id,d=>{ go=duoLaunchable(d); if(go){ d.launched=me; d.launchedAt=Date.now(); } }); if(ok&&go) duoLaunch(id); else if(ok) toast("Le match est déjà en train d'être lancé"); }
+const duoTeamC=(d,s)=>({formation:d.form[s],slots:d.teams[s].slots,bench:d.teams[s].bench,coach:d.teams[s].coach||null});
+async function duoLaunch(id){
+  let d; try{ const sn=await duoRef(id).get(); d=duoNorm(sn.data()); }catch(e){ toast("Pas de connexion, réessaie",true); return; }
+  const unlock=()=>duoTx(id,x=>{ x.launched=null; x.launchedAt=0; });
+  const pure=d.pool==="draft"; const tA=duoTeamC(d,"A"), tB=duoTeamC(d,"B"); const SA=strength(tA,null,false,pure), SB=strength(tB,null,false,pure);
+  if(!enough(SA)||!enough(SB)){ toast("Une équipe a moins de 7 joueurs : match impossible",true); unlock(); return; }
+  const m=buildMatch([{c:tA,S:SA,label:"👥 Duo",owner:d.sides.A[0],name:duoNames(d,"A")},{c:tB,S:SB,label:"👥 Duo",owner:d.sides.B[0],name:duoNames(d,"B")}]);
+  m.teams[0].owners=d.sides.A.slice(); m.teams[1].owners=d.sides.B.slice(); m.duo=true;
   await saveReplay(m);
-  if(!(await addHist(histOf(m,{duo:true,mode:"duo",owners4:[me,a,b,c]}),m))){ toast("Pas de connexion, réessaie",true); return; }
-  post(`👥 Duo : ${nA} ${m.score[0]}-${m.score[1]} ${nB}`); mClosed=null; setMode("match"); window.scrollTo(0,0); }
+  if(!(await addHist(histOf(m,{duo:true,mode:"duo",owners4:[...d.sides.A,...d.sides.B]}),m))){ toast("Pas de connexion, réessaie",true); unlock(); return; }
+  await duoTx(id,x=>{ x.status="played"; x.mid=m.id; x.score=m.score; x.played=Date.now(); });
+  post(`👥 Duo : ${duoNames(d,"A")} ${m.score[0]}-${m.score[1]} ${duoNames(d,"B")}`); mClosed=null; setMode("match"); window.scrollTo(0,0); }
+// 🔔 données en direct : invitations, tours, choix des autres
+function onDuoData(all){ const prev=duoPrev; duoPrev={}; duos={};
+  for(const [k,x] of Object.entries(all||{})){ if(!x||!Array.isArray(x.players)||!x.players.includes(me)) continue;
+    const d=duoNorm(x); d.id=d.id||k; duos[k]=d; duoPrev[k]={status:d.status,turn:d.turn,n:d.picks.length};
+    if(!prev) continue; const p=prev[k];
+    if(!p&&d.status==="lobby"&&d.by!==me) toast(`👥 ${NAMES[d.by]||"?"} t'invite à un 2 contre 2 (onglet 🎮 Jeux)`);
+    if(!p) continue;
+    if(p.status==="lobby"&&d.status==="running") toast(d.turn===me?"👥 Les 4 ont accepté : tu choisis en premier !":"👥 Les 4 ont accepté : le draft en duo commence !");
+    else if(p.status==="running"&&d.status==="done") toast("🏁 Draft en duo terminé : passez « Prêt » dans 🎮 Jeux");
+    else if(p.status!=="cancelled"&&d.status==="cancelled"){ const w=(d.refused||d.cancelled||{}).by; if(w!==me) toast(`❌ ${NAMES[w]||"?"} ${d.refused?"a refusé":"a annulé"} le 2 contre 2`,true); }
+    else if(d.picks.length>p.n){ const L=d.picks.slice(p.n).filter(q=>q.by!==me); L.forEach(q=>toast(q.pass?`${NAMES[q.by]||"?"} passe son tour`:`${NAMES[q.by]||"?"} a pris ${BY_ID[q.pid]?.name||"?"}`));
+      if(d.status==="running"&&d.turn===me&&L.length) setTimeout(()=>toast("👥 À toi de choisir dans le 2 contre 2 !"),1600); } }
+  if(editing&&editing.mode==="duo4"){ const d=duos[editing.id]; if(!d||d.status!=="running"||d.turn!==me) closeSheet(); else renderList(); }
+  if(mode==="jeux") renderDuo(); }
+function renderDuo(){ const el=$("#jDuo"); if(!el) return; el.innerHTML=duoHTML(); bindDuo();
+  if(Object.values(duos).some(d=>duoTodo(d)>=3)&&el.parentNode&&el.parentNode.firstElementChild!==el) el.parentNode.prepend(el); }
+const duoMine=()=>Object.values(duos).filter(duoActive).sort((a,b)=>duoTodo(b)-duoTodo(a)||(b.created||0)-(a.created||0));
+function duoPickBy(d){ const m={}; for(const q of d.picks) if(q.pid) m[q.pid]=q.by; return m; }
+function duoTeamHTML(d,s,can){ const t=d.teams[s], f=FORMATS[d.format], by=duoPickBy(d);
+  const row=(k,kind,role,pid,i)=>{ const p=BY_ID[pid]; const hp=p&&kind==="xi"?hpPen(p,role):0; const click=can&&!pid;
+    return `<button class="duor${click?" duocan":""}" ${click?`data-d4="${kind}" data-d4i="${i}" data-d4r="${role}"`:"disabled"}><b>${role}</b><span>${p?esc(p.name):click?`<i style="color:#7ee2a0">+ Choisir</i>`:`<i class="mute">—</i>`}${p?`<small>choisi par ${esc(NAMES[by[pid]]||"?")}</small>`:""}</span><em>${p?(kind==="coach"?p.ovr:p.ovr)+(hp?` ⚠️−${hp}%`:""):""}</em></button>`; };
+  return `<div class="duol">${F[d.form[s]].map(([r],i)=>row(i,"xi",r,t.slots[i],i)).join("")}${f.bench?Array.from({length:f.bench},(_,i)=>row("b"+i,"bench","R"+(i+1),t.bench[i],i)).join(""):""}${f.coach?row("c","coach","COA",t.coach,0):""}</div>`; }
+function duoHTML(){
+  const head=`<h3>👥 Duo · 2 contre 2</h3>`;
+  const L=duoMine(); if(duoCurId&&!L.some(d=>d.id===duoCurId)) duoCurId=null;
+  if(duoNew||!L.length) return head+duoNewHTML(L.length>0);
+  const d=duos[duoCurId]||L[0]; duoCurId=d.id; const my=duoSide(d,me), op=my==="A"?"B":"A";
+  const sw=L.length>1?`<div class="arow" style="flex-wrap:wrap;margin-bottom:6px">${L.map(x=>`<button class="btn sm ${x.id===d.id?"":"ghost"}" data-d4sw="${x.id}">${esc(duoNames(x,duoSide(x,me)))} vs ${esc(duoNames(x,duoSide(x,me)==="A"?"B":"A"))}${duoTodo(x)>=3?" ❗":""}</button>`).join("")}</div>`:"";
+  const title=`<div class="vsavg" style="margin-bottom:6px"><div><small>Ton duo</small><b style="font-size:15px">${esc(duoNames(d,my))}</b></div><span>VS</span><div><small>Adversaires</small><b style="font-size:15px">${esc(duoNames(d,op))}</b></div></div>
+    <div class="mute" style="font-size:12px;text-align:center;margin-bottom:8px">${esc(FORMATS[d.format].label)} · ${esc(DUO_POOL[d.pool])}</div>`;
+  const foot=`<div class="dbtns" style="margin-top:10px"><button class="btn ghost sm" id="d4New">➕ Nouveau 2 contre 2</button><button class="btn ghost sm" id="d4Cancel">${d.status==="lobby"&&d.by===me?"Annuler la partie":d.status==="lobby"?"":"Abandonner la partie"}</button></div>`.replace(`<button class="btn ghost sm" id="d4Cancel"></button>`,"");
+  let body="";
+  if(d.status==="lobby"){
+    const st=u=>`<span>${esc(NAMES[u]||"?")} : ${d.acc[u]?"✅":"⏳"}</span>`;
+    body=`<div class="rules" style="font-size:12px;margin-top:0">Quand les 4 ont accepté, un tirage au sort décide quel duo commence. Puis chacun votre tour (<b>toi, un adversaire, ton coéquipier, l'autre adversaire…</b>) vous choisissez <b>une</b> carte pour une case vide de votre équipe.${d.pool==="coll"?" Chacun pioche dans <b>sa propre collection</b>.":" Chaque case propose 5 joueurs tirés au sort ; un joueur pris est bloqué pour tout le monde."}</div>
+      <div class="readyrow" style="flex-wrap:wrap">${d.players.map(st).join("")}</div>
+      <div class="field"><span>Système de ton duo</span><select id="d4Form">${Object.keys(F).map(x=>`<option ${x===d.form[my]?"selected":""}>${x}</option>`).join("")}</select></div>
+      <div class="field"><span>Système adverse</span><b>${esc(d.form[op])}</b></div>
+      ${d.acc[me]?`<div class="invst">⏳ En attente de ${esc(d.players.filter(u=>!d.acc[u]).map(u=>NAMES[u]||"?").join(", "))}<small>Le draft commence dès que tout le monde a accepté.</small></div>`
+        :`<div class="invst me">📨 <b>${esc(NAMES[d.by]||"?")}</b> t'invite à un 2 contre 2 !<small>Ton coéquipier : ${esc(NAMES[d.sides[my].find(u=>u!==me)]||"?")}</small></div><div class="dbtns"><button class="btn big" id="d4Yes">✅ Accepter</button><button class="btn ghost big" id="d4No">❌ Refuser</button></div>`}`;
+  } else {
+    if(!duoView||!["A","B"].includes(duoView)) duoView=my;
+    const N=duoNeed(d), can=d.status==="running"&&d.turn===me&&duoView===my;
+    let ban="";
+    if(d.status==="running"){ const nx=duoNext(d,d.turn);
+      ban= d.turn===me?`<div class="dbanner me">⚡ À toi de choisir !<small>Touche une case vide de ton équipe${d.pool==="coll"?" · tes cartes uniquement":""}</small></div>`
+        :`<div class="dbanner">⏳ ${esc(NAMES[d.turn]||"?")} choisit…<small>Choix n°${d.picks.filter(q=>q.pid).length+1}${nx?` · ensuite : ${esc(nx===me?"toi":NAMES[nx]||"?")}`:""}</small></div>`;
+      ban+=`<div class="mute" style="font-size:11.5px;text-align:center;margin:4px 0 8px">Ordre : ${d.order.map(u=>`${u===d.turn?"<b style=\"color:#fff\">":""}${esc(u===me?"toi":NAMES[u]||"?")}${d.out[u]?" (a passé)":""}${u===d.turn?"</b>":""}`).join(" → ")}</div>`; }
+    else { const R=d.ready, SA=strength(duoTeamC(d,my),null,false,d.pool==="draft"), SB=strength(duoTeamC(d,op),null,false,d.pool==="draft"); const bad=!enough(SA)||!enough(SB);
+      ban=`<div class="dbanner">🏁 Draft terminé !<small>Le match se lance quand vous êtes prêts tous les 4</small></div>
+        <div class="vsavg"><div><small>${esc(duoNames(d,my))}</small><b>${SA.global}</b></div><span>VS</span><div><small>${esc(duoNames(d,op))}</small><b>${SB.global}</b></div></div>
+        ${bad?`<div class="mute" style="font-size:12.5px;color:#ff9b8a;text-align:center">⚠️ Une équipe a moins de 7 joueurs : le match ne peut pas se jouer. Abandonnez et relancez une partie (en draft libre, par exemple).</div>`:""}
+        <div class="readyrow" style="flex-wrap:wrap">${d.players.map(u=>`<span>${esc(NAMES[u]||"?")} : ${R[u]?"prêt ✅":"⏳"}</span>`).join("")}</div>
+        ${!R[me]?`<button class="btn big" id="d4Ready" ${bad?"disabled":""}>✅ Je suis prêt</button>`:duoLaunchable(d)?`<button class="btn big" id="d4Go">▶️ Lancer le match</button>`:`<div class="mute" style="text-align:center;font-size:13px">En attente des autres…</div>`}`; }
+    const tabs=`<div class="tabs" style="margin:8px 0 6px;padding:0">${[my,op].map(s=>`<button class="tab${s===duoView?" on":""}" data-d4v="${s}">${s===my?"Notre équipe":"Adversaires"}<small>${esc(d.form[s])} · ${dCount(d.teams[s])}/${N}</small></button>`).join("")}</div>`;
+    const last=d.picks.slice().reverse().slice(0,6);
+    body=ban+tabs+duoTeamHTML(d,duoView,can)
+      +(can&&d.pool==="coll"?`<button class="btn ghost sm" id="d4Pass" style="margin-top:6px">⏭️ Passer (je n'ai plus de carte utile)</button>`:"")
+      +(last.length?`<h4 style="margin:12px 0 4px">Derniers choix</h4>${last.map(q=>`<div class="logrow"><span>${esc(NAMES[q.by]||"?")} → ${q.pass?"passe son tour":esc(BY_ID[q.pid]?.name||"?")}</span></div>`).join("")}`:"");
+  }
+  return head+sw+title+body+foot; }
+function duoNewHTML(back){
+  const us=Object.keys(NAMES).filter(u=>u!==me&&u!==CPU&&compos[u]);
+  const opt=(k,lab)=>`<select data-du="${k}"><option value="">${lab}</option>${us.map(u=>`<option value="${u}"${duoSel[k]===u?" selected":""}>${esc(NAMES[u])}</option>`).join("")}</select>`;
+  const ok=duoSel.a&&duoSel.b&&duoSel.c&&new Set([me,duoSel.a,duoSel.b,duoSel.c]).size===4;
+  return `<div class="rules" style="font-size:12px;margin-top:0">Choisis ton coéquipier et vos 2 adversaires. Les 3 reçoivent une <b>invitation</b> ; quand tout le monde a accepté, vous composez vos équipes <b>chacun votre tour</b>, en direct.</div>
+   <div class="duog"><div><small>Ton coéquipier</small>${opt("a","Choisir…")}</div><div><small>Adversaire 1</small>${opt("b","Choisir…")}</div><div><small>Adversaire 2</small>${opt("c","Choisir…")}</div></div>
+   ${us.length<3?`<div class="mute" style="font-size:12.5px">Il faut au moins 4 joueurs inscrits pour jouer en duo.</div>`:""}
+   <div class="field"><span>Cartes</span><select id="d4Pool">${Object.entries(DUO_POOL).map(([k,v])=>`<option value="${k}" ${k===duoSel.pool?"selected":""}>${v}</option>`).join("")}</select></div>
+   <div class="field"><span>Format</span><select id="d4Format">${Object.entries(FORMATS).map(([k,v])=>`<option value="${k}" ${k===duoSel.format?"selected":""}>${v.label}</option>`).join("")}</select></div>
+   <div class="field"><span>Système de ton duo</span><select id="d4NForm">${Object.keys(F).map(x=>`<option ${x===duoSel.form?"selected":""}>${x}</option>`).join("")}</select></div>
+   <button class="btn big" id="duoGo" ${ok?"":"disabled"}>📨 Inviter les 3 joueurs</button>${back?`<button class="btn ghost sm" id="d4Back" style="margin-top:6px">← Retour à ma partie en cours</button>`:""}`; }
+function bindDuo(){ const on=(s,f)=>{ const e=$(s); if(e) e.onclick=f; }; const id=duoCurId;
+  document.querySelectorAll("[data-du]").forEach(x=>x.onchange=()=>{ duoSel[x.dataset.du]=x.value||null; renderDuo(); });
+  const ch=(s,k)=>{ const e=$(s); if(e) e.onchange=()=>{ duoSel[k]=e.value; }; }; ch("#d4Pool","pool"); ch("#d4Format","format"); ch("#d4NForm","form");
+  on("#duoGo",duoCreate); on("#d4Back",()=>{ duoNew=false; renderDuo(); }); on("#d4New",()=>{ duoNew=true; renderDuo(); });
+  document.querySelectorAll("[data-d4sw]").forEach(b=>b.onclick=()=>{ duoCurId=b.dataset.d4sw; duoView=null; renderDuo(); });
+  document.querySelectorAll("[data-d4v]").forEach(b=>b.onclick=()=>{ duoView=b.dataset.d4v; renderDuo(); });
+  if(!id) return;
+  on("#d4Yes",()=>duoAccept(id)); on("#d4No",()=>duoRefuse(id)); on("#d4Pass",()=>duoPass(id)); on("#d4Ready",()=>duoReady(id)); on("#d4Go",()=>duoLaunchBtn(id));
+  const f=$("#d4Form"); if(f) f.onchange=()=>duoSetForm(id,f.value);
+  on("#d4Cancel",e=>{ if(!duoResetArm){ duoResetArm=true; e.target.textContent="Sûr ? Re-touche pour confirmer"; setTimeout(()=>{ duoResetArm=false; renderDuo(); },3500); return; } duoResetArm=false; duoCancel(id); });
+  document.querySelectorAll("[data-d4]").forEach(b=>b.onclick=()=>{ const k=b.dataset.d4; openSheet(k,+b.dataset.d4i,k==="coach"?"COACH":k==="bench"?"R":b.dataset.d4r,"duo4",id); }); }
 
 
 // =================== 🏅 Classement du mois, confrontations, badges ===================
@@ -3272,7 +3383,7 @@ function badgeAll(){
     const D=c.dch; const defi=!(D&&D.day===today()&&D.done);
     const cup=Object.values(cups||{}).some(K=>K.status==="running"&&K.rounds.length&&K.rounds[K.rounds.length-1].ties.some(T=>!T.w&&(T.a===me||T.b===me)));
     const quiz=!(c.quiz&&c.quiz.d===today()&&c.quiz.n>=QUIZ_MAX);
-    set("#mJeux",defi||cup||quiz||newsUnread());
+    set("#mJeux",defi||cup||quiz||newsUnread()||duoAttn());
   }catch(e){}
   badgeLigue();
 }
@@ -3754,7 +3865,7 @@ setInterval(chatTick,1000);
 // ---------- Onglet Jeux ----------
 function renderJeux(){
   if(!me) return; claimDefi();
-  $("#jPred").innerHTML=predHTML(); bindPred(); renderTable(); renderNews(); $("#jDuo").innerHTML=duoHTML(); bindDuo();
+  $("#jPred").innerHTML=predHTML(); bindPred(); renderTable(); renderNews(); renderDuo();
   $("#jCareer").innerHTML=careerHTML(); $("#jCup").innerHTML=cupHTML(); $("#jDefi").innerHTML=defiHTML(); $("#jQuizS").innerHTML=quizHTML(); $("#jSofa").innerHTML=sofaHTML(); $("#jStats").innerHTML=statsHTML();
   const on=(s,f)=>{ const e=$(s); if(e) e.onclick=f; };
   on("#jCarGo",careerPlay); on("#jCarReset",()=>{ careerState().lvl=0; save(); renderJeux(); });
@@ -3883,7 +3994,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-22h"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-22i"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
