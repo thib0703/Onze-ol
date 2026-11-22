@@ -1009,7 +1009,7 @@ $("#aSignup").onclick=async()=>{
   $("#aSignup").disabled=false; };
 $("#shareBtn").onclick=async()=>{ const url=location.origin+location.pathname; try{ if(navigator.share){ await navigator.share({title:"Les Gones Legends",text:"Crée ton compte, fais ton 11 type de l'OL et viens me défier !",url}); return; } }catch(e){ return; } try{ await navigator.clipboard.writeText(url); toast("Lien copié !"); }catch(e){ toast(url); } };
 $("#admBtn").onclick=()=>adminPanel();
-$("#who").onclick=()=>openModal(`Connecté en tant que ${NAMES[me]||"?"}`,null,[[notifState()==="granted"?"🔔 Notifications activées":"🔔 Activer les notifications",()=>{ enableNotifs(); }],["📲 Installer l'appli",()=>{ setTimeout(()=>installGuide(true),200); }],["💡 Revoir les explications",()=>{ resetTips(); }],...(me===ADMIN?[["🛠️ Panneau admin",()=>{ setTimeout(adminPanel,150); }]]:[]),["Se déconnecter",()=>{ firebase.auth().signOut(); }],["Inviter quelqu'un",()=>$("#shareBtn").click(),true],["Fermer",null,true]]);
+$("#who").onclick=()=>openModal(`Connecté en tant que ${NAMES[me]||"?"}`,null,[[notifState()==="granted"?"🔔 Notifications activées":"🔔 Activer les notifications",()=>{ enableNotifs(); }],...(notifState()==="granted"?[["🧪 Tester les notifications",()=>{ testNotif(); }]]:[]),["📲 Installer l'appli",()=>{ setTimeout(()=>installGuide(true),200); }],["💡 Revoir les explications",()=>{ resetTips(); }],...(me===ADMIN?[["🛠️ Panneau admin",()=>{ setTimeout(adminPanel,150); }]]:[]),["Se déconnecter",()=>{ firebase.auth().signOut(); }],["Inviter quelqu'un",()=>$("#shareBtn").click(),true],["Fermer",null,true]]);
 
 // ---------- Rendu ----------
 // Note moyenne du 11 (cartes possédées, évolutions et forme réelle comprises)
@@ -2125,6 +2125,15 @@ async function enableNotifs(){
     const c=W(); c.fcm=[...new Set([...(c.fcm||[]),token])].slice(-5); save(); toast("🔔 Notifications activées !");
   }catch(e){ toast("Impossible d'activer les notifications : "+(e.code||e.message),true); }
 }
+// 🔁 À chaque ouverture : si les notifs sont autorisées, on revérifie le jeton du téléphone (il peut changer ou ne jamais avoir été enregistré)
+async function refreshNotifToken(){ try{ if(!me||!VAPID_KEY||notifState()!=="granted") return;
+  const reg=await navigator.serviceWorker.register("firebase-messaging-sw.js?v=2",{updateViaCache:"none"}); await navigator.serviceWorker.ready;
+  const token=await firebase.messaging().getToken({vapidKey:VAPID_KEY,serviceWorkerRegistration:reg}); if(!token) return;
+  const c=W(); if(!(c.fcm||[]).includes(token)){ c.fcm=[...new Set([...(c.fcm||[]),token])].slice(-5); save(); } return token; }catch(e){ return null; } }
+// 🧪 Notification de test : le serveur envoie une notif à ce compte quelques secondes après
+async function testNotif(){ if(notifState()!=="granted"){ enableNotifs(); return; }
+  const t=await refreshNotifToken(); if(!t){ toast("Ce téléphone n'a pas pu s'inscrire aux notifications : réactive-les",true); return; }
+  const c=W(); c.pingAt=Date.now(); save(); toast("🧪 Notification de test envoyée : ferme l'appli, elle doit arriver dans 10 secondes"); }
 try{ if(firebase.messaging&&firebase.messaging.isSupported&&firebase.messaging.isSupported()) firebase.messaging().onMessage(p=>{ const n=p.notification||p.data||{}; toast(`${n.title||""} ${n.body||""}`); }); }catch(e){}
 
 // ---------- 🤖 Mode solo contre l'ordinateur ----------
@@ -4506,7 +4515,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-23e"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-23f"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
@@ -4601,7 +4610,7 @@ try{
       else { NAMES[me]=pendingName||($("#aName").value.trim())||user.email.split("@")[0]; compos[me]=blank(); compos[me].coins=300; await push(); await importLegacy(NAMES[me]); setTimeout(()=>toast("Bienvenue ! 300 🪙 offertes pour ton premier pack"),800); }
     }catch(e){ setSync("⚠️ Accès refusé : règles Firebase à mettre à jour","err"); }
     pendingName=null; $("#aPass").value="";
-    choose(me); startListeners(); setTimeout(()=>{ if(me){ starterPack(); loginStreak(); dailyBonus(); claimRewards(); renderCoins(); badgeLigue(); tip("welcome",()=>starterPrompt(()=>tip("tab_"+mode))); } },1500);
+    choose(me); startListeners(); setTimeout(()=>{ if(me){ starterPack(); loginStreak(); dailyBonus(); claimRewards(); refreshNotifToken(); renderCoins(); badgeLigue(); tip("welcome",()=>starterPrompt(()=>tip("tab_"+mode))); } },1500);
   });
 }catch(e){ setSync("⚠️ Synchro indisponible","err"); }
 </script>

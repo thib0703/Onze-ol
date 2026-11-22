@@ -89,6 +89,13 @@ exports.tradeAnswered = onDocumentUpdated({ document: "onzeol_trades/{id}", regi
   if (a.status === "accepted") await notify(a.from, "🔄 Échange accepté", `${await nameOf(a.to)} a accepté ton échange !`);
   if (a.status === "refused") await notify(a.from, "🔄 Échange refusé", `${await nameOf(a.to)} a refusé ton échange.`);
 });
+// 🧪 Notification de test (bouton dans le menu du compte)
+exports.notifTest = onDocumentUpdated({ document: "onzeol_users/{uid}", region: REGION }, async ev => {
+  const b = ev.data.before.data() || {}, a = ev.data.after.data() || {};
+  if (!a.pingAt || a.pingAt === b.pingAt) return;
+  await new Promise(r => setTimeout(r, 8000));
+  await notify(ev.params.uid, "🧪 Test réussi !", "Les notifications marchent sur ce téléphone 👍");
+});
 // 👥 Demandes d'ami
 exports.friendRequest = onDocumentWritten({ document: "onzeol_social/{id}", region: REGION }, async ev => {
   const before = ev.data.before.exists ? ev.data.before.data() : null, after = ev.data.after.exists ? ev.data.after.data() : null;
