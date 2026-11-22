@@ -431,6 +431,7 @@ html:has(.modal.open),body:has(.modal.open){overflow:hidden}
 .tpc{font-size:11.5px;color:#c8d6ff;margin-top:8px;line-height:1.4}.tpc b{color:#ffd970}.tpvs{font-size:11.5px;color:var(--mute);margin-top:4px}
 .ann{display:flex;gap:2px;justify-content:center;margin-top:1px}.ann i{font-style:normal;font-size:9px;font-weight:800;padding:0 3px;border-radius:5px;background:#000c;line-height:1.45;white-space:nowrap}.ann i.up{color:#7ee2a0}.ann i.dn{color:#ff8a8a}
 .invl{display:flex;flex-direction:column;gap:4px}.invr{display:flex;align-items:center;gap:10px;padding:9px 10px;background:#1d2b55;border-radius:10px;font-weight:700}.invr input{width:20px;height:20px}.invr small{margin-left:auto;font-weight:500}
+.pby{font-size:9px;font-weight:700;color:#c8d6ff;opacity:.85;margin-top:1px;white-space:nowrap}
 .tdl{display:block;font-size:11.5px;font-weight:600;color:#c8d6ff;margin-top:2px}.duor:disabled{cursor:default;opacity:1}.duor.duocan{outline:2px dashed #7ee2a0;outline-offset:-2px}.duor em{font-style:normal;font-weight:700}
 .otherlive{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 10px;padding:8px 10px;border-radius:10px;background:#1d2b55;font-size:13px}
 .livel{margin:6px 0;padding:6px 8px;border-radius:8px;background:rgba(31,138,76,.22);font-size:13px}.livel.neg{background:rgba(180,67,43,.25)}
@@ -1071,11 +1072,11 @@ function renderCompare(){
 // ---------- Draft : 5 propositions aléatoires par case, raretés variées ----------
 // Postes regroupés en 4 zones pour les propositions de draft : gardiens, défenseurs, milieux, attaquants
 const ZONE={GB:"gk",DC:"def",DD:"def",DG:"def",PG:"def",PD:"def",MDC:"mid",MC:"mid",MOC:"mid",MG:"mid",MD:"mid",AG:"att",AD:"att",BU:"att"};
-const zoneOK=(p,role)=>ZONE[p.pos[0]]===ZONE[role];
+const zoneOK=(p,role)=>ROLE_EQ[role]?fit(p,role)>=.95:ZONE[p.pos[0]]===ZONE[role];
 const OFFER_TIERS=[["bronze"],["silver"],["gold"],["icon","gold"],["myth","icon","gold","silver"]];
 // Garantit au moins 1 joueur dont c'est le vrai poste (aucune perte) dans une proposition de 5
 function ensureRole(ids,role,pool){ if(!role||role==="COACH"||!ids.length) return ids;
-  let good=p=>p.pos.includes(role); if(!pool.some(good)) good=p=>fit(p,role)>=.95; // postes rares (pistons, milieux excentrés) : meilleur poste possible
+  let good=p=>fit(p,role)>=1; if(!pool.some(good)) good=p=>fit(p,role)>=.95; // postes rares (pistons, milieux excentrés) : meilleur poste possible
   if(ids.some(id=>BY_ID[id]&&good(BY_ID[id]))) return ids;
   const ex=pool.filter(p=>good(p)&&!ids.includes(p.id)); if(!ex.length) return ids;
   const k=Math.floor(Math.random()*ids.length), t=cardTier(BY_ID[ids[k]]); const same=ex.filter(p=>cardTier(p)===t); const L=same.length?same:ex;
@@ -1587,8 +1588,11 @@ function nextFx(){
 // ---------- Simulation de match ----------
 const LINE={GB:"gk",DC:"def",DD:"def",DG:"def",PG:"def",PD:"def",MDC:"mid",MC:"mid",MG:"mid",MD:"mid",MOC:"mo",AG:"att",AD:"att",BU:"att"};
 let mClosed=null, match=null, matches=[], selA="cur", selB="cur", pA=null, pB=null, clubMode=false, mTimer=null, mSkip=null, lastMatchId=null;
+// aucune carte n'a MG/MD/PG/PD : l'ailier ou le latéral du même côté y joue à son vrai poste
+const ROLE_EQ={MG:["AG"],MD:["AD"],PG:["DG"],PD:["DD"]};
 function fit(p,role){
   if(p.pos.includes(role)) return 1;
+  const eq=ROLE_EQ[role]; if(eq&&p.pos.some(x=>eq.includes(x))) return eq.includes(p.pos[0])?1:.98; // poste principal = 100 %, secondaire = 98 %
   const ok=ROLE_OK[role]||[];
   if(ok.includes(p.pos[0])) return .95;
   if(p.pos.some(x=>ok.includes(x))) return .9;
@@ -1858,7 +1862,8 @@ function simulate2(cA,SA,cB,SB){
   function doSub(t,m,outP,reason){
     const st=T[t]; if(!st.bench.length||st.subs>=5||outP.st.r) return false;
     const want=outP.g;
-    let pid=st.bench.find(x=>GRP[BY_ID[x].pos[0]]===want)||st.bench[0];
+    const bv=x=>{ const q=BY_ID[x]; return q?(q.ovr+Math.min(3,(q.m||0)/150))*fit(q,outP.role)+(GRP[q.pos[0]]===want?2:0):0; };
+    let pid=st.bench.slice().sort((a,b)=>bv(b)-bv(a))[0];
     st.bench=st.bench.filter(x=>x!==pid);
     const p=BY_ID[pid]; const eff=(p.ovr+Math.min(3,(p.m||0)/150))*fit(p,outP.role);
     const inP={pid,role:outP.role,g:outP.g,eff,a:attrs(p,outP.role,eff),y:0,out:false,st:{g:0,a:0,sv:0,psv:0,f:0,dw:0,y:0,r:0,kp:0,inj:0,inMin:m}};
@@ -2760,6 +2765,18 @@ function renderDuo(){ const el=$("#jDuo"); if(!el) return; el.innerHTML=duoHTML(
   if(Object.values(duos).some(d=>duoTodo(d)>=3)&&el.parentNode&&el.parentNode.firstElementChild!==el) el.parentNode.prepend(el); }
 const duoMine=()=>Object.values(duos).filter(duoActive).sort((a,b)=>duoTodo(b)-duoTodo(a)||(b.created||0)-(a.created||0));
 function duoPickBy(d){ const m={}; for(const q of d.picks) if(q.pid) m[q.pid]=q.by; return m; }
+const PITCH_SVG=`<svg class="lines" viewBox="0 0 68 100" preserveAspectRatio="none"><g fill="none" stroke="#ffffff66" stroke-width=".35"><rect x="2" y="2" width="64" height="96"/><line x1="2" y1="50" x2="66" y2="50"/><circle cx="34" cy="50" r="8"/><rect x="16" y="2" width="36" height="15"/><rect x="25" y="2" width="18" height="5.5"/><rect x="16" y="83" width="36" height="15"/><rect x="25" y="92.5" width="18" height="5.5"/></g></svg>`;
+// 👥 terrain du 2 contre 2, comme en Draft : cartes, cases vides à toucher, banc et entraîneur
+function duoFillPitch(d){ const P=$("#d4Pitch"); if(!P||!d) return; const my=duoSide(d,me), s=duoView||my, t=d.teams[s], f=FORMATS[d.format], by=duoPickBy(d);
+  const can=d.status==="running"&&d.turn===me&&s===my;
+  const who=(b,pid)=>{ if(pid&&by[pid]) b.insertAdjacentHTML("beforeend",`<div class="pby">👤 ${by[pid]===me?"toi":esc(NAMES[by[pid]]||"?")}</div>`); };
+  F[d.form[s]].forEach(([role,x,y],i)=>{ const pid=t.slots[i]; const click=can&&!pid;
+    const b=slotBtn("xi",i,role,pid,click,click?()=>openSheet("xi",i,role,"duo4",d.id):null); if(pid) b.onclick=()=>showCard(pid,null);
+    if(!click&&!pid){ b.classList.add("ro"); const nm=b.querySelector(".nm"); if(nm) nm.textContent="—"; }
+    annotate(b,role,pid,t.coach); who(b,pid); b.style.left=x+"%"; b.style.top=y+"%"; b.style.zIndex=Math.round(y); P.appendChild(b); });
+  const BE=$("#d4Bench"); if(BE) for(let i=0;i<f.bench;i++){ const pid=t.bench[i], p=pid&&BY_ID[pid]; const click=can&&!pid;
+    const b=slotBtn("bench",i,p?p.pos[0]:String(12+i),pid,click,click?()=>openSheet("bench",i,"R","duo4",d.id):null); if(pid) b.onclick=()=>showCard(pid,null); who(b,pid); BE.appendChild(b); }
+  const CO=$("#d4Coach"); if(CO){ const click=can&&!t.coach; const b=slotBtn("coach",0,"COACH",t.coach,click,click?()=>openSheet("coach",0,"COACH","duo4",d.id):null); if(t.coach) b.onclick=()=>showCard(t.coach,null); who(b,t.coach); CO.appendChild(b); } }
 function duoTeamHTML(d,s,can){ const t=d.teams[s], f=FORMATS[d.format], by=duoPickBy(d);
   const row=(k,kind,role,pid,i)=>{ const p=BY_ID[pid]; const hp=p&&kind==="xi"?hpPen(p,role):0; const click=can&&!pid; const cbv=p&&kind==="xi"?coachBonus(t.coach,p,role):0;
     return `<button class="duor${click?" duocan":""}" ${click?`data-d4="${kind}" data-d4i="${i}" data-d4r="${role}"`:"disabled"}><b>${role}</b><span>${p?esc(p.name):click?`<i style="color:#7ee2a0">+ Choisir</i>`:`<i class="mute">—</i>`}${p?`<small>choisi par ${esc(NAMES[by[pid]]||"?")}</small>`:""}</span><em>${p?p.ovr+(cbv?` <i class="${cbv>0?"cbu":"cbd"}">🧠${cbv>0?"+":""}${cbv}</i>`:"")+(hp?` <i class="cbd">⚠️−${hp}%</i>`:""):""}</em></button>`; };
@@ -2800,7 +2817,8 @@ function duoHTML(){
     const last=d.picks.slice().reverse().slice(0,6);
     let pan=""; try{ const pu=d.pool==="draft", rv=teamRate(duoTeamC(d,duoView),null,false,pu), ro=teamRate(duoTeamC(d,duoView===my?op:my),null,false,pu);
       pan=teamPanelHTML("duo:"+d.id+":"+duoView,rv,duoView===my?"📊 Notre équipe":"📊 Adversaires",`Face à ${esc(duoNames(d,duoView===my?op:my))} : <b>${ro.global??"—"}</b>`); }catch(e){ console.error(e); }
-    body=ban+tabs+pan+duoTeamHTML(d,duoView,can)
+    const f=FORMATS[d.format];
+    body=ban+tabs+pan+`<div class="pitch" id="d4Pitch">${PITCH_SVG}</div>${f.bench?`<div class="section" style="margin:10px 0 0;padding:10px 0 0"><h3>Remplaçants</h3><div class="bench" id="d4Bench"></div></div>`:""}${f.coach?`<div class="section" style="margin:10px 0 0;padding:10px 0 0"><h3>Entraîneur</h3><div class="coach" id="d4Coach"></div></div>`:""}`
       +(can&&d.pool==="coll"?`<button class="btn ghost sm" id="d4Pass" style="margin-top:6px">⏭️ Passer (plus aucune carte utile)</button>`:"")
       +(last.length?`<h4 style="margin:12px 0 4px">Derniers choix</h4>${last.map(q=>`<div class="logrow"><span>${esc(NAMES[q.by]||"?")} → ${q.pass?"passe son tour":esc(BY_ID[q.pid]?.name||"?")}</span></div>`).join("")}`:"");
   }
@@ -2823,6 +2841,7 @@ function bindDuo(){ const on=(s,f)=>{ const e=$(s); if(e) e.onclick=f; }; const 
   on("#duoGo",duoCreate); on("#d4Back",()=>{ duoNew=false; renderDuo(); }); on("#d4New",()=>{ duoNew=true; renderDuo(); });
   document.querySelectorAll("[data-d4sw]").forEach(b=>b.onclick=()=>{ duoCurId=b.dataset.d4sw; duoView=null; renderDuo(); });
   document.querySelectorAll("[data-d4v]").forEach(b=>b.onclick=()=>{ duoView=b.dataset.d4v; renderDuo(); });
+  try{ duoFillPitch(duos[duoCurId]); }catch(e){ console.error(e); }
   if(!id) return;
   on("#d4Yes",()=>duoAccept(id)); on("#d4No",()=>duoRefuse(id)); on("#d4Pass",()=>duoPass(id)); on("#d4Ready",()=>duoReady(id)); on("#d4Go",()=>duoLaunchBtn(id));
   const f=$("#d4Form"); if(f) f.onchange=()=>duoSetForm(id,f.value);
@@ -4076,7 +4095,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-22p"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-22q"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
