@@ -4708,7 +4708,7 @@ function trophyCheck(quiet){ if(!me||!C(me)) return; const c=W(); const T=c.trop
   else add.forEach((x,i)=>setTimeout(()=>{ toast(`🏆 Nouveau trophée : ${(TROPHY[x.k]||{}).t} · ${x.n}`); },i*2500)); }
 const trIcon=D=>D.img?`<img class="trimg" src="img/trophees/${D.img}.webp" alt="" loading="lazy">`:D.ic;
 function trophiesHTML(id,title){ const T=((C(id)||{}).trophies||[]).slice().sort((a,b)=>TBIG(b.k)-TBIG(a.k)||b.at-a.at); const big=T.filter(x=>TBIG(x.k)).length;
-  return `<div class="section troph"><h3>🏆 ${title||"Armoire à trophées"} <small>${big} titre${big>1?"s":""}</small></h3>${T.length?`<div class="trg">${T.map(x=>{ const D=TROPHY[x.k]||TROPHY.cup; return `<div class="trc ${D.c}"><div class="trshine"></div><span class="tri">${trIcon(D)}</span><b>${esc(x.n)}</b><small>${D.t}${x.size?` · ${x.size} joueurs`:""}</small>${x.vs&&NAMES[x.vs]?`<small class="trvs">${x.k==="cup"?"face à":"battu par"} ${esc(NAMES[x.vs])}</small>`:""}<em>${new Date(x.at).toLocaleDateString("fr-FR",{month:"short",year:"numeric"})}</em></div>`; }).join("")}</div>`:`<div class="mute" style="font-size:13px">Aucun trophée pour l'instant : gagne une coupe ou un championnat pour remplir l'armoire !</div>`}</div>`; }
+  return `<div class="section troph"><h3>🏆 ${title||"Armoire à trophées"} <small>${T.length} trophée${T.length>1?"s":""}${big?` · ${big} titre${big>1?"s":""}`:""}</small></h3>${T.length?`<div class="trg">${T.map(x=>{ const D=TROPHY[x.k]||TROPHY.cup; return `<div class="trc ${D.c}"><div class="trshine"></div><span class="tri">${trIcon(D)}</span><b>${esc(x.n)}</b><small>${D.t}${x.size?` · ${x.size} joueurs`:""}</small>${x.vs&&NAMES[x.vs]?`<small class="trvs">${x.k==="cup"?"face à":"battu par"} ${esc(NAMES[x.vs])}</small>`:""}<em>${new Date(x.at).toLocaleDateString("fr-FR",{month:"short",year:"numeric"})}</em></div>`; }).join("")}</div>`:`<div class="mute" style="font-size:13px">Aucun trophée pour l'instant : gagne une coupe ou un championnat pour remplir l'armoire !</div>`}</div>`; }
 function bracketHTML(K){ const nR=Math.round(Math.log2(K.size||4)); const N=x=>x?esc((NAMES[x]||"?").slice(0,11)):`<i class="tbd">à venir</i>`;
   const cols=[]; for(let r=0;r<nR;r++){ const n=(K.size||4)/Math.pow(2,r+1), R=K.rounds[r];
     const ties=Array.from({length:n},(_,i)=>{ const T=R&&R.ties[i]; if(!T) return `<div class="brk-t"><div class="brk-p"><span>${N(null)}</span></div><div class="brk-p"><span>${N(null)}</span></div></div>`;
@@ -5432,7 +5432,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-24q"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-24r"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
