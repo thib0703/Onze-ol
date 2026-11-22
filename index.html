@@ -425,6 +425,7 @@ html:has(.modal.open),body:has(.modal.open){overflow:hidden}
 .fc-ovr{position:relative}.fc-live{position:absolute;left:100%;top:0;font-style:normal;font-size:.42em;margin-left:2px}
 .livel{margin:6px 0;padding:6px 8px;border-radius:8px;background:rgba(31,138,76,.22);font-size:13px}.livel.neg{background:rgba(180,67,43,.25)}
 .nws{display:flex;flex-direction:column;gap:8px;margin-top:8px}.nw{display:block;background:#16244a;border:1px solid #2b3c6e;border-radius:12px;padding:10px 12px;color:var(--txt);text-decoration:none}.nw b{display:block;font-size:14px;line-height:1.3}.nw p{margin:4px 0 0;font-size:12.5px;color:#c8d6ff;line-height:1.4}.nw small{display:block;margin-top:5px;font-size:11px;color:var(--mute)}.nw.new{border-color:#ffd970}.nwf{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.nwf button{background:#1d2b55;border:0;color:var(--mute);border-radius:999px;padding:4px 10px;font-size:12px;cursor:pointer}.nwf button.on{background:var(--rouge);color:#fff}
+.l1t{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px}.l1t th{color:var(--mute);font-weight:600;font-size:11px;padding:4px 3px;text-align:center}.l1t td{padding:5px 3px;text-align:center;border-top:1px solid #1d2b55}.l1t td.tm{text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px}.l1t td.ps{width:22px;font-weight:700;border-left:3px solid transparent}.l1t tr.z1 td.ps{border-left-color:#2f7bff}.l1t tr.z2 td.ps{border-left-color:#ff9a3c}.l1t tr.z3 td.ps{border-left-color:#ffd970}.l1t tr.z4 td.ps{border-left-color:#e53950}.l1t tr.ol td{background:rgba(211,18,45,.22);font-weight:700}.l1t td.pt{font-weight:800}.l1t .lv{display:inline-block;background:#e53950;color:#fff;border-radius:6px;padding:0 5px;font-size:10.5px;margin-left:4px;font-weight:700}.l1leg{display:flex;flex-wrap:wrap;gap:10px;font-size:11px;color:var(--mute);margin-top:6px}.l1leg i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:4px}.l1live{margin-top:6px;font-size:12.5px;display:flex;flex-direction:column;gap:3px}.l1live span{background:#1d2b55;border-radius:8px;padding:4px 8px}.l1more{background:none;border:0;color:var(--mute);font-size:12px;cursor:pointer;margin-top:6px;width:100%}
 .fixd{margin-top:8px;font-size:13px}.fixd summary{cursor:pointer;color:var(--mute);margin:4px 0}.fixr h5{margin:8px 0 4px;font-size:12px;color:var(--mute)}
 .fixm{display:grid;grid-template-columns:1fr auto 1fr 34px;gap:6px;align-items:center;padding:4px 0;border-top:1px solid rgba(255,255,255,.06)}.fixm>span:nth-of-type(2){text-align:right}.fixm b{text-align:center;min-width:40px}.fixm.me{color:#ffd970}
 .fixm .btn{padding:2px 6px}.tieb{grid-column:1/-1;display:flex;gap:6px;justify-content:center;align-items:center;flex-wrap:wrap}
@@ -624,6 +625,7 @@ html:has(.modal.open),body:has(.modal.open){overflow:hidden}
 </div>
 <div id="viewJeux" class="wrap" style="display:none">
   <div class="section" id="jPred"></div>
+  <div class="section" id="jTable"></div>
   <div class="section" id="jNews"></div>
   <div class="section" id="jCareer"></div>
   <div class="section" id="jCup"></div>
@@ -2657,6 +2659,53 @@ function badgesHTML(id){ const c=C(id)||{}; const got=BADGES.filter(b=>{ try{ re
   return `<div class="bdg"><b>🎖️ Badges ${got.length}/${BADGES.length}</b><div class="bdgl">${BADGES.map(b=>{ const ok=got.includes(b); return `<span class="${ok?"ok":""}" title="${esc(b.d)}">${ok?b.ic:"🔒"} ${esc(b.n)}<small>${esc(b.d)}</small></span>`; }).join("")}</div></div>`; }
 
 
+// =================== 🏆 Classement Ligue 1 en direct ===================
+// Source en direct : API publique ESPN (classement + matchs en cours, appelée depuis le téléphone).
+// Si elle ne répond pas, on affiche le classement de live.json (mis à jour matin et soir par la tâche programmée).
+const L1_SHORT=[[/paris saint|^psg/i,"Paris SG"],[/paris fc/i,"Paris FC"],[/marseille/i,"Marseille"],[/monaco/i,"Monaco"],[/rennes|rennais/i,"Rennes"],[/strasbourg/i,"Strasbourg"],[/^(olympique )?lyon(nais)?$/i,"Lyon"],[/lille|losc/i,"Lille"],[/brest/i,"Brest"],[/nice/i,"Nice"],[/lens/i,"Lens"],[/toulouse/i,"Toulouse"],[/auxerre/i,"Auxerre"],[/troyes/i,"Troyes"],[/angers/i,"Angers"],[/le mans/i,"Le Mans"],[/havre/i,"Le Havre"],[/lorient/i,"Lorient"],[/nantes/i,"Nantes"],[/metz/i,"Metz"]];
+const l1Name=n=>{ n=String(n||"").trim(); for(const [r,v] of L1_SHORT) if(r.test(n)) return v; return n; };
+const isOL=n=>l1Name(n)==="Lyon";
+let L1={rows:null,live:[],at:0,src:"",busy:false,timer:null,all:false};
+async function l1Fetch(){ if(L1.busy) return; L1.busy=true;
+  try{
+    const ctl=new AbortController(); const to=setTimeout(()=>ctl.abort(),8000);
+    const [st,sb]=await Promise.all([
+      fetch("https://site.api.espn.com/apis/v2/sports/soccer/fra.1/standings",{signal:ctl.signal}).then(r=>r.ok?r.json():null),
+      fetch("https://site.api.espn.com/apis/site/v2/sports/soccer/fra.1/scoreboard",{signal:ctl.signal}).then(r=>r.ok?r.json():null).catch(()=>null)]);
+    clearTimeout(to);
+    const E=(((st||{}).children||[])[0]||{}).standings?.entries||(st||{}).standings?.entries||[];
+    if(E.length<10) throw 0;
+    const sv=(e,...k)=>{ const x=(e.stats||[]).find(s=>k.includes(s.name)||k.includes(s.abbreviation)); return x?+x.value||0:0; };
+    const rows=E.map(e=>({id:String(e.team?.id||""),t:l1Name(e.team?.displayName||e.team?.name),pts:sv(e,"points","P"),j:sv(e,"gamesPlayed","GP"),g:sv(e,"wins","W"),n:sv(e,"ties","D"),p:sv(e,"losses","L"),bp:sv(e,"pointsFor","F"),bc:sv(e,"pointsAgainst","A")}));
+    const live=[]; const byId=Object.fromEntries(rows.map(r=>[r.id,r]));
+    for(const ev of (sb&&sb.events)||[]){ const c=(ev.competitions||[])[0]; if(!c) continue; const stt=c.status||ev.status||{}; if(stt.type?.state!=="in") continue;
+      const H=(c.competitors||[]).find(x=>x.homeAway==="home"), A=(c.competitors||[]).find(x=>x.homeAway==="away"); if(!H||!A) continue;
+      const hs=+H.score||0, as=+A.score||0; live.push({h:l1Name(H.team?.displayName),a:l1Name(A.team?.displayName),hs,as,clk:stt.displayClock||stt.type?.shortDetail||""});
+      // le match en cours compte provisoirement dans le classement
+      for(const [T,me_,op] of [[H,hs,as],[A,as,hs]]){ const r=byId[String(T.team?.id)]; if(!r) continue; r.j++; r.bp+=me_; r.bc+=op; if(me_>op){ r.g++; r.pts+=3; } else if(me_===op){ r.n++; r.pts+=1; } else r.p++; r.live=`${me_}-${op}`; } }
+    L1.rows=rows; L1.live=live; L1.src="espn"; L1.at=Date.now();
+  }catch(e){ L1.src="file"; L1.at=Date.now(); }
+  L1.busy=false; if(mode==="jeux") renderTable();
+  clearTimeout(L1.timer); if(L1.src==="espn"&&L1.live.length&&mode==="jeux") L1.timer=setTimeout(l1Fetch,60000); }
+function l1Rows(){ let R=(L1.src==="espn"&&L1.rows)?L1.rows.map(r=>Object.assign({},r)):(((LIVE||{}).table||{}).rows||[]).map(r=>Object.assign({},r));
+  return R.sort((a,b)=>b.pts-a.pts||(b.bp-b.bc)-(a.bp-a.bc)||b.bp-a.bp||a.t.localeCompare(b.t)); }
+function renderTable(){ const el=$("#jTable"); if(!el) return;
+  if(Date.now()-L1.at>60000) l1Fetch();
+  const R=l1Rows(); if(!R.length){ el.innerHTML=`<h3>🏆 Classement Ligue 1</h3><div class="mute" style="font-size:12.5px">Chargement du classement…</div>`; return; }
+  const live=L1.src==="espn"?L1.live:[]; const n=R.length; const oi=R.findIndex(r=>isOL(r.t));
+  const zone=i=>i<4?"z1":i<6?"z2":i===n-3?"z3":i>=n-2?"z4":"";
+  // version courte : top 6 + autour de l'OL + bas de tableau
+  const keep=new Set(); if(L1.all) R.forEach((_,i)=>keep.add(i)); else { for(let i=0;i<6;i++) keep.add(i); for(let i=oi-1;i<=oi+1;i++) if(i>=0) keep.add(i); for(let i=n-3;i<n;i++) keep.add(i); R.forEach((r,i)=>{ if(r.live) keep.add(i); }); }
+  let rows="", prev=-1; R.forEach((r,i)=>{ if(!keep.has(i)) return; if(prev>=0&&i>prev+1) rows+=`<tr><td colspan="7" style="color:var(--mute);padding:2px">⋯</td></tr>`; prev=i; const df=r.bp-r.bc;
+    rows+=`<tr class="${zone(i)}${isOL(r.t)?" ol":""}"><td class="ps">${i+1}</td><td class="tm">${esc(r.t)}${r.live?`<span class="lv">${esc(r.live)}</span>`:""}</td><td class="pt">${r.pts}</td><td>${r.j}</td><td>${r.g}-${r.n}-${r.p}</td><td>${r.bp}:${r.bc}</td><td>${df>0?"+":""}${df}</td></tr>`; });
+  const T=(LIVE||{}).table||{};
+  const info=L1.src==="espn"?(live.length?`<b style="color:#ff6b7d">🔴 En direct</b> · actualisé toutes les minutes`:`Classement à jour · ${new Date(L1.at).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})}`):`${esc(T.round||"")}${T.round?" · ":""}mis à jour le ${esc(T.updated||"?")}`;
+  el.innerHTML=`<h3>🏆 Classement Ligue 1${oi>=0?` <small>OL ${oi+1}${oi===0?"er":"e"}</small>`:""}</h3><div class="mute" style="font-size:12px">${info}</div>
+    ${live.length?`<div class="l1live">${live.map(m=>`<span>${isOL(m.h)||isOL(m.a)?"🔴🔵 ":""}<b>${esc(m.h)} ${m.hs}-${m.as} ${esc(m.a)}</b> <small class="mute">${esc(m.clk)}</small></span>`).join("")}</div>`:""}
+    <table class="l1t"><tr><th>#</th><th style="text-align:left">Équipe</th><th>Pts</th><th>J</th><th>G-N-P</th><th>Buts</th><th>Diff</th></tr>${rows}</table>
+    <div class="l1leg"><span><i style="background:#2f7bff"></i>Ligue des champions</span><span><i style="background:#ff9a3c"></i>Coupes d'Europe</span><span><i style="background:#ffd970"></i>Barrage</span><span><i style="background:#e53950"></i>Relégation</span></div>
+    <button class="l1more" id="l1More">${L1.all?"▲ Classement réduit":"▼ Voir les "+n+" équipes"}</button>`;
+  const b=$("#l1More"); if(b) b.onclick=()=>{ L1.all=!L1.all; renderTable(); }; }
 // =================== 📰 Fil d'actu OL (rempli par la tâche programmée, dans live.json → "news") ===================
 const NEWS_TAG={match:"⚽ Match",mercato:"💸 Mercato",infirmerie:"🤕 Infirmerie",club:"🏛️ Club",joueurs:"👤 Joueurs",feminines:"👩 Féminines",academie:"🌱 Académie"};
 let newsF="all", newsAll=false;
@@ -3638,7 +3687,7 @@ setInterval(chatTick,1000);
 // ---------- Onglet Jeux ----------
 function renderJeux(){
   if(!me) return; claimDefi();
-  $("#jPred").innerHTML=predHTML(); bindPred(); renderNews(); $("#jDuo").innerHTML=duoHTML(); bindDuo();
+  $("#jPred").innerHTML=predHTML(); bindPred(); renderTable(); renderNews(); $("#jDuo").innerHTML=duoHTML(); bindDuo();
   $("#jCareer").innerHTML=careerHTML(); $("#jCup").innerHTML=cupHTML(); $("#jDefi").innerHTML=defiHTML(); $("#jQuizS").innerHTML=quizHTML(); $("#jSofa").innerHTML=sofaHTML(); $("#jStats").innerHTML=statsHTML();
   const on=(s,f)=>{ const e=$(s); if(e) e.onclick=f; };
   on("#jCarGo",careerPlay); on("#jCarReset",()=>{ careerState().lvl=0; save(); renderJeux(); });
@@ -3767,7 +3816,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-22a"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-22b"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
