@@ -1009,7 +1009,7 @@ $("#aSignup").onclick=async()=>{
   $("#aSignup").disabled=false; };
 $("#shareBtn").onclick=async()=>{ const url=location.origin+location.pathname; try{ if(navigator.share){ await navigator.share({title:"Les Gones Legends",text:"Crée ton compte, fais ton 11 type de l'OL et viens me défier !",url}); return; } }catch(e){ return; } try{ await navigator.clipboard.writeText(url); toast("Lien copié !"); }catch(e){ toast(url); } };
 $("#admBtn").onclick=()=>adminPanel();
-$("#who").onclick=()=>openModal(`Connecté en tant que ${NAMES[me]||"?"}`,null,[[notifState()==="granted"?"🔔 Notifications activées":"🔔 Activer les notifications",()=>{ enableNotifs(); }],...(notifState()==="granted"?[["🧪 Tester les notifications",()=>{ testNotif(); }]]:[]),["📲 Installer l'appli",()=>{ setTimeout(()=>installGuide(true),200); }],["💡 Revoir les explications",()=>{ resetTips(); }],...(me===ADMIN?[["🛠️ Panneau admin",()=>{ setTimeout(adminPanel,150); }]]:[]),["Se déconnecter",()=>{ firebase.auth().signOut(); }],["Inviter quelqu'un",()=>$("#shareBtn").click(),true],["Fermer",null,true]]);
+$("#who").onclick=()=>openModal(`Connecté en tant que ${NAMES[me]||"?"}`,null,[[notifState()==="granted"?"🔔 Notifications activées":"🔔 Activer les notifications",()=>{ enableNotifs(); }],...(notifState()==="granted"?[["🧪 Tester les notifications",()=>{ testNotif(); }]]:[]),["🎂 Mon anniversaire",()=>{ setTimeout(birthdayPicker,150); }],["📲 Installer l'appli",()=>{ setTimeout(()=>installGuide(true),200); }],["💡 Revoir les explications",()=>{ resetTips(); }],...(me===ADMIN?[["🛠️ Panneau admin",()=>{ setTimeout(adminPanel,150); }]]:[]),["Se déconnecter",()=>{ firebase.auth().signOut(); }],["Inviter quelqu'un",()=>$("#shareBtn").click(),true],["Fermer",null,true]]);
 
 // ---------- Rendu ----------
 // Note moyenne du 11 (cartes possédées, évolutions et forme réelle comprises)
@@ -3840,7 +3840,7 @@ function socSentItems(){ const L=[];
   return L; }
 function clubRowHTML(u,extra){ const c=C(u), r=recOf(u), own=ownedOf(u).length, xr=xiRate(u);
   return `<div class="clubr${u===me?" me":""}" data-club="${u}"><span class="cav">${esc((NAMES[u]||"?").slice(0,1).toUpperCase())}</span>
-    <span class="cinf"><b>${esc(NAMES[u]||"?")}${u===me?" <small>(toi)</small>":isFriend(u)?" ⭐":""}</b><small>${agoTxt(c.updated)} · 🎴 ${own}/${ALL_CARDS.length} · ${r.v}V ${r.n}N ${r.d}D</small>${extra||""}</span>
+    <span class="cinf"><b>${esc(NAMES[u]||"?")}${isBday(u)?" 🎂":""}${u===me?" <small>(toi)</small>":isFriend(u)?" ⭐":""}</b><small>${agoTxt(c.updated)} · 🎴 ${own}/${ALL_CARDS.length} · ${r.v}V ${r.n}N ${r.d}D</small>${extra||""}</span>
     <span class="cnote" style="color:${xr==null?"var(--mute)":socCol(xr)}">${xr??"—"}<small>11 type</small></span></div>`; }
 function renderSocial(){ if(!me) return; const R=$("#soc"); if(!R) return;
   if(socClub&&NAMES[socClub]){ R.innerHTML=clubPageHTML(socClub); bindClub(socClub); return; } socClub=null;
@@ -3902,7 +3902,7 @@ function clubPageHTML(id){ const c=C(id), r=recOf(id), own=ownedOf(id), xr=xiRat
   const list=own.filter(p=>{ const t=cardTier(p); if(socColF==="new") return !myColl[p.id]; if(socColF==="dup") return (his[p.id]||0)>1; if(socColF==="coach") return p.pos[0]==="COACH"; return socColF==="all"||t===socColF; })
     .sort((a,b)=>({myth:4,icon:3,gold:2,silver:1,bronze:0}[cardTier(b)]-{myth:4,icon:3,gold:2,silver:1,bronze:0}[cardTier(a)])||(b.ovr-a.ovr));
   const heroes=(c.heroes||[]).slice(-6).reverse();
-  return `<div class="clubh"><span class="cav big">${esc((NAMES[id]||"?").slice(0,1).toUpperCase())}</span><div class="cinf"><h2>${esc(NAMES[id]||"?")}${isFriend(id)?" ⭐":""}</h2><small>${agoTxt(c.updated)}</small></div><div class="cnote big" style="color:${xr==null?"var(--mute)":socCol(xr)}">${xr??"—"}<small>note du 11</small></div></div>
+  return `<div class="clubh"><span class="cav big">${esc((NAMES[id]||"?").slice(0,1).toUpperCase())}</span><div class="cinf"><h2>${esc(NAMES[id]||"?")}${isFriend(id)?" ⭐":""}</h2><small>${agoTxt(c.updated)}${c.birth?` · 🎂 ${bdayTxt(c.birth)}`:mine?` · <a href="#" id="bdSet" style="color:#ffd970">🎂 ajouter mon anniversaire</a>`:""}</small>${isBday(id)?`<div style="color:#ffd970;font-weight:800;font-size:13px;margin-top:2px">🎉 C'est son anniversaire aujourd'hui !</div>`:""}</div><div class="cnote big" style="color:${xr==null?"var(--mute)":socCol(xr)}">${xr??"—"}<small>note du 11</small></div></div>
     ${mine?"":`<div class="socacts" style="margin:0 0 10px">${frBtnHTML(id)}</div>${socActsHTML(id)}`}
     <div class="pstats"><div><b>${r.v}-${r.n}-${r.d}</b>V-N-D</div><div><b>${r.bp}:${r.bc}</b>buts</div><div><b>${M?M.p+" pts":"—"}</b>${pos>=0?`${pos+1}ᵉ ce mois`:"ce mois"}</div><div><b>${own.length}/${ALL_CARDS.length}</b>album</div><div><b>${c.opened||0}</b>packs</div><div><b>🔥 ${c.streak?.n||0}</b>série</div></div>
     ${mine?"":h2hHTML(id)}
@@ -3916,11 +3916,45 @@ function clubPageHTML(id){ const c=C(id), r=recOf(id), own=ownedOf(id), xr=xiRat
       ${!mine&&dupesOf(id).length?`<button class="btn big" data-sg="trade:${id}" style="margin-top:10px">🔄 Lui proposer un échange</button>`:""}</div>
     ${heroes.length?`<div class="section"><h3>⭐ Ses derniers héros du match</h3><div class="album">${heroes.map(hh=>`<div class="slotc" data-cv="${hh.pid}"><span class="no">${new Date(hh.at).toLocaleDateString("fr-FR",{day:"numeric",month:"short"})} · ${hh.note}/10</span>${cardHTML(hh.pid,{w:100,ovr:heroOvr(hh),cls:"hero"})}</div>`).join("")}</div></div>`:""}
     <div class="section">${badgesHTML(id)}</div>`; }
-function bindClub(id){ const R=$("#soc");
+function bindClub(id){ const R=$("#soc"); const bs=$("#bdSet"); if(bs) bs.onclick=e=>{ e.preventDefault(); birthdayPicker(); };
   const sm=$("#socMore"); if(sm) sm.onclick=()=>{ socColAll=true; const y=window.scrollY; renderSocial(); window.scrollTo(0,y); };
   R.querySelectorAll("[data-scf]").forEach(b=>b.onclick=()=>{ socColF=b.dataset.scf; const y=window.scrollY; renderSocial(); window.scrollTo(0,y); });
   R.querySelectorAll("[data-cv]").forEach(b=>b.onclick=()=>showCard(b.dataset.cv,null,evoOf(id,b.dataset.cv)));
   socBind(R); }
+
+// ======================================================================
+// 🎂 ANNIVERSAIRE : jour + mois (pas l'année), Pack Légende offert chaque année le jour J
+// Anti-triche : la date ne se choisit qu'une fois, et elle doit être enregistrée au moins 7 jours avant
+// pour que le pack de cette année compte (sinon : premier pack l'an prochain).
+// ======================================================================
+const MOIS=["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+const bdayTxt=b=>{ if(!b) return ""; const [m,d]=b.split("-").map(Number); return `${d===1?"1er":d} ${MOIS[m-1]}`; };
+const todayMD=()=>{ const d=new Date(); return String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); };
+const isBday=u=>{ const b=compos[u]&&compos[u].birth; return !!b&&b===todayMD(); };
+function checkBirthday(){ if(!me||!compos[me]) return; const c=W(); if(!c.birth||c.birth!==todayMD()) return;
+  const y=new Date().getFullYear(); if(c.bdayGiven===y) return;
+  c.bdayGiven=y; // une seule fois par an
+  if(c.birthSetAt&&Date.now()-c.birthSetAt<7*86400000){ save(); return; } // date enregistrée trop tard pour cette année
+  grant({pack:"legende"},"🎂 Joyeux anniversaire !"); post(`🎂 C'est l'anniversaire de ${NAMES[me]} ! Pack Légende offert 🎉`);
+  setTimeout(()=>{ const el=document.createElement("div"); el.className="tipov"; el.innerHTML=`<div class="tipbox"><h3>🎂 Joyeux anniversaire ${esc(NAMES[me]||"")} !</h3><div class="tipx">Pour fêter ça, un <b>Pack Légende</b> t'attend dans 🎴 Collec. Bon anniversaire de la part des Gones Legends ! 🎉</div><button class="btn big" id="bdOk">Ouvrir mon cadeau 🎁</button></div>`; document.body.appendChild(el); el.querySelector("#bdOk").onclick=()=>{ el.remove(); setMode("collec"); }; },1200); }
+function birthdayPicker(){ const c=W(); const M=$("#cardModal");
+  if(c.birth){ M.innerHTML=`<div class="cm-box panel"><h3 style="margin-top:0">🎂 Mon anniversaire</h3><div style="font-size:20px;font-weight:900;margin:6px 0">${bdayTxt(c.birth)}</div><div class="mute" style="font-size:12.5px">Un <b>Pack Légende</b> t'est offert chaque année ce jour-là. La date ne peut plus être changée (demande à l'admin en cas d'erreur).</div><div class="mbtns"><button class="btn ghost" id="bdX">Fermer</button></div></div>`;
+    M.classList.add("open"); $("#bdX").onclick=()=>M.classList.remove("open"); return; }
+  M.innerHTML=`<div class="cm-box panel"><h3 style="margin-top:0">🎂 Ta date d'anniversaire</h3><div class="mute" style="font-size:12.5px;margin-bottom:10px">Chaque année, le jour de ton anniversaire, tu reçois un <b>Pack Légende</b> 🎁. Juste le jour et le mois, pas l'année.</div>
+    <div class="bar" style="gap:8px"><select id="bdD">${Array.from({length:31},(_,i)=>`<option value="${i+1}">${i+1}</option>`).join("")}</select><select id="bdM" style="flex:2.2">${MOIS.map((m,i)=>`<option value="${i+1}">${m}</option>`).join("")}</select></div>
+    <div class="mute" style="font-size:11.5px;margin-top:8px">⚠️ Tu ne pourras la choisir qu'une seule fois. Si ton anniversaire est dans moins de 7 jours, le premier pack arrivera l'an prochain.</div>
+    <div class="mbtns"><button class="btn" id="bdOk">Enregistrer</button><button class="btn ghost" id="bdX">Plus tard</button></div></div>`;
+  M.classList.add("open"); $("#bdX").onclick=()=>{ M.classList.remove("open"); const c2=W(); c2.seen=c2.seen||{}; c2.seen.bdayAsk=Date.now(); save(); };
+  $("#bdOk").onclick=()=>{ const d=+$("#bdD").value, m=+$("#bdM").value; const max=[31,29,31,30,31,30,31,31,30,31,30,31][m-1]; if(d>max){ toast(`Le ${d} ${MOIS[m-1]} n'existe pas`,true); return; }
+    const b=String(m).padStart(2,"0")+"-"+String(d).padStart(2,"0"); const c2=W(); if(c2.birth) return;
+    // si l'anniversaire tombe dans les 7 prochains jours (ou aujourd'hui), pas de pack cette année
+    const now=new Date(), next=new Date(now.getFullYear(),m-1,d); if(next<new Date(now.getFullYear(),now.getMonth(),now.getDate())) next.setFullYear(now.getFullYear()+1);
+    if(next-now<7*86400000) c2.bdayGiven=next.getFullYear();
+    c2.birth=b; c2.birthSetAt=Date.now(); save(); M.classList.remove("open"); toast(`🎂 Anniversaire enregistré : ${bdayTxt(b)}`); try{ renderSocial(); }catch(_){} };
+}
+// demande la date une fois (puis de nouveau au bout de 30 jours si « Plus tard »)
+function askBirthday(){ if(!me||!compos[me]) return; const c=W(); if(c.birth||document.querySelector(".tipov,.modal.open")) return; const sk=(c.seen||{}).bdayAsk; if(sk&&Date.now()-sk<30*86400000) return; birthdayPicker(); }
+setInterval(()=>{ try{ checkBirthday(); }catch(e){} },60000);
 
 // ======================================================================
 // 🎮 JEUX : carrière, coupe, défi du jour, quiz, canapé, stats, réactions
@@ -4515,7 +4549,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-23f"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-23g"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
@@ -4610,7 +4644,7 @@ try{
       else { NAMES[me]=pendingName||($("#aName").value.trim())||user.email.split("@")[0]; compos[me]=blank(); compos[me].coins=300; await push(); await importLegacy(NAMES[me]); setTimeout(()=>toast("Bienvenue ! 300 🪙 offertes pour ton premier pack"),800); }
     }catch(e){ setSync("⚠️ Accès refusé : règles Firebase à mettre à jour","err"); }
     pendingName=null; $("#aPass").value="";
-    choose(me); startListeners(); setTimeout(()=>{ if(me){ starterPack(); loginStreak(); dailyBonus(); claimRewards(); refreshNotifToken(); renderCoins(); badgeLigue(); tip("welcome",()=>starterPrompt(()=>tip("tab_"+mode))); } },1500);
+    choose(me); startListeners(); setTimeout(()=>{ if(me){ starterPack(); loginStreak(); dailyBonus(); claimRewards(); refreshNotifToken(); try{ checkBirthday(); }catch(e){} setTimeout(()=>{ try{ askBirthday(); }catch(e){} },9000); renderCoins(); badgeLigue(); tip("welcome",()=>starterPrompt(()=>tip("tab_"+mode))); } },1500);
   });
 }catch(e){ setSync("⚠️ Synchro indisponible","err"); }
 </script>
