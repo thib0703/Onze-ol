@@ -3071,7 +3071,7 @@ function onOlLive(L){ const P=OLLIVE; OLLIVE=L;
 setInterval(()=>{ if(OLLIVE) renderOlLive(); },60000);
 // 📤 Partage de la salle des trophées
 async function shareTrophies(id){ try{ const T=((C(id)||{}).trophies||[]).slice().sort((a,b)=>TBIG(b.k)-TBIG(a.k)||b.at-a.at); if(!T.length){ toast("Pas encore de trophée à montrer",true); return; }
-  const groups=[]; for(const x of T){ const g=GROUP_K.has(x.k)?groups.find(y=>y.k===x.k):null; if(g) g.n++; else groups.push({k:x.k,n:1,nm:x.n}); }
+  const groups=[]; for(const x of T){ const g=GROUP_K.has(x.k)?groups.find(y=>y.k===x.k):null; if(g) g.n++; else groups.push({k:x.k,n:1,nm:x.n,id:x.id}); }
   const W_=1080,H_=1350, cv=document.createElement("canvas"); cv.width=W_; cv.height=H_; const x=cv.getContext("2d");
   const bg=await ldImg("img/vitrine-fond.webp"); if(bg) x.drawImage(bg,0,0,W_,H_); else { x.fillStyle="#0b1530"; x.fillRect(0,0,W_,H_); }
   const pl=await ldImg("img/vitrine-plaque.webp"); if(pl){ const w=760,h=pl.height*w/pl.width; x.drawImage(pl,(W_-w)/2,150,w,h); }
@@ -3079,7 +3079,7 @@ async function shareTrophies(id){ try{ const T=((C(id)||{}).trophies||[]).slice(
   cvText(x,`${T.length} trophée${T.length>1?"s":""}${big?` · ${big} titre${big>1?"s":""}`:""}`,W_/2,290,"600 30px Georgia,serif","#5b4210");
   const sh=await ldImg("img/vitrine-etagere.webp"); const G=groups.slice(0,12);
   for(let r=0;r<Math.ceil(G.length/3);r++){ const y=600+r*250; const row=G.slice(r*3,r*3+3);
-    for(let i=0;i<row.length;i++){ const g=row[i], D=TROPHY[g.k]||TROPHY.cup, cx=W_/2+(i-(row.length-1)/2)*270; const im=await ldImg(`img/trophees/${D.img}.webp`);
+    for(let i=0;i<row.length;i++){ const g=row[i], D=TROPHY[g.k]||TROPHY.cup, cx=W_/2+(i-(row.length-1)/2)*270; const im=await ldImg(trImg(g.k,g.id));
       if(im) x.drawImage(im,cx-80,y-160,160,160); if(g.n>1){ x.fillStyle="#ffd970"; x.beginPath(); x.arc(cx+70,y-140,30,0,7); x.fill(); cvText(x,"×"+g.n,cx+70,y-140,"900 30px system-ui","#3a2a00"); }
       cvText(x,g.n>1?D.t:g.nm,cx,y+42,"700 23px system-ui,sans-serif","#f2e6c4","center",262); }
     if(sh) x.drawImage(sh,150,y-14,W_-300,44); }
@@ -5058,13 +5058,16 @@ function trophyCheck(quiet){ if(!me||!C(me)) return; const c=W(); const T=c.trop
   if(!add.length) return; save();
   if(quiet&&add.length>1) toast(`🏆 ${add.length} trophées ajoutés à ton armoire !`);
   else add.forEach((x,i)=>setTimeout(()=>{ toast(`🏆 Nouveau trophée : ${(TROPHY[x.k]||{}).t} · ${x.n}`); },i*2500)); }
+// image d'un trophée : les trophées de saison changent selon la saison (hiver, printemps, été, automne)
+function trImg(k,id){ const D=TROPHY[k]||TROPHY.cup; if(!/^ss/.test(k)) return `img/trophees/${D.img}.webp`;
+  const m=String(id||"").match(/S(\d)$/), q=m?+m[1]:+SEASONK().split("-S")[1]; const base=["","saison-hiver","saison-printemps","saison-ete","saison"][q]||"saison"; return `img/trophees/${base}${k==="ss2"?"-2":k==="ss3"?"-3":""}.webp`; }
 const trIcon=D=>D.img?`<img class="trimg" src="img/trophees/${D.img}.webp" alt="" loading="lazy">`:D.ic;
 // 🏆 Salle des trophées : vitrine (fond, plaque, étagères par catégorie), regroupement ×N, silhouettes à débloquer, zoom 3D
 const VIT_CATS=[["Titres",["ss","lg","ldc","cup","wk"]],["Places d'honneur",["ss2","ss3","cup2","lg2","lg3"]],["Divisions",["up"]],["Parcours",["car","pass","noel"]],["Collection",["alb","gold","gf","ul"]]];
 const TR_HOW={ss:"Finis 1er d'une saison (3 mois de matchs entre joueurs)",ss2:"Finis 2e d'une saison",ss3:"Finis 3e d'une saison",lg:"Finis 1er d'un championnat entre joueurs",ldc:"Finis 1er de la Ligue des Champions en Divisions",cup:"Gagne une coupe entre joueurs",wk:"Gagne la coupe du week-end (samedi soir)",
   cup2:"Atteins la finale d'une coupe",lg2:"Finis 2e d'un championnat",lg3:"Finis 3e d'un championnat",up:"Monte d'une division (Solo › Divisions)",car:"Remporte une compétition en Carrière",
   pass:"Termine le pass de saison du mois",noel:"Ouvre les 24 cases du calendrier de l'Avent",alb:"Complète une collection de l'album",gold:"Ouvre un Gold Pack",gf:"Obtiens une carte Grande Forme",ul:"Obtiens une Légende Ultime"};
-const GROUP_K=new Set(["lg","ldc","cup","wk","cup2","lg2","lg3","pass","noel","ss","ss2","ss3"]);
+const GROUP_K=new Set(["lg","ldc","cup","wk","cup2","lg2","lg3","pass","noel"]);
 window.__vit={};
 // 🛡️ Écussons de club
 const crestMini=(u,sz)=>u&&u!=="cpu"?`<img class="cmini" src="img/ecussons/${String(crestOf(u)).padStart(2,"0")}.webp" alt="" style="width:${sz||20}px;height:${sz||20}px">`:"";
@@ -5077,7 +5080,7 @@ function openCrestPicker(){ const T=$("#tradeUI"); if(!T) return; const cur=cres
 function trophiesHTML(id,title){ const mine=id===me; const T=((C(id)||{}).trophies||[]).slice().sort((a,b)=>b.at-a.at); const big=T.filter(x=>TBIG(x.k)).length;
   const groups=[]; for(const x of T){ const g=GROUP_K.has(x.k)?groups.find(y=>y.k===x.k):null; if(g) g.L.push(x); else groups.push({k:x.k,L:[x]}); }
   window.__vit[id]=groups; let gi=0; const idx=new Map(groups.map((g,i)=>[g,i]));
-  const tile=(g,lock)=>{ const D=TROPHY[g.k]||TROPHY.cup, src=`img/trophees/${D.img}.webp`, nm=lock?D.t:(g.L.length>1?D.t:g.L[0].n);
+  const tile=(g,lock)=>{ const D=TROPHY[g.k]||TROPHY.cup, src=trImg(g.k,lock?null:g.L[0].id), nm=lock?D.t:(g.L.length>1?D.t:g.L[0].n);
     return `<button class="vt${lock?" lock":""}${TBIG(g.k)?" big":""}" ${lock?`data-vlock="${g.k}"`:`data-vt="${esc(id)}|${idx.get(g)}"`} style="--m:url(${src})"><img src="${src}" alt="" loading="lazy">${lock?"":`<i class="vsh"></i>`}${!lock&&g.L.length>1?`<em>×${g.L.length}</em>`:""}<span>${esc(nm)}</span></button>`; };
   const rows=L=>{ let h=""; for(let i=0;i<L.length;i+=3) h+=`<div class="vit-row">${L.slice(i,i+3).join("")}</div>`; return h; };
   let body="";
@@ -5090,7 +5093,7 @@ function trophiesHTML(id,title){ const mine=id===me; const T=((C(id)||{}).trophi
     ${body||`<div class="vit-empty">La vitrine attend son premier trophée : gagne une coupe, un championnat ou monte en division !</div>`}</div>${T.length?`<button class="btn ghost big" data-vshare="${esc(id)}" style="margin:-4px 0 14px">📤 Partager ${mine?"ma":"sa"} salle des trophées</button>`:""}`; }
 function openTrophy(id,i){ const g=(window.__vit[id]||[])[i]; if(!g) return; const D=TROPHY[g.k]||TROPHY.cup; const d=x=>new Date(x.at).toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"});
   const line=x=>`<li><b>${esc(x.n)}</b><small>${d(x)}${x.size?` · ${x.size} joueurs`:""}${x.vs&&NAMES[x.vs]?` · ${x.k==="cup"||x.k==="wk"?"face à":"battu par"} ${esc(NAMES[x.vs])}`:""}</small></li>`;
-  const el=document.createElement("div"); el.className="trz"; el.innerHTML=`<div class="trzi"><img src="img/trophees/${D.img}.webp" alt=""></div><h3>${g.L.length>1?`${D.t} ×${g.L.length}`:esc(g.L[0].n)}</h3><p>${g.L.length>1||g.L[0].n!==D.t?D.t+(g.L.length===1?" · ":""):""}${g.L.length===1?d(g.L[0]):""}</p>${g.L.length>1?`<ul>${g.L.map(line).join("")}</ul>`:(g.L[0].vs&&NAMES[g.L[0].vs]?`<p>${g.L[0].k==="cup"||g.L[0].k==="wk"?"Face à":"Battu par"} ${esc(NAMES[g.L[0].vs])}</p>`:"")}<button class="btn ghost">Fermer</button>`;
+  const el=document.createElement("div"); el.className="trz"; el.innerHTML=`<div class="trzi"><img src="${trImg(g.k,g.L[0].id)}" alt=""></div><h3>${g.L.length>1?`${D.t} ×${g.L.length}`:esc(g.L[0].n)}</h3><p>${g.L.length>1||g.L[0].n!==D.t?D.t+(g.L.length===1?" · ":""):""}${g.L.length===1?d(g.L[0]):""}</p>${g.L.length>1?`<ul>${g.L.map(line).join("")}</ul>`:(g.L[0].vs&&NAMES[g.L[0].vs]?`<p>${g.L[0].k==="cup"||g.L[0].k==="wk"?"Face à":"Battu par"} ${esc(NAMES[g.L[0].vs])}</p>`:"")}<button class="btn ghost">Fermer</button>`;
   try{ SFX.chime("gold"); }catch(_){} el.onclick=e=>{ if(e.target===el||e.target.tagName==="BUTTON") el.remove(); }; document.body.appendChild(el); }
 document.addEventListener("click",e=>{ const vs=e.target.closest&&e.target.closest("[data-vshare]"); if(vs){ shareTrophies(vs.dataset.vshare); return; } const v=e.target.closest&&e.target.closest("[data-vt]"); if(v){ const [id,i]=v.dataset.vt.split("|"); openTrophy(id,+i); return; }
   const l=e.target.closest&&e.target.closest("[data-vlock]"); if(l){ const k=l.dataset.vlock; toast(`🔒 ${(TROPHY[k]||{}).t} : ${TR_HOW[k]||""}`); } });
@@ -5817,7 +5820,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-25z"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-26a"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
