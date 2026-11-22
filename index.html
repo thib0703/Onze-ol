@@ -1067,6 +1067,8 @@ details.fold>summary{cursor:pointer;list-style:none;font-weight:800}details.fold
 .trz h3{margin:14px 0 2px;font-size:20px;color:#ffe9a8}.trz p{margin:2px 0;color:#c9c3dd;font-size:13.5px}.trz ul{list-style:none;padding:0;margin:10px 0 0;max-height:34vh;overflow:auto;width:min(92vw,380px)}
 .trz li{background:#ffffff10;border-radius:10px;padding:7px 10px;margin:5px 0;font-size:13px;text-align:left}.trz li small{display:block;color:#a9a3c0}
 .trz .btn{margin-top:16px;min-width:160px}
+.tui-box.home .todor{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #ffffff10}.tui-box.home .tdt{flex:1;font-size:13px}.tui-box.home .tdi{font-size:18px}
+details.fold#libSec>summary::after{float:right}
 </style>
 </head>
 <body>
@@ -1119,7 +1121,7 @@ details.fold>summary{cursor:pointer;list-style:none;font-weight:800}details.fold
   <div class="sugg" id="sugg"></div>
   <button class="btn save" id="saveBtn">💾 Sauvegarder la compo</button>
   <div class="saved" id="savedInfo"></div>
-  <div class="section" id="libSec"><h3>Mes compos enregistrées <small id="libCount"></small></h3><div class="lib" id="lib"></div></div>
+  <details class="section fold" id="libSec"><summary><h3 style="display:inline">💾 Mes compos enregistrées <small id="libCount"></small></h3></summary><div class="lib" id="lib" style="margin-top:8px"></div></details>
   <div class="section"><h3>Remplaçants <small id="benchCount"></small></h3><div class="bench" id="bench"></div></div>
   <div class="section"><h3>Entraîneur</h3><div class="coach" id="coach"></div></div>
   <div class="section" id="compare"></div>
@@ -1493,7 +1495,7 @@ $("#aSignup").onclick=async()=>{
   $("#aSignup").disabled=false; };
 $("#shareBtn").onclick=async()=>{ const url=location.origin+location.pathname; try{ if(navigator.share){ await navigator.share({title:"Les Gones Legends",text:"Crée ton compte, fais ton 11 type de l'OL et viens me défier !",url}); return; } }catch(e){ return; } try{ await navigator.clipboard.writeText(url); toast("Lien copié !"); }catch(e){ toast(url); } };
 $("#admBtn").onclick=()=>adminPanel();
-$("#who").onclick=()=>openModal(`Connecté en tant que ${NAMES[me]||"?"} · ${$("#sync").textContent.replace(/^✓ /,"")} · version ${APP_V}`,null,[[notifState()==="granted"?"🔔 Notifications activées":"🔔 Activer les notifications",()=>{ enableNotifs(); }],...(notifState()==="granted"?[["🧪 Tester les notifications",()=>{ testNotif(); }]]:[]),["🎂 Mon anniversaire",()=>{ setTimeout(birthdayPicker,150); }],[SFX.on?"🔊 Son activé (couper)":"🔇 Son coupé (activer)",()=>{ SFX.set(!SFX.on); toast(SFX.on?"🔊 Son activé":"🔇 Son coupé"); if(SFX.on) SFX.chime("gold"); }],["📲 Installer l'appli",()=>{ setTimeout(()=>installGuide(true),200); }],["💡 Revoir les explications",()=>{ resetTips(); }],...(me===ADMIN?[["🛠️ Panneau admin",()=>{ setTimeout(adminPanel,150); }]]:[]),["Se déconnecter",()=>{ firebase.auth().signOut(); }],["Inviter quelqu'un",()=>$("#shareBtn").click(),true],["Fermer",null,true]]);
+$("#who").onclick=()=>openModal(`Connecté en tant que ${NAMES[me]||"?"} · ${$("#sync").textContent.replace(/^✓ /,"")} · version ${APP_V}`,null,[[notifState()==="granted"?"🔔 Notifications activées":"🔔 Activer les notifications",()=>{ enableNotifs(); }],...(notifState()==="granted"?[["🧪 Tester les notifications",()=>{ testNotif(); }]]:[]),["☀️ Résumé du jour",()=>{ setTimeout(()=>showHome(true),150); }],["🎂 Mon anniversaire",()=>{ setTimeout(birthdayPicker,150); }],[SFX.on?"🔊 Son activé (couper)":"🔇 Son coupé (activer)",()=>{ SFX.set(!SFX.on); toast(SFX.on?"🔊 Son activé":"🔇 Son coupé"); if(SFX.on) SFX.chime("gold"); }],["📲 Installer l'appli",()=>{ setTimeout(()=>installGuide(true),200); }],["💡 Revoir les explications",()=>{ resetTips(); }],...(me===ADMIN?[["🛠️ Panneau admin",()=>{ setTimeout(adminPanel,150); }]]:[]),["Se déconnecter",()=>{ firebase.auth().signOut(); }],["Inviter quelqu'un",()=>$("#shareBtn").click(),true],["Fermer",null,true]]);
 
 // ---------- Rendu ----------
 // Note moyenne du 11 (cartes possédées, évolutions et forme réelle comprises)
@@ -1537,7 +1539,7 @@ let autoPrev=null, autoArm=false;
 function renderSugg(mine){ const el=$("#sugg"); if(!el) return; el.style.display=mine?"":"none"; if(!mine){ el.innerHTML=""; return; }
   const S=suggestions(); const short2=id=>id&&BY_ID[id]?esc(BY_ID[id].name):"vide";
   el.innerHTML=`<div class="sgh"><b>💡 Suggestions</b><span>${autoPrev?`<button class="btn sm ghost" id="autoUndo">↩️ Annuler</button> `:""}<button class="btn sm" id="autoBtn">🧠 Meilleure équipe</button></span></div>`+
-    (S.length?S.slice(0,4).map((x,k)=>`<div class="sgl"><span>${x.coach?"🧠 Entraîneur":`<b>${x.role}</b>`} : ${x.cur?`${short2(x.cur)} <small>(${x.curV})</small> → `:""}<b>${short2(x.id)}</b> <small>(${x.v})</small> <em>${x.cur?"+"+x.gain:"poste vide"}</em></span><button class="btn sm ghost" data-sg="${k}">Mettre</button></div>`).join("")
+    (S.length?S.slice(0,4).map((x,k)=>`${k===2?`<details class="fold"><summary class="mute" style="font-size:12.5px;padding:4px 0">Voir ${Math.min(S.length,4)-2} autre${Math.min(S.length,4)-2>1?"s":""} suggestion${Math.min(S.length,4)-2>1?"s":""}</summary>`:""}<div class="sgl"><span>${x.coach?"🧠 Entraîneur":`<b>${x.role}</b>`} : ${x.cur?`${short2(x.cur)} <small>(${x.curV})</small> → `:""}<b>${short2(x.id)}</b> <small>(${x.v})</small> <em>${x.cur?"+"+x.gain:"poste vide"}</em></span><button class="btn sm ghost" data-sg="${k}">Mettre</button></div>${k===Math.min(S.length,4)-1&&k>=2?"</details>":""}`).join("")
      :`<div class="mute" style="font-size:12.5px">✅ Ton 11 est déjà le meilleur possible avec tes cartes.</div>`);
   el.querySelectorAll("[data-sg]").forEach(b=>b.onclick=()=>{ const x=S[+b.dataset.sg], c=W();
     if(x.coach) c.coach=x.id; else { for(const k in c.bench) if(c.bench[k]===x.id){ if(x.cur) c.bench[k]=x.cur; else delete c.bench[k]; } c.slots[x.i]=x.id; }
@@ -1935,6 +1937,23 @@ function topStripHTML(){ let a="",b=""; try{ const o=objState(), oc=objClaimable
     a=`<button data-objmini="1"><span class="tsi">🎯</span><span style="min-width:0;flex:1"><b>Objectifs du jour</b><small>${d}/${n} réussis</small><i class="trk"><i style="width:${d/n*100}%"></i></i></span>${oc?`<i class="num">${oc}</i>`:""}</button>`; }catch(e){}
   try{ const P=passState(), cur=P.xp-P.lv*PASS_XP; b=`<button data-passmini="1"><span class="tsi">🎟️</span><span style="min-width:0;flex:1"><b>Pass · palier ${P.lv}</b><small>${P.lv>=PASS_N?"Terminé 🏆":`${cur}/${PASS_XP} XP`}</small><i class="trk"><i style="width:${P.lv>=PASS_N?100:cur/PASS_XP*100}%"></i></i></span></button>`; }catch(e){}
   return a+b; }
+// ☀️ Résumé du jour : affiché à la 1re ouverture de la journée (et depuis le menu compte)
+function homeHTML(){ const c=W(); const L=todoList(); TODO_CUR=[]; const PG={online:"🌐",solo:"🎮",collec:"🎴",social:"👥",ol:"📰"};
+  let last=""; try{ const h=(matches||[]).find(h=>h&&(h.owners||[]).includes(me)&&h.score); if(h){ const i=h.owners.indexOf(me), a=h.score[i], b=h.score[1-i], o=(h.names||[])[1-i]||"?";
+    last=`<div class="todor"><span class="tdi">${a>b?"✅":a<b?"❌":"🤝"}</span><span class="tdt">Dernier match : <b>${a}-${b}</b> contre ${esc(o)}</span></div>`; } }catch(e){}
+  let nx=""; try{ const f=fxOf().find(f=>!f.score&&new Date(f.date).getTime()>Date.now()); if(f) nx=`<div class="todor"><span class="tdi">🔴🔵</span><span class="tdt">Prochain match de l'OL : <b>${esc(f.home)}-${esc(f.away)}</b> · ${new Date(f.date).toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})} à ${new Date(f.date).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})}</span><button class="btn sm ghost" data-home="prono">Prono</button></div>`; }catch(e){}
+  const h=new Date().getHours(), hi=h<5?"Bonne nuit":h<12?"Bonjour":h<18?"Salut":"Bonsoir";
+  return `<div class="tui-box home"><div class="tui-head"><b>${h<18?"☀️":"🌙"} ${hi} ${esc(NAMES[me]||"")} !</b><button class="btn sm ghost" id="homeX">Fermer</button></div>
+    <div class="topstrip" style="margin:6px 0 10px">${topStripHTML()}</div>
+    ${L.length?`<h4 style="margin:4px 0">📌 Ce qui t'attend <small class="mute">${L.length}</small></h4>${L.map(x=>{ const i=TODO_CUR.push(x)-1; return `<div class="todor"><span class="tdi">${x.ic}</span><span class="tdt">${x.txt} <small class="mute">${PG[x.pg]||""}</small></span><button class="btn sm" data-todo="${i}">${x.btn}</button></div>`; }).join("")}`:`<div class="mute" style="font-size:13px;margin:6px 0">✅ Rien d'urgent : lance un match ou ouvre un pack !</div>`}
+    ${last||nx?`<h4 style="margin:10px 0 4px">⚽ Côté terrain</h4>${last}${nx}`:""}
+    <button class="btn big" id="homeGo" style="margin-top:12px">C'est parti !</button></div>`; }
+function showHome(force){ if(!me||!C(me)) return; try{ if(!force&&localStorage.getItem("gl_home")===DAYK()) return; localStorage.setItem("gl_home",DAYK()); }catch(e){}
+  const T=$("#tradeUI"); if(!T||T.classList.contains("open")) return; T.innerHTML=homeHTML(); T.classList.add("open");
+  const close=()=>T.classList.remove("open"); $("#homeX").onclick=close; $("#homeGo").onclick=close; T.onclick=e=>{ if(e.target===T) close(); };
+  bindObjMini(T); T.querySelectorAll("[data-objmini],[data-passmini]").forEach(b=>b.addEventListener("click",close));
+  T.querySelectorAll("[data-todo]").forEach(b=>b.onclick=()=>{ const x=TODO_CUR[+b.dataset.todo]; close(); if(x) x.go(); });
+  T.querySelectorAll("[data-home]").forEach(b=>b.onclick=()=>{ close(); olSel="prono"; setMode("ol"); }); }
 function renderTopStrip(){ const el=$("#topStrip"); if(!el||!me) return; el.innerHTML=topStripHTML(); bindObjMini(el); }
 function objMiniHTML(){ try{ const o=objState(), oc=objClaimable();
   return `<button class="objmini" data-objmini="1"><div class="omh"><b>🎯 Objectifs du jour</b><span>${oc?`<i class="num">${oc} à récupérer</i>`:"Tout voir ›"}</span></div>${DAILY.map(x=>{ const v=Math.min(x.n,o.day.p[x.k]||0), done=o.day.done.includes(x.k); return `<div class="omr${done?" done":""}"><span>${done?"✅":v>=x.n?"🎁":"▫️"} ${x.t}</span><small>${done?"fait":`${v}/${x.n}`}</small><div class="track"><i style="width:${v/x.n*100}%"></i></div></div>`; }).join("")}</button>`; }catch(e){ return ""; } }
@@ -1959,7 +1978,7 @@ function todoList(){ const L=[]; if(!me||!C(me)) return L; const c=W(); const ad
        for(const X of Object.values(leagues||{}).filter(invitedMe)) add("online","🏆",`Championnat « ${esc(X.name)} » : <b>${esc(NAMES[X.owner]||"?")} t'invite</b>`,()=>{ onSel="league"; mode==="online"?(renderOnline(),renderBack()):setMode("online"); },"Voir",true); }catch(e){}
   try{ const D=c.dch; if(!(D&&D.day===today()&&D.done)) add("solo","🎯","Défi du jour <b>pas encore joué</b>",()=>{ soSel="defi"; mode==="solo"?(renderSolo(),renderBack()):setMode("solo"); },"Jouer");
        const n=c.quiz&&c.quiz.d===today()?c.quiz.n:0; if(n<QUIZ_MAX) add("solo","🧠",`Quiz OL : <b>${QUIZ_MAX-n} quiz récompensé${QUIZ_MAX-n>1?"s":""}</b> encore dispo aujourd'hui`,()=>{ soSel="quiz"; mode==="solo"?(renderSolo(),renderBack()):setMode("solo"); },"Jouer"); }catch(e){}
-  try{ const goC=q=>()=>{ setMode("collec"); setTimeout(()=>{ const e=$(q); if(e) e.scrollIntoView({behavior:"smooth",block:"start"}); },150); };
+  try{ const goC=q=>()=>{ try{ const sg=COL_SEGS.find(x=>x[2].includes(q)); if(sg) colSel=sg[0]; }catch(_){} setMode("collec"); setTimeout(()=>{ const e=$(q); if(e) e.scrollIntoView({behavior:"smooth",block:"start"}); },150); };
        try{ for(const it of missedMatches()) add("online",it.ic,it.txt,it.go,it.btn); }catch(e){}
        try{ if(adventTodo()) add("collec","🎄",`Calendrier de l'Avent : <b>case du ${adventToday()} décembre</b> à ouvrir`,goC("#cAdvent"),"Ouvrir"); }catch(e){}
        if(c.daily!==today()) add("collec","🎁","<b>Pack du jour</b> gratuit à ouvrir",goC("#cShop"),"Ouvrir");
@@ -3013,7 +3032,7 @@ const isFreeCpuH=h=>isCpuH(h)&&(!h.mode||h.mode==="cpu");
 function cpuLeft(){ const c=W(); return c.cpud&&c.cpud.d===today()?Math.max(0,CPU_MAX-c.cpud.n):CPU_MAX; }
 let trFirst=true;
 function claimRewards(){
-  if(!me||!C(me)) return; try{ trophyCheck(trFirst); trFirst=false; }catch(e){} const c=W(); c.claimed=c.claimed||[]; let got=0, lines=[];
+  if(!me||!C(me)) return; try{ trophyCheck(trFirst); if(trFirst) setTimeout(()=>{ const c=W(); if((c.tuto||{}).fin&&mode!=="match"&&!document.querySelector(".modal.open,#cardModal.open,.trz,#packfx.open")) showHome(); },1500); trFirst=false; }catch(e){} const c=W(); c.claimed=c.claimed||[]; let got=0, lines=[];
   for(const h of matches){ if(!h.owners||c.claimed.includes(h.id)) continue; const i=h.owners.indexOf(me); if(i<0) continue;
     if((Date.now()-h.at)/MSPEED<100&&!(mSkip===h.id&&isCpuH(h))) continue; // match pas encore fini (contre l'ordi : dès que tu as vu le résultat)
     if(h.owners[0]===h.owners[1]||h.nr){ c.claimed.push(h.id); continue; }
@@ -5528,7 +5547,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-25a"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-25b"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
