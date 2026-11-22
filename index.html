@@ -423,6 +423,7 @@ html:has(.modal.open),body:has(.modal.open){overflow:hidden}
 .fc-vmini{position:absolute;right:4%;top:3%;font-size:calc(var(--w)/4);line-height:1;z-index:3}
 .evban.tfban{background:linear-gradient(120deg,#5a0d06,#b3200e,#ff7a1a);margin-top:8px}
 .fc-ovr{position:relative}.fc-live{position:absolute;left:100%;top:0;font-style:normal;font-size:.42em;margin-left:2px}
+.otherlive{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 10px;padding:8px 10px;border-radius:10px;background:#1d2b55;font-size:13px}
 .livel{margin:6px 0;padding:6px 8px;border-radius:8px;background:rgba(31,138,76,.22);font-size:13px}.livel.neg{background:rgba(180,67,43,.25)}
 .nws{display:flex;flex-direction:column;gap:8px;margin-top:8px}.nw{display:block;background:#16244a;border:1px solid #2b3c6e;border-radius:12px;padding:10px 12px;color:var(--txt);text-decoration:none}.nw b{display:block;font-size:14px;line-height:1.3}.nw p{margin:4px 0 0;font-size:12.5px;color:#c8d6ff;line-height:1.4}.nw small{display:block;margin-top:5px;font-size:11px;color:var(--mute)}.nw.new{border-color:#ffd970}.nwf{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.nwf button{background:#1d2b55;border:0;color:var(--mute);border-radius:999px;padding:4px 10px;font-size:12px;cursor:pointer}.nwf button.on{background:var(--rouge);color:#fff}
 .l1t{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px}.l1t th{color:var(--mute);font-weight:600;font-size:11px;padding:4px 3px;text-align:center}.l1t td{padding:5px 3px;text-align:center;border-top:1px solid #1d2b55}.l1t td.tm{text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px}.l1t td.ps{width:22px;font-weight:700;border-left:3px solid transparent}.l1t tr.z1 td.ps{border-left-color:#2f7bff}.l1t tr.z2 td.ps{border-left-color:#ff9a3c}.l1t tr.z3 td.ps{border-left-color:#ffd970}.l1t tr.z4 td.ps{border-left-color:#e53950}.l1t tr.ol td{background:rgba(211,18,45,.22);font-weight:700}.l1t td.pt{font-weight:800}.l1t .lv{display:inline-block;background:#e53950;color:#fff;border-radius:6px;padding:0 5px;font-size:10.5px;margin-left:4px;font-weight:700}.l1leg{display:flex;flex-wrap:wrap;gap:10px;font-size:11px;color:var(--mute);margin-top:6px}.l1leg i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:4px}.l1live{margin-top:6px;font-size:12.5px;display:flex;flex-direction:column;gap:3px}.l1live span{background:#1d2b55;border-radius:8px;padding:4px 8px}.l1more{background:none;border:0;color:var(--mute);font-size:12px;cursor:pointer;margin-top:6px;width:100%}
@@ -2010,12 +2011,20 @@ function renderHype(){ const el=$("#hype"); if(!el) return; try{ HYPE=hypeList()
   if(seen[top.k]) return; seen[top.k]=Date.now(); try{ localStorage.setItem("onze-ol-hype",JSON.stringify(seen)); }catch(e){}
   const d=document.createElement("div"); d.className="hypePop"; d.innerHTML=`<i>${top.ic}</i><b>${top.big}</b><small>${top.d}</small>`; document.body.appendChild(d); setTimeout(()=>d.remove(),3400); }
 setInterval(()=>{ if(!document.hidden) renderHype(); },60000); // recalcul local (aucune requête réseau)
+let otherLive=null; // match des autres lancé pendant que je regarde le mien
+const inM=(m,w)=>!!(m&&m.teams&&m.teams.some(t=>t.owner===w||(t.owners||[]).includes(w)));
+const mLiveNow=m=>!!(m&&Date.now()<m.at+(m.len+1)*MSPEED);
+function watchOther(){ const o=otherLive; if(!o) return; otherLive=null; match=o; mClosed=null; mSkip=null; fxQ=[]; setMode("match"); window.scrollTo(0,0); }
 function onMatchData(m,h){
   matches=Array.isArray(h)?h:[]; setTimeout(claimRewards,0); setTimeout(renderHype,600);
   const isNew=m&&m.id!==lastMatchId;
   if(isNew&&lastMatchId!==null&&m.by!==me&&m.teams&&m.teams.some(t=>t.owner===me||(t.owners||[]).includes(me))&&Date.now()-m.at<60000){ mClosed=null; setTimeout(()=>{ setMode("match"); window.scrollTo(0,0); },300); }
-  if(isNew&&lastMatchId!==null&&m.by!==me){ toast(`🏟️ ${NAMES[m.by]||"Quelqu'un"} a lancé un match : ${tn(m,0)} vs ${tn(m,1)} !`); }
+  // 📌 si je regarde (ou viens de finir) un match à moi, un match lancé par d'autres ne me l'enlève pas : il reste à voir en option
+  const pin=m&&match&&match!==cpuMatch&&match.id!==m.id&&mClosed!==match.id&&!inM(m,me)&&(mode==="match"||Date.now()<match.at+(match.len+1)*MSPEED+10*60000);
+  if(isNew&&lastMatchId!==null&&m.by!==me){ toast(`🏟️ ${NAMES[m.by]||"Quelqu'un"} a lancé un match : ${tn(m,0)} vs ${tn(m,1)}${pin?" (à voir dans 🏟️ Matchs)":" !"}`); }
   if(m) lastMatchId=m.id; else lastMatchId=lastMatchId||"";
+  if(pin){ otherLive=m; if(mode==="match") renderMatch(); return; }
+  otherLive=null;
   match = (cpuMatch&&Date.now()-cpuMatch.at<(cpuMatch.len+20)*MSPEED) ? cpuMatch : (m||null);
   if(mode==="match") renderMatch();
 }
@@ -2054,7 +2063,8 @@ const fmtv=v=>raw2(v); function raw2(v){ return Number.isInteger(v)?v:(Math.abs(
 function bar(label,a,b,raw){ const w=raw?(a/((a+b)||1)*100):Math.min(92,Math.max(8,50+(a-b)*2.5)); return `<div class="sbar"><div class="sv">${raw?fmtv(a):Math.round(a)}</div><div class="sl"><span>${label}</span><div class="track"><i style="width:${w}%"></i></div></div><div class="sv">${raw?fmtv(b):Math.round(b)}</div></div>`; }
 function renderMatch(){
   if(!me) return;
-  $("#mSetup").innerHTML=`<h3>🏟️ Matchs</h3><div class="rules" style="font-size:13px;margin-top:0">Les matchs se lancent depuis :<br>⚡ <b>Draft</b> (Draft, Budget) · 🎮 <b>Jeux</b> (Carrière, Coupes, Défi du jour, Canapé) · 🏆 <b>Ligue</b> (Championnats).<br>Ils s'affichent ici en direct, et tu peux revoir les derniers avec ▶️.</div>`;
+  $("#mSetup").innerHTML=`<h3>🏟️ Matchs</h3><div class="rules" style="font-size:13px;margin-top:0">Les matchs se lancent depuis :<br>⚡ <b>Draft</b> (Draft, Budget) · 🎮 <b>Jeux</b> (Carrière, Coupes, Défi du jour, Canapé) · 🏆 <b>Ligue</b> (Championnats).<br>Ils s'affichent ici en direct, et tu peux revoir les derniers avec ▶️.</div>${match&&mClosed===match.id&&match!==cpuMatch&&mLiveNow(match)?`<div class="otherlive"><span>🔴 En direct : <b>${esc(tn(match,0))} vs ${esc(tn(match,1))}</b></span><button class="btn sm ghost" id="mReopen">👀 Regarder</button></div>`:""}`;
+  const ro=$("#mReopen"); if(ro) ro.onclick=()=>{ mClosed=null; fxQ=[]; renderMatch(); window.scrollTo(0,0); };
   renderBoard();
   const mine=matches.filter(h=>h.owners&&h.owners.includes(me)).slice(0,15);
   const nm=(h,i)=>(h.names&&h.names[i])||pName((h.owners||[])[i]);
@@ -2088,8 +2098,10 @@ function renderBoard(){
     h+=`<div class="notes">${[0,1].map(t=>`<div><h4>Notes ${esc(tn(M,t))}</h4>${(M.teams[t].played||M.teams[t].lineup).filter(l=>l.pid&&M.notes[t][l.pid]!=null).map(l=>`<div class="nr" onclick="showCard('${l.pid}')"><span>${l.sub?"🔁 ":""}${l.role} ${esc(pn(l.pid))}</span><b class="${M.notes[t][l.pid]>=7.5?"hi":M.notes[t][l.pid]<5.5?"lo":""}">${M.notes[t][l.pid]}</b></div>`).join("")}</div>`).join("")}</div>`;
   }
   h+=`<button class="btn ghost big" id="mCloseBtn" style="margin-top:6px">✖ Fermer le match</button>`;
+  if(otherLive&&otherLive.id!==match.id) h=`<div class="otherlive"><span>${mLiveNow(otherLive)?"🔴 En direct":"🏁 Terminé"} : <b>${esc(tn(otherLive,0))} vs ${esc(tn(otherLive,1))}</b></span><button class="btn sm ghost" id="mOtherBtn">👀 Regarder</button></div>`+h;
   el.innerHTML=h;
-  const cb=$("#mCloseBtn"); if(cb) cb.onclick=()=>{ mClosed=match.id; fxQ=[]; renderMatch(); window.scrollTo(0,0); };
+  const ob=$("#mOtherBtn"); if(ob) ob.onclick=watchOther;
+  const cb=$("#mCloseBtn"); if(cb) cb.onclick=()=>{ mClosed=match.id; fxQ=[]; if(otherLive){ match=otherLive; otherLive=null; mClosed=match.id; } renderMatch(); window.scrollTo(0,0); };
   const sk=$("#mSkipBtn"); if(sk) sk.onclick=()=>{mSkip=match.id;fxQ=[];renderMatch();processPend();};
   if(!done&&!mTimer) mTimer=setInterval(()=>{ if(mode!=="match") return; const d=matchMinute()>=match.len+.5; renderBoard(); if(d){clearInterval(mTimer);mTimer=null;renderMatch();} },MSPEED);
   if(done&&mTimer){clearInterval(mTimer);mTimer=null;}
@@ -3816,7 +3828,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-22b"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-22c"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
