@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0b1530">
+<meta name="color-scheme" content="dark only">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Gones Legends">
 <title>Les Gones Legends</title>
@@ -587,6 +588,7 @@ header{padding:10px 16px 4px;min-height:44px}header h1{font-size:19px;margin:0;l
 .objmini{display:block;width:100%;text-align:left;background:linear-gradient(135deg,#13254f,#0c1736);border:1px solid #2b3c6e;border-radius:16px;padding:10px 12px;margin:0 0 12px;color:#fff;font:inherit;cursor:pointer}
 .objmini .omh{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;font-size:14px}.objmini .omh span{color:var(--mute);font-size:12px}.objmini .num{font-style:normal;background:#ffd970;color:#111;border-radius:999px;padding:1px 8px;font-size:11px;font-weight:900}
 .omr{display:grid;grid-template-columns:1fr auto;gap:2px 8px;font-size:12.5px;padding:4px 0}.omr small{color:var(--mute)}.omr .track{grid-column:1/3;height:4px}.omr.done{opacity:.55}
+:root{color-scheme:dark only}
 </style>
 </head>
 <body>
@@ -1089,7 +1091,7 @@ function render(){
   const sw=(b,kind,i)=>{ if(!cSwap) return; b.classList.add(cSwap.kind===kind&&cSwap.i===i?"swsel":"swcan"); b.onclick=()=>{ const A=cSwap; cSwap=null; const box=k=>k==="xi"?c.slots:c.bench;
       if(!(A.kind===kind&&A.i===i)){ const a=box(A.kind)[A.i], b2=box(kind)[i]; if(b2) box(A.kind)[A.i]=b2; else delete box(A.kind)[A.i]; box(kind)[i]=a; save(); toast(`🔀 ${BY_ID[a]?.name||""}${b2?" ⇄ "+(BY_ID[b2]?.name||""):" déplacé"}`); }
       render(); }; };
-  F[c.formation].forEach(([role,x,y],i)=>{ const b=slotBtn("xi",i,role,c.slots[i],mine); annotate(b,role,c.slots[i],c.coach); sw(b,"xi",i); b.style.left=x+"%"; b.style.top=y+"%"; b.style.zIndex=Math.round(y); pitch.appendChild(b); });
+  FIT_FORM=c.formation; F[c.formation].forEach(([role,x,y],i)=>{ const b=slotBtn("xi",i,role,c.slots[i],mine); annotate(b,role,c.slots[i],c.coach); sw(b,"xi",i); b.style.left=x+"%"; b.style.top=y+"%"; b.style.zIndex=Math.round(y); pitch.appendChild(b); });
   const n=filled(c);
   try{ $("#xiPanel").innerHTML=teamPanelHTML("compo:"+viewing,teamRate(c,viewing,true,false),mine?"📊 Note de mon 11":"📊 Note de son 11"); }catch(e){ console.error(e); }
   renderSugg(mine);
@@ -1571,7 +1573,7 @@ function renderDraft(){
   const P=$("#dPitch"); P.querySelectorAll(".slot").forEach(e=>e.remove());
   const canSw=mine&&(d.status==="running"||(d.status==="done"&&!(d.ready||{})[me])); if(!canSw) dSwap=null;
   const swOn=(b,k,i,pid)=>{ if(!canSw||!pid) return; b.onclick=()=>dSwapTap(k,i,pid); if(dSwap&&dSwap.k===k&&dSwap.i===i) b.classList.add("swsel"); else if(dSwap) b.classList.add("swcan"); };
-  F[d.form[dView]].forEach(([role,x,y],i)=>{ const pid=t.slots[i]; const clickable=can&&!pid;
+  FIT_FORM=d.form[dView]; F[d.form[dView]].forEach(([role,x,y],i)=>{ const pid=t.slots[i]; const clickable=can&&!pid;
     const b=slotBtn("xi",i,role,pid,clickable||(mine&&!!pid),clickable?()=>openSheet("xi",i,role,"draft"):()=>{}); annotate(b,role,pid,t.coach); swOn(b,"xi",i,pid);
     if(!clickable&&!pid) b.classList.add("ro"); if(!clickable&&!pid&&!mine) b.querySelector(".nm")&&(b.querySelector(".nm").textContent="—");
     b.style.left=x+"%"; b.style.top=y+"%"; b.style.zIndex=Math.round(y); P.appendChild(b); });
@@ -1767,8 +1769,12 @@ const LINE={GB:"gk",DC:"def",DD:"def",DG:"def",PG:"def",PD:"def",MDC:"mid",MC:"m
 let mClosed=null, match=null, matches=[], selA="cur", selB="cur", pA=null, pB=null, clubMode=false, mTimer=null, mSkip=null, lastMatchId=null;
 // aucune carte n'a MG/MD/PG/PD : l'ailier ou le latéral du même côté y joue à son vrai poste
 const ROLE_EQ={MG:["AG"],MD:["AD"],PG:["DG"],PD:["DD"]};
-function fit(p,role){
+// 🧭 Milieux selon le dispositif : un MDC joue MC à 100 % si le système n'a pas de case MDC (4-4-2, 3-4-3),
+// un MOC joue MC à 100 % si le système n'a pas de case MOC (4-3-3, 4-4-2, 3-5-2, 3-4-3). Losange / 4-2-3-1 : −5 % comme avant.
+let FIT_FORM=null;
+function fit(p,role,form){
   if(p.pos.includes(role)) return 1;
+  form=form||FIT_FORM; if(role==="MC"&&form&&F[form]&&(p.pos[0]==="MDC"||p.pos[0]==="MOC")&&!F[form].some(r=>r[0]===p.pos[0])) return 1;
   const eq=ROLE_EQ[role]; if(eq&&p.pos.some(x=>eq.includes(x))) return eq.includes(p.pos[0])?1:.98; // poste principal = 100 %, secondaire = 98 %
   const ok=ROLE_OK[role]||[];
   if(ok.includes(p.pos[0])) return .95;
@@ -1802,7 +1808,7 @@ function strength(c,w,club,pure){ // pure : sans évolutions ni forme réelle (d
   const form=F[c.formation]||F["4-3-3"];
   const own=w&&club?(C(w).coll||{}):null;
   const lineup=form.map(([role],i)=>{ let p=BY_ID[(c.slots||{})[i]]; if(p&&own&&!own[p.id]) p=null; const ev=pure?0:(p&&w?evoOf(w,p.id):0)+(p?liveMod(p.id):0);
-    return {role,pid:p?p.id:null,eff:p?(p.ovr+ev+Math.min(3,(p.m||0)/150))*fit(p,role):35,fin:p?finOf(p,role):0}; });
+    return {role,pid:p?p.id:null,eff:p?(p.ovr+ev+Math.min(3,(p.m||0)/150))*fit(p,role,F[c.formation]?c.formation:"4-3-3"):35,fin:p?finOf(p,role):0}; });
   const acc={gk:[],def:[],mid:[],att:[]};
   for(const l of lineup){ const g=LINE[l.role]||"mid"; if(g==="mo"){acc.mid.push(l.eff);acc.att.push(l.eff);} else acc[g].push(l.eff); }
   const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:35;
@@ -1841,11 +1847,11 @@ function annHTML(role,pid,coId){ const p=pid&&BY_ID[pid]; if(!p||p.pos[0]==="COA
   return `<div class="ann">${v?`<i class="${v>0?"up":"dn"}">🧠${v>0?"+":""}${v}</i>`:""}${hp?`<i class="dn">⚠️−${hp}%</i>`:""}</div>`; }
 // 🪄 range les joueurs aux postes où ils rendent le mieux (meilleure note × aptitude au poste)
 function autoPlace(slots,form){ const roles=F[form]||F["4-3-3"], ids=Object.values(slots||{}).filter(id=>id&&BY_ID[id]); const pairs=[];
-  roles.forEach(([r],i)=>ids.forEach(id=>{ const q=BY_ID[id]; pairs.push([(q.ovr+Math.min(3,(q.m||0)/150))*fit(q,r)+(fit(q,r)>=1?.01:0),id,i]); }));
+  roles.forEach(([r],i)=>ids.forEach(id=>{ const q=BY_ID[id]; pairs.push([(q.ovr+Math.min(3,(q.m||0)/150))*fit(q,r,form)+(fit(q,r,form)>=1?.01:0),id,i]); }));
   pairs.sort((a,b)=>b[0]-a[0]); const out={}, used=new Set(); for(const [,id,i] of pairs){ if(out[i]!=null||used.has(id)) continue; out[i]=id; used.add(id); }
   const rest=ids.filter(id=>!used.has(id)); roles.forEach((_,i)=>{ if(out[i]==null&&rest.length) out[i]=rest.shift(); });
   // amélioration : on échange 2 joueurs tant que l'équipe y gagne au total
-  const val=(id,i)=>{ const q=id&&BY_ID[id]; return q?(q.ovr+Math.min(3,(q.m||0)/150))*fit(q,roles[i][0]):0; };
+  const val=(id,i)=>{ const q=id&&BY_ID[id]; return q?(q.ovr+Math.min(3,(q.m||0)/150))*fit(q,roles[i][0],form):0; };
   for(let pass=0,better=true;better&&pass<20;pass++){ better=false; for(let i=0;i<roles.length;i++) for(let j=i+1;j<roles.length;j++){
     if(val(out[j],i)+val(out[i],j)>val(out[i],i)+val(out[j],j)+.01){ const t=out[i]; out[i]=out[j]; out[j]=t; better=true; } } }
   for(const k of Object.keys(out)) if(out[k]==null) delete out[k]; return out; }
@@ -2056,10 +2062,10 @@ function simulate2(cA,SA,cB,SB){
   function doSub(t,m,outP,reason){
     const st=T[t]; if(!st.bench.length||st.subs>=5||outP.st.r) return false;
     const want=outP.g;
-    const bv=x=>{ const q=BY_ID[x]; return q?(q.ovr+Math.min(3,(q.m||0)/150))*fit(q,outP.role)+(GRP[q.pos[0]]===want?2:0):0; };
+    const bv=x=>{ const q=BY_ID[x]; return q?(q.ovr+Math.min(3,(q.m||0)/150))*fit(q,outP.role,[cA,cB][t]&&[cA,cB][t].formation)+(GRP[q.pos[0]]===want?2:0):0; };
     let pid=st.bench.slice().sort((a,b)=>bv(b)-bv(a))[0];
     st.bench=st.bench.filter(x=>x!==pid);
-    const p=BY_ID[pid]; const eff=(p.ovr+Math.min(3,(p.m||0)/150))*fit(p,outP.role);
+    const p=BY_ID[pid]; const eff=(p.ovr+Math.min(3,(p.m||0)/150))*fit(p,outP.role,[cA,cB][t]&&[cA,cB][t].formation);
     const inP={pid,role:outP.role,g:outP.g,eff,a:attrs(p,outP.role,eff),y:0,out:false,st:{g:0,a:0,sv:0,psv:0,f:0,dw:0,y:0,r:0,kp:0,inj:0,inMin:m}};
     outP.out=true; outP.subbed=true; st.on.push(inP); st.all.push(inP); st.subs++;
     add({m,t,k:"sub",p:pid,o:outP.pid,why:reason});
@@ -2384,7 +2390,7 @@ function renderBoard(){
   el.innerHTML=h;
   const ob=$("#mOtherBtn"); if(ob) ob.onclick=watchOther;
   const cb=$("#mCloseBtn"); if(cb) cb.onclick=()=>{ mClosed=match.id; fxQ=[]; if(otherLive){ match=otherLive; otherLive=null; mClosed=match.id; } renderMatch(); window.scrollTo(0,0); };
-  const sk=$("#mSkipBtn"); if(sk) sk.onclick=()=>{mSkip=match.id;fxQ=[];renderMatch();processPend();};
+  const sk=$("#mSkipBtn"); if(sk) sk.onclick=()=>{mSkip=match.id;fxQ=[];renderMatch();processPend();setTimeout(claimRewards,300);};
   if(!done&&!mTimer) mTimer=setInterval(()=>{ if(mode!=="match") return; const d=matchMinute()>=match.len+.5; renderBoard(); if(d){clearInterval(mTimer);mTimer=null;renderMatch();} },MSPEED);
   if(done&&mTimer){clearInterval(mTimer);mTimer=null;}
 }
@@ -2431,7 +2437,7 @@ function cpuLeft(){ const c=W(); return c.cpud&&c.cpud.d===today()?Math.max(0,CP
 function claimRewards(){
   if(!me||!C(me)) return; const c=W(); c.claimed=c.claimed||[]; let got=0, lines=[];
   for(const h of matches){ if(!h.owners||c.claimed.includes(h.id)) continue; const i=h.owners.indexOf(me); if(i<0) continue;
-    if((Date.now()-h.at)/MSPEED<100) continue; // match pas encore fini
+    if((Date.now()-h.at)/MSPEED<100&&!(mSkip===h.id&&isCpuH(h))) continue; // match pas encore fini (contre l'ordi : dès que tu as vu le résultat)
     if(h.owners[0]===h.owners[1]||h.nr){ c.claimed.push(h.id); continue; }
     const r=rewardFor(h,i); if(isCpuH(h)){ r.coins=Math.round(r.coins/2); r.res+=" vs ordi"; } const day=new Date(h.at).toLocaleDateString("fr-CA");
     if(!c.mday||c.mday.d!==day) c.mday={d:day,n:0}; if(!isDraftH(h)) c.mday.n++;
@@ -2858,7 +2864,7 @@ function renderBudget(){
   const N=bSlots(d).length, can=d.status==="running"&&d.turn===me, K0=bK(d,me); // cases figées avant tout déplacement
   const left=d.budget-myT.spent;
   const bSwOk=d.status==="running"||(d.status==="done"&&!(d.ready||{})[me]); if(!bSwOk) bSwap=null;
-  const slotHTML=(w)=>{ const t=d.teams[w]; const fw=bForm(d,w); const P=`<div class="pitch bp">${$("#pitch .lines").outerHTML}${F[fw].map(([r,x,y],i)=>{ const pid=t.slots[i]; const s={key:"s"+i,i,role:F[d.formation][i][0]}; const opened=d.offers[s.key];
+  const slotHTML=(w)=>{ const t=d.teams[w]; const fw=bForm(d,w); FIT_FORM=fw; const P=`<div class="pitch bp">${$("#pitch .lines").outerHTML}${F[fw].map(([r,x,y],i)=>{ const pid=t.slots[i]; const s={key:"s"+i,i,role:F[d.formation][i][0]}; const opened=d.offers[s.key];
         return `<button class="slot ${pid?"has":"empty"}" style="left:${x}%;top:${y}%;z-index:${Math.round(y)}" ${w===me&&can&&!pid&&(d.v!==2||!d.cur||d.cur.key!=="coach")?`data-bs="${i}"`:pid&&bSwOk&&w===me?`data-bsw="${i}"`:pid?`data-card="${pid}"`:""}>${pid?cardHTML(pid,{w:42,mini:true,role:r})+`<div class="nm">${esc(short(BY_ID[pid].name))} · ${priceOf(pid)}</div>`+annHTML(r,pid,t.coach):`<div class="shirt"><b>${r}</b></div><div class="nm">${w===me&&can&&(d.v!==2||!d.cur||d.cur.key!=="coach")?(d.v===2&&d.cur?"+ Placer ici":"+ Choisir"):"—"}</div>`}</button>`; }).join("")}</div>`;
       const co=t.coach; return P+`<div class="bcoach">${co?`<button class="slot has" data-card="${co}" style="position:static;transform:none">${cardHTML(co,{w:54,mini:true})}<div class="nm">${esc(BY_ID[co].name)} · ${priceOf(co)}</div></button><div class="skl">🧠 ${esc(skillOf(co).n||"")}<small>${esc(skillOf(co).d||"")}</small></div>`:`<button class="slot empty" style="position:static;transform:none" ${w===me&&can?`data-bs="coach"`:""}><div class="shirt"><b>COA</b></div><div class="nm">${d.offers.coach?(d.opener.coach===me?"ouvert":"🎯 restants"):w===me&&can?"+ Ouvrir":"—"}</div></button><div class="skl mute">Entraîneur à choisir</div>`}</div>`; };
   const view=bViewSel&&d.players.includes(bViewSel)?bViewSel:me;
@@ -3011,7 +3017,7 @@ function duoFillPitch(d){ const P=$("#d4Pitch"); if(!P||!d) return; const my=duo
   const can=d.status==="running"&&d.turn===me&&s===my, canSw=s===my&&(d.status==="running"||(d.status==="done"&&!d.ready[me])); if(!canSw) duoSw=null;
   const swOn=(b,k,i,pid)=>{ if(!canSw||!pid) return; b.onclick=()=>duoSwapTap(d,k,i,pid); if(duoSw&&duoSw.k===k&&duoSw.i===i) b.classList.add("swsel"); else if(duoSw) b.classList.add("swcan"); };
   const who=(b,pid)=>{ if(pid&&by[pid]) b.insertAdjacentHTML("beforeend",`<div class="pby">👤 ${by[pid]===me?"toi":esc(NAMES[by[pid]]||"?")}</div>`); };
-  F[d.form[s]].forEach(([role,x,y],i)=>{ const pid=t.slots[i]; const click=can&&!pid;
+  FIT_FORM=d.form[s]; F[d.form[s]].forEach(([role,x,y],i)=>{ const pid=t.slots[i]; const click=can&&!pid;
     const b=slotBtn("xi",i,role,pid,click,click?()=>openSheet("xi",i,role,"duo4",d.id):null); if(pid) b.onclick=()=>showCard(pid,null);
     if(!click&&!pid){ b.classList.add("ro"); const nm=b.querySelector(".nm"); if(nm) nm.textContent="—"; }
     swOn(b,"xi",i,pid); annotate(b,role,pid,t.coach); who(b,pid); b.style.left=x+"%"; b.style.top=y+"%"; b.style.zIndex=Math.round(y); P.appendChild(b); });
@@ -4295,7 +4301,7 @@ function sofaHTML(){
     return `<div class="sft"><h4>${esc(S.n[i])} <b style="color:${col(rt&&rt.g)}">${rt&&rt.global!=null?"📊 "+rt.global:""}</b></h4>
     ${rt&&rt.global!=null?`<div class="sfr">${[["gk","GB"],["def","DÉF"],["mid","MIL"],["att","ATT"]].map(([k,l])=>`<span>${l} <b style="color:${col(rt[k])}">${rt[k]==null?"–":Math.round(rt[k])}</b></span>`).join("")}</div>`:""}
     <div class="sfctl"><select data-sff="${i}">${Object.keys(F).map(x=>`<option ${x===fi?"selected":""}>${x}</option>`).join("")}</select><button class="btn sm ghost" data-sfa="${i}">🪄</button></div>
-    ${F[fi].map(([r],k)=>{ const p=BY_ID[S.t[i].slots[k]]; const hp=p&&hpPen(p,r), cv=p?coachBonus(S.t[i].coach,p,r):0; return `<div ${p?`data-sfs="${i}|${k}" style="cursor:pointer;border-radius:6px;${sofaSw&&sofaSw[0]===i&&sofaSw[1]===k?"background:#ffd97055;":""}"`:""}><small>${r}</small> ${p?esc(short(p.name))+(cv?` <small style="color:${cv>0?"#7ee2a0":"#ff8a8a"}">🧠${cv>0?"+":""}${cv}</small>`:"")+(hp?` <small style="color:#ffb21a">⚠️−${hp}%</small>`:""):"–"}</div>`; }).join("")}<div><small>COA</small> ${S.t[i].coach?esc(short(BY_ID[S.t[i].coach].name)):"–"}</div></div>`; };
+    ${F[fi].map(([r],k)=>{ const p=BY_ID[S.t[i].slots[k]]; FIT_FORM=fi; const hp=p&&hpPen(p,r), cv=p?coachBonus(S.t[i].coach,p,r):0; return `<div ${p?`data-sfs="${i}|${k}" style="cursor:pointer;border-radius:6px;${sofaSw&&sofaSw[0]===i&&sofaSw[1]===k?"background:#ffd97055;":""}"`:""}><small>${r}</small> ${p?esc(short(p.name))+(cv?` <small style="color:${cv>0?"#7ee2a0":"#ff8a8a"}">🧠${cv>0?"+":""}${cv}</small>`:"")+(hp?` <small style="color:#ffb21a">⚠️−${hp}%</small>`:""):"–"}</div>`; }).join("")}<div><small>COA</small> ${S.t[i].coach?esc(short(BY_ID[S.t[i].coach].name)):"–"}</div></div>`; };
   let h=`<h3>🛋️ Canapé <small>${esc(S.n[0])} vs ${esc(S.n[1])}</small></h3>`;
   h+=`<div class="swhint">🔀 À tout moment : touche 2 joueurs d'une même équipe pour les échanger, change le système de chacun ou utilise 🪄 pour le placement auto.</div>`;
   if(done) h+=`<button class="btn big" id="sfPlay">▶️ Lancer le match</button>`;
@@ -4500,7 +4506,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-23d"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-23e"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
