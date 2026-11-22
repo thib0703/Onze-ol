@@ -564,6 +564,10 @@ header{padding:10px 16px 4px;min-height:44px}header h1{font-size:19px;margin:0;l
 .segs button{flex:1 1 auto;border:0;background:none;color:var(--mute);font:inherit;font-weight:800;font-size:12px;padding:9px 6px;border-radius:10px;cursor:pointer;white-space:nowrap}.segs button.on{background:var(--rouge);color:#fff}
 .segs .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#ffd970;vertical-align:middle}
 .section{border-radius:18px}
+.todo{background:linear-gradient(135deg,#2a1f05,#1a1406);border:1px solid #6b5a1e;border-radius:16px;padding:10px 12px;margin:8px 0 10px;box-shadow:0 0 18px #ffd97022}
+.todo h4{margin:0 0 6px;font-size:14px;color:#ffd970;display:flex;align-items:center;gap:8px}.todo h4 small{background:#ffd970;color:#111;border-radius:999px;padding:1px 8px;font-size:11px;font-weight:900}
+.todor{display:flex;align-items:center;gap:10px;padding:7px 0;border-top:1px solid #ffffff12}.todor:first-of-type{border-top:0}.tdi{font-size:22px;width:28px;text-align:center}.tdt{flex:1;font-size:13px;line-height:1.3}.tdt b{color:#fff}
+.todor .btn{white-space:nowrap}.segs .num{font-style:normal;background:#ffd970;color:#111;border-radius:999px;padding:0 6px;font-size:10px;font-weight:900;margin-left:2px}
 .bar{flex-wrap:nowrap}.bar select{min-width:0;flex:1}.bar .btn{white-space:nowrap;padding-left:10px;padding-right:10px}
 </style>
 </head>
@@ -659,6 +663,7 @@ header{padding:10px 16px 4px;min-height:44px}header h1{font-size:19px;margin:0;l
   <div class="section" id="mHist"></div>
 </div>
 <div id="viewCollec" class="wrap" style="display:none">
+  <div id="cTodo"></div>
   <div class="section" id="cShop"></div>
   <div class="section" id="cSbc"></div>
   <div class="section" id="cMarket"></div>
@@ -678,9 +683,9 @@ header{padding:10px 16px 4px;min-height:44px}header h1{font-size:19px;margin:0;l
   <div class="section" id="jDuo"></div>
   <div class="section" id="jStats"></div>
 </div>
-<div id="viewOnline" class="wrap" style="display:none"><div id="onHub"></div><div id="onSub"></div></div>
-<div id="viewSolo" class="wrap" style="display:none"><div id="soHub"></div><div id="soSub"></div></div>
-<div id="viewOL" class="wrap" style="display:none"><div class="hubh"><h2>📰 OL &amp; classements</h2><small>L'actu du club, les classements, tes pronos et tes objectifs</small></div><div class="segs" id="olSegs"></div><div id="olBody"></div></div>
+<div id="viewOnline" class="wrap" style="display:none"><div id="onTodo"></div><div id="onHub"></div><div id="onSub"></div></div>
+<div id="viewSolo" class="wrap" style="display:none"><div id="soTodo"></div><div id="soHub"></div><div id="soSub"></div></div>
+<div id="viewOL" class="wrap" style="display:none"><div class="hubh"><h2>📰 OL &amp; classements</h2><small>L'actu du club, les classements, tes pronos et tes objectifs</small></div><div id="olTodo"></div><div class="segs" id="olSegs"></div><div id="olBody"></div></div>
 <div id="viewLigue" class="wrap" style="display:none">
   <div id="lEvent"></div>
   <div class="section" id="lObj"></div>
@@ -1389,7 +1394,7 @@ function setMode(m){ if(m==="jeux") m="solo"; if(m==="ligue") m="ol";
   const nv=m==="match"?(matchBack==="solo"?"nSolo":matchBack==="ol"?"nOL":"nOnline"):NAV_OF[m]; document.querySelectorAll("#bnav button").forEach(b=>b.classList.toggle("on",b.id===nv));
   $("#dHistWrap").style.display=m==="draft"?"":"none";
   if(m==="draft"){ renderDraft(); renderDraftHist(); } else if(m==="match") renderMatch(); else if(m==="collec") renderCollec(); else if(m==="online") renderOnline(); else if(m==="solo") renderSolo(); else if(m==="ol") renderOL(); else render();
-  renderBack(); window.scrollTo(0,0); }
+  renderBack(); try{ renderTodo(); }catch(e){} window.scrollTo(0,0); }
 const SUBN={duo:"👥 2 contre 2",cup:"🏟️ Coupes",league:"🏆 Championnats",career:"🧗 Carrière",defi:"🎯 Défi du jour",quiz:"🧠 Quiz OL",sofa:"🛋️ Canapé"};
 function renderBack(){ const B=$("#backbar"); if(!B) return; let t=null, go=null;
   if(mode==="draft"){ t=dSub==="budget"?"💰 Draft Budget":"⚡ Draft"; go=()=>setMode("online"); }
@@ -1407,6 +1412,33 @@ function drStatus(list){ const mine=list.filter(d=>d&&Array.isArray(d.players)&&
   const rd=mine.find(d=>d.status==="done"&&!(d.ready||{})[me]); if(rd) return ["🏁 Équipes prêtes vs "+o(rd),"Prêt ?"];
   const r=mine.find(d=>d.status==="running"); if(r) return ["⏳ En cours vs "+o(r),null];
   return [null,null]; }
+// 📌 Ce qui t'attend, page par page (remplace les simples « ! »)
+function todoList(){ const L=[]; if(!me||!C(me)) return L; const c=W(); const add=(pg,ic,txt,go,btn)=>L.push({pg,ic,txt,go,btn:btn||"Y aller"});
+  try{ for(const [lst,isB] of [[drafts,false],[budgets,true]]) for(const d of Object.values(lst||{})){ if(!d||!Array.isArray(d.players)||!d.players.includes(me)) continue; const o=d.players.find(x=>x!==me), N=esc(NAMES[o]||"?"), lab=isB?"Draft Budget":"Draft";
+      const go=()=>{ dOpp=o; dOppManual=true; dSub=isB?"budget":"classic"; draft=drafts[dKey()]?dNorm(drafts[dKey()]):null; setMode("draft"); };
+      if(d.status==="running"&&d.turn===me) add("online",isB?"💰":"⚡",`${lab} : <b>à toi de jouer</b> contre ${N}`,go,"Jouer");
+      else if(invFor(d)&&invFor(d)!==me) add("online","📨",`${lab} : <b>${N} t'invite</b>`,go,"Répondre");
+      else if(d.status==="done"&&!(d.ready||{})[me]) add("online","🏁",`${lab} contre ${N} : équipes prêtes, <b>mets-toi prêt</b>`,go,"Prêt"); } }catch(e){}
+  try{ for(const d of duoMine()){ const t=duoTodo(d); if(t<3) continue; const go=()=>{ duoCurId=d.id; duoNew=false; onSel="duo"; if(mode!=="online") setMode("online"); else { renderOnline(); renderBack(); } };
+      add("online","👥",d.status==="lobby"?`2 contre 2 : <b>${esc(NAMES[d.by]||"?")} t'invite</b>`:d.status==="running"?"2 contre 2 : <b>à toi de choisir</b>":"2 contre 2 : <b>mets-toi prêt</b>",go,d.status==="lobby"?"Répondre":"Jouer"); } }catch(e){}
+  try{ for(const K of Object.values(cups||{}).filter(invitedMe)) add("online","🏟️",`Coupe « ${esc(K.name)} » : <b>${esc(NAMES[K.owner]||"?")} t'invite</b>`,()=>{ onSel="cup"; mode==="online"?(renderOnline(),renderBack()):setMode("online"); },"Voir");
+       for(const X of Object.values(leagues||{}).filter(invitedMe)) add("online","🏆",`Championnat « ${esc(X.name)} » : <b>${esc(NAMES[X.owner]||"?")} t'invite</b>`,()=>{ onSel="league"; mode==="online"?(renderOnline(),renderBack()):setMode("online"); },"Voir"); }catch(e){}
+  try{ const D=c.dch; if(!(D&&D.day===today()&&D.done)) add("solo","🎯","Défi du jour <b>pas encore joué</b>",()=>{ soSel="defi"; mode==="solo"?(renderSolo(),renderBack()):setMode("solo"); },"Jouer");
+       const n=c.quiz&&c.quiz.d===today()?c.quiz.n:0; if(n<QUIZ_MAX) add("solo","🧠",`Quiz OL : <b>${QUIZ_MAX-n} quiz récompensé${QUIZ_MAX-n>1?"s":""}</b> encore dispo aujourd'hui`,()=>{ soSel="quiz"; mode==="solo"?(renderSolo(),renderBack()):setMode("solo"); },"Jouer"); }catch(e){}
+  try{ const goC=q=>()=>{ setMode("collec"); setTimeout(()=>{ const e=$(q); if(e) e.scrollIntoView({behavior:"smooth",block:"start"}); },150); };
+       if(c.daily!==today()) add("collec","🎁","<b>Pack du jour</b> gratuit à ouvrir",goC("#cShop"),"Ouvrir");
+       const fp=Object.values(c.freePacks||{}).reduce((a,b)=>a+(b>0?b:0),0); if(fp) add("collec","🎁",`<b>${fp} pack${fp>1?"s":""} offert${fp>1?"s":""}</b> à ouvrir`,goC("#cShop"),"Ouvrir");
+       const tr=Object.values(trades||{}).filter(t=>t&&t.to===me&&t.status==="open").length; if(tr) add("collec","🔄",`<b>${tr} proposition${tr>1?"s":""} d'échange</b> reçue${tr>1?"s":""}`,goC("#cTrades"),"Voir"); }catch(e){}
+  try{ const oc=objClaimable(); if(oc) add("ol","🎯",`<b>${oc} objectif${oc>1?"s":""}</b> à récupérer`,()=>{ olSel="obj"; setMode("ol"); },"Récupérer");
+       if(newsUnread()) add("ol","📰","<b>Nouvelles actus</b> de l'OL",()=>{ olSel="actu"; setMode("ol"); },"Lire"); }catch(e){}
+  return L; }
+let TODO_CUR=[];
+function todoHTML(pg){ const L=todoList().filter(x=>x.pg===pg); if(!L.length) return "";
+  return `<div class="todo"><h4>📌 À faire <small>${L.length}</small></h4>${L.map(x=>{ const i=TODO_CUR.push(x)-1; return `<div class="todor"><span class="tdi">${x.ic}</span><span class="tdt">${x.txt}</span><button class="btn sm" data-todo="${i}">${x.btn}</button></div>`; }).join("")}</div>`; }
+function renderTodo(){ if(!me) return; TODO_CUR=[];
+  for(const [pg,id] of [["online","#onTodo"],["solo","#soTodo"],["collec","#cTodo"],["ol","#olTodo"]]){ const e=$(id); if(!e) continue;
+    const hide=(pg==="online"&&onSel)||(pg==="solo"&&soSel); const h=hide?"":todoHTML(pg); if(e.dataset.h!==h.replace(/data-todo="\d+"/g,"")){ e.innerHTML=h; e.dataset.h=h.replace(/data-todo="\d+"/g,""); } else { let k=0; const btns=e.querySelectorAll("[data-todo]"); const nh=h.match(/data-todo="\d+"/g)||[]; btns.forEach((b,j)=>{ b.dataset.todo=(nh[j]||"").replace(/\D/g,""); }); }
+    e.querySelectorAll("[data-todo]").forEach(b=>b.onclick=()=>{ const x=TODO_CUR[+b.dataset.todo]; if(x) x.go(); }); } }
 let hubCache={};
 function setHub(el,html){ if(el&&hubCache[el.id]!==html){ hubCache[el.id]=html; el.innerHTML=html; return true; } return false; }
 function renderHubs(){ if(!me) return;
@@ -1433,15 +1465,15 @@ function renderHubs(){ if(!me) return;
     const defiTodo=!(c.dch&&c.dch.day===today()&&c.dch.done), quizTodo=!(c.quiz&&c.quiz.d===today()&&c.quiz.n>=QUIZ_MAX);
     const html=`<div class="hubh"><h2>🎮 Solo</h2><small>Joue seul, ou à deux sur ce téléphone</small></div><div class="hub">
       ${hubTile("career","🧗","Carrière",car,"linear-gradient(135deg,#0369a1,#082f49)",null)}
-      ${hubTile("defi","🎯","Défi du jour",df,"linear-gradient(135deg,#ea580c,#7c2d12)",defiTodo?"!":null)}
-      ${hubTile("quiz","🧠","Quiz OL",qz,"linear-gradient(135deg,#9333ea,#3b0764)",quizTodo?"!":null)}
+      ${hubTile("defi","🎯","Défi du jour",df,"linear-gradient(135deg,#ea580c,#7c2d12)",defiTodo?"À jouer":null)}
+      ${hubTile("quiz","🧠","Quiz OL",qz,"linear-gradient(135deg,#9333ea,#3b0764)",quizTodo?"Dispo":null)}
       ${hubTile("sofa","🛋️","Canapé",sofa?"⏳ Partie en cours":"2 joueurs, 1 téléphone","linear-gradient(135deg,#15803d,#052e16)",null)}
       ${hubTile("cpu","🤖","Contre l'ordi","Ton 11 type contre l'ordinateur","linear-gradient(135deg,#475569,#0f172a)",null,true)}
       </div>`;
     if(setHub(H,html)) H.querySelectorAll("[data-tile]").forEach(b=>b.onclick=()=>openTile(b.dataset.tile)); } }
 function openTile(k){ hubCache={};
   if(k==="draft"||k==="budget"){ dSub=k==="budget"?"budget":"classic"; setMode("draft"); return; }
-  if(k==="match"||k==="live"||k==="cpu"){ if(mode==="solo") matchBack="solo"; setMode("match"); return; }
+  if(k==="match"||k==="live"||k==="cpu"){ if(k!=="live"){ mPreset=k==="cpu"?"cpu":"friend"; pB=null; selB=null; } if(mode==="solo") matchBack="solo"; setMode("match"); return; }
   if(["duo","cup","league"].includes(k)){ onSel=k; renderOnline(); renderBack(); window.scrollTo(0,0); try{ tip(k==="league"?"league":k==="cup"?"cup":"tab_online"); }catch(e){} return; }
   soSel=k; renderSolo(); renderBack(); window.scrollTo(0,0); try{ tip(k); }catch(e){} }
 const ON_SUB={duo:"#jDuo",cup:"#jCup",league:"#lLeague"}, SO_SUB={career:"#jCareer",defi:"#jDefi",quiz:"#jQuizS",sofa:"#jSofa"};
@@ -1451,7 +1483,7 @@ function renderOnline(){ if(!me) return; $("#onHub").style.display=onSel?"none":
 function renderSolo(){ if(!me) return; $("#soHub").style.display=soSel?"none":""; showSub(SO_SUB,soSel); if(soSel) renderJeux(); hubCache.soHub=null; renderHubs(); }
 const OL_SEGS=[["actu","📰 Actu",["#jNews","#lFeed"]],["rank","📊 Classements",["#jTable","#lRank","#lPlayers","#jStats"]],["prono","🔮 Pronos",["#jPred"]],["obj","🎯 Objectifs",["#lEvent","#lObj"]]];
 function renderOL(){ if(!me) return; const S=$("#olSegs");
-  S.innerHTML=OL_SEGS.map(([k,l])=>`<button class="${k===olSel?"on":""}" data-ol="${k}">${l}${k==="actu"&&typeof newsUnread==="function"&&newsUnread()?" <i class='dot'></i>":k==="obj"&&objClaimable()?" <i class='dot'></i>":""}</button>`).join("");
+  S.innerHTML=OL_SEGS.map(([k,l])=>`<button class="${k===olSel?"on":""}" data-ol="${k}">${l}${k==="actu"&&typeof newsUnread==="function"&&newsUnread()?" <i class='dot'></i>":k==="obj"&&objClaimable()?` <i class='num'>${objClaimable()}</i>`:""}</button>`).join("");
   S.querySelectorAll("[data-ol]").forEach(b=>b.onclick=()=>{ olSel=b.dataset.ol; renderOL(); });
   for(const [k,,ids] of OL_SEGS) for(const q of ids){ const e=$(q); if(e) e.style.display=k===olSel?"":"none"; }
   renderJeux(); renderLigue(); }
@@ -2266,10 +2298,30 @@ function evText(e){
 }
 const fmtv=v=>raw2(v); function raw2(v){ return Number.isInteger(v)?v:(Math.abs(v)<10?v.toFixed(1):Math.round(v)); }
 function bar(label,a,b,raw){ const w=raw?(a/((a+b)||1)*100):Math.min(92,Math.max(8,50+(a-b)*2.5)); return `<div class="sbar"><div class="sv">${raw?fmtv(a):Math.round(a)}</div><div class="sl"><span>${label}</span><div class="track"><i style="width:${w}%"></i></div></div><div class="sv">${raw?fmtv(b):Math.round(b)}</div></div>`; }
+// ⚔️ Réglage d'un match : ton équipe contre l'ordi ou contre l'équipe d'un pote
+let mPreset="friend";
+function matchSetupHTML(){ const ops=others().filter(u=>u!==CPU&&compos[u]); pA=me;
+  if(pB==null||(pB!==CPU&&!NAMES[pB])||(mPreset==="cpu"&&pB!==CPU)) pB=mPreset==="cpu"||!ops.length?CPU:(ops.includes(pB)?pB:ops[0]);
+  const oA=teamOptions(me), oB=teamOptions(pB); if(!oA.some(o=>o.key===selA)) selA=oA[0].key; if(!oB.some(o=>o.key===selB)) selB=(oB.find(o=>o.key==="cpu:moyen")||oB[0]).key;
+  let rA=null, rB=null; try{ rA=teamRate(pickTeam(me,selA).get(),me,!selA.startsWith("draft"),false); rB=teamRate(pickTeam(pB,selB).get(),pB===CPU?null:pB,pB!==CPU&&!selB.startsWith("draft"),false); }catch(e){}
+  const cpu=pB===CPU;
+  return `<h3>${cpu?"🤖 Contre l'ordi":"⚔️ Match amical"}</h3>
+    <div class="field"><span>Ton équipe</span><select id="mSelA">${oA.map(o=>`<option value="${esc(o.key)}" ${o.key===selA?"selected":""}>${esc(o.label)}</option>`).join("")}</select></div>
+    <div class="field"><span>Adversaire</span><select id="mOpp"><option value="${CPU}" ${cpu?"selected":""}>🤖 Ordinateur</option>${ops.map(u=>`<option value="${esc(u)}" ${u===pB?"selected":""}>${esc(NAMES[u])}</option>`).join("")}</select></div>
+    <div class="field"><span>${cpu?"Niveau":"Son équipe"}</span><select id="mSelB">${oB.map(o=>`<option value="${esc(o.key)}" ${o.key===selB?"selected":""}>${esc(o.label)}</option>`).join("")}</select></div>
+    ${rA&&rB?`<div class="vsavg"><div><small>Ton équipe</small><b>${rA.global??"–"}</b></div><span>VS</span><div><small>${cpu?"🤖 Ordi":esc(NAMES[pB]||"?")}</small><b>${rB.global??"–"}</b></div></div>`:""}
+    <button class="btn big" id="mGo">▶️ Lancer le match</button>
+    <div class="mute" style="font-size:12px;text-align:center;margin-top:6px">${cpu?"Joué sur ton téléphone seulement · gains divisés par 2.":"Le match se joue en direct chez vous deux · seules les cartes possédées jouent."}</div>`; }
+function bindMatchSetup(){ const g=$("#mGo"); if(!g) return;
+  $("#mSelA").onchange=e=>{ selA=e.target.value; renderMatch(); };
+  $("#mOpp").onchange=e=>{ pB=e.target.value; mPreset=pB===CPU?"cpu":"friend"; selB=null; renderMatch(); };
+  $("#mSelB").onchange=e=>{ selB=e.target.value; if(pB===CPU) cpuTeams={}; renderMatch(); };
+  g.onclick=()=>{ if(pB!==CPU&&sharedLive()){ toast("Un match est déjà en direct, attends la fin",true); return; } g.disabled=true; launchMatch().finally(()=>{ g.disabled=false; }); window.scrollTo({top:0,behavior:"smooth"}); }; }
 function renderMatch(){
   if(!me) return;
-  $("#mSetup").innerHTML=`<h3>🏟️ Matchs</h3><div class="rules" style="font-size:13px;margin-top:0">Les matchs se lancent depuis :<br>⚡ <b>Draft</b> (Draft, Budget) · 🎮 <b>Jeux</b> (Carrière, Coupes, Défi du jour, Canapé) · 🏆 <b>Ligue</b> (Championnats).<br>Ils s'affichent ici en direct, et tu peux revoir les derniers avec ▶️.</div>${match&&mClosed===match.id&&match!==cpuMatch&&mLiveNow(match)?`<div class="otherlive"><span>🔴 En direct : <b>${esc(tn(match,0))} vs ${esc(tn(match,1))}</b></span><button class="btn sm ghost" id="mReopen">👀 Regarder</button></div>`:""}`;
+  $("#mSetup").innerHTML=`${matchSetupHTML()}${match&&mClosed===match.id&&match!==cpuMatch&&mLiveNow(match)?`<div class="otherlive"><span>🔴 En direct : <b>${esc(tn(match,0))} vs ${esc(tn(match,1))}</b></span><button class="btn sm ghost" id="mReopen">👀 Regarder</button></div>`:""}`;
   const ro=$("#mReopen"); if(ro) ro.onclick=()=>{ mClosed=null; fxQ=[]; renderMatch(); window.scrollTo(0,0); };
+  try{ bindMatchSetup(); }catch(e){ console.error(e); }
   renderBoard();
   const mine=matches.filter(h=>h.owners&&h.owners.includes(me)).slice(0,15);
   const nm=(h,i)=>(h.names&&h.names[i])||pName((h.owners||[])[i]);
@@ -3623,11 +3675,10 @@ function badgeAll(){
     const cup=Object.values(cups||{}).some(K=>K.status==="running"&&K.rounds.length&&K.rounds[K.rounds.length-1].ties.some(T=>!T.w&&(T.a===me||T.b===me)));
     const quiz=!(c.quiz&&c.quiz.d===today()&&c.quiz.n>=QUIZ_MAX);
     set("#mJeux",defi||cup||quiz||newsUnread()||duoAttn()||Object.values(cups||{}).some(invitedMe));
-    set("#nCollec",packs||trade);
-    set("#nOnline",myTurn||cup||duoAttn()||Object.values(cups||{}).some(invitedMe)||Object.values(leagues||{}).some(invitedMe));
-    set("#nSolo",defi||quiz);
-    set("#nOL",newsUnread()||!!objClaimable());
+    const TL=todoList(), cnt=pg=>TL.filter(x=>x.pg===pg).length, setN=(sel,n)=>{ const b=$(sel); if(b) b.dataset.badge=n?String(n):""; };
+    setN("#nCollec",cnt("collec")); setN("#nOnline",cnt("online")); setN("#nSolo",cnt("solo")); setN("#nOL",cnt("ol"));
     if(mode==="online"||mode==="solo") renderHubs();
+    renderTodo();
   }catch(e){}
   badgeLigue();
 }
@@ -4276,7 +4327,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-23a"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-23c"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
