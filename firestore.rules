@@ -49,6 +49,19 @@ service cloud.firestore {
           || (request.auth.uid == resource.data.bidder && request.resource.data.bid == resource.data.bid && request.resource.data.bidder == resource.data.bidder) );
       allow delete: if false;
     }
+    // Amis : demande (by = demandeur), acceptation seulement par l'autre joueur
+    match /onzeol_social/{id} {
+      allow read: if joueurConnecte();
+      allow create: if joueurConnecte() && request.resource.data.by == request.auth.uid
+                    && request.auth.uid in request.resource.data.u && request.resource.data.u.size() == 2
+                    && request.resource.data.status == 'pending';
+      allow update: if joueurConnecte() && request.auth.uid in resource.data.u
+                    && request.resource.data.u == resource.data.u
+                    && (request.resource.data.status != 'pending' || request.resource.data.by == request.auth.uid)
+                    && (request.resource.data.status != 'accepted' || resource.data.status == 'accepted'
+                        || (resource.data.status == 'pending' && resource.data.by != request.auth.uid));
+      allow delete: if false;
+    }
     // Fil d'actu : chacun publie à son nom
     match /onzeol_feed/{id} {
       allow read: if joueurConnecte();

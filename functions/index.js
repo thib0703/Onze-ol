@@ -89,6 +89,16 @@ exports.tradeAnswered = onDocumentUpdated({ document: "onzeol_trades/{id}", regi
   if (a.status === "accepted") await notify(a.from, "🔄 Échange accepté", `${await nameOf(a.to)} a accepté ton échange !`);
   if (a.status === "refused") await notify(a.from, "🔄 Échange refusé", `${await nameOf(a.to)} a refusé ton échange.`);
 });
+// 👥 Demandes d'ami
+exports.friendRequest = onDocumentWritten({ document: "onzeol_social/{id}", region: REGION }, async ev => {
+  const before = ev.data.before.exists ? ev.data.before.data() : null, after = ev.data.after.exists ? ev.data.after.data() : null;
+  if (!after || !Array.isArray(after.u)) return;
+  const other = after.u.find(x => x !== after.by);
+  if (after.status === "pending" && (!before || before.status !== "pending" || before.by !== after.by))
+    return notify(other, "👥 Demande d'ami", `${await nameOf(after.by)} veut t'ajouter en ami. Réponds dans 👥 Social.`);
+  if (after.status === "accepted" && before && before.status === "pending")
+    return notify(before.by, "👥 Demande acceptée", `${await nameOf(before.u.find(x => x !== before.by))} a accepté ta demande d'ami !`);
+});
 // Carte vendue sur le marché
 exports.marketSold = onDocumentUpdated({ document: "onzeol_market/{id}", region: REGION }, async ev => {
   const b = ev.data.before.data(), a = ev.data.after.data();
