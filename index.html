@@ -3923,9 +3923,31 @@ function prevMonth(){ const d=new Date(); d.setDate(1); d.setMonth(d.getMonth()-
 function claimRank(){ if(!me||!compos[me]) return; const pm=prevMonth(); const c=W(); c.rankDone=c.rankDone||{}; if(c.rankDone[pm]) return;
   const R=rankRows(pm).filter(([,r])=>r.j>=RANK_MIN); if(!R.length) return; const i=R.findIndex(([u])=>u===me); c.rankDone[pm]=i<0?"-":i+1; save();
   if(i>=0&&i<3) setTimeout(()=>grant(RANK_R[i],`${["🥇","🥈","🥉"][i]} Classement de ${monthName(pm)}`),1500); }
+// 🍂 SAISONS : 3 mois de classement entre joueurs, podium récompensé + trophée
+const SEASON_MIN=6, SEASON_R=[{pack:"legende",n:2,coins:3000},{pack:"legende",coins:1500},{pack:"or",n:2,coins:800}];
+const SEASONK=t=>{ const d=new Date(t||Date.now()); return d.getFullYear()+"-S"+(Math.floor(d.getMonth()/3)+1); };
+const seasonName=k=>{ const [y,q]=k.split("-S"); return `${["Hiver","Printemps","Été","Automne"][+q-1]} ${y}`; };
+const seasonEnd=k=>{ const [y,q]=k.split("-S"); return new Date(+y,(+q)*3,1); };
+function seasonRows(sk){ const T={}; for(const [mk,M] of Object.entries(RANK.months||{})){ const [y,m]=mk.split("-"); if(SEASONK(new Date(+y,+m-1,15).getTime())!==sk) continue;
+    for(const [u,r] of Object.entries(M||{})){ const t=T[u]=T[u]||{p:0,w:0,d:0,l:0,j:0,bp:0,bc:0}; for(const k in t) t[k]+=+r[k]||0; } }
+  return Object.entries(T).filter(([u])=>NAMES[u]).sort((a,b)=>b[1].p-a[1].p||(b[1].bp-b[1].bc)-(a[1].bp-a[1].bc)||b[1].bp-a[1].bp); }
+function prevSeason(){ const d=new Date(); d.setDate(1); d.setMonth(d.getMonth()-3); return SEASONK(d.getTime()); }
+function claimSeason(){ if(!me||!compos[me]) return; const ps=prevSeason(); if(ps<"2026-S4") return; // 1re saison officielle : Automne 2026
+  const c=W(); c.seasonDone=c.seasonDone||{}; if(c.seasonDone[ps]) return;
+  const R=seasonRows(ps).filter(([,r])=>r.j>=SEASON_MIN); if(!R.length) return; const i=R.findIndex(([u])=>u===me); c.seasonDone[ps]=i<0?"-":i+1;
+  if(i>=0&&i<3){ c.trophies=c.trophies||[]; const id="ss-"+ps; if(!c.trophies.some(x=>x.id===id)) c.trophies.push({id,k:["ss","ss2","ss3"][i],n:`Saison ${seasonName(ps)}`,at:Date.now(),size:R.length});
+    setTimeout(()=>{ if(i===0) trophyFx(`Saison ${seasonName(ps)}`); grant(SEASON_R[i],`${["🥇","🥈","🥉"][i]} Saison ${seasonName(ps)}`); if(i===0) post(`🍂 ${NAMES[me]} est champion de la saison ${seasonName(ps)} !`); },1500); }
+  save(); }
+function seasonHTML(tg){ const sk=SEASONK(), R=seasonRows(sk), dl=Math.ceil((seasonEnd(sk)-Date.now())/86400000); const ps=prevSeason(), P=seasonRows(ps).filter(([,r])=>r.j>=SEASON_MIN).slice(0,3);
+  return `<h3>🍂 Saison ${seasonName(sk)} <small>fin dans ${dl} j</small></h3>${tg}
+  <div class="rules" style="font-size:12px;margin-top:0">Une saison dure 3 mois : on additionne tous tes matchs entre joueurs (victoire 3 pts, nul 1 pt). À la fin, le podium gagne un trophée « Saison » dans sa vitrine : 🥇 <b>2 Packs Légende + 3 000 🪙</b>, 🥈 <b>Pack Légende + 1 500 🪙</b>, 🥉 <b>2 Packs Épiques + 800 🪙</b> (${SEASON_MIN} matchs minimum). Tes cartes restent, seul le classement repart à zéro.</div>
+  ${R.length?`<table class="rk"><tr><th></th><th>Joueur</th><th>Pts</th><th>J</th><th>V-N-D</th><th>Diff</th></tr>${R.map(([u,r],i)=>`<tr class="${u===me?"me":""}"><td>${["🥇","🥈","🥉"][i]||i+1}</td><td><button class="lnk" data-prof="${u}">${esc(NAMES[u])}</button>${r.j<SEASON_MIN?` <small class="mute">(${r.j}/${SEASON_MIN})</small>`:""}</td><td><b>${r.p}</b></td><td>${r.j}</td><td>${r.w}-${r.d}-${r.l}</td><td>${r.bp-r.bc>0?"+":""}${r.bp-r.bc}</td></tr>`).join("")}</table>`:`<div class="mute" style="font-size:13px">Aucun match entre joueurs cette saison. Lance un défi !</div>`}
+  ${P.length?`<div class="mute" style="font-size:12px;margin-top:8px">Podium de la saison ${seasonName(ps)} : ${P.map(([u,r],i)=>`${["🥇","🥈","🥉"][i]} ${esc(NAMES[u])} (${r.p} pts)`).join(" · ")}</div>`:""}`; }
+let rankSeason=false;
 function rankHTML(){ const mk=MONTHK(); const R=rankRows(rankAll?"all":mk); const end=new Date(); end.setMonth(end.getMonth()+1,1); end.setHours(0,0,0,0); const dl=Math.ceil((end-Date.now())/86400000);
   const pm=prevMonth(), P=rankRows(pm).filter(([,r])=>r.j>=RANK_MIN).slice(0,3);
-  const tg=`<div class="arow" style="margin:0 0 8px"><button class="btn sm${rankAll?" ghost":""}" data-rka="0">📅 Ce mois</button><button class="btn sm${rankAll?"":" ghost"}" data-rka="1">🏛️ Depuis le début</button></div>`;
+  const v=rankAll?"1":rankSeason?"s":"0"; const tg=`<div class="arow" style="margin:0 0 8px">${[["0","📅 Ce mois"],["s","🍂 Saison"],["1","🏛️ Depuis le début"]].map(([k,l])=>`<button class="btn sm${v===k?"":" ghost"}" data-rka="${k}">${l}</button>`).join("")}</div>`;
+  if(rankSeason&&!rankAll) return seasonHTML(tg);
   if(rankAll) return `<h3>🏛️ Classement depuis le début</h3>${tg}<div class="rules" style="font-size:12px;margin-top:0">Tous les matchs entre joueurs depuis le lancement du classement (victoire 3 pts, nul 1 pt). Ton bilan face à chacun : touche son nom.</div>
   ${R.length?`<table class="rk"><tr><th></th><th>Joueur</th><th>Pts</th><th>J</th><th>V-N-D</th><th>Diff</th></tr>${R.map(([u,r],i)=>`<tr class="${u===me?"me":""}"><td>${["🥇","🥈","🥉"][i]||i+1}</td><td><button class="lnk" data-prof="${u}">${esc(NAMES[u])}</button></td><td><b>${r.p}</b></td><td>${r.j}</td><td>${r.w}-${r.d}-${r.l}</td><td>${r.bp-r.bc>0?"+":""}${r.bp-r.bc}</td></tr>`).join("")}</table>`:`<div class="mute" style="font-size:13px">Aucun match entre joueurs pour l'instant.</div>`}
   ${h2hAllHTML()}`;
@@ -4577,7 +4599,7 @@ function renderLigue(){
   $("#lLeague").querySelectorAll("[data-ld]").forEach(b=>b.onclick=()=>deleteLeague(b.dataset.ld));
   $("#lLeague").querySelectorAll("[data-ls]").forEach(b=>b.onclick=()=>startLeague(b.dataset.ls));
   $("#lLeague").querySelectorAll("[data-rp]").forEach(b=>b.onclick=()=>openReplay(b.dataset.rp));
-  $("#lRank").innerHTML=rankHTML(); $("#lRank").querySelectorAll("[data-rka]").forEach(b=>b.onclick=()=>{ rankAll=b.dataset.rka==="1"; renderLigue(); }); $("#lRank").querySelectorAll("[data-prof]").forEach(b=>b.onclick=()=>showProfile(b.dataset.prof));
+  $("#lRank").innerHTML=rankHTML(); $("#lRank").querySelectorAll("[data-rka]").forEach(b=>b.onclick=()=>{ rankAll=b.dataset.rka==="1"; rankSeason=b.dataset.rka==="s"; renderLigue(); }); $("#lRank").querySelectorAll("[data-prof]").forEach(b=>b.onclick=()=>showProfile(b.dataset.prof));
   $("#lFeed").innerHTML=`<h3>📰 Fil d'actu</h3>${feed.length?feed.slice(0,25).map(f=>`<div class="fd"><span>${esc(f.text)}</span><small>${new Date(f.at).toLocaleDateString("fr-FR",{day:"numeric",month:"short"})} ${new Date(f.at).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})}</small></div>`).join(""):`<div class="mute" style="font-size:13px">Rien pour l'instant.</div>`}`;
   $("#lPlayers").innerHTML=`<h3>👥 Joueurs</h3><div class="plrs">${Object.keys(NAMES).map(id=>`<button class="plr${id===me?" me":""}" data-prof="${id}"><b>${esc(NAMES[id])}</b><small>${ALL_CARDS.filter(p=>(C(id).coll||{})[p.id]).length}/${ALL_CARDS.length}</small></button>`).join("")}</div>`;
   $("#lPlayers").querySelectorAll("[data-prof]").forEach(b=>b.onclick=()=>showProfile(b.dataset.prof));
@@ -4888,10 +4910,10 @@ function adventHTML(){ if(!me||!adventOn()) return ""; const A=adventState(), td
 // 🏆 TABLEAU DE COUPE + ARMOIRE À TROPHÉES
 // ======================================================================
 const TROPHY={cup:{ic:"🏆",img:"coupe",t:"Coupe",c:"gold"},cup2:{ic:"🥈",img:"finaliste",t:"Finaliste",c:"silver"},lg:{ic:"👑",img:"champion",t:"Champion",c:"gold"},lg2:{ic:"🥈",img:"vice-champion",t:"Vice-champion",c:"silver"},lg3:{ic:"🥉",img:"troisieme",t:"3e du championnat",c:"bronze"},
-  wk:{ic:"🗓️",img:"coupe-weekend",t:"Coupe du week-end",c:"gold"},ldc:{ic:"⭐",img:"ldc",t:"Ligue des Champions",c:"gold"},up:{ic:"🛡️",img:"montee",t:"Divisions",c:"gold"},
+  wk:{ic:"🗓️",img:"coupe-weekend",t:"Coupe du week-end",c:"gold"},ss:{ic:"🍂",img:"saison",t:"Champion de saison",c:"gold"},ss2:{ic:"🥈",img:"saison-2",t:"2e de la saison",c:"silver"},ss3:{ic:"🥉",img:"saison-3",t:"3e de la saison",c:"bronze"},ldc:{ic:"⭐",img:"ldc",t:"Ligue des Champions",c:"gold"},up:{ic:"🛡️",img:"montee",t:"Divisions",c:"gold"},
   car:{ic:"🧗",img:"carriere",t:"Carrière",c:"gold"},pass:{ic:"🎟️",img:"pass",t:"Pass de saison",c:"gold"},noel:{ic:"🎄",img:"noel",t:"Calendrier de l'Avent",c:"gold"},
   alb:{ic:"📒",img:"album",t:"Album",c:"gold"},gold:{ic:"✨",img:"gold-pack",t:"Gold Pack",c:"gold"},gf:{ic:"🔥",img:"grande-forme",t:"Grande Forme",c:"gold"},ul:{ic:"👑",img:"ultime",t:"Légende Ultime",c:"gold"}};
-const TBIG=k=>["cup","lg","wk","ldc"].includes(k);
+const TBIG=k=>["cup","lg","wk","ldc","ss"].includes(k);
 // 🏆 Trophées de progression : vérifiés en continu (et rattrapés pour ce qui a déjà été accompli)
 function trophyCheck(quiet){ if(!me||!C(me)) return; const c=W(); const T=c.trophies=c.trophies||[]; const add=[];
   const has=id=>T.some(x=>x.id===id); const put=(id,k,n,extra)=>{ if(has(id)) return; const x={id,k,n,at:Date.now(),...(extra||{})}; T.push(x); add.push(x); };
@@ -4914,11 +4936,11 @@ function trophyCheck(quiet){ if(!me||!C(me)) return; const c=W(); const T=c.trop
   else add.forEach((x,i)=>setTimeout(()=>{ toast(`🏆 Nouveau trophée : ${(TROPHY[x.k]||{}).t} · ${x.n}`); },i*2500)); }
 const trIcon=D=>D.img?`<img class="trimg" src="img/trophees/${D.img}.webp" alt="" loading="lazy">`:D.ic;
 // 🏆 Salle des trophées : vitrine (fond, plaque, étagères par catégorie), regroupement ×N, silhouettes à débloquer, zoom 3D
-const VIT_CATS=[["Titres",["lg","ldc","cup","wk"]],["Places d'honneur",["cup2","lg2","lg3"]],["Divisions",["up"]],["Parcours",["car","pass","noel"]],["Collection",["alb","gold","gf","ul"]]];
-const TR_HOW={lg:"Finis 1er d'un championnat entre joueurs",ldc:"Finis 1er de la Ligue des Champions en Divisions",cup:"Gagne une coupe entre joueurs",wk:"Gagne la coupe du week-end (samedi soir)",
+const VIT_CATS=[["Titres",["ss","lg","ldc","cup","wk"]],["Places d'honneur",["ss2","ss3","cup2","lg2","lg3"]],["Divisions",["up"]],["Parcours",["car","pass","noel"]],["Collection",["alb","gold","gf","ul"]]];
+const TR_HOW={ss:"Finis 1er d'une saison (3 mois de matchs entre joueurs)",ss2:"Finis 2e d'une saison",ss3:"Finis 3e d'une saison",lg:"Finis 1er d'un championnat entre joueurs",ldc:"Finis 1er de la Ligue des Champions en Divisions",cup:"Gagne une coupe entre joueurs",wk:"Gagne la coupe du week-end (samedi soir)",
   cup2:"Atteins la finale d'une coupe",lg2:"Finis 2e d'un championnat",lg3:"Finis 3e d'un championnat",up:"Monte d'une division (Solo › Divisions)",car:"Remporte une compétition en Carrière",
   pass:"Termine le pass de saison du mois",noel:"Ouvre les 24 cases du calendrier de l'Avent",alb:"Complète une collection de l'album",gold:"Ouvre un Gold Pack",gf:"Obtiens une carte Grande Forme",ul:"Obtiens une Légende Ultime"};
-const GROUP_K=new Set(["lg","ldc","cup","wk","cup2","lg2","lg3","pass","noel"]);
+const GROUP_K=new Set(["lg","ldc","cup","wk","cup2","lg2","lg3","pass","noel","ss","ss2","ss3"]);
 window.__vit={};
 // 🛡️ Écussons de club
 const CREST_N=12; const crestOf=u=>{ const c=(C(u)||{}).crest; return c>=1&&c<=CREST_N?c:(hashS(u||"x")%CREST_N)+1; };
@@ -5670,7 +5692,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-25m"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-25n"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
@@ -5740,7 +5762,7 @@ function startListeners(){
   try{ unsubs.push(db.collection("onzeol_admin").where("to","==",me).onSnapshot(qs=>{ qs.forEach(doc=>applyAdminOp(doc.id,doc.data())); },()=>{})); }catch(e){}
   if(me===ADMIN) setTimeout(autoBackup,8000);
   $("#admBtn").style.display=me===ADMIN?"":"none";
-  unsubs.push(db.collection("onzeol_meta").doc("rank").onSnapshot(sn=>{ RANK=sn.exists?sn.data():{}; claimRank(); if(inJ()) renderLigue(); },()=>{}));
+  unsubs.push(db.collection("onzeol_meta").doc("rank").onSnapshot(sn=>{ RANK=sn.exists?sn.data():{}; claimRank(); try{ claimSeason(); }catch(e){} if(inJ()) renderLigue(); },()=>{}));
   unsubs.push(db.collection("onzeol_meta").doc("preds").onSnapshot(sn=>{ PREDS=sn.exists?sn.data():{}; settlePreds(); if(inJ()) renderJeux(); },()=>{}));
   try{ unsubs.push(db.collection("onzeol_social").where("u","array-contains",me).onSnapshot(qs=>{ const all={}; qs.forEach(doc=>all[doc.id]=doc.data()); onFriends(all); },()=>{})); }catch(e){}
   unsubs.push(db.collection("onzeol_cups").onSnapshot(qs=>{ const all={}; qs.forEach(doc=>{ const K=doc.data(); if(K&&K.name) all[doc.id]=K; }); onCups(all); },()=>{}));
