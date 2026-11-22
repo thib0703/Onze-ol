@@ -1033,7 +1033,7 @@ function render(){
   const n=filled(c);
   try{ $("#xiPanel").innerHTML=teamPanelHTML("compo:"+viewing,teamRate(c,viewing,true,false),mine?"📊 Note de mon 11":"📊 Note de son 11"); }catch(e){ console.error(e); }
   renderSugg(mine);
-  const xa=xiAvg(viewing); $("#count").innerHTML= (n===11 ? "✅ 11 complet !" : `${n}/11 titulaires`+(mine?" — touche une case pour choisir":""))+(xa.n?` · <span class="xiavg">⭐ Note moyenne : <b>${xa.avg}</b></span>`:"");
+  $("#count").innerHTML= (n===11 ? "✅ 11 complet !" : `${n}/11 titulaires`+(mine?" — touche une case pour choisir":""));
   const bench=$("#bench"); bench.innerHTML="";
   for(let i=0;i<BENCH_N;i++){ const pid=c.bench[i]; const p=pid&&BY_ID[pid]; const bb=slotBtn("bench",i,p?p.pos[0]:String(12+i),pid,mine); sw(bb,"bench",i); bench.appendChild(bb); }
   $("#benchCount").textContent=`${Object.values(c.bench).filter(Boolean).length}/${BENCH_N}`;
@@ -3642,6 +3642,8 @@ function clubTeam(club){
   L.slice(1).forEach((x,i)=>{ const [n,o]=x.split("|"); const id="x-"+cs+"-"+clubSlug(n); BY_ID[id]=BY_ID[id]||{id,name:n,pos:[CLUB_ROLES[i]],ovr:+o,year:2026,m:null,g:null,ext:true}; slots[i]=id; });
   return {formation:"4-3-3",slots,bench:{},coach:cid};
 }
+// note « moteur » d'un club (même calcul que le panneau 📊 et que le match), mise en cache
+const CLUB_RATE={}; const clubRate=club=>{ if(CLUB_RATE[club]!=null) return CLUB_RATE[club]; let v=null; try{ const c=clubTeam(club); if(c) v=teamRate(c,null,false,false).global; }catch(e){} return CLUB_RATE[club]=v??clubAvg(club); };
 const clubAvg=club=>{ const L=CLUB_XI[club]; return L?Math.round(L.slice(1).reduce((a,x)=>a+ +x.split("|")[1],0)/11):0; };
 
 const careerOpp=i=>clubTeam(CAREER[i].n)||genTeam(CAREER[i].r[0],CAREER[i].r[1],rng(hashS("carriere"+i)));
@@ -3663,9 +3665,9 @@ function careerHTML(){
   const comps=[...new Set(CAREER.map(x=>x.comp))];
   return `<h3>🧗 Carrière solo <small>${Math.min(i,CAREER.length)}/${CAREER.length}</small></h3>
   <div class="rules" style="font-size:12px;margin-top:0">Ton 11 type (cartes possédées) affronte le vrai 11 de clubs de plus en plus forts. Gagne pour passer au suivant (nul ou défaite : tu rejoues). Ta progression est gardée, mais tu as ${CAREER_MAX} matchs par jour. Pièces à chaque première victoire, pack à la fin de chaque compétition.</div>
-  ${comps.map(cp=>`<h4>${cp}</h4><div class="car">${CAREER.map((x,j)=>x.comp!==cp?"":`<span class="${j<i?"ok":j===i?"cur":""}" title="${esc(x.n)}">${j<i?"✅":j===i?"⚔️":"🔒"} ${esc(x.n)} <small style="opacity:.75">${clubAvg(x.n)}</small></span>`).join("")}</div>`).join("")}
+  ${comps.map(cp=>`<h4>${cp}</h4><div class="car">${CAREER.map((x,j)=>x.comp!==cp?"":`<span class="${j<i?"ok":j===i?"cur":""}" title="${esc(x.n)}">${j<i?"✅":j===i?"⚔️":"🔒"} ${esc(x.n)} <small style="opacity:.75">${clubRate(x.n)}</small></span>`).join("")}</div>`).join("")}
   ${fin?`<div class="motm">🏆 Carrière terminée ! Tu as battu le Real Madrid.</div><button class="btn ghost big" id="jCarReset">🔁 Recommencer (sans récompenses déjà gagnées)</button>`
-   :careerLeft()<=0?`<div class="motm">⏳ Tes ${CAREER_MAX} matchs de carrière du jour sont joués. Reviens demain pour affronter ${esc(CAREER[i].n)} !</div>`:`<button class="btn big" id="jCarGo">▶️ Affronter ${esc(CAREER[i].n)} <small style="opacity:.8">(${careerLeft()}/${CAREER_MAX} aujourd'hui)</small></button>${(()=>{ const ta=xiAvg(me).avg, oa=clubAvg(CAREER[i].n); return `<div class="vsavg"><div><small>Ton 11</small><b>${ta||"–"}</b></div><span>VS</span><div><small>${esc(CAREER[i].n)}</small><b>${oa}</b></div></div><div class="mute" style="font-size:12px;text-align:center">${ta?cmpTag(ta,oa):"Complète ton 11 type"}</div>`; })()}`}`;
+   :careerLeft()<=0?`<div class="motm">⏳ Tes ${CAREER_MAX} matchs de carrière du jour sont joués. Reviens demain pour affronter ${esc(CAREER[i].n)} !</div>`:`<button class="btn big" id="jCarGo">▶️ Affronter ${esc(CAREER[i].n)} <small style="opacity:.8">(${careerLeft()}/${CAREER_MAX} aujourd'hui)</small></button>${(()=>{ const ta=(()=>{ try{ return teamRate(W(),me,true,false).global; }catch(e){ return null; } })(), oa=(()=>{ try{ return teamRate(careerOpp(i),null,false,false).global; }catch(e){ return clubAvg(CAREER[i].n); } })(); return `<div class="vsavg"><div><small>Ton 11</small><b>${ta||"–"}</b></div><span>VS</span><div><small>${esc(CAREER[i].n)}</small><b>${oa}</b></div></div><div class="mute" style="font-size:12px;text-align:center">${ta?cmpTag(ta,oa):"Complète ton 11 type"}</div>`; })()}`}`;
 }
 
 // ---------- 🏆 Coupe à élimination ----------
@@ -4048,7 +4050,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-22l"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-22m"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
