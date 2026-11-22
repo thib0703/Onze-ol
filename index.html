@@ -1465,7 +1465,7 @@ function cardHTML(pid,opts={}){
   const t=cardTier(p); const st=cardStats(p); const w=opts.w||160; const mini=!!opts.mini; const cls=(p.pos[0]==="COACH"?"coach r-"+t:t)+(p.v?" v-"+p.v:"");
   const pos=opts.role&&p.pos[0]!=="COACH"?opts.role:(p.pos[0]==="COACH"?"COA":p.pos[0]);
   const shortN=p.name.split(" ").length>1&&p.name.length>11?p.name.split(" ").slice(1).join(" "):p.name;
-  const lm=liveMod(pid), lic=liveIcon(pid); const ovr=(opts.ovr!=null?opts.ovr:p.ovr)+lm;
+  const dz=mode==="draft"||(editing&&editing.mode==="draft"); const lm=dz?0:liveMod(pid), lic=dz?"":liveIcon(pid); const ovr=(opts.ovr!=null?opts.ovr:p.ovr)+lm;
   return `<div data-pid="${pid}" class="fcard ${cls}${mini?" mini":""}${!mini&&w<140?" sm":""}${opts.cls?" "+opts.cls:""}" style="--w:${w}px">
    <div class="fc-bg"></div><div class="fc-tex"></div><div class="fc-glow"></div><div class="fc-shine"></div>${opts.role&&hpPen(p,opts.role)?`<div class="fc-hp" title="Hors poste">⚠️</div>`:""}
    <div class="fc-top"><div class="fc-ovr">${ovr}${lic?`<i class="fc-live${lm<0?" neg":""}">${lic}</i>`:""}</div><div class="fc-pos${opts.role&&hpPen(p,opts.role)?" hp":""}">${esc(pos)}</div>${mini?"":`<div class="fc-club">OL</div>${w>=140?`<div class="fc-flag">${flag(NAT[p.id])}</div>`:""}`}</div>
@@ -1481,7 +1481,7 @@ function cardBackInfo(pid,lv){
     `<div>${p.pos.join(" · ")} · arrivé à l'OL ${p.year<2000?"avant 2000":"en "+p.year}</div>${p.m!=null?`<div><b>${p.m}</b> matchs · <b>${p.g}</b> but${p.g>1?"s":""} à l'OL</div>`:`<div class="mute">Moins de 30 matchs à l'OL : pas de stats officielles</div>`}`;
   const pt=palmText(p); const rt=cardTier(p);
   const palm=`<div class="cm-palm"><div class="rar r-${rt}">${TIER_NAME[rt]}</div>${p.v?`<div style="color:#ffd970;font-weight:700">${VAR_INFO[p.v].ic} Carte spéciale « ${VAR_INFO[p.v].n} » : ${esc(p.title)}<br><small class="mute">Version boostée de la carte de base (${BY_ID[p.base].ovr}). Impossible d’aligner les deux versions ensemble.</small></div>`:""}${pt.ol.length?`<div>🏆 Avec l'OL : ${pt.ol.join(" · ")}</div>`:`<div class="mute">Pas de titre avec l'OL</div>`}${pt.ext.length?`<div>🌍 ${pt.ext.join(" · ")}</div>`:""}</div>`;
-  const lv_=liveOf(pid); const liveLine=lv_?`<div class="livel${(lv_.mod|0)<0?" neg":""}">${liveIcon(pid)} <b>Forme réelle ${(lv_.mod|0)>0?"+":""}${lv_.mod|0}</b> · ${esc(lv_.note||"")}<br><small class="mute">Mis à jour le ${esc(LIVE.updated||"?")}</small></div>`:"";
+  const lv_=liveOf(pid); const liveLine=lv_?`<div class="livel${(lv_.mod|0)<0?" neg":""}">${liveIcon(pid)} <b>Forme réelle ${(lv_.mod|0)>0?"+":""}${lv_.mod|0}</b>${mode==="draft"?" <small>(ne compte pas en draft)</small>":""} · ${esc(lv_.note||"")}<br><small class="mute">Mis à jour le ${esc(LIVE.updated||"?")}</small></div>`:"";
   const ps=priceStats(pid);
   const extra=(lv?`<div style="color:#7ee2a0">⬆️ Évoluée +${lv}</div>`:"")+(ps?`<div>💹 Prix moyen ${ps.avg} 🪙 ${ps.trend} · dernier ${ps.last} 🪙 (${ps.n} vente${ps.n>1?"s":""})</div>`:"");
   return info+liveLine+extra+palm; }
@@ -1589,10 +1589,10 @@ function chemistry(ps){
   for(let i=0;i<ps.length;i++) for(let j=i+1;j<ps.length;j++){ const a=ps[i],b=ps[j]; if(NAT[a.id]&&NAT[a.id]===NAT[b.id]) links++; if(Math.abs(a.year-b.year)<=3) links++; }
   return Math.min(100,Math.round(links/(ps.length*1.6)*100));
 }
-function strength(c,w,club){
+function strength(c,w,club,pure){ // pure : sans évolutions ni forme réelle (draft à armes égales)
   const form=F[c.formation]||F["4-3-3"];
   const own=w&&club?(C(w).coll||{}):null;
-  const lineup=form.map(([role],i)=>{ let p=BY_ID[(c.slots||{})[i]]; if(p&&own&&!own[p.id]) p=null; const ev=(p&&w?evoOf(w,p.id):0)+(p?liveMod(p.id):0);
+  const lineup=form.map(([role],i)=>{ let p=BY_ID[(c.slots||{})[i]]; if(p&&own&&!own[p.id]) p=null; const ev=pure?0:(p&&w?evoOf(w,p.id):0)+(p?liveMod(p.id):0);
     return {role,pid:p?p.id:null,eff:p?(p.ovr+ev+Math.min(3,(p.m||0)/150))*fit(p,role):35,fin:p?finOf(p,role):0}; });
   const acc={gk:[],def:[],mid:[],att:[]};
   for(const l of lineup){ const g=LINE[l.role]||"mid"; if(g==="mo"){acc.mid.push(l.eff);acc.att.push(l.eff);} else acc[g].push(l.eff); }
@@ -3165,7 +3165,7 @@ async function playDraftMatch(kind,force){
   else { const d=dNorm(draft,me,o); if(d.status!=="done") return;
     teams=d.players.map(w=>({w,c:{formation:d.form[w],slots:d.teams[w].slots,bench:d.teams[w].bench,coach:d.teams[w].coach}})); }
   const label=kind==="budget"?"💰 Budget":"⚡ Draft";
-  const sides=teams.map(t=>({c:t.c,S:strength(t.c,t.w,false),label,owner:t.w,name:NAMES[t.w]||"?"}));
+  const sides=teams.map(t=>({c:t.c,S:strength(t.c,t.w,false,true),label,owner:t.w,name:NAMES[t.w]||"?"}));
   const m=buildMatch(sides);
   await saveReplay(m);
   if(!(await addHist(histOf(m,{draft:kind}),m))){ toast("Pas de connexion, réessaie",true); return; }
@@ -3191,7 +3191,7 @@ function renderDraftHist(){
     M.classList.add("open"); $("#dhX").onclick=()=>M.classList.remove("open");
     $("#dhSim").onclick=()=>{ const b=$("#dhSim"); b.disabled=true; const R=$("#dhSimR");
       const cs=keys.map(w=>{ const t=h.teams[w]||{}; return {formation:F[t.formation]?t.formation:"4-3-3",slots:t.slots||{},bench:t.bench||{},coach:t.coach||null}; });
-      const Ss=cs.map((c,k)=>strength(c,h.mode==="sofa"||!NAMES[keys[k]]?null:keys[k],false));
+      const Ss=cs.map((c,k)=>strength(c,null,false,h.mode!=="sofa"));
       const mi=h.mode==="sofa"?0:Math.max(0,keys.indexOf(me)); const N=500; let n=0,w=0,d=0,gf=0,ga=0;
       const step=()=>{ for(let k=0;k<50&&n<N;k++,n++){ const home=n%2; const r=home?simulate2(cs[1],Ss[1],cs[0],Ss[0]):simulate2(cs[0],Ss[0],cs[1],Ss[1]); const sc=home?[r.score[1],r.score[0]]:r.score; const a=sc[mi], o=sc[1-mi]; gf+=a; ga+=o; if(a>o) w++; else if(a===o) d++; }
         R.textContent=`🔬 ${n}/${N}…`; if(n<N){ setTimeout(step,0); return; }
@@ -3862,7 +3862,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-22d"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-22e"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
