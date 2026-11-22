@@ -347,7 +347,7 @@ html:has(.modal.open),body:has(.modal.open){overflow:hidden}
 .dbanner small{display:block;font-weight:400;font-size:12.5px;opacity:.85;margin-top:3px}
 @keyframes pulse{50%{filter:brightness(1.25)}}
 .field{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:10px 0}
-.field span{font-size:14px;color:var(--mute)}
+.field span{font-size:14px;color:var(--mute);flex-shrink:0}.field select,.field input{min-width:0;max-width:65%;text-overflow:ellipsis}
 .rules{font-size:13px;color:#c8d6ff;line-height:1.5;margin:10px 0}
 .logrow{font-size:13px;padding:6px 0;border-top:1px solid #24345f;display:flex;gap:8px}
 .logrow b{color:var(--mute);min-width:26px}
@@ -2670,7 +2670,7 @@ async function openBudgetSlot(k){
 // =================== EXTRAS (suite) ===================
 
 // =================== 👥 Duo : 2 contre 2 — salon à 4 (chacun accepte) puis draft chacun son tour ===================
-const DUO_POOL={coll:"🎴 Collections réunies (chaque duo pioche dans ses 2 collections)",draft:"🎲 Draft libre (5 joueurs tirés au sort)"};
+const DUO_POOL={coll:"🎴 Vos 2 collections",draft:"🎲 Draft libre"};
 let duos={}, duoCurId=null, duoNew=false, duoView=null, duoPrev=null, duoResetArm=false;
 let duoSel={a:null,b:null,c:null,format:"xic",pool:"coll",form:"4-3-3"};
 const duoRef=id=>db.collection("onzeol_drafts").doc(id);
@@ -2812,12 +2812,13 @@ function duoNewHTML(back){
    <div class="duog"><div><small>Ton coéquipier</small>${opt("a","Choisir…")}</div><div><small>Adversaire 1</small>${opt("b","Choisir…")}</div><div><small>Adversaire 2</small>${opt("c","Choisir…")}</div></div>
    ${us.length<3?`<div class="mute" style="font-size:12.5px">Il faut au moins 4 joueurs inscrits pour jouer en duo.</div>`:""}
    <div class="field"><span>Cartes</span><select id="d4Pool">${Object.entries(DUO_POOL).map(([k,v])=>`<option value="${k}" ${k===duoSel.pool?"selected":""}>${v}</option>`).join("")}</select></div>
+   <div class="mute" style="font-size:11.5px;margin:-6px 0 6px">${duoSel.pool==="coll"?"Chaque duo pioche dans les cartes de ses 2 joueurs.":"5 joueurs tirés au sort par case ; un joueur pris est bloqué pour tous."}</div>
    <div class="field"><span>Format</span><select id="d4Format">${Object.entries(FORMATS).map(([k,v])=>`<option value="${k}" ${k===duoSel.format?"selected":""}>${v.label}</option>`).join("")}</select></div>
    <div class="field"><span>Système de ton duo</span><select id="d4NForm">${Object.keys(F).map(x=>`<option ${x===duoSel.form?"selected":""}>${x}</option>`).join("")}</select></div>
    <button class="btn big" id="duoGo" ${ok?"":"disabled"}>📨 Inviter les 3 joueurs</button>${back?`<button class="btn ghost sm" id="d4Back" style="margin-top:6px">← Retour à ma partie en cours</button>`:""}`; }
 function bindDuo(){ const on=(s,f)=>{ const e=$(s); if(e) e.onclick=f; }; const id=duoCurId;
   document.querySelectorAll("[data-du]").forEach(x=>x.onchange=()=>{ duoSel[x.dataset.du]=x.value||null; renderDuo(); });
-  const ch=(s,k)=>{ const e=$(s); if(e) e.onchange=()=>{ duoSel[k]=e.value; }; }; ch("#d4Pool","pool"); ch("#d4Format","format"); ch("#d4NForm","form");
+  const ch=(s,k)=>{ const e=$(s); if(e) e.onchange=()=>{ duoSel[k]=e.value; }; }; { const e=$("#d4Pool"); if(e) e.onchange=()=>{ duoSel.pool=e.value; renderDuo(); }; } ch("#d4Format","format"); ch("#d4NForm","form");
   on("#duoGo",duoCreate); on("#d4Back",()=>{ duoNew=false; renderDuo(); }); on("#d4New",()=>{ duoNew=true; renderDuo(); });
   document.querySelectorAll("[data-d4sw]").forEach(b=>b.onclick=()=>{ duoCurId=b.dataset.d4sw; duoView=null; renderDuo(); });
   document.querySelectorAll("[data-d4v]").forEach(b=>b.onclick=()=>{ duoView=b.dataset.d4v; renderDuo(); });
@@ -4051,7 +4052,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-22n"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-22o"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
