@@ -423,7 +423,14 @@ html:has(.modal.open),body:has(.modal.open){overflow:hidden}
 .fc-vmini{position:absolute;right:4%;top:3%;font-size:calc(var(--w)/4);line-height:1;z-index:3}
 .evban.tfban{background:linear-gradient(120deg,#5a0d06,#b3200e,#ff7a1a);margin-top:8px}
 .fc-ovr{position:relative}.fc-live{position:absolute;left:100%;top:0;font-style:normal;font-size:.42em;margin-left:2px}
-.duol{display:flex;flex-direction:column;gap:4px}.duor{display:grid;grid-template-columns:40px 1fr auto;align-items:center;gap:6px;text-align:left;background:#1d2b55;border:0;border-radius:8px;padding:6px 8px;color:inherit;font:inherit;font-size:13px;cursor:pointer}.duor small{display:block;color:var(--mute);font-size:11px}.duor:disabled{cursor:default;opacity:1}.duor.duocan{outline:2px dashed #7ee2a0;outline-offset:-2px}.duor em{font-style:normal;font-weight:700}
+.duol{display:flex;flex-direction:column;gap:4px}.duor{display:grid;grid-template-columns:40px 1fr auto;align-items:center;gap:6px;text-align:left;background:#1d2b55;border:0;border-radius:8px;padding:6px 8px;color:inherit;font:inherit;font-size:13px;cursor:pointer}.duor small{display:block;color:var(--mute);font-size:11px}.duor em i,.tdl i{font-style:normal;font-size:11px}.cbu{color:#7ee2a0}.cbd{color:#ff8a8a}
+.tpanel{background:#0f1d40;border:1px solid #2a3b6b;border-radius:14px;padding:10px 12px;margin:8px 0;text-align:left}.tph{display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:800;font-size:14px;margin-bottom:4px}.tph small{display:block;font-weight:500;font-size:11px;color:var(--mute)}
+.tpg{font-size:26px;font-weight:900;display:flex;align-items:center;gap:6px}.tpr{display:grid;grid-template-columns:34px 1fr 26px 54px;align-items:center;gap:6px;font-size:12px;margin-top:5px;font-weight:700}.tpr span{color:var(--mute)}
+.tpb{height:8px;background:#1d2b55;border-radius:5px;overflow:hidden}.tpb i{display:block;height:100%;border-radius:5px;animation:tpgrow .7s ease-out}@keyframes tpgrow{from{width:0}}
+.tpd{font-style:normal;font-size:11px;font-weight:800;white-space:nowrap;animation:tpf 6s ease forwards}.tpd.up{color:#7ee2a0}.tpd.dn{color:#ff6b7d}.tpg .tpd{font-size:12px}@keyframes tpf{0%{opacity:0;transform:translateY(5px) scale(1.3)}8%{opacity:1;transform:none}75%{opacity:1}100%{opacity:.25}}
+.tpc{font-size:11.5px;color:#c8d6ff;margin-top:8px;line-height:1.4}.tpc b{color:#ffd970}.tpvs{font-size:11.5px;color:var(--mute);margin-top:4px}
+.ann{display:flex;gap:2px;justify-content:center;margin-top:1px}.ann i{font-style:normal;font-size:9px;font-weight:800;padding:0 3px;border-radius:5px;background:#000c;line-height:1.45;white-space:nowrap}.ann i.up{color:#7ee2a0}.ann i.dn{color:#ff8a8a}
+.tdl{display:block;font-size:11.5px;font-weight:600;color:#c8d6ff;margin-top:2px}.duor:disabled{cursor:default;opacity:1}.duor.duocan{outline:2px dashed #7ee2a0;outline-offset:-2px}.duor em{font-style:normal;font-weight:700}
 .otherlive{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 10px;padding:8px 10px;border-radius:10px;background:#1d2b55;font-size:13px}
 .livel{margin:6px 0;padding:6px 8px;border-radius:8px;background:rgba(31,138,76,.22);font-size:13px}.livel.neg{background:rgba(180,67,43,.25)}
 .nws{display:flex;flex-direction:column;gap:8px;margin-top:8px}.nw{display:block;background:#16244a;border:1px solid #2b3c6e;border-radius:12px;padding:10px 12px;color:var(--txt);text-decoration:none}.nw b{display:block;font-size:14px;line-height:1.3}.nw p{margin:4px 0 0;font-size:12.5px;color:#c8d6ff;line-height:1.4}.nw small{display:block;margin-top:5px;font-size:11px;color:var(--mute)}.nw.new{border-color:#ffd970}.nwf{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.nwf button{background:#1d2b55;border:0;color:var(--mute);border-radius:999px;padding:4px 10px;font-size:12px;cursor:pointer}.nwf button.on{background:var(--rouge);color:#fff}
@@ -573,6 +580,7 @@ html:has(.modal.open),body:has(.modal.open){overflow:hidden}
     </svg>
   </div>
   <div class="count" id="count"></div>
+  <div id="xiPanel"></div>
   <div class="sugg" id="sugg"></div>
   <button class="btn save" id="saveBtn">💾 Sauvegarder la compo</button>
   <div class="saved" id="savedInfo"></div>
@@ -592,6 +600,7 @@ html:has(.modal.open),body:has(.modal.open){overflow:hidden}
   <div class="section" id="dLobby"></div>
   <div id="dGame">
     <div class="tabs" id="dTabs" style="padding:8px 0"></div>
+    <div id="dPanel"></div>
     <div class="pitch" id="dPitch"><svg class="lines" viewBox="0 0 68 100" preserveAspectRatio="none">
       <g fill="none" stroke="#ffffff66" stroke-width=".35">
         <rect x="2" y="2" width="64" height="96"/>
@@ -1020,8 +1029,9 @@ function render(){
   const sw=(b,kind,i)=>{ if(!cSwap) return; b.classList.add(cSwap.kind===kind&&cSwap.i===i?"swsel":"swcan"); b.onclick=()=>{ const A=cSwap; cSwap=null; const box=k=>k==="xi"?c.slots:c.bench;
       if(!(A.kind===kind&&A.i===i)){ const a=box(A.kind)[A.i], b2=box(kind)[i]; if(b2) box(A.kind)[A.i]=b2; else delete box(A.kind)[A.i]; box(kind)[i]=a; save(); toast(`🔀 ${BY_ID[a]?.name||""}${b2?" ⇄ "+(BY_ID[b2]?.name||""):" déplacé"}`); }
       render(); }; };
-  F[c.formation].forEach(([role,x,y],i)=>{ const b=slotBtn("xi",i,role,c.slots[i],mine); sw(b,"xi",i); b.style.left=x+"%"; b.style.top=y+"%"; b.style.zIndex=Math.round(y); pitch.appendChild(b); });
+  F[c.formation].forEach(([role,x,y],i)=>{ const b=slotBtn("xi",i,role,c.slots[i],mine); annotate(b,role,c.slots[i],c.coach); sw(b,"xi",i); b.style.left=x+"%"; b.style.top=y+"%"; b.style.zIndex=Math.round(y); pitch.appendChild(b); });
   const n=filled(c);
+  try{ $("#xiPanel").innerHTML=teamPanelHTML("compo:"+viewing,teamRate(c,viewing,true,false),mine?"📊 Note de mon 11":"📊 Note de son 11"); }catch(e){ console.error(e); }
   renderSugg(mine);
   const xa=xiAvg(viewing); $("#count").innerHTML= (n===11 ? "✅ 11 complet !" : `${n}/11 titulaires`+(mine?" — touche une case pour choisir":""))+(xa.n?` · <span class="xiavg">⭐ Note moyenne : <b>${xa.avg}</b></span>`:"");
   const bench=$("#bench"); bench.innerHTML="";
@@ -1148,11 +1158,15 @@ function renderList(){
   if(clubPick){ const cc=isDuo?duoCur():(compos[me]||{}); const curId=editing.kind==="xi"?(cc.slots||{})[editing.i]:editing.kind==="bench"?(cc.bench||{})[editing.i]:cc.coach;
     ps=ps.filter(p=>p.id!==curId&&!(used.has(p.id)||used.has(baseOf(p.id)))); } // ni le joueur déjà en place, ni ceux déjà alignés
   if(!ps.length){L.insertAdjacentHTML("beforeend",`<div style="padding:18px 16px;text-align:center;color:var(--mute)">${clubPick?(q?"Aucune de tes cartes ne correspond à ta recherche.":`<b style="color:#fff">Aucun joueur dispo à ce poste</b><br>Ouvre des packs dans 🎴 Collec pour en débloquer, ou touche « Tous » pour voir tes autres cartes.`):"Personne trouvé."}</div>`);return;}
+  let SX=null; try{ const X=sheetCtx(); if(X&&(editing.kind==="xi"||editing.kind==="coach")){ SX={...X,base:teamRate(X.c,X.w,X.club,X.pure).g}; } }catch(e){ SX=null; }
   for(const p of ps){
     const isUsed=used.has(p.id)||used.has(baseOf(p.id)); const d=document.createElement("div"); d.className="pl"+(isUsed?" used":"");
     d.innerHTML=`<span class="n">${esc(p.name)}<span class="yr"><span class="rar r-${cardTier(p)}" style="font-size:9px;padding:0 5px;margin:0 4px 0 0">${TIER_NAME[cardTier(p)]}</span>${!isCoach&&editing.kind==="xi"?hpTxt(p,editing.role):""}${isCoach?"":`arrivé en ${p.year<2000?"avant 2000":p.year} · ${p.m!=null?`${p.m} matchs · ${p.g} but${p.g>1?"s":""} · `:""}`}note <b style="color:${p.ovr>=85?"#ffd970":p.ovr>=80?"#7ee2a0":"#c8d6ff"}">${p.ovr}</b></span>${isCoach&&COACH_SKILL[p.id]?`<span class="cskill">🧠 <b>${esc(COACH_SKILL[p.id].n)}</b> : ${esc(COACH_SKILL[p.id].d)}</span>`:""}${used.has(p.id)?`<span class="tk">${takenMap?(takenMap[p.id]===me?"dans ton équipe":"pris par "+NAMES[takenMap[p.id]]):"déjà dans ta compo"}</span>`:""}</span>`+(isCoach?"":`<span class="tags">${p.pos.map(x=>`<span class="tag ${ok.includes(x)?"cur":""}">${x}</span>`).join("")}</span>`);
     const cb=document.createElement("button"); cb.className="cardbtn"; cb.innerHTML=cardHTML(p.id,{w:30,mini:true}); cb.onclick=ev=>{ev.stopPropagation(); showCard(p.id,null);};
     d.prepend(cb);
+    if(SX&&!isUsed){ try{ const c2=editing.kind==="coach"?{...SX.c,coach:p.id}:{...SX.c,slots:{...SX.c.slots,[editing.i]:p.id}}; const r2=teamRate(c2,SX.w,SX.club,SX.pure);
+      const dv=SX.base==null?null:r2.g-SX.base, cv=editing.kind==="xi"?coachBonus(SX.c.coach,p,editing.role):0;
+      d.querySelector(".n").insertAdjacentHTML("beforeend",`<span class="tdl">📊 Équipe ${SX.base==null?"":Math.round(SX.base)+" → "}<b>${r2.global}</b>${dv!=null&&Math.abs(dv)>=.05?` <i class="${dv>0?"cbu":"cbd"}">(${dv>0?"+":""}${dv.toFixed(1).replace(".",",")})</i>`:""}${cv?` · <i class="${cv>0?"cbu":"cbd"}">🧠${cv>0?"+":""}${cv} coach</i>`:""}</span>`); }catch(e){} }
     d.onclick=()=>{ if(!isUsed) setPick(p.id); };
     L.appendChild(d);
   }
@@ -1372,11 +1386,13 @@ function renderDraft(){
     b.innerHTML=(w===me?"Mon équipe":"Équipe de "+esc(NAMES[w]||"?"))+`<small>${esc(d.form[w])} · ${dCount(d.teams[w])}/${N}${d.turn===w?" · ⚡ joue":""}</small>`;
     b.onclick=()=>{dView=w;renderDraft();}; T.appendChild(b); }
   const t=d.teams[dView]; const mine=dView===me; const can=mine&&d.status==="running"&&d.turn===me;
+  try{ const tc=w=>({formation:d.form[w],slots:d.teams[w].slots,bench:d.teams[w].bench,coach:d.teams[w].coach}); const rv=teamRate(tc(dView),dView,false,true), ro=teamRate(tc(dView===me?o:me),null,false,true);
+    $("#dPanel").innerHTML=teamPanelHTML("draft:"+dKey()+":"+dView,rv,mine?"📊 Mon équipe":"📊 Équipe de "+esc(NAMES[dView]||"?"),`Face à ${mine?esc(NAMES[o]||"?"):"toi"} : <b>${ro.global??"—"}</b>`); }catch(e){ console.error(e); }
   const P=$("#dPitch"); P.querySelectorAll(".slot").forEach(e=>e.remove());
   const canSw=mine&&d.status==="done"&&!(d.ready||{})[me]; if(!canSw) dSwap=null;
   const swOn=(b,k,i,pid)=>{ if(!canSw||!pid) return; b.onclick=()=>dSwapTap(k,i,pid); if(dSwap&&dSwap.k===k&&dSwap.i===i) b.classList.add("swsel"); else if(dSwap) b.classList.add("swcan"); };
   F[d.form[dView]].forEach(([role,x,y],i)=>{ const pid=t.slots[i]; const clickable=can&&!pid;
-    const b=slotBtn("xi",i,role,pid,clickable||(mine&&!!pid),clickable?()=>openSheet("xi",i,role,"draft"):()=>{}); swOn(b,"xi",i,pid);
+    const b=slotBtn("xi",i,role,pid,clickable||(mine&&!!pid),clickable?()=>openSheet("xi",i,role,"draft"):()=>{}); annotate(b,role,pid,t.coach); swOn(b,"xi",i,pid);
     if(!clickable&&!pid) b.classList.add("ro"); if(!clickable&&!pid&&!mine) b.querySelector(".nm")&&(b.querySelector(".nm").textContent="—");
     b.style.left=x+"%"; b.style.top=y+"%"; b.style.zIndex=Math.round(y); P.appendChild(b); });
   $("#dBenchSec").style.display=f.bench?"":"none";
@@ -1614,6 +1630,37 @@ function strength(c,w,club,pure){ // pure : sans évolutions ni forme réelle (d
   r.global=Math.round(r.gk*.12+r.def*.3+r.mid*.3+r.att*.28);
   return r;
 }
+// 📊 Notes d'équipe en direct + annotations du coach sur les joueurs
+const skOf=id=>{ try{ return (id&&COACH_SKILL[id])||{}; }catch(_){ return {}; } };
+function coachBonus(coId,p,role){ if(!coId||!p||p.pos[0]==="COACH") return 0; const sk=skOf(coId); let v=(sk.lines||{})[GRP[role]]||0;
+  if(sk.boostLow&&p.ovr<75) v+=sk.boostLow; if(sk.boostYoung&&p.year>=2020) v+=sk.boostYoung; return v; }
+function teamRate(c,w,club,pure){ const S=strength(c,w,club,pure); const co=BY_ID[S.coachId]; const sk=skOf(co&&co.id);
+  const L={gk:[],def:[],mid:[],att:[]};
+  for(const l of S.lineup){ if(!l.pid) continue; const p=BY_ID[l.pid]; let e=l.eff; if(sk.boostLow&&p.ovr<75) e+=sk.boostLow; if(sk.boostYoung&&p.year>=2020) e+=sk.boostYoung;
+    const g=LINE[l.role]||"mid"; if(g==="mo"){ L.mid.push(e); L.att.push(e); } else L[g].push(e); }
+  const base=coachNote(co)+S.chem/100*3, avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null, r={n:S.lineup.filter(l=>l.pid).length,co,sk,chem:S.chem};
+  for(const g of ["gk","def","mid","att"]){ const a=avg(L[g]); r[g]=a==null?null:a+base+((sk.lines||{})[g]||0); }
+  const W={gk:.12,def:.3,mid:.3,att:.28}, ok=["gk","def","mid","att"].filter(g=>r[g]!=null), tw=ok.reduce((t,g)=>t+W[g],0);
+  r.g=tw?ok.reduce((t,g)=>t+r[g]*W[g],0)/tw:null; r.global=r.g==null?null:Math.round(r.g); return r; }
+const TP_PREV={};
+function teamPanelHTML(key,r,title,vs){
+  const now=Date.now(), P=TP_PREV[key], vals={g:r.g,gk:r.gk,def:r.def,mid:r.mid,att:r.att}; let dl=P?P.dl:{}, at=P?P.at:0;
+  if(P&&["g","gk","def","mid","att"].some(k=>(P.v[k]??-1).toFixed(2)!==(vals[k]??-1).toFixed(2))){ dl={}; for(const k in vals) if(P.v[k]!=null&&vals[k]!=null&&Math.abs(vals[k]-P.v[k])>=.05) dl[k]=vals[k]-P.v[k]; at=now; }
+  TP_PREV[key]={v:vals,dl,at}; const fresh=now-at<6000;
+  const D=k=>fresh&&dl[k]?`<i class="tpd ${dl[k]>0?"up":"dn"}">${dl[k]>0?"▲ +":"▼ "}${dl[k].toFixed(1).replace(".",",")}</i>`:"";
+  const col=v=>v>=85?"#ffd970":v>=80?"#7ee2a0":v>=74?"#7fb2ff":"#ff8a8a";
+  const row=(k,l)=>{ const v=r[k]; return `<div class="tpr"><span>${l}</span><div class="tpb"><i style="width:${v==null?0:Math.max(4,Math.min(100,(v-50)/45*100))}%;background:${v==null?"#0000":col(v)}"></i></div><b style="color:${v==null?"var(--mute)":col(v)}">${v==null?"—":Math.round(v)}</b>${D(k)}</div>`; };
+  const cn=r.co?coachNote(r.co):null;
+  const coach=r.co?`🧠 <b>${esc(r.co.name)}</b>${r.sk.n?` · ${esc(r.sk.n)} : ${esc(r.sk.d)}`:""} <span class="mute">(note ${r.co.ovr} : ${cn>=0?"+":""}${cn.toFixed(1).replace(".",",")} partout)</span>`:`🧠 Pas d'entraîneur : −1,5 sur toutes les lignes`;
+  return `<div class="tpanel"><div class="tph"><span>${title}<small>${r.n}/11 joueurs · 🤝 collectif ${r.chem} %</small></span><span class="tpg" style="color:${r.g==null?"var(--mute)":col(r.g)}">${r.global??"—"}${D("g")}</span></div>
+    ${row("gk","GB")}${row("def","DÉF")}${row("mid","MIL")}${row("att","ATT")}<div class="tpc">${coach}</div>${vs?`<div class="tpvs">${vs}</div>`:""}</div>`; }
+function annotate(b,role,pid,coId){ const p=pid&&BY_ID[pid]; if(!b||!p||p.pos[0]==="COACH") return; const v=coachBonus(coId,p,role), hp=hpPen(p,role); if(!v&&!hp) return;
+  b.insertAdjacentHTML("beforeend",`<div class="ann">${v?`<i class="${v>0?"up":"dn"}">🧠${v>0?"+":""}${v}</i>`:""}${hp?`<i class="dn">⚠️−${hp}%</i>`:""}</div>`); }
+function sheetCtx(){ if(!editing) return null;
+  if(editing.mode==="compo"&&compos[me]) return {c:compos[me],w:me,club:true,pure:false};
+  if(editing.mode==="draft"&&draft&&draft.teams&&draft.teams[me]){ const t=draft.teams[me]; return {c:{formation:draft.form[me],slots:t.slots,bench:t.bench,coach:t.coach},w:me,club:false,pure:true}; }
+  if(editing.mode==="duo4"){ const d=duos[editing.id]; if(!d) return null; return {c:duoTeamC(d,duoSide(d,me)),w:null,club:false,pure:d.pool==="draft"}; }
+  return null; }
 function wpick(arr,wf){ let t=0; const ws=arr.map(x=>{const w=Math.max(0,wf(x));t+=w;return w;}); if(t<=0) return null; let r=Math.random()*t; for(let i=0;i<arr.length;i++){ r-=ws[i]; if(r<=0) return arr[i]; } return arr[arr.length-1]; }
 const SCORE_W={BU:5,AG:3,AD:3,MOC:2.6,MC:1.1,MG:1.6,MD:1.6,MDC:.45,DC:.35,DD:.3,DG:.3,PG:.5,PD:.5,GB:0};
 const ASSIST_W={MOC:4,AG:3,AD:3,MC:2.4,MG:2.6,MD:2.6,BU:1.6,DD:1.4,DG:1.4,PG:1.8,PD:1.8,MDC:.9,DC:.3,GB:.05};
@@ -2712,8 +2759,8 @@ function renderDuo(){ const el=$("#jDuo"); if(!el) return; el.innerHTML=duoHTML(
 const duoMine=()=>Object.values(duos).filter(duoActive).sort((a,b)=>duoTodo(b)-duoTodo(a)||(b.created||0)-(a.created||0));
 function duoPickBy(d){ const m={}; for(const q of d.picks) if(q.pid) m[q.pid]=q.by; return m; }
 function duoTeamHTML(d,s,can){ const t=d.teams[s], f=FORMATS[d.format], by=duoPickBy(d);
-  const row=(k,kind,role,pid,i)=>{ const p=BY_ID[pid]; const hp=p&&kind==="xi"?hpPen(p,role):0; const click=can&&!pid;
-    return `<button class="duor${click?" duocan":""}" ${click?`data-d4="${kind}" data-d4i="${i}" data-d4r="${role}"`:"disabled"}><b>${role}</b><span>${p?esc(p.name):click?`<i style="color:#7ee2a0">+ Choisir</i>`:`<i class="mute">—</i>`}${p?`<small>choisi par ${esc(NAMES[by[pid]]||"?")}</small>`:""}</span><em>${p?(kind==="coach"?p.ovr:p.ovr)+(hp?` ⚠️−${hp}%`:""):""}</em></button>`; };
+  const row=(k,kind,role,pid,i)=>{ const p=BY_ID[pid]; const hp=p&&kind==="xi"?hpPen(p,role):0; const click=can&&!pid; const cbv=p&&kind==="xi"?coachBonus(t.coach,p,role):0;
+    return `<button class="duor${click?" duocan":""}" ${click?`data-d4="${kind}" data-d4i="${i}" data-d4r="${role}"`:"disabled"}><b>${role}</b><span>${p?esc(p.name):click?`<i style="color:#7ee2a0">+ Choisir</i>`:`<i class="mute">—</i>`}${p?`<small>choisi par ${esc(NAMES[by[pid]]||"?")}</small>`:""}</span><em>${p?p.ovr+(cbv?` <i class="${cbv>0?"cbu":"cbd"}">🧠${cbv>0?"+":""}${cbv}</i>`:"")+(hp?` <i class="cbd">⚠️−${hp}%</i>`:""):""}</em></button>`; };
   return `<div class="duol">${F[d.form[s]].map(([r],i)=>row(i,"xi",r,t.slots[i],i)).join("")}${f.bench?Array.from({length:f.bench},(_,i)=>row("b"+i,"bench","R"+(i+1),t.bench[i],i)).join(""):""}${f.coach?row("c","coach","COA",t.coach,0):""}</div>`; }
 function duoHTML(){
   const head=`<h3>👥 Duo · 2 contre 2</h3>`;
@@ -2749,7 +2796,9 @@ function duoHTML(){
         ${!R[me]?`<button class="btn big" id="d4Ready" ${bad?"disabled":""}>✅ Je suis prêt</button>`:duoLaunchable(d)?`<button class="btn big" id="d4Go">▶️ Lancer le match</button>`:`<div class="mute" style="text-align:center;font-size:13px">En attente des autres…</div>`}`; }
     const tabs=`<div class="tabs" style="margin:8px 0 6px;padding:0">${[my,op].map(s=>`<button class="tab${s===duoView?" on":""}" data-d4v="${s}">${s===my?"Notre équipe":"Adversaires"}<small>${esc(d.form[s])} · ${dCount(d.teams[s])}/${N}</small></button>`).join("")}</div>`;
     const last=d.picks.slice().reverse().slice(0,6);
-    body=ban+tabs+duoTeamHTML(d,duoView,can)
+    let pan=""; try{ const pu=d.pool==="draft", rv=teamRate(duoTeamC(d,duoView),null,false,pu), ro=teamRate(duoTeamC(d,duoView===my?op:my),null,false,pu);
+      pan=teamPanelHTML("duo:"+d.id+":"+duoView,rv,duoView===my?"📊 Notre équipe":"📊 Adversaires",`Face à ${esc(duoNames(d,duoView===my?op:my))} : <b>${ro.global??"—"}</b>`); }catch(e){ console.error(e); }
+    body=ban+tabs+pan+duoTeamHTML(d,duoView,can)
       +(can&&d.pool==="coll"?`<button class="btn ghost sm" id="d4Pass" style="margin-top:6px">⏭️ Passer (plus aucune carte utile)</button>`:"")
       +(last.length?`<h4 style="margin:12px 0 4px">Derniers choix</h4>${last.map(q=>`<div class="logrow"><span>${esc(NAMES[q.by]||"?")} → ${q.pass?"passe son tour":esc(BY_ID[q.pid]?.name||"?")}</span></div>`).join("")}`:"");
   }
@@ -3999,7 +4048,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-22k"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-22l"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
