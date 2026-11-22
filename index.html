@@ -540,6 +540,31 @@ html:has(.modal.open),body:has(.modal.open){overflow:hidden}
 .chati{display:flex;gap:8px;padding:10px 12px;border-top:1px solid #1d2b55}.chati input{flex:1;min-width:0;padding:11px 12px;border-radius:12px;border:1px solid #2a3b6b;background:#0b1530;color:#fff;font-size:16px}
 .cprev{position:fixed;right:76px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:30;max-width:60vw;background:#101c3d;border:1px solid #2a3b6b;border-radius:12px;padding:7px 10px;font-size:13px;box-shadow:0 4px 14px #0008;animation:fadeo 4s forwards}
 @keyframes fadeo{0%,80%{opacity:1}100%{opacity:0}}
+
+/* ===== 📱 Interface façon jeu mobile ===== */
+body{padding-bottom:calc(78px + env(safe-area-inset-bottom))}
+header{padding:10px 16px 4px;min-height:44px}header h1{font-size:19px;margin:0;line-height:1.05;letter-spacing:-.2px}header h1 span{display:block;font-size:12px;letter-spacing:4px;text-transform:uppercase}header .sub{display:none}header .sync{font-size:10px;margin-top:3px}#appV{font-size:9px!important;margin-top:0!important}
+.bnav{position:fixed;left:0;right:0;bottom:0;z-index:9;display:flex;max-width:640px;margin:0 auto;background:rgba(9,16,38,.97);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid #23325e;border-radius:18px 18px 0 0;padding:6px 4px calc(6px + env(safe-area-inset-bottom));box-shadow:0 -6px 24px #0008}
+.bnav button{flex:1;border:0;background:none;color:#8193c4;display:flex;flex-direction:column;align-items:center;gap:3px;font:inherit;font-size:10.5px;font-weight:800;padding:5px 0 3px;position:relative;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.bnav button i{font-style:normal;font-size:23px;line-height:1;transition:transform .18s;filter:grayscale(.5) opacity(.8)}
+.bnav button.on{color:#fff}.bnav button.on i{transform:translateY(-3px) scale(1.15);filter:drop-shadow(0 0 10px #e3002bcc)}
+.bnav button.on::before{content:"";position:absolute;top:-6px;left:28%;right:28%;height:3px;border-radius:3px;background:var(--rouge);box-shadow:0 0 10px var(--rouge)}
+.bnav button[data-badge]:not([data-badge=""])::after{content:attr(data-badge);position:absolute;top:0;right:calc(50% - 22px);background:#ffd970;color:#111;font-size:10px;font-weight:900;border-radius:999px;padding:1px 5px;animation:bdg 1.6s ease-in-out infinite}
+.toast{bottom:calc(92px + env(safe-area-inset-bottom))!important}.chatfab{bottom:calc(88px + env(safe-area-inset-bottom))!important}
+.backbar{position:sticky;top:0;z-index:8;display:flex;align-items:center;gap:10px;padding:8px 12px;margin:4px 0 0;background:rgba(9,16,38,.95);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid #1d2b55}
+.backbar button{border:0;background:#1d2b55;color:#c8d6ff;font:inherit;font-weight:800;font-size:13px;padding:7px 12px;border-radius:999px;cursor:pointer}.backbar b{font-size:15px}
+.hubh{margin:10px 2px 10px}.hubh h2{margin:0;font-size:24px;font-weight:900;letter-spacing:-.3px}.hubh small{color:var(--mute);font-size:12.5px}
+.hub{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.tile{position:relative;overflow:hidden;border:0;border-radius:20px;padding:14px 12px 12px;min-height:126px;text-align:left;color:#fff;display:flex;flex-direction:column;justify-content:space-between;gap:8px;font:inherit;cursor:pointer;box-shadow:0 8px 20px #0007,inset 0 1px 0 #ffffff30;transition:transform .12s;-webkit-tap-highlight-color:transparent;width:100%}
+.tile:active{transform:scale(.95)}.tile.wide{grid-column:span 2;min-height:92px;margin-bottom:10px}
+.tile .ti{font-size:34px;line-height:1;filter:drop-shadow(0 4px 5px #0008)}.tile .tw{position:absolute;right:-14px;bottom:-22px;font-size:96px;opacity:.13;transform:rotate(-12deg);pointer-events:none}
+.tile b{display:block;font-size:17px;font-weight:900;text-shadow:0 2px 4px #0006}.tile small{display:block;font-size:11.5px;font-weight:600;opacity:.92;line-height:1.3;margin-top:2px}
+.tile .tb{position:absolute;top:9px;right:9px;background:#ffd970;color:#111;font-size:11px;font-weight:900;border-radius:999px;padding:3px 9px;box-shadow:0 2px 8px #0006;animation:bdg 1.6s ease-in-out infinite}
+.segs{display:flex;gap:6px;overflow-x:auto;margin:0 0 8px;padding:4px;background:#0f1d40;border-radius:14px;scrollbar-width:none}.segs::-webkit-scrollbar{display:none}
+.segs button{flex:1 1 auto;border:0;background:none;color:var(--mute);font:inherit;font-weight:800;font-size:12px;padding:9px 6px;border-radius:10px;cursor:pointer;white-space:nowrap}.segs button.on{background:var(--rouge);color:#fff}
+.segs .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#ffd970;vertical-align:middle}
+.section{border-radius:18px}
+.bar{flex-wrap:nowrap}.bar select{min-width:0;flex:1}.bar .btn{white-space:nowrap;padding-left:10px;padding-right:10px}
 </style>
 </head>
 <body>
@@ -562,7 +587,9 @@ html:has(.modal.open),body:has(.modal.open){overflow:hidden}
   <div class="sub">Tous les joueurs passés par Lyon depuis 2000</div>
   <div class="sync" id="sync">Connexion…</div><div id="appV" style="text-align:center;font-size:10px;opacity:.45;margin-top:2px"></div>
 </header>
-<div class="modes"><button id="mCompo" class="on">11 type</button><button id="mDraft">⚡ Draft</button><button id="mMatch">🏟️ Match</button><button id="mCollec">🎴 Collec</button><button id="mLigue">🏆 Ligue</button><button id="mJeux">🎮 Jeux</button></div>
+<div class="backbar" id="backbar" style="display:none"></div>
+<nav class="bnav" id="bnav"><button id="nCompo" class="on"><i>⚽</i>Mon 11</button><button id="nOnline"><i>🌐</i>En ligne</button><button id="nSolo"><i>🎮</i>Solo</button><button id="nCollec"><i>🎴</i>Collec</button><button id="nOL"><i>📰</i>OL</button></nav>
+<div class="modes" style="display:none"><button id="mCompo" class="on">11 type</button><button id="mDraft">⚡ Draft</button><button id="mMatch">🏟️ Match</button><button id="mCollec">🎴 Collec</button><button id="mLigue">🏆 Ligue</button><button id="mJeux">🎮 Jeux</button></div>
 <div class="hype" id="hype"></div>
 <div id="viewCompo">
 <div class="tabs" id="tabs"></div>
@@ -571,7 +598,7 @@ html:has(.modal.open),body:has(.modal.open){overflow:hidden}
     <label for="formation">Système</label>
     <select id="formation"></select>
     <button class="btn ghost" id="autoXI">🪄 Auto</button>
-    <button class="btn ghost" id="reset">Vider mon 11</button>
+    <button class="btn ghost" id="reset">🗑️ Vider</button>
   </div>
   <div class="pitch" id="pitch">
     <svg class="lines" viewBox="0 0 68 100" preserveAspectRatio="none">
@@ -651,6 +678,9 @@ html:has(.modal.open),body:has(.modal.open){overflow:hidden}
   <div class="section" id="jDuo"></div>
   <div class="section" id="jStats"></div>
 </div>
+<div id="viewOnline" class="wrap" style="display:none"><div id="onHub"></div><div id="onSub"></div></div>
+<div id="viewSolo" class="wrap" style="display:none"><div id="soHub"></div><div id="soSub"></div></div>
+<div id="viewOL" class="wrap" style="display:none"><div class="hubh"><h2>📰 OL &amp; classements</h2><small>L'actu du club, les classements, tes pronos et tes objectifs</small></div><div class="segs" id="olSegs"></div><div id="olBody"></div></div>
 <div id="viewLigue" class="wrap" style="display:none">
   <div id="lEvent"></div>
   <div class="section" id="lObj"></div>
@@ -997,7 +1027,7 @@ function filled(c){return Object.values(c.slots).filter(Boolean).length;}
 function renderTabs(){
   if(peek&&C(peek)){ viewing=peek; $("#tabs").style.display="";
     $("#tabs").innerHTML=`<div class="peekbar"><span>👀 11 type de <b>${esc(NAMES[peek]||"?")}</b></span><button class="btn sm ghost" id="peekBack">← Retour</button></div>`;
-    $("#peekBack").onclick=()=>{ const id=peek; peek=null; setMode("ligue"); showProfile(id); }; return; }
+    $("#peekBack").onclick=()=>{ const id=peek; peek=null; olSel="rank"; setMode("ol"); showProfile(id); }; return; }
   viewing=me; $("#tabs").innerHTML=""; $("#tabs").style.display="none"; $("#who").textContent=(NAMES[me]||"?")+" · compte"; return; // les 11 des autres se voient depuis leur profil (Ligue → Joueurs)
   for(const w of [me,...others()]){
     const c=C(w); const b=document.createElement("button"); b.className="tab"+(w===viewing?" on":"");
@@ -1193,8 +1223,8 @@ $("#formation").innerHTML=Object.keys(F).map(f=>`<option>${f}</option>`).join(""
 $("#formation").onchange=e=>{ compos[me].formation=e.target.value; render(); save(); };
 $("#autoXI").onclick=()=>{ const c=compos[me]; if(!c) return; c.slots=autoPlace(c.slots,c.formation); render(); save(); toast("🪄 Joueurs placés à leur meilleur poste"); };
 let resetArm=false;
-$("#reset").onclick=e=>{ if(!resetArm){resetArm=true;e.target.textContent="Sûr ? Re-touche";setTimeout(()=>{resetArm=false;e.target.textContent="Vider mon 11";},3000);return;}
-  resetArm=false;e.target.textContent="Vider mon 11"; const o=W(); o.slots={}; o.bench={}; o.coach=null; o.loadedId=null; render(); save(); toast("11 type vidé (ta collection et ta progression sont gardées)"); };
+$("#reset").onclick=e=>{ if(!resetArm){resetArm=true;e.target.textContent="Sûr ?";setTimeout(()=>{resetArm=false;e.target.textContent="🗑️ Vider";},3000);return;}
+  resetArm=false;e.target.textContent="🗑️ Vider"; const o=W(); o.slots={}; o.bench={}; o.coach=null; o.loadedId=null; render(); save(); toast("11 type vidé (ta collection et ta progression sont gardées)"); };
 
 function toast(t,bad){ const el=$("#toast"); el.textContent=t; el.style.background=bad?"#b4432b":"#1f8a4c"; el.style.display="block"; clearTimeout(toast.t); toast.t=setTimeout(()=>el.style.display="none",2500); }
 async function saveNow(msg){
@@ -1288,7 +1318,7 @@ let invPrev=null;
 function invWatch(all){
   const cur={}; for(const [k,x] of Object.entries(all||{})){ if(x&&x.mode!=="duo"&&Array.isArray(x.players)&&x.players.includes(me)) cur[k]=x; }
   if(invPrev){ for(const [k,x] of Object.entries(cur)){ const was=invPrev[k]||{}; const kind=x.mode==="budget"?"partie Budget":"draft";
-    if(x.inv&&x.inv.by!==me&&(!was.inv||was.inv.at!==x.inv.at)) toast(`📨 ${NAMES[x.inv.by]||"?"} t'invite à un ${kind} (onglet Draft)`);
+    if(x.inv&&x.inv.by!==me&&(!was.inv||was.inv.at!==x.inv.at)) toast(`📨 ${NAMES[x.inv.by]||"?"} t'invite à un ${kind} (🌐 En ligne)`);
     if(was.inv&&was.inv.by===me&&!x.inv&&x.refused&&x.refused.by!==me&&x.refused.at>was.inv.at) toast(`❌ ${NAMES[x.refused.by]||"?"} a refusé ton invitation au ${kind}`,true);
     if(was.inv&&was.inv.by===me&&!x.inv&&x.status==="running") toast(`✅ ${NAMES[x.players.find(p=>p!==me)]||"?"} a accepté : le ${kind} commence !`); } }
   invPrev={}; for(const [k,x] of Object.entries(cur)) invPrev[k]={inv:x.inv||null};
@@ -1347,7 +1377,89 @@ function dRestart(){ const ex=drafts[dKey()]; const d=dNorm(ex||draft,me,dOpp); 
 let dResetArm=false;
 $("#dReset").onclick=e=>{ if(!dResetArm){dResetArm=true;e.target.textContent="Sûr ? Tout le draft sera effacé (re-touche)";setTimeout(()=>{dResetArm=false;e.target.textContent="Recommencer le draft";},3500);return;} dResetArm=false; e.target.textContent="Recommencer le draft"; dRestart(); };
 $("#dNew").onclick=dRestart; $("#dPlay").onclick=()=>playDraftMatch("classic");
-function setMode(m){ mode=m; peek=null; setTimeout(()=>{ if(tipSeen("welcome")) tip("tab_"+m); },350); for(const [b,v,k] of [["#mCompo","#viewCompo","compo"],["#mDraft","#viewDraft","draft"],["#mMatch","#viewMatch","match"],["#mCollec","#viewCollec","collec"],["#mLigue","#viewLigue","ligue"],["#mJeux","#viewJeux","jeux"]]){ $(b).classList.toggle("on",m===k); $(v).style.display=m===k?"":"none"; } $("#dHistWrap").style.display=m==="draft"?"":"none"; if(m==="jeux") renderJeux(); else if(m==="draft"){ renderDraft(); renderDraftHist(); } else if(m==="match") renderMatch(); else if(m==="collec") renderCollec(); else if(m==="ligue") renderLigue(); else render(); window.scrollTo(0,0); }
+// 📱 Navigation façon jeu mobile : 5 onglets en bas, pages « En ligne » et « Solo » en tuiles, page « OL »
+const NAV_OF={compo:"nCompo",draft:"nOnline",online:"nOnline",solo:"nSolo",collec:"nCollec",ol:"nOL"};
+const VIEWS={compo:"#viewCompo",draft:"#viewDraft",match:"#viewMatch",collec:"#viewCollec",online:"#viewOnline",solo:"#viewSolo",ol:"#viewOL"};
+let onSel=null, soSel=null, olSel="actu", matchBack="online";
+const inJ=()=>["online","solo","ol"].includes(mode);
+function setMode(m){ if(m==="jeux") m="solo"; if(m==="ligue") m="ol";
+  if(m==="match"&&mode!=="match") matchBack=["solo","ol","compo"].includes(mode)?(mode==="compo"?"online":mode):"online";
+  mode=m; peek=null; setTimeout(()=>{ if(tipSeen("welcome")) tip("tab_"+m); },350);
+  for(const [k,v] of Object.entries(VIEWS)){ const e=$(v); if(e) e.style.display=m===k?"":"none"; }
+  const nv=m==="match"?(matchBack==="solo"?"nSolo":matchBack==="ol"?"nOL":"nOnline"):NAV_OF[m]; document.querySelectorAll("#bnav button").forEach(b=>b.classList.toggle("on",b.id===nv));
+  $("#dHistWrap").style.display=m==="draft"?"":"none";
+  if(m==="draft"){ renderDraft(); renderDraftHist(); } else if(m==="match") renderMatch(); else if(m==="collec") renderCollec(); else if(m==="online") renderOnline(); else if(m==="solo") renderSolo(); else if(m==="ol") renderOL(); else render();
+  renderBack(); window.scrollTo(0,0); }
+const SUBN={duo:"👥 2 contre 2",cup:"🏟️ Coupes",league:"🏆 Championnats",career:"🧗 Carrière",defi:"🎯 Défi du jour",quiz:"🧠 Quiz OL",sofa:"🛋️ Canapé"};
+function renderBack(){ const B=$("#backbar"); if(!B) return; let t=null, go=null;
+  if(mode==="draft"){ t=dSub==="budget"?"💰 Draft Budget":"⚡ Draft"; go=()=>setMode("online"); }
+  else if(mode==="match"){ t="🏟️ Match"; go=()=>setMode(matchBack); }
+  else if(mode==="online"&&onSel){ t=SUBN[onSel]; go=()=>{ onSel=null; renderOnline(); renderBack(); window.scrollTo(0,0); }; }
+  else if(mode==="solo"&&soSel){ t=SUBN[soSel]; go=()=>{ soSel=null; renderSolo(); renderBack(); window.scrollTo(0,0); }; }
+  if(!t){ B.style.display="none"; return; }
+  const home=mode==="match"?(matchBack==="solo"?"🎮 Solo":matchBack==="ol"?"📰 OL":"🌐 En ligne"):mode==="solo"?"🎮 Solo":"🌐 En ligne";
+  B.style.display=""; B.innerHTML=`<button id="backBtn">‹ ${home}</button><b>${t}</b>`; $("#backBtn").onclick=go; }
+// tuiles : état de chaque mode (badge = quelque chose t'attend)
+function hubTile(k,ic,title,st,grad,badge,wide){ return `<button class="tile${wide?" wide":""}" data-tile="${k}" style="background:${grad}"><span class="tw">${ic}</span><span class="ti">${ic}</span><span><b>${title}</b><small>${st||""}</small></span>${badge?`<span class="tb">${badge}</span>`:""}</button>`; }
+function drStatus(list){ const mine=list.filter(d=>d&&Array.isArray(d.players)&&d.players.includes(me)); const o=d=>NAMES[d.players.find(x=>x!==me)]||"?";
+  const t=mine.find(d=>d.status==="running"&&d.turn===me); if(t) return ["⚡ À toi de jouer vs "+o(t),"À toi !"];
+  const iv=mine.find(d=>invFor(d)&&invFor(d)!==me); if(iv) return ["📨 "+(NAMES[invFor(iv)]||"?")+" t'invite","📨"];
+  const rd=mine.find(d=>d.status==="done"&&!(d.ready||{})[me]); if(rd) return ["🏁 Équipes prêtes vs "+o(rd),"Prêt ?"];
+  const r=mine.find(d=>d.status==="running"); if(r) return ["⏳ En cours vs "+o(r),null];
+  return [null,null]; }
+let hubCache={};
+function setHub(el,html){ if(el&&hubCache[el.id]!==html){ hubCache[el.id]=html; el.innerHTML=html; return true; } return false; }
+function renderHubs(){ if(!me) return;
+  if(mode==="online"&&!onSel){ const H=$("#onHub"); const live=typeof sharedLive==="function"&&sharedLive();
+    const dr=drStatus(Object.values(drafts||{})), bu=drStatus(Object.values(budgets||{}));
+    const dl=duoMine(), dt=dl.find(d=>duoTodo(d)>=3); const duoS=dt?(dt.status==="lobby"?["📨 Invitation de "+(NAMES[dt.by]||"?"),"📨"]:dt.status==="running"?["⚡ À toi de choisir !","À toi !"]:["🏁 Prêts ?","Prêt ?"]):dl.length?["⏳ "+dl.length+" partie"+(dl.length>1?"s":"")+" en cours",null]:[null,null];
+    const Lm=Object.values(leagues||{}).filter(L=>(L.members||[]).includes(me)&&L.status!=="done"), Li=Object.values(leagues||{}).filter(invitedMe);
+    const Km=Object.values(cups||{}).filter(K=>(K.members||[]).includes(me)&&K.status!=="done"), Ki=Object.values(cups||{}).filter(invitedMe);
+    const html=`<div class="hubh"><h2>🌐 En ligne</h2><small>Affronte tes potes : drafts, championnats, coupes…</small></div>
+      ${live?hubTile("live","🔴","Match en direct","Touche pour regarder","linear-gradient(135deg,#e3002b,#7a0018)","LIVE",true):""}
+      <div class="hub">
+      ${hubTile("draft","⚡","Draft",dr[0]||"5 joueurs proposés par poste, chacun son tour","linear-gradient(135deg,#1d4ed8,#0b1f5c)",dr[1])}
+      ${hubTile("budget","💰","Draft Budget",bu[0]||"Même budget, mêmes propositions","linear-gradient(135deg,#b7791f,#5a3a07)",bu[1])}
+      ${hubTile("duo","👥","2 contre 2",duoS[0]||"En duo avec un pote, à 4 en direct","linear-gradient(135deg,#7c3aed,#2e1065)",duoS[1])}
+      ${hubTile("league","🏆","Championnats",Li.length?"📨 Invitation à « "+esc(Li[0].name)+" »":Lm.length?Lm.length+" en cours · matchs auto":"Chacun contre tous, matchs auto","linear-gradient(135deg,#0f766e,#053b37)",Li.length?"📨":null)}
+      ${hubTile("cup","🏟️","Coupes",Ki.length?"📨 Invitation à « "+esc(Ki[0].name)+" »":Km.length?Km.length+" en cours · aller-retour":"Élimination directe, tirs au but","linear-gradient(135deg,#be123c,#4c0519)",Ki.length?"📨":null)}
+      ${hubTile("match","⚔️","Match amical",live?"🔴 Un match est en direct":"Ton 11 type contre celui d'un pote","linear-gradient(135deg,#334155,#0f172a)",null)}
+      </div>`;
+    if(setHub(H,html)) H.querySelectorAll("[data-tile]").forEach(b=>b.onclick=()=>openTile(b.dataset.tile)); }
+  if(mode==="solo"&&!soSel){ const H=$("#soHub"); const c=W(); let car="", df="", qz="";
+    try{ const k=careerState(); car=`Niveau ${Math.min(k.lvl+1,CAREER.length)}/${CAREER.length} · ${careerLeft()}/${CAREER_MAX} matchs aujourd'hui`; }catch(e){}
+    try{ const D=c.dch; df=D&&D.day===today()&&D.done?`✅ Joué aujourd'hui : ${D.score.join("-")}`:"🎯 À jouer aujourd'hui · 1 essai"; }catch(e){}
+    try{ const n=c.quiz&&c.quiz.d===today()?c.quiz.n:0; qz=`${n}/${QUIZ_MAX} quiz récompensés aujourd'hui`; }catch(e){}
+    const defiTodo=!(c.dch&&c.dch.day===today()&&c.dch.done), quizTodo=!(c.quiz&&c.quiz.d===today()&&c.quiz.n>=QUIZ_MAX);
+    const html=`<div class="hubh"><h2>🎮 Solo</h2><small>Joue seul, ou à deux sur ce téléphone</small></div><div class="hub">
+      ${hubTile("career","🧗","Carrière",car,"linear-gradient(135deg,#0369a1,#082f49)",null)}
+      ${hubTile("defi","🎯","Défi du jour",df,"linear-gradient(135deg,#ea580c,#7c2d12)",defiTodo?"!":null)}
+      ${hubTile("quiz","🧠","Quiz OL",qz,"linear-gradient(135deg,#9333ea,#3b0764)",quizTodo?"!":null)}
+      ${hubTile("sofa","🛋️","Canapé",sofa?"⏳ Partie en cours":"2 joueurs, 1 téléphone","linear-gradient(135deg,#15803d,#052e16)",null)}
+      ${hubTile("cpu","🤖","Contre l'ordi","Ton 11 type contre l'ordinateur","linear-gradient(135deg,#475569,#0f172a)",null,true)}
+      </div>`;
+    if(setHub(H,html)) H.querySelectorAll("[data-tile]").forEach(b=>b.onclick=()=>openTile(b.dataset.tile)); } }
+function openTile(k){ hubCache={};
+  if(k==="draft"||k==="budget"){ dSub=k==="budget"?"budget":"classic"; setMode("draft"); return; }
+  if(k==="match"||k==="live"||k==="cpu"){ if(mode==="solo") matchBack="solo"; setMode("match"); return; }
+  if(["duo","cup","league"].includes(k)){ onSel=k; renderOnline(); renderBack(); window.scrollTo(0,0); try{ tip(k==="league"?"league":k==="cup"?"cup":"tab_online"); }catch(e){} return; }
+  soSel=k; renderSolo(); renderBack(); window.scrollTo(0,0); try{ tip(k); }catch(e){} }
+const ON_SUB={duo:"#jDuo",cup:"#jCup",league:"#lLeague"}, SO_SUB={career:"#jCareer",defi:"#jDefi",quiz:"#jQuizS",sofa:"#jSofa"};
+function showSub(map,sel){ for(const [k,q] of Object.entries(map)){ const e=$(q); if(e) e.style.display=k===sel?"":"none"; } }
+function renderOnline(){ if(!me) return; $("#onHub").style.display=onSel?"none":""; showSub(ON_SUB,onSel);
+  if(onSel==="league") renderLigue(); else if(onSel) renderJeux(); hubCache.onHub=null; renderHubs(); }
+function renderSolo(){ if(!me) return; $("#soHub").style.display=soSel?"none":""; showSub(SO_SUB,soSel); if(soSel) renderJeux(); hubCache.soHub=null; renderHubs(); }
+const OL_SEGS=[["actu","📰 Actu",["#jNews","#lFeed"]],["rank","📊 Classements",["#jTable","#lRank","#lPlayers","#jStats"]],["prono","🔮 Pronos",["#jPred"]],["obj","🎯 Objectifs",["#lEvent","#lObj"]]];
+function renderOL(){ if(!me) return; const S=$("#olSegs");
+  S.innerHTML=OL_SEGS.map(([k,l])=>`<button class="${k===olSel?"on":""}" data-ol="${k}">${l}${k==="actu"&&typeof newsUnread==="function"&&newsUnread()?" <i class='dot'></i>":k==="obj"&&objClaimable()?" <i class='dot'></i>":""}</button>`).join("");
+  S.querySelectorAll("[data-ol]").forEach(b=>b.onclick=()=>{ olSel=b.dataset.ol; renderOL(); });
+  for(const [k,,ids] of OL_SEGS) for(const q of ids){ const e=$(q); if(e) e.style.display=k===olSel?"":"none"; }
+  renderJeux(); renderLigue(); }
+$("#nCompo").onclick=()=>setMode("compo"); $("#nOnline").onclick=()=>{ onSel=null; setMode("online"); }; $("#nSolo").onclick=()=>{ soSel=null; setMode("solo"); }; $("#nCollec").onclick=()=>setMode("collec"); $("#nOL").onclick=()=>setMode("ol");
+// on range les sections existantes dans leurs nouvelles pages
+(()=>{ const mv=(q,to)=>{ const e=$(q), t=$(to); if(e&&t) t.appendChild(e); };
+  ["#jDuo","#jCup","#lLeague"].forEach(q=>mv(q,"#onSub")); ["#jCareer","#jDefi","#jQuizS","#jSofa"].forEach(q=>mv(q,"#soSub"));
+  ["#lEvent","#jNews","#lFeed","#jTable","#lRank","#lPlayers","#jStats","#jPred","#lObj"].forEach(q=>mv(q,"#olBody")); })();
 $("#mCompo").onclick=()=>setMode("compo"); $("#mDraft").onclick=()=>setMode("draft"); $("#mMatch").onclick=()=>setMode("match"); $("#mCollec").onclick=()=>setMode("collec"); $("#mLigue").onclick=()=>setMode("ligue"); $("#mJeux").onclick=()=>setMode("jeux");
 function renderDraft(){
   if(!me) return;
@@ -1490,7 +1602,7 @@ const liveOf=id=>{ const b=(BY_ID[id]&&BY_ID[id].base)||id; return (LIVE.players
 const liveMod=id=>{ const x=liveOf(id); return x?Math.max(-6,Math.min(3,x.mod|0)):0; };
 const LIVE_IC={inj:"🤕",sus:"🟥",up:"📈",down:"📉"};
 const liveIcon=id=>{ const x=liveOf(id); if(!x) return ""; return LIVE_IC[x.st]||(x.mod>0?"📈":x.mod<0?"📉":""); };
-async function loadLive(){ try{ const r=await fetch("live.json?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const d=await r.json(); if(d&&d.players){ LIVE=d; try{ render(); settlePreds(); if(mode==="jeux") renderJeux(); }catch(e){} } }catch(e){} }
+async function loadLive(){ try{ const r=await fetch("live.json?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const d=await r.json(); if(d&&d.players){ LIVE=d; try{ render(); settlePreds(); if(inJ()) renderJeux(); }catch(e){} } }catch(e){} }
 loadLive(); setInterval(loadLive,30*60000);
 // ⚠️ Joueur hors de son poste naturel (perd des points dans le moteur de match)
 function hpPen(p,role){ if(!p||!role||p.pos[0]==="COACH"||role==="COACH"||!F) return 0; const f=fit(p,role); return f<1?Math.round((1-f)*100):0; }
@@ -2633,7 +2745,7 @@ function onBudgetData(all){
   if(mode==="draft"&&dSub==="budget") renderBudget();
 }
 function renderDraftSwitch(){
-  const el=$("#dSwitch"); el.innerHTML=[["classic","⚡ Draft classique"],["budget","💰 Mode Budget"]].map(([k,l])=>`<button class="chip${dSub===k?" on":""}" data-ds="${k}">${l}</button>`).join("");
+  const el=$("#dSwitch"); el.style.display="none"; el.innerHTML=[["classic","⚡ Draft classique"],["budget","💰 Mode Budget"]].map(([k,l])=>`<button class="chip${dSub===k?" on":""}" data-ds="${k}">${l}</button>`).join("");
   el.querySelectorAll("[data-ds]").forEach(b=>b.onclick=()=>{ dSub=b.dataset.ds; renderDraft(); });
   $("#dClassic").style.display=dSub==="classic"?"":"none"; $("#bView").style.display=dSub==="budget"?"":"none";
 }
@@ -2793,17 +2905,17 @@ function onDuoData(all){ const prev=duoPrev; duoPrev={}; duos={};
   for(const [k,x] of Object.entries(all||{})){ if(!x||!Array.isArray(x.players)||!x.players.includes(me)) continue;
     const d=duoNorm(x); d.id=d.id||k; duos[k]=d; duoPrev[k]={status:d.status,turn:d.turn,n:d.picks.length};
     if(!prev) continue; const p=prev[k];
-    if(!p&&d.status==="lobby"&&d.by!==me) toast(`👥 ${NAMES[d.by]||"?"} t'invite à un 2 contre 2 (onglet 🎮 Jeux)`);
+    if(!p&&d.status==="lobby"&&d.by!==me) toast(`👥 ${NAMES[d.by]||"?"} t'invite à un 2 contre 2 (🌐 En ligne)`);
     if(!p) continue;
     if(p.status==="lobby"&&d.status==="running") toast(d.turn===me?"👥 Les 4 ont accepté : tu choisis en premier !":"👥 Les 4 ont accepté : le draft en duo commence !");
-    else if(p.status==="running"&&d.status==="done") toast("🏁 Draft en duo terminé : passez « Prêt » dans 🎮 Jeux");
+    else if(p.status==="running"&&d.status==="done") toast("🏁 Draft en duo terminé : passez « Prêt » dans 🌐 En ligne");
     else if(p.status!=="cancelled"&&d.status==="cancelled"){ const w=(d.refused||d.cancelled||{}).by; if(w!==me) toast(`❌ ${NAMES[w]||"?"} ${d.refused?"a refusé":"a annulé"} le 2 contre 2`,true); }
     else if(d.picks.length>p.n){ const L=d.picks.slice(p.n).filter(q=>q.by!==me); L.forEach(q=>toast(q.pass?`${NAMES[q.by]||"?"} passe son tour`:`${NAMES[q.by]||"?"} a pris ${BY_ID[q.pid]?.name||"?"}`));
       if(d.status==="running"&&d.turn===me&&L.length) setTimeout(()=>toast("👥 À toi de choisir dans le 2 contre 2 !"),1600); } }
   if(editing&&editing.mode==="duo4"){ const d=duos[editing.id]; if(!d||d.status!=="running"||d.turn!==me) closeSheet(); else renderList(); }
-  if(mode==="jeux") renderDuo(); }
-function renderDuo(){ const el=$("#jDuo"); if(!el) return; el.innerHTML=duoHTML(); bindDuo();
-  if(Object.values(duos).some(d=>duoTodo(d)>=3)&&el.parentNode&&el.parentNode.firstElementChild!==el) el.parentNode.prepend(el); }
+  if(inJ()) renderDuo(); }
+function renderDuo(){ const el=$("#jDuo"); if(!el) return; el.innerHTML=duoHTML(); bindDuo(); try{ renderHubs(); }catch(e){}
+}
 const duoMine=()=>Object.values(duos).filter(duoActive).sort((a,b)=>duoTodo(b)-duoTodo(a)||(b.created||0)-(a.created||0));
 function duoPickBy(d){ const m={}; for(const q of d.picks) if(q.pid) m[q.pid]=q.by; return m; }
 const PITCH_SVG=`<svg class="lines" viewBox="0 0 68 100" preserveAspectRatio="none"><g fill="none" stroke="#ffffff66" stroke-width=".35"><rect x="2" y="2" width="64" height="96"/><line x1="2" y1="50" x2="66" y2="50"/><circle cx="34" cy="50" r="8"/><rect x="16" y="2" width="36" height="15"/><rect x="25" y="2" width="18" height="5.5"/><rect x="16" y="83" width="36" height="15"/><rect x="25" y="92.5" width="18" height="5.5"/></g></svg>`;
@@ -2969,8 +3081,8 @@ async function l1Fetch(){ if(L1.busy) return; L1.busy=true;
       for(const [T,me_,op] of [[H,hs,as],[A,as,hs]]){ const r=byId[String(T.team?.id)]; if(!r) continue; r.j++; r.bp+=me_; r.bc+=op; if(me_>op){ r.g++; r.pts+=3; } else if(me_===op){ r.n++; r.pts+=1; } else r.p++; r.live=`${me_}-${op}`; } }
     L1.rows=rows; L1.live=live; L1.src="espn"; L1.at=Date.now();
   }catch(e){ L1.src="file"; L1.at=Date.now(); }
-  L1.busy=false; if(mode==="jeux") renderTable();
-  clearTimeout(L1.timer); if(L1.src==="espn"&&L1.live.length&&mode==="jeux") L1.timer=setTimeout(l1Fetch,60000); }
+  L1.busy=false; if(inJ()) renderTable();
+  clearTimeout(L1.timer); if(L1.src==="espn"&&L1.live.length&&inJ()) L1.timer=setTimeout(l1Fetch,60000); }
 function l1Rows(){ let R=(L1.src==="espn"&&L1.rows)?L1.rows.map(r=>Object.assign({},r)):(((LIVE||{}).table||{}).rows||[]).map(r=>Object.assign({},r));
   return R.sort((a,b)=>b.pts-a.pts||(b.bp-b.bc)-(a.bp-a.bc)||b.bp-a.bp||a.t.localeCompare(b.t)); }
 function renderTable(){ const el=$("#jTable"); if(!el) return;
@@ -3007,7 +3119,7 @@ function renderNews(){ const el=$("#jNews"); if(!el) return; const L=newsOf(); c
     ${F.length>6?`<button class="btn ghost big" id="nwMore" style="margin-top:8px">${newsAll?"Voir moins":"Voir les "+F.length+" actus"}</button>`:""}`;
   el.querySelectorAll("[data-nf]").forEach(b=>b.onclick=()=>{ newsF=b.dataset.nf; newsAll=false; renderNews(); });
   const m=$("#nwMore"); if(m) m.onclick=()=>{ newsAll=!newsAll; renderNews(); };
-  if(mode==="jeux"){ try{ localStorage.setItem("onze-ol-news",String(L[0].d||"")); }catch(e){} } }
+  if(inJ()){ try{ localStorage.setItem("onze-ol-news",String(L[0].d||"")); }catch(e){} } }
 // =================== 🔮 Pronostics sur les vrais matchs de l'OL ===================
 let PREDS={};
 const PRED_R={exact:150,res:50};
@@ -3120,7 +3232,7 @@ async function adminPanel(){ if(me!==ADMIN) return; const T=$("#tradeUI"); T.cla
     if(q.length<2){ L.innerHTML=""; return; }
     L.innerHTML=ALL_CARDS.filter(p=>p.id.includes(q)).slice(0,8).map(p=>`<div class="sgl"><span>${esc(p.name)} <small>${TIER_NAME[cardTier(p)]} · ${p.ovr} · possède ${own[p.id]||0}</small></span><span><button class="btn sm" data-ac="${p.id}" data-n="1">+1</button> <button class="btn sm ghost" data-ac="${p.id}" data-n="-1" ${own[p.id]?"":"disabled"}>−1</button></span></div>`).join("")||`<div class="mute">Aucune carte.</div>`;
     L.querySelectorAll("[data-ac]").forEach(b=>b.onclick=async()=>{ await adminOp({to:U(),type:"card",card:b.dataset.ac,n:+b.dataset.n}); done(`${b.dataset.n>0?"+1":"−1"} ${BY_ID[b.dataset.ac].name} pour ${NAMES[U()]}`); }); };
-  let arm=false; $("#aBkGo").onclick=async e=>{ const d=$("#aBk").value; if(!d) return; if(!arm){ arm=true; e.target.textContent="Sûr ? Re-touche"; return; } arm=false; e.target.textContent="Restaurer ce joueur";
+  let arm=false; $("#aBkGo").onclick=async e=>{ const d=$("#aBk").value; if(!d) return; if(!arm){ arm=true; e.target.textContent="Sûr ?"; return; } arm=false; e.target.textContent="Restaurer ce joueur";
     const sn=await db.collection("onzeol_backups").doc(d).get(); const data=sn.exists&&sn.data().users[U()]; if(!data){ toast("Ce joueur n'est pas dans cette sauvegarde",true); return; }
     await adminOp({to:U(),type:"restore",date:d,data}); done(`Compte de ${NAMES[U()]} restauré au ${d}`); };
   $("#aBkNow").onclick=async()=>{ try{ const n=await makeBackup(true); toast(`💾 Sauvegarde faite (${n} comptes)`); }catch(e){ toast("Sauvegarde impossible : "+(e.code||e.message),true); } };
@@ -3387,7 +3499,7 @@ async function startLeague(id){
 async function deleteLeague(id){
   openModal(`Supprimer le championnat « ${leagues[id]?.name||""} » ?`,null,[["Supprimer",async()=>{ try{ await db.collection("onzeol_leagues").doc(id).delete(); toast("Championnat supprimé"); }catch(e){ toast("Impossible",true); } }],["Annuler",null,true]]);
 }
-function onLeagues(all){ leagues=all; if(me){ try{ invWatchX(); }catch(_){} claimLeague(); autoPlay(); if(mode==="ligue") renderLigue(); } }
+function onLeagues(all){ leagues=all; if(me){ try{ invWatchX(); }catch(_){} claimLeague(); autoPlay(); if(inJ()) renderLigue(); } }
 const fmtWhen=t=>{ const d=new Date(t); return d.toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"short"})+" "+d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}); };
 function leagueHTML(id,L){
   const mine=(L.members||[]).includes(me), st=L.status||"open", S=standings(L);
@@ -3511,6 +3623,11 @@ function badgeAll(){
     const cup=Object.values(cups||{}).some(K=>K.status==="running"&&K.rounds.length&&K.rounds[K.rounds.length-1].ties.some(T=>!T.w&&(T.a===me||T.b===me)));
     const quiz=!(c.quiz&&c.quiz.d===today()&&c.quiz.n>=QUIZ_MAX);
     set("#mJeux",defi||cup||quiz||newsUnread()||duoAttn()||Object.values(cups||{}).some(invitedMe));
+    set("#nCollec",packs||trade);
+    set("#nOnline",myTurn||cup||duoAttn()||Object.values(cups||{}).some(invitedMe)||Object.values(leagues||{}).some(invitedMe));
+    set("#nSolo",defi||quiz);
+    set("#nOL",newsUnread()||!!objClaimable());
+    if(mode==="online"||mode==="solo") renderHubs();
   }catch(e){}
   badgeLigue();
 }
@@ -3764,10 +3881,10 @@ function invitePicker(kind,id,X){ // kind : "cup" | "league"
       M.classList.remove("open"); toast("📨 Invitation envoyée à "+sel.map(u=>NAMES[u]||"?").join(", ")); }
     catch(e){ toast(e.message&&e.message.length<60?e.message:"Impossible, réessaie",true); } }; }
 let invSeen=null;
-function invWatchX(){ const cur={}; for(const [id,K] of Object.entries(cups)) if(invitedMe(K)) cur["c"+id]=[K,"la coupe","🎮 Jeux"]; for(const [id,L] of Object.entries(leagues)) if(invitedMe(L)) cur["l"+id]=[L,"le championnat","🏆 Ligue"];
+function invWatchX(){ const cur={}; for(const [id,K] of Object.entries(cups)) if(invitedMe(K)) cur["c"+id]=[K,"la coupe","🌐 En ligne › Coupes"]; for(const [id,L] of Object.entries(leagues)) if(invitedMe(L)) cur["l"+id]=[L,"le championnat","🌐 En ligne › Championnats"];
   if(invSeen) for(const [k,[X,t,tab]] of Object.entries(cur)) if(!invSeen[k]) toast(`📨 ${NAMES[X.owner]||"?"} t'invite dans ${t} « ${X.name} » (${tab})`);
   invSeen={}; for(const k in cur) invSeen[k]=1; }
-function onCups(all){ cups=all; if(me){ try{ invWatchX(); }catch(_){} claimCups(); autoPlay(); if(mode==="jeux") renderJeux(); } }
+function onCups(all){ cups=all; if(me){ try{ invWatchX(); }catch(_){} claimCups(); autoPlay(); if(inJ()) renderJeux(); } }
 function createCup(){
   openModal("Nom de la coupe","",[...[4,8].map(n=>[`${n} joueurs`,async v=>{
     if(!v){ toast("Donne un nom à la coupe",true); return false; }
@@ -4024,11 +4141,11 @@ setInterval(chatTick,1000);
 function renderJeux(){
   if(!me) return; claimDefi();
   $("#jPred").innerHTML=predHTML(); bindPred(); renderTable(); renderNews(); renderDuo();
-  $("#jCareer").innerHTML=careerHTML(); $("#jCup").innerHTML=cupHTML(); { const e=$("#jCup"); if(e&&Object.values(cups||{}).some(invitedMe)&&e.parentNode.firstElementChild!==e) e.parentNode.prepend(e); } $("#jDefi").innerHTML=defiHTML(); $("#jQuizS").innerHTML=quizHTML(); $("#jSofa").innerHTML=sofaHTML(); $("#jStats").innerHTML=statsHTML();
+  $("#jCareer").innerHTML=careerHTML(); $("#jCup").innerHTML=cupHTML(); $("#jDefi").innerHTML=defiHTML(); $("#jQuizS").innerHTML=quizHTML(); $("#jSofa").innerHTML=sofaHTML(); $("#jStats").innerHTML=statsHTML();
   const on=(s,f)=>{ const e=$(s); if(e) e.onclick=f; };
   on("#jCarGo",careerPlay); on("#jCarReset",()=>{ careerState().lvl=0; save(); renderJeux(); });
   on("#jCupNew",createCup);
-  const J=$("#viewJeux");
+  const J=document; // les sections sont maintenant réparties dans plusieurs pages
   J.querySelectorAll("[data-cj]").forEach(b=>b.onclick=()=>joinCup(b.dataset.cj,true));
   J.querySelectorAll("[data-ci]").forEach(b=>b.onclick=()=>{ const K=cups[b.dataset.ci]; if(K) invitePicker("cup",b.dataset.ci,K); });
   J.querySelectorAll("[data-cq]").forEach(b=>b.onclick=()=>joinCup(b.dataset.cq,false));
@@ -4064,9 +4181,9 @@ const TIPS={
   💾 « Sauvegarder la compo » la garde de côté pour la recharger plus tard. En haut, tu peux regarder la compo des autres.`},
  tab_draft:{t:"⚡ Draft",x:`Un mode à deux, chacun son tour, avec <b>tous les joueurs du jeu</b> (pas besoin de les posséder).<br><br>
   <b>Draft classique</b> : à chaque poste, 5 joueurs te sont proposés, tu en choisis un.<br><b>Mode Budget</b> : vous partagez les mêmes 5 propositions et chaque carte coûte des crédits.<br><br>
-  Une fois les équipes finies, faites-les s'affronter dans l'onglet Match.`},
+  Une fois les équipes finies, chacun se met « prêt » et le match se lance en direct.`},
  tab_match:{t:"🏟️ Match",x:`C'est ici que les matchs s'affichent <b>en direct en ~1 minute</b> : buts, cartons, penalties, VAR…<br><br>
-  Ils se lancent depuis ⚡ Draft, 🎮 Jeux (Carrière, Coupes, Défi) et 🏆 Ligue (Championnats). En bas, tes derniers matchs se revoient avec ▶️.<br><br>
+  Ils se lancent depuis 🌐 En ligne (Draft, Championnats, Coupes…) et 🎮 Solo (Carrière, Défi…). En bas, tes derniers matchs se revoient avec ▶️.<br><br>
   🪙 Victoire 100, nul 50, défaite 25, +10 par but, dans tous les modes et sans limite de matchs par jour.`},
  tab_collec:{t:"🎴 Collection",x:`Ici tu gères tes cartes :<br><br>🎁 <b>Pack du jour</b> gratuit, et d'autres packs à acheter avec tes pièces.<br>
   📒 <b>Album</b> façon Panini, avec des récompenses par collection complète.<br>🔄 <b>Échanges</b>, 🏪 <b>marché</b> et 🔨 <b>enchères</b> de doublons entre joueurs.<br>
@@ -4075,6 +4192,9 @@ const TIPS={
   📰 <b>Fil d'actu</b> de tout ce qui se passe, et la liste des joueurs (touche un pseudo pour voir son profil).`},
  tab_jeux:{t:"🎮 Jeux",x:`D'autres façons de jouer :<br><br>🧗 <b>Carrière</b> solo contre des clubs de plus en plus forts.<br>🏆 <b>Coupes</b> à élimination en aller-retour.<br>
   🎯 <b>Défi du jour</b> avec une contrainte, même adversaire pour tous.<br>🧠 <b>Quiz OL</b> pour gagner des pièces.<br>🛋️ <b>Canapé</b> : à deux sur un même téléphone.<br>📊 Tes <b>stats</b> de saison.`},
+ tab_online:{t:"🌐 En ligne",x:`Tout ce qui se joue contre tes potes : ⚡ <b>Draft</b>, 💰 <b>Draft Budget</b>, 👥 <b>2 contre 2</b>, 🏆 <b>Championnats</b>, 🏟️ <b>Coupes</b> et ⚔️ <b>Match amical</b>.<br><br>Un badge sur une tuile = quelque chose t'attend (ton tour, une invitation…).`},
+ tab_solo:{t:"🎮 Solo",x:`🧗 <b>Carrière</b> contre des clubs de plus en plus forts, 🎯 <b>Défi du jour</b>, 🧠 <b>Quiz OL</b>, 🛋️ <b>Canapé</b> à deux sur ce téléphone et 🤖 <b>match contre l'ordi</b>.`},
+ tab_ol:{t:"📰 OL & classements",x:`📰 L'<b>actu</b> du club et le fil de ce qui se passe dans le jeu, 📊 les <b>classements</b> (Ligue 1 et entre joueurs), 🔮 tes <b>pronos</b> et 🎯 tes <b>objectifs</b> à récupérer.`},
  slot:{t:"👆 Choisir un joueur",x:`La liste montre <b>uniquement tes cartes</b> adaptées à ce poste (touche « Tous » pour voir toutes tes cartes). S'il n'y a personne, ouvre des packs dans 🎴 Collec pour en débloquer.<br><br>Un joueur placé hors de son poste perd du niveau.`},
  save:{t:"💾 Compos enregistrées",x:`Donne un nom à ta compo pour la garder dans ta liste. Tu pourras la recharger, la renommer ou la choisir directement comme équipe dans l'onglet Match.`},
  mgo:{t:"▶️ Lancer un match",x:`Le match apparaît en direct chez les deux joueurs. Le bouton « Voir le résultat » passe directement à la fin.<br><br>Les pièces arrivent automatiquement à la fin du match, et l'homme du match devient une carte ⭐ Héros dans ta collection.`},
@@ -4156,7 +4276,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-22t"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-23a"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
@@ -4225,12 +4345,12 @@ function startListeners(){
   try{ unsubs.push(db.collection("onzeol_admin").where("to","==",me).onSnapshot(qs=>{ qs.forEach(doc=>applyAdminOp(doc.id,doc.data())); },()=>{})); }catch(e){}
   if(me===ADMIN) setTimeout(autoBackup,8000);
   $("#admBtn").style.display=me===ADMIN?"":"none";
-  unsubs.push(db.collection("onzeol_meta").doc("rank").onSnapshot(sn=>{ RANK=sn.exists?sn.data():{}; claimRank(); if(mode==="ligue") renderLigue(); },()=>{}));
-  unsubs.push(db.collection("onzeol_meta").doc("preds").onSnapshot(sn=>{ PREDS=sn.exists?sn.data():{}; settlePreds(); if(mode==="jeux") renderJeux(); },()=>{}));
+  unsubs.push(db.collection("onzeol_meta").doc("rank").onSnapshot(sn=>{ RANK=sn.exists?sn.data():{}; claimRank(); if(inJ()) renderLigue(); },()=>{}));
+  unsubs.push(db.collection("onzeol_meta").doc("preds").onSnapshot(sn=>{ PREDS=sn.exists?sn.data():{}; settlePreds(); if(inJ()) renderJeux(); },()=>{}));
   unsubs.push(db.collection("onzeol_cups").onSnapshot(qs=>{ const all={}; qs.forEach(doc=>{ const K=doc.data(); if(K&&K.name) all[doc.id]=K; }); onCups(all); },()=>{}));
   unsubs.push(db.collection("onzeol_meta").doc("react").onSnapshot(snap=>{ if(snap.exists) onReact(snap.data()); },()=>{}));
   unsubs.push(db.collection("onzeol_drafthist").onSnapshot(qs=>{ const L=[]; qs.forEach(doc=>L.push(doc.data())); onDraftHist(L); },()=>{}));
-  unsubs.push(db.collection("onzeol_feed").onSnapshot(qs=>{ const L=[]; qs.forEach(doc=>L.push(doc.data())); feed=L.filter(x=>x&&x.text).sort((a,b)=>b.at-a.at).slice(0,60); if(mode==="ligue") renderLigue(); },()=>{}));
+  unsubs.push(db.collection("onzeol_feed").onSnapshot(qs=>{ const L=[]; qs.forEach(doc=>L.push(doc.data())); feed=L.filter(x=>x&&x.text).sort((a,b)=>b.at-a.at).slice(0,60); if(inJ()) renderLigue(); },()=>{}));
   unsubs.push(db.collection("onzeol_meta").doc("main").onSnapshot(snap=>{ const d=snap.exists?snap.data():{}; onMatchData(d.match,d.matches); },()=>{}));
 }
 try{

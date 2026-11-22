@@ -39,7 +39,7 @@ exports.draftInvite = onDocumentWritten({ document: "onzeol_drafts/{id}", region
   const bi = before && before.inv, ai = after.inv;
   if (ai && after.status === "lobby" && (!bi || bi.at !== ai.at)) {
     const to = (after.players || []).find(p => p !== ai.by);
-    return notify(to, `${kind} : invitation`, `${await nameOf(ai.by)} t'invite à jouer. Accepte ou refuse dans l'onglet Draft.`);
+    return notify(to, `${kind} : invitation`, `${await nameOf(ai.by)} t'invite à jouer. Accepte ou refuse dans 🌐 En ligne.`);
   }
   if (bi && !ai) {
     const other = (after.players || []).find(p => p !== bi.by);
@@ -55,7 +55,7 @@ exports.duoDraft = onDocumentWritten({ document: "onzeol_drafts/{id}", region: R
   const nm = async u => await nameOf(u);
   if (!before && after.status === "lobby") {
     const by = await nm(after.by);
-    for (const u of pl) if (u !== after.by) await notify(u, "👥 2 contre 2 : invitation", `${by} t'invite à un 2 contre 2. Accepte ou refuse dans l'onglet Jeux.`);
+    for (const u of pl) if (u !== after.by) await notify(u, "👥 2 contre 2 : invitation", `${by} t'invite à un 2 contre 2. Accepte ou refuse dans 🌐 En ligne › 2 contre 2.`);
     return;
   }
   if (after.status === "cancelled" && bs !== "cancelled") {
@@ -64,7 +64,7 @@ exports.duoDraft = onDocumentWritten({ document: "onzeol_drafts/{id}", region: R
     return;
   }
   if (after.status === "done" && bs === "running") {
-    for (const u of pl) await notify(u, "👥 2 contre 2 : draft terminé", "Les équipes sont prêtes. Appuie sur « Prêt » dans l'onglet Jeux.");
+    for (const u of pl) await notify(u, "👥 2 contre 2 : draft terminé", "Les équipes sont prêtes. Appuie sur « Prêt » dans 🌐 En ligne › 2 contre 2.");
     return;
   }
   if (after.status === "running" && after.turn && !(bs === "running" && before.turn === after.turn)) {
@@ -114,10 +114,10 @@ exports.dailyPackReminder = onSchedule({ schedule: "0 18 * * *", timeZone: "Euro
 
 // 🏆 Nouveau championnat / nouvelle coupe
 exports.leagueCreated = onDocumentCreated({ document: "onzeol_leagues/{id}", region: REGION }, async ev => {
-  const L = ev.data.data(); await notifyAll("🏆 Nouveau championnat !", `${await nameOf(L.owner)} a créé « ${L.name} ». Rejoins-le dans l'onglet Ligue.`, L.owner);
+  const L = ev.data.data(); await notifyAll("🏆 Nouveau championnat !", `${await nameOf(L.owner)} a créé « ${L.name} ». Rejoins-le dans 🌐 En ligne › Championnats.`, L.owner);
 });
 exports.cupCreated = onDocumentCreated({ document: "onzeol_cups/{id}", region: REGION }, async ev => {
-  const K = ev.data.data(); await notifyAll("🏆 Nouvelle coupe !", `${await nameOf(K.owner)} a créé la coupe « ${K.name} » (${K.size} joueurs). Inscris-toi dans 🎮 Jeux.`, K.owner);
+  const K = ev.data.data(); await notifyAll("🏆 Nouvelle coupe !", `${await nameOf(K.owner)} a créé la coupe « ${K.name} » (${K.size} joueurs). Inscris-toi dans 🌐 En ligne › Coupes.`, K.owner);
 });
 
 // 📨 Invitation à une coupe ou un championnat (le créateur ajoute des joueurs dans inv)
@@ -126,14 +126,14 @@ async function notifyInvites(b, a, kind, tab) {
   const by = await nameOf(a.owner);
   for (const [u, at] of Object.entries(after)) {
     if (before[u] === at || (a.members || []).includes(u)) continue;
-    await notify(u, `📨 Invitation : ${a.name}`, `${by} t'invite dans ${kind} « ${a.name} ». Rejoins-le dans l'onglet ${tab}.`);
+    await notify(u, `📨 Invitation : ${a.name}`, `${by} t'invite dans ${kind} « ${a.name} ». Rejoins-le dans ${tab}.`);
   }
 }
 exports.cupInvite = onDocumentUpdated({ document: "onzeol_cups/{id}", region: REGION }, async ev => {
-  await notifyInvites(ev.data.before.data(), ev.data.after.data(), "la coupe", "🎮 Jeux");
+  await notifyInvites(ev.data.before.data(), ev.data.after.data(), "la coupe", "🌐 En ligne › Coupes");
 });
 exports.leagueInvite = onDocumentUpdated({ document: "onzeol_leagues/{id}", region: REGION }, async ev => {
-  await notifyInvites(ev.data.before.data(), ev.data.after.data(), "le championnat", "🏆 Ligue");
+  await notifyInvites(ev.data.before.data(), ev.data.after.data(), "le championnat", "🌐 En ligne › Championnats");
 });
 
 // ⚽ Résultats des matchs automatiques de coupe
@@ -146,7 +146,7 @@ exports.cupTieReady = onDocumentUpdated({ document: "onzeol_cups/{id}", region: 
     if ((t.legs || []).length <= (p.legs || []).length) continue;
     const l = t.legs[t.legs.length - 1], an = await nameOf(t.a), bn = await nameOf(t.b);
     const txt = `${an} ${l.s[0]}-${l.s[1]} ${bn}${t.w ? ` · qualifié : ${t.w === t.a ? an : bn}` : ""}`;
-    for (const x of [t.a, t.b]) await notify(x, `⚽ ${a.name} : résultat`, txt + " (revois le match dans 🎮 Jeux)");
+    for (const x of [t.a, t.b]) await notify(x, `⚽ ${a.name} : résultat`, txt + " (revois le match dans 🌐 En ligne › Coupes)");
   }
   if (a.status === "done" && b.status !== "done") for (const m of a.members || []) if (m !== a.winner) await notify(m, "🏆 Coupe terminée", `${await nameOf(a.winner)} remporte la coupe « ${a.name} » !`);
 });
@@ -157,7 +157,7 @@ exports.leagueUpdate = onDocumentUpdated({ document: "onzeol_leagues/{id}", regi
   const F = a.fix || [], P = b.fix || [];
   for (let i = 0; i < F.length; i++) { const f = F[i]; if (!f.s || (P[i] && P[i].s)) continue;
     const txt = `${await nameOf(f.a)} ${f.s[0]}-${f.s[1]} ${await nameOf(f.b)} (journée ${f.r})`;
-    for (const x of [f.a, f.b]) await notify(x, `⚽ ${a.name} : résultat`, txt + " · revois le match dans Ligue"); }
+    for (const x of [f.a, f.b]) await notify(x, `⚽ ${a.name} : résultat`, txt + " · revois le match dans 🌐 En ligne › Championnats"); }
 });
 
 // 🌈 Carte Mythique ou ✨ Gold Pack tiré par un pote (via le fil d'actu)
