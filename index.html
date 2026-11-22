@@ -421,6 +421,8 @@ html:has(.modal.open),body:has(.modal.open){overflow:hidden}
 .fcard.v-tf::before{content:"";position:absolute;inset:4%;clip-path:inherit;border:calc(var(--w)/70) solid #ffd36a77}
 .fcard.v-ml{background:linear-gradient(155deg,#050505,#262626 35%,#b8901f 72%,#fff1b8);color:#fff1b8}
 .fcard.v-ml .fc-shine{background:linear-gradient(115deg,transparent 30%,#fff1b8cc 48%,transparent 62%)}
+.fcard.v-xm{background:linear-gradient(155deg,#04260f,#0d6b2c 35%,#c8102e 70%,#ffe9a8);color:#fff8e1}
+.fcard.v-xm .fc-shine{background:linear-gradient(115deg,transparent 30%,#ffffffcc 48%,transparent 62%)}
 .fc-vmini{position:absolute;right:4%;top:3%;font-size:calc(var(--w)/4);line-height:1;z-index:3}
 .evban.tfban{background:linear-gradient(120deg,#5a0d06,#b3200e,#ff7a1a);margin-top:8px}
 .fc-ovr{position:relative}.fc-live{position:absolute;left:100%;top:0;font-style:normal;font-size:.42em;margin-left:2px}
@@ -510,6 +512,7 @@ html:has(.modal.open),body:has(.modal.open){overflow:hidden}
 .fcard.v-fs{--rim:linear-gradient(160deg,#d6fff1,#20e3b2 30%,#0b5a3c 55%,#a87bff 80%,#3dffc0);--bgc:linear-gradient(165deg,#063a29 0%,#0d6e48 40%,#18b98a 70%,#6b3bd6 100%);--ink:#eafff6;--acc:#9dffe0;--glow:#5dffd0;--tex:repeating-linear-gradient(125deg,#ffffff12 0 2px,transparent 2px 9px)}
 .fcard.v-tf{--rim:linear-gradient(160deg,#fff0c0,#ff8a1a 30%,#8a1206 55%,#ffd36a 80%,#ff5a1a);--bgc:radial-gradient(ellipse at 50% 100%,#ffb03a 0%,#e5480f 35%,#8a1206 70%,#3a0303 100%);--ink:#fff3e0;--acc:#ffd36a;--glow:#ffcf6a;--tex:repeating-linear-gradient(80deg,#ffffff0f 0 2px,transparent 2px 10px)}
 .fcard.v-ml{--rim:linear-gradient(160deg,#fff1b8,#d4a933 30%,#5a430c 55%,#fff1b8 80%,#b8901f);--bgc:linear-gradient(165deg,#0c0c0c 0%,#1f1f1f 40%,#3a2d0b 75%,#8a6a16 100%);--ink:#fff1b8;--acc:#e8c45a;--glow:#ffe08a;--tex:repeating-conic-gradient(from 0deg at 50% 30%,#e8c45a12 0 3deg,transparent 3deg 10deg)}
+.fcard.v-xm{--rim:linear-gradient(160deg,#ffffff,#e8c45a 25%,#c8102e 50%,#ffffff 75%,#0d6b2c);--bgc:linear-gradient(165deg,#04260f 0%,#0d6b2c 35%,#8a0b1f 70%,#c8102e 100%);--ink:#fff8e1;--acc:#ffd970;--glow:#ffffff;--tex:repeating-conic-gradient(from 0deg at 50% 30%,#ffffff14 0 3deg,transparent 3deg 10deg);--tagc:#1a1206}
 .fcard.v-fs::before,.fcard.v-tf::before{border:none!important}
 .fcard.hero{--rim:linear-gradient(160deg,#fff3c4,#ffd970 30%,#16794a 55%,#ffd970 80%,#0f3d2a);--bgc:linear-gradient(165deg,#0f3d2a,#16794a 45%,#0b2a1c 100%);--ink:#fff3c4;--acc:#ffd970;--glow:#7dffb8}
 .fcard.mini .fc-glow{opacity:.5}
@@ -589,6 +592,13 @@ header{padding:10px 16px 4px;min-height:44px}header h1{font-size:19px;margin:0;l
 .objmini .omh{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;font-size:14px}.objmini .omh span{color:var(--mute);font-size:12px}.objmini .num{font-style:normal;background:#ffd970;color:#111;border-radius:999px;padding:1px 8px;font-size:11px;font-weight:900}
 .omr{display:grid;grid-template-columns:1fr auto;gap:2px 8px;font-size:12.5px;padding:4px 0}.omr small{color:var(--mute)}.omr .track{grid-column:1/3;height:4px}.omr.done{opacity:.55}
 :root{color-scheme:dark only}
+.adv{background:linear-gradient(160deg,#0d3b1e,#0b1530 60%);border:1px solid #2f7a45}
+.advg{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.advc{aspect-ratio:1;border-radius:10px;border:1px solid #ffffff22;background:#0f1d40;color:#fff;font:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer;padding:0}
+.advc b{font-size:14px;font-weight:900}.advc span{font-size:15px;line-height:1}
+.advc.td{background:linear-gradient(135deg,#c8102e,#7a0018);border-color:#ffd970;box-shadow:0 0 14px #ffd97088;animation:bdg 1.6s ease-in-out infinite}
+.advc.op{background:#14532d;border-color:#2f7a45}.advc.ko{opacity:.35}.advc.lk{opacity:.7}
+.advpop .advbig{font-size:54px;font-weight:900;color:#ffd970;text-shadow:0 0 20px #c8102e}
 </style>
 </head>
 <body>
@@ -684,6 +694,7 @@ header{padding:10px 16px 4px;min-height:44px}header h1{font-size:19px;margin:0;l
 </div>
 <div id="viewCollec" class="wrap" style="display:none">
   <div id="cTodo"></div>
+  <div id="cAdvent"></div>
   <div class="section" id="cShop"></div>
   <div class="section" id="cSbc"></div>
   <div class="section" id="cMarket"></div>
@@ -1452,6 +1463,7 @@ function todoList(){ const L=[]; if(!me||!C(me)) return L; const c=W(); const ad
   try{ const D=c.dch; if(!(D&&D.day===today()&&D.done)) add("solo","🎯","Défi du jour <b>pas encore joué</b>",()=>{ soSel="defi"; mode==="solo"?(renderSolo(),renderBack()):setMode("solo"); },"Jouer");
        const n=c.quiz&&c.quiz.d===today()?c.quiz.n:0; if(n<QUIZ_MAX) add("solo","🧠",`Quiz OL : <b>${QUIZ_MAX-n} quiz récompensé${QUIZ_MAX-n>1?"s":""}</b> encore dispo aujourd'hui`,()=>{ soSel="quiz"; mode==="solo"?(renderSolo(),renderBack()):setMode("solo"); },"Jouer"); }catch(e){}
   try{ const goC=q=>()=>{ setMode("collec"); setTimeout(()=>{ const e=$(q); if(e) e.scrollIntoView({behavior:"smooth",block:"start"}); },150); };
+       try{ if(adventTodo()) add("collec","🎄",`Calendrier de l'Avent : <b>case du ${adventToday()} décembre</b> à ouvrir`,goC("#cAdvent"),"Ouvrir"); }catch(e){}
        if(c.daily!==today()) add("collec","🎁","<b>Pack du jour</b> gratuit à ouvrir",goC("#cShop"),"Ouvrir");
        const fp=Object.values(c.freePacks||{}).reduce((a,b)=>a+(b>0?b:0),0); if(fp) add("collec","🎁",`<b>${fp} pack${fp>1?"s":""} offert${fp>1?"s":""}</b> à ouvrir`,goC("#cShop"),"Ouvrir");
        const tr=Object.values(trades||{}).filter(t=>t&&t.to===me&&t.status==="pending").length; if(tr) add("collec","🔄",`<b>${tr} proposition${tr>1?"s":""} d'échange</b> reçue${tr>1?"s":""}`,goC("#cTrades"),"Voir",true); }catch(e){}
@@ -1637,7 +1649,7 @@ function palmScore(p){
   if(p.pos[0]!=="COACH") sc+=Math.max(0,(p.ovr-75)/2)+(p.m||0)/80; else sc+=Math.max(0,(p.ovr-75)/3);
   return _rcache[p.id]=sc;
 }
-function rarity(p){ if(p.v) return p.v==="ml"?"myth":p.v==="fs"?"icon":(p.ovr>=85?"icon":"gold"); const s=palmScore(p); return s>=24?"myth":s>=12?"icon":s>=6?"gold":s>=2.5?"silver":"bronze"; }
+function rarity(p){ if(p.v) return p.v==="ml"||p.v==="xm"?"myth":p.v==="fs"?"icon":(p.ovr>=85?"icon":"gold"); const s=palmScore(p); return s>=24?"myth":s>=12?"icon":s>=6?"gold":s>=2.5?"silver":"bronze"; }
 function palmText(p){
   const t=olTitles(p), M=MAJ[p.id]||{}; const L=[];
   if(t.l1) L.push(`${t.l1}× Champion de France`); if(t.cdf) L.push(`${t.cdf}× Coupe de France`); if(t.cdl) L.push(`${t.cdl}× Coupe de la Ligue`); if(t.tdc) L.push(`${t.tdc}× Trophée des champions`);
@@ -2414,7 +2426,7 @@ const PACKS={
 PACKS.starter={name:"Pack de départ",price:0,n:12,w:{bronze:100},color:"#7ec8ff"};
 const SELL={bronze:4,silver:12,gold:32,icon:100,myth:300};
 // ---------- ✨ Cartes spéciales (variantes plus fortes de certains joueurs) ----------
-const VAR_INFO={fs:{l:"PÉPITE",n:"Pépite",ic:"🌟"},tf:{l:"EN FORME",n:"Forme du moment",ic:"🔥"},ml:{l:"MOMENT",n:"Moment de légende",ic:"🏆"}};
+const VAR_INFO={fs:{l:"PÉPITE",n:"Pépite",ic:"🌟"},tf:{l:"EN FORME",n:"Forme du moment",ic:"🔥"},ml:{l:"MOMENT",n:"Moment de légende",ic:"🏆"},xm:{l:"NOËL",n:"Édition Noël",ic:"🎄"}};
 const FS_LIST=[["kail-boudache",84],["khalis-merah",82],["noah-nartey",82],["julien-duranville",81],["zachary-athekame",80],["remi-himbert",80]];
 const ML_LIST=[["juninho",97,"Roi du coup franc"],["karim-benzema",94,"Meilleur joueur de Ligue 1 en 2008"],["hugo-lloris",93,"Le mur de Gerland"],["michael-essien",92,"Le Bison"],["sonny-anderson",92,"Le buteur du premier titre"],
   ["alexandre-lacazette",92,"Meilleur buteur de Ligue 1 en 2015"],["cris",91,"Le Policier"],["nabil-fekir",91,"Capitaine courage"],["bafetimbi-gomis",90,"Quadruplé à Zagreb (2011)"],["sidney-govou",89,"Héros du Septuplé"]];
@@ -2424,15 +2436,17 @@ function mkVar(baseId,v,ovr,title){ const b=BY_ID[baseId]; if(!b) return; const 
   for(const T of [NAT,SPANS,MAJ,STYLE_OF]) if(T[baseId]!=null) T[id]=T[baseId]; }
 FS_LIST.forEach(([id,o])=>mkVar(id,"fs",o,"Pépite du centre de formation"));
 ML_LIST.forEach(([id,o,t])=>mkVar(id,"ml",o,t));
+// 🎄 Carte exclusive du calendrier de l'Avent (24 cases ouvertes) : jamais dans les packs
+mkVar("juninho","xm",98,"Édition Noël — 24/24 au calendrier de l'Avent");
 [...CURRENT].forEach(id=>{ const b=BY_ID[id], fs=BY_ID[id+"--fs"]; if(b) mkVar(id,"tf",Math.min(92,Math.max(b.ovr+7,fs?fs.ovr+2:0)),"Forme du moment"); });
 const baseOf=id=>(BY_ID[id]&&BY_ID[id].base)||id;
 const TF_IDS=VARIANTS.filter(p=>p.v==="tf").map(p=>p.id);
 function tfWeek(w){ const R=rng(hashS("tf"+(w==null?WEEKN():w))); return TF_IDS.slice().sort(()=>R()-.5).slice(0,4); }
-const VORD={fs:0,tf:1,ml:2};
+const VORD={fs:0,tf:1,ml:2,xm:3};
 const ALL_CARDS=[...PLAYERS.slice().sort((a,b)=>a.year-b.year||a.name.localeCompare(b.name,"fr")),...COACHES,...VARIANTS.slice().sort((a,b)=>VORD[a.v]-VORD[b.v]||a.name.localeCompare(b.name,"fr"))];
 const CARD_NO=Object.fromEntries(ALL_CARDS.map((p,i)=>[p.id,i+1]));
 const poolTier=p=>cardTier(p);
-const POOL={bronze:[],silver:[],gold:[],icon:[],myth:[]}; for(const p of ALL_CARDS) if(p.v!=="tf") POOL[poolTier(p)].push(p.id);
+const POOL={bronze:[],silver:[],gold:[],icon:[],myth:[]}; for(const p of ALL_CARDS) if(p.v!=="tf"&&p.v!=="xm") POOL[poolTier(p)].push(p.id);
 const W=()=>C(me);
 function addCoins(n,why){ const c=W(); c.coins=(c.coins||0)+n; save(); renderCoins(); if(why) toast(`${n>0?"+":""}${n} 🪙 ${why}`); }
 function renderCoins(){ const el=$("#coins"); if(!el) return; if(!me){el.style.display="none";return;} el.style.display=""; el.textContent=`🪙 ${(W().coins||0).toLocaleString("fr-FR")}`; }
@@ -2448,7 +2462,7 @@ function claimRewards(){
   for(const h of matches){ if(!h.owners||c.claimed.includes(h.id)) continue; const i=h.owners.indexOf(me); if(i<0) continue;
     if((Date.now()-h.at)/MSPEED<100&&!(mSkip===h.id&&isCpuH(h))) continue; // match pas encore fini (contre l'ordi : dès que tu as vu le résultat)
     if(h.owners[0]===h.owners[1]||h.nr){ c.claimed.push(h.id); continue; }
-    const r=rewardFor(h,i); if(isCpuH(h)){ r.coins=Math.round(r.coins/2); r.res+=" vs ordi"; } const day=new Date(h.at).toLocaleDateString("fr-CA");
+    const r=rewardFor(h,i); if(isCpuH(h)){ r.coins=Math.round(r.coins/2); r.res+=" vs ordi"; } try{ if(isDerbyDay(h.at)){ r.coins*=2; r.res+=" · derby ×2"; } }catch(e){} const day=new Date(h.at).toLocaleDateString("fr-CA");
     if(!c.mday||c.mday.d!==day) c.mday={d:day,n:0}; if(!isDraftH(h)) c.mday.n++;
     let train=false; if(isFreeCpuH(h)){ if(!c.cpud||c.cpud.d!==day) c.cpud={d:day,n:0}; if(c.cpud.n>=CPU_MAX){ train=true; r.coins=0; r.res+=" (entraînement : limite du jour atteinte)"; } else c.cpud.n++; }
     if(!train){ track("play"); if(r.a>r.b) track("win"); if(r.a) track("goals",r.a); }
@@ -2536,13 +2550,14 @@ function packFx(pack,ids,isNew,gold){
 let colFilter="all";
 function renderCollec(){
   if(!me) return; renderTrades(); renderMarket(); const c=W(); const coll=c.coll||{};
+  try{ const AE=$("#cAdvent"); AE.innerHTML=adventHTML(); AE.querySelectorAll("[data-adv]").forEach(b=>b.onclick=()=>openAdvent(+b.dataset.adv)); }catch(e){}
   const owned=ALL_CARDS.filter(p=>coll[p.id]).length;
   const dupes=Object.entries(coll).reduce((s,[id,n])=>s+(n>1?(n-1)*SELL[cardTier(BY_ID[id])]:0),0);
   $("#cShop").innerHTML=`<h3>🎴 Boutique <small>🪙 ${(c.coins||0).toLocaleString("fr-FR")}</small></h3>
     ${c.daily!==today()?`<button class="pkbtn daily" data-pk="jour" style="--pc:#7ee2a0"><b>🎁 Pack du jour gratuit</b><span>2 cartes · 1 par jour</span><em>Ouvrir</em></button>`:`<div class="mute" style="font-size:12.5px;margin-bottom:8px">🎁 Pack du jour ouvert, le prochain demain.</div>`}
     ${Object.entries(c.freePacks||{}).filter(([k,n])=>n>0&&PACKS[k]).map(([k,n])=>`<button class="pkbtn daily" data-free="${k}" style="--pc:${PACKS[k].color}"><b>🎁 ${PACKS[k].name} offert ×${n}</b><span>récompense</span><em>Ouvrir</em></button>`).join("")}
     <button class="pkbtn daily" data-pk="event" style="--pc:#ff9a6a;animation:none"><b>${curEvent().name}</b><span>Pack Événement · 3 cartes du thème</span><em>🪙 600</em></button>
-    <div class="shop">${Object.entries(PACKS).filter(([k])=>!["jour","event","reward","starter"].includes(k)).map(([k,P])=>`<button class="pkbtn" data-pk="${k}" style="--pc:${P.color}"><b>${P.name}</b><span>${P.n} cartes${P.guarantee==="gold"?" · 1 Épique min.":P.guarantee==="icon"?" · 1 Légendaire min.":""}</span><em>🪙 ${P.price}</em></button>`).join("")}</div>
+    <div class="shop">${Object.entries(PACKS).filter(([k])=>!["jour","event","reward","starter","rare3"].includes(k)).map(([k,P])=>`<button class="pkbtn" data-pk="${k}" style="--pc:${P.color}"><b>${P.name}</b><span>${P.n} cartes${P.guarantee==="gold"?" · 1 Épique min.":P.guarantee==="icon"?" · 1 Légendaire min.":""}</span><em>🪙 ${P.price}</em></button>`).join("")}</div>
     <div class="rules" style="font-size:12.5px">Gagne des pièces en jouant : <b>victoire 100</b>, nul 50, défaite 25, <b>+10 par but</b> (tous les modes, sans limite de matchs par jour) et <b>1 pack gratuit par jour</b>. Doublons : revente 4 / 12 / 32 / 100 / 300 🪙 (Commune → Mythique), ou échange avec les autres pour plus de valeur.</div>
     ${dupes?`<button class="btn ghost big" id="sellBtn">Vendre mes doublons (+${dupes} 🪙)</button>`:""}`;
   document.querySelectorAll(".pkbtn[data-pk]").forEach(b=>b.onclick=()=>openPack(b.dataset.pk));
@@ -3407,6 +3422,7 @@ const EVENTS=[
   {k:"murs",name:"Semaine des Murs 🧱",desc:"Gardiens et défenseurs",f:p=>["GB","DC","DD","DG"].includes(p.pos[0])},
 ];
 const curEvent=()=>EVENTS[WEEKN()%EVENTS.length];
+PACKS.rare3={name:"Pack Rare",price:0,n:3,w:{silver:100},color:"#9fc3ff"};
 PACKS.event={name:"Pack Événement",price:600,n:3,w:{bronze:40,silver:38,gold:17,icon:4.5,myth:.5},guarantee:"silver",color:"#ff9a6a"};
 PACKS.reward={name:"Récompense",price:0,n:1,w:{bronze:1},color:"#7ee2a0"};
 function drawFrom(filter,w,force){
@@ -3954,7 +3970,49 @@ function birthdayPicker(){ const c=W(); const M=$("#cardModal");
 }
 // demande la date une fois (puis de nouveau au bout de 30 jours si « Plus tard »)
 function askBirthday(){ if(!me||!compos[me]) return; const c=W(); if(c.birth||document.querySelector(".tipov,.modal.open")) return; const sk=(c.seen||{}).bdayAsk; if(sk&&Date.now()-sk<30*86400000) return; birthdayPicker(); }
-setInterval(()=>{ try{ checkBirthday(); }catch(e){} },60000);
+setInterval(()=>{ try{ checkBirthday(); checkHolidays(); }catch(e){} },60000);
+
+// ======================================================================
+// 🎁 FÊTES (cadeau auto, le jour J ou le lendemain) + 🎄 CALENDRIER DE L'AVENT (1→24 déc, case ratée = perdue)
+// ======================================================================
+const nowD=()=>window.__fakeNow?new Date(window.__fakeNow):new Date();
+const ymd=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+function easter(y){ const a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451),mo=Math.floor((h+l-7*m+114)/31),da=((h+l-7*m+114)%31)+1; return new Date(y,mo-1,da); }
+function holidaysOf(y){ return [
+  {d:new Date(y,11,8),ic:"🕯️",n:"Fête des Lumières",r:{pack:"or",coins:500}},
+  {d:new Date(y,11,25),ic:"🎄",n:"Joyeux Noël",r:{pack:"legende",coins:1000}},
+  {d:new Date(y,0,1),ic:"🎆",n:"Bonne année",r:{pack:"or",n:2}},
+  {d:new Date(y,0,6),ic:"👑",n:"Épiphanie : tu as la fève",r:{pack:"or"}},
+  {d:new Date(y,7,3),ic:"🦁",n:"Joyeux anniversaire l'OL (1950)",r:{pack:"legende"}},
+  {d:easter(y),ic:"🥚",n:"Joyeuses Pâques",r:{pack:"or"}},
+  {d:new Date(y,9,31),ic:"🎃",n:"Halloween",r:{pack:"event"}},
+]; }
+// cadeau dispo le jour J et le lendemain (48 h)
+function holidayNow(){ const t=nowD(), y=t.getFullYear(); const L=[...holidaysOf(y),...holidaysOf(y-1)];
+  return L.filter(H=>{ const d0=new Date(H.d.getFullYear(),H.d.getMonth(),H.d.getDate()).getTime(); return t.getTime()>=d0&&t.getTime()<d0+2*86400000; }); }
+function checkHolidays(){ if(!me||!compos[me]) return; const c=W(); c.hol=c.hol||{}; let got=null;
+  for(const H of holidayNow()){ const k=ymd(H.d); if(c.hol[k]) continue; c.hol[k]=1; grant(H.r,`${H.ic} ${H.n}`); got=H; }
+  if(got){ save(); setTimeout(()=>{ if(document.querySelector(".tipov")) return; const el=document.createElement("div"); el.className="tipov"; el.innerHTML=`<div class="tipbox"><h3>${got.ic} ${esc(got.n)} !</h3><div class="tipx">Cadeau des Gones Legends : <b>${rTxt(got.r)}</b>${got.r.pack?" — à ouvrir dans 🎴 Collec":""}.</div><button class="btn big" id="holOk">${got.r.pack?"Ouvrir 🎁":"Merci !"}</button></div>`; document.body.appendChild(el); el.querySelector("#holOk").onclick=()=>{ el.remove(); if(got.r.pack) setMode("collec"); }; },1500); } }
+// ⚔️ jour de derby OL – Saint-Étienne : gains des matchs ×2
+function isDerbyDay(t){ const day=ymd(new Date(t||Date.now())); return fxOf().some(f=>/saint-?[ée]tienne|asse/i.test((f.home||"")+" "+(f.away||""))&&ymd(new Date(f.date))===day); }
+// 🎄 Avent
+const ADVENT=[{coins:150},{pack:"bronze"},{coins:200},{pack:"rare3"},{coins:250},{pack:"or"},{coins:300},{pack:"or",coins:500},{coins:200},{pack:"bronze"},{coins:250},{pack:"bronze"},
+  {coins:300},{pack:"or"},{coins:250},{pack:"bronze"},{coins:300},{pack:"bronze",n:2},{coins:350},{pack:"or"},{coins:500},{pack:"or"},{coins:600},{pack:"legende"}];
+const ADV_IC=r=>r.pack==="legende"?"🌟":r.pack==="or"?"💛":r.pack==="rare3"?"💙":r.pack?"🎴":"🪙";
+const ADV_CARD="juninho--xm";
+function adventState(){ const c=W(), y=nowD().getFullYear(); if(!c.advent||c.advent.y!==y) c.advent={y,o:{}}; return c.advent; }
+const adventOn=()=>{ const t=nowD(); return t.getMonth()===11&&t.getDate()<=26; };
+const adventToday=()=>{ const t=nowD(); return t.getMonth()===11&&t.getDate()<=24?t.getDate():0; };
+const adventTodo=()=>{ const d=adventToday(); return d&&!adventState().o[d]; };
+function openAdvent(d){ if(d!==adventToday()){ toast(d<adventToday()?"Cette case est passée : elle reste vide 😢":"Patience, cette case s'ouvre le "+d+" décembre 🎄",true); return; }
+  const A=adventState(); if(A.o[d]) return; A.o[d]=1; const r=ADVENT[d-1]; grant(r,`🎄 Calendrier de l'Avent, case ${d}`);
+  let bonus=false; if(d===24&&Array.from({length:24},(_,i)=>A.o[i+1]).every(Boolean)){ const c=W(); c.coll=c.coll||{}; c.coll[ADV_CARD]=(c.coll[ADV_CARD]||0)+1; bonus=true; post(`🎄 ${NAMES[me]} a ouvert les 24 cases du calendrier de l'Avent et gagne la carte exclusive ${BY_ID[ADV_CARD].name} Édition Noël !`); }
+  save(); renderCollec(); const M=$("#cardModal");
+  M.innerHTML=`<div class="cm-box panel advpop"><div class="advbig">${d}</div><h3 style="margin:6px 0">${ADV_IC(r)} ${rTxt(r)}</h3><div class="mute" style="font-size:12.5px">${r.pack?"Ton pack t'attend dans la Boutique, juste en dessous.":"Ajouté à tes pièces."}</div>${bonus?`<div style="margin:12px 0 4px;font-weight:900;color:#ffd970">🏆 24/24 ! Carte exclusive débloquée :</div><div class="cm-card">${cardHTML(ADV_CARD,{w:170,cls:"flip-in glow"})}</div>`:""}<div class="mbtns"><button class="btn" id="advOk">Super 🎄</button></div></div>`;
+  M.classList.add("open"); $("#advOk").onclick=()=>M.classList.remove("open"); }
+function adventHTML(){ if(!me||!adventOn()) return ""; const A=adventState(), td=adventToday(), n=Object.keys(A.o).length; const miss=Array.from({length:Math.max(0,(td||25)-1)},(_,i)=>i+1).filter(i=>!A.o[i]).length;
+  return `<div class="section adv"><h3>🎄 Calendrier de l'Avent <small>${n}/24</small></h3><div class="mute" style="font-size:12px;margin:-4px 0 8px">Une case par jour, à ouvrir le jour même (case ratée = vide). ${miss?"Plus de 24/24 possible cette année":`Ouvre les 24 pour gagner la carte exclusive <b>${esc(BY_ID[ADV_CARD].name)} Édition Noël</b> 🏆`}.</div>
+    <div class="advg">${Array.from({length:24},(_,i)=>{ const d=i+1, op=A.o[d], r=ADVENT[i]; const st=op?"op":d===td?"td":d<td||!td?"ko":"lk"; return `<button class="advc ${st}" data-adv="${d}"><b>${d}</b><span>${op?ADV_IC(r):st==="td"?"🎁":st==="ko"?"✕":"🔒"}</span></button>`; }).join("")}</div></div>`; }
 
 // ======================================================================
 // 🎮 JEUX : carrière, coupe, défi du jour, quiz, canapé, stats, réactions
@@ -4549,7 +4607,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-23g"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-23h"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
@@ -4644,7 +4702,7 @@ try{
       else { NAMES[me]=pendingName||($("#aName").value.trim())||user.email.split("@")[0]; compos[me]=blank(); compos[me].coins=300; await push(); await importLegacy(NAMES[me]); setTimeout(()=>toast("Bienvenue ! 300 🪙 offertes pour ton premier pack"),800); }
     }catch(e){ setSync("⚠️ Accès refusé : règles Firebase à mettre à jour","err"); }
     pendingName=null; $("#aPass").value="";
-    choose(me); startListeners(); setTimeout(()=>{ if(me){ starterPack(); loginStreak(); dailyBonus(); claimRewards(); refreshNotifToken(); try{ checkBirthday(); }catch(e){} setTimeout(()=>{ try{ askBirthday(); }catch(e){} },9000); renderCoins(); badgeLigue(); tip("welcome",()=>starterPrompt(()=>tip("tab_"+mode))); } },1500);
+    choose(me); startListeners(); setTimeout(()=>{ if(me){ starterPack(); loginStreak(); dailyBonus(); claimRewards(); refreshNotifToken(); try{ checkBirthday(); }catch(e){} try{ checkHolidays(); }catch(e){} setTimeout(()=>{ try{ askBirthday(); }catch(e){} },9000); renderCoins(); badgeLigue(); tip("welcome",()=>starterPrompt(()=>tip("tab_"+mode))); } },1500);
   });
 }catch(e){ setSync("⚠️ Synchro indisponible","err"); }
 </script>
