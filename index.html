@@ -2255,7 +2255,23 @@ function palmScore(p){
   if(p.pos[0]!=="COACH") sc+=Math.max(0,(p.ovr-75)/2)+(p.m||0)/80; else sc+=Math.max(0,(p.ovr-75)/3);
   return _rcache[p.id]=sc;
 }
-function rarity(p){ if(p.v) return p.v==="ml"||p.v==="xm"||p.v==="gf"||p.v==="ul"||p.v==="lm"?"myth":p.v==="fs"?"icon":(p.ovr>=85?"icon":"gold"); const s=palmScore(p); return s>=24?"myth":s>=12?"icon":s>=6?"gold":s>=2.5?"silver":"bronze"; }
+// ⚖️ NOTATION (nov. 2026) : la rareté suit d'abord la NOTE, le palmarès peut faire monter d'un ou deux crans.
+// Chaque rareté a sa plage de notes, sans chevauchement : une carte plus rare n'a JAMAIS une note plus basse qu'une moins rare.
+// Commune ≤ 76 · Rare 77-79 · Épique 80-82 · Légendaire 83-85 · Mythique 86+
+const TIER_ORD=["bronze","silver","gold","icon","myth"], TIER_MIN={bronze:0,silver:77,gold:80,icon:83,myth:86};
+const ovrTier=o=>o>=86?"myth":o>=83?"icon":o>=80?"gold":o>=77?"silver":"bronze";
+function titleScore(p){ const t=olTitles(p), M=MAJ[p.id]||{}; const inv=p.pos[0]==="COACH"?1:Math.max(.25,Math.min(1,(p.m||0)/250));
+  return (3*t.l1+2*t.cdf+t.cdl+.5*t.tdc)*inv+8*(M.wc||[]).length+5*(M.ucl||0)+4*(M.euro||[]).length+10*(M.bo||[]).length; }
+// score de rareté = note + bonus palmarès (max +5) + bonus fidélité (max +1,5)
+const rarScore=p=>p.ovr+Math.min(5,Math.sqrt(titleScore(p))*1.2)+(p.pos[0]==="COACH"?0:Math.min(1.5,(p.m||0)/250));
+const scoreTier=s=>s>=89?"myth":s>=85.5?"icon":s>=82?"gold":s>=78?"silver":"bronze";
+const BASE_TIER={};
+[...PLAYERS,...COACHES].forEach(p=>{ const a=ovrTier(p.ovr), b=scoreTier(rarScore(p)); const t=TIER_ORD.indexOf(b)>TIER_ORD.indexOf(a)?b:a;
+  BASE_TIER[p.id]=t; p.ovr0=p.ovr; p.ovr=Math.max(p.ovr,TIER_MIN[t]); }); // promu par le palmarès → note remontée au bas de sa plage
+function rarity(p){
+  if(p.v){ if(p.v==="ml"||p.v==="xm"||p.v==="gf"||p.v==="ul"||p.v==="lm") return "myth"; if(p.v==="fs") return "icon";
+    const t=ovrTier(p.ovr); return TIER_ORD.indexOf(t)<2?"gold":t; } // Forme du moment : au moins Épique, sinon selon sa note
+  return BASE_TIER[p.id]||ovrTier(p.ovr); }
 function palmText(p){
   const t=olTitles(p), M=MAJ[p.id]||{}; const L=[];
   if(t.l1) L.push(`${t.l1}× Champion de France`); if(t.cdf) L.push(`${t.cdf}× Coupe de France`); if(t.cdl) L.push(`${t.cdl}× Coupe de la Ligue`); if(t.tdc) L.push(`${t.tdc}× Trophée des champions`);
@@ -2341,7 +2357,7 @@ function showCard(pid,act,lv){
   const t_=cardTier(p), bcls=(p.pos[0]==="COACH"?"coach r-"+t_:t_)+(p.v?" v-"+p.v:"");
   M.innerHTML=`<div class="cm-box"><div class="cm-card"><div class="cflip flip-in" id="cmFlip"><div class="cf-front">${cardHTML(pid,{w:230,ovr:p.ovr+(lv||0)})}</div>
     <div class="cf-back">${cardBackHTML(pid,230,lv)}</div></div></div>
-    <div class="cm-hint">👆 Touche la carte pour la retourner</div>${me&&!((C(me)||{}).coll||{})[pid]?whereHTML(p):""}<div class="mbtns" id="cmBtns"></div><div class="cm-note">Stats inspirées des jeux FIFA/FC (note, poste, profil). Rareté selon le palmarès : titres avec l'OL et grands trophées en carrière.</div></div>`;
+    <div class="cm-hint">👆 Touche la carte pour la retourner</div>${me&&!((C(me)||{}).coll||{})[pid]?whereHTML(p):""}<div class="mbtns" id="cmBtns"></div><div class="cm-note">Stats inspirées des jeux FIFA/FC (note, poste, profil). Rareté selon la note : le palmarès (titres avec l'OL, grands trophées) peut la faire monter. Une carte plus rare a toujours une note au moins égale.</div></div>`;
   const B=$("#cmBtns");
   const mk=(t,fn,ghost)=>{const b=document.createElement("button");b.className="btn"+(ghost?" ghost":"");b.textContent=t;b.onclick=()=>{M.classList.remove("open");fn&&fn();};B.appendChild(b);};
   if(act&&act.change) mk("🔁 Changer de joueur",act.change);
@@ -3160,8 +3176,10 @@ const FS_LIST=[["kail-boudache",84],["khalis-merah",82],["noah-nartey",82],["jul
 const ML_LIST=[["juninho",97,"Roi du coup franc"],["karim-benzema",94,"Meilleur joueur de Ligue 1 en 2008"],["hugo-lloris",93,"Le mur de Gerland"],["michael-essien",92,"Le Bison"],["sonny-anderson",92,"Le buteur du premier titre"],
   ["alexandre-lacazette",92,"Meilleur buteur de Ligue 1 en 2015"],["cris",91,"Le Policier"],["nabil-fekir",91,"Capitaine courage"],["bafetimbi-gomis",90,"Quadruplé à Zagreb (2011)"],["sidney-govou",89,"Héros du Septuplé"]];
 const VARIANTS=[];
+const VAR_MIN={fs:83,ml:86,xm:86,gf:86,ul:86,lm:86,tf:80}, VAR_MAX={fs:85};
+const varOvr=(v,o)=>Math.min(VAR_MAX[v]||99,Math.max(VAR_MIN[v]||0,o));
 function mkVar(baseId,v,ovr,title){ const b=BY_ID[baseId]; if(!b) return; const id=baseId+"--"+v;
-  const p=Object.assign({},b,{id,base:baseId,v,ovr:Math.min(99,ovr),title}); VARIANTS.push(p); BY_ID[id]=p;
+  const p=Object.assign({},b,{id,base:baseId,v,ovr:varOvr(v,Math.min(99,ovr)),title}); VARIANTS.push(p); BY_ID[id]=p;
   for(const T of [NAT,SPANS,MAJ,STYLE_OF]) if(T[baseId]!=null) T[id]=T[baseId]; }
 FS_LIST.forEach(([id,o])=>mkVar(id,"fs",o,"Pépite du centre de formation"));
 ML_LIST.forEach(([id,o,t])=>mkVar(id,"ml",o,t));
@@ -3181,7 +3199,7 @@ const TF_LIST=[
 // ⬇ ajouter les 4 cartes de chaque match ici
 ];
 const tfBonus=n=>n>=9.5?11:n>=9?9:n>=8.5?7:n>=8?6:n>=7.5?4:n>=7?3:2;
-TF_LIST.forEach(([pid,mid,note,t])=>{ const b=BY_ID[pid]; if(!b) return; const id=pid+"--tf-"+mid, mon=String(mid).slice(0,10); const p=Object.assign({},b,{id,base:pid,v:"tf",ovr:Math.min(96,b.ovr+tfBonus(note)),title:`Forme du moment · ${note}/10${t?" · "+t:""}`,tfMon:mon,tfNote:note,tfWhy:t}); VARIANTS.push(p); BY_ID[id]=p; for(const T of [NAT,SPANS,MAJ,STYLE_OF]) if(T[pid]!=null) T[id]=T[pid]; });
+TF_LIST.forEach(([pid,mid,note,t])=>{ const b=BY_ID[pid]; if(!b) return; const id=pid+"--tf-"+mid, mon=String(mid).slice(0,10); const p=Object.assign({},b,{id,base:pid,v:"tf",ovr:varOvr("tf",Math.min(96,b.ovr+tfBonus(note))),title:`Forme du moment · ${note}/10${t?" · "+t:""}`,tfMon:mon,tfNote:note,tfWhy:t}); VARIANTS.push(p); BY_ID[id]=p; for(const T of [NAT,SPANS,MAJ,STYLE_OF]) if(T[pid]!=null) T[id]=T[pid]; });
 // 👑 LÉGENDES ULTIMES : les plus grands de l'histoire de l'OL, notes monstrueuses, ultra rares (Pack Légende seulement)
 // Anciens (pas de carte de base) : [id, nom, poste, arrivée, note, matchs, buts, nationalité, "exploit"]
 const UL_OLD=[
@@ -3201,7 +3219,7 @@ UL_OLD.forEach(([id,n,pos,y,o,mm,g,nat,t])=>{ if(BY_ID[id]) return; const p={id,
 // ⭐ LÉGENDES MODERNES (catégorie à part) : les géants de l'ère Aulas, version monstrueuse : [id, note, "exploit"]
 [["juninho",99,"Le Roi du coup franc · 100 buts"],["alexandre-lacazette",97,"201 buts · 2e buteur de l'histoire du club"],["gregory-coupet",97,"Le mur des 7 titres"],
  ["sidney-govou",95,"412 matchs sous le maillot lyonnais"],["karim-benzema",97,"Formé à l'OL, 4 titres de champion"],["anthony-lopes",95,"Formé au club, plus de 470 matchs"]].forEach(([id,o,t])=>mkVar(id,"lm",o,t));
-GF_LIST.forEach(([pid,key,o,t])=>{ const b=BY_ID[pid]; if(!b) return; const id=pid+"--gf-"+key; const p=Object.assign({},b,{id,base:pid,v:"gf",ovr:Math.min(99,o),title:t}); VARIANTS.push(p); BY_ID[id]=p; for(const T of [NAT,SPANS,MAJ,STYLE_OF]) if(T[pid]!=null) T[id]=T[pid]; });
+GF_LIST.forEach(([pid,key,o,t])=>{ const b=BY_ID[pid]; if(!b) return; const id=pid+"--gf-"+key; const p=Object.assign({},b,{id,base:pid,v:"gf",ovr:varOvr("gf",Math.min(99,o)),title:t}); VARIANTS.push(p); BY_ID[id]=p; for(const T of [NAT,SPANS,MAJ,STYLE_OF]) if(T[pid]!=null) T[id]=T[pid]; });
 [...CURRENT].forEach(id=>{ const b=BY_ID[id], fs=BY_ID[id+"--fs"]; if(b) mkVar(id,"tf",Math.min(92,Math.max(b.ovr+7,fs?fs.ovr+2:0)),"Forme du moment"); });
 const baseOf=id=>(BY_ID[id]&&BY_ID[id].base)||id;
 const TF_IDS=VARIANTS.filter(p=>p.v==="tf").map(p=>p.id);
@@ -3266,14 +3284,15 @@ function openPack(pack,free){
   else { for(let i=0;i<P.n;i++) ids.push(drawCard(pack));
     if(P.guarantee&&!ids.some(id=>rank[cardTier(BY_ID[id])]>=rank[P.guarantee])) ids[ids.length-1]=drawCard(pack,P.guarantee); }
   if(!gold&&((pack==="event"&&Math.random()<.2)||(pack==="legende"&&Math.random()<.08))){ const L=tfWeek(); if(L.length){ let lo=0; ids.forEach((id,i)=>{ if(rank[cardTier(BY_ID[id])]<rank[cardTier(BY_ID[ids[lo]])]) lo=i; }); ids[lo]=L[Math.floor(Math.random()*L.length)]; } } // remplace la carte la plus faible (jamais la Légendaire garantie)
+  // 👑⭐💥 Légendes Ultimes / Modernes / Grande Forme : tirées AVANT l'ajout à la collection (sinon la carte n'y arrivait jamais)
+  try{ const r_=Math.random(), UL=VARIANTS.filter(p=>p.v===(r_<.01?"ul":"lm")).map(p=>p.id); if(!gold&&pack==="legende"&&UL.length&&r_<.025){ let lo=0; ids.forEach((id,i)=>{ if(rank[cardTier(BY_ID[id])]<rank[cardTier(BY_ID[ids[lo]])]) lo=i; }); ids[lo]=UL[Math.floor(Math.random()*UL.length)]; } }catch(e){}
+  try{ const GF=VARIANTS.filter(p=>p.v==="gf").map(p=>p.id); if(!gold&&pack==="legende"&&GF.length&&Math.random()<.03){ let lo=0; ids.forEach((id,i)=>{ if(rank[cardTier(BY_ID[id])]<rank[cardTier(BY_ID[ids[lo]])]) lo=i; }); ids[lo]=GF[Math.floor(Math.random()*GF.length)]; } }catch(e){}
   if(pack!=="starter") ids.sort((a,b)=>rank[cardTier(BY_ID[a])]-rank[cardTier(BY_ID[b])]||BY_ID[a].ovr-BY_ID[b].ovr);
   c.coll=c.coll||{}; const isNew=ids.map(id=>!c.coll[id]);
   for(const id of ids) c.coll[id]=(c.coll[id]||0)+1;
   c.opened=(c.opened||0)+1;
   c.packLog=[...(c.packLog||[]),{p:pack,ids,at:Date.now(),paid:free||pack==="jour"?0:P.price}].slice(-10); // historique pour l'admin
   save(); renderCoins(); track("pack");
-  try{ const r_=Math.random(), UL=VARIANTS.filter(p=>p.v===(r_<.01?"ul":"lm")).map(p=>p.id); if(!gold&&pack==="legende"&&UL.length&&r_<.025){ let lo=0; ids.forEach((id,i)=>{ if(rank[cardTier(BY_ID[id])]<rank[cardTier(BY_ID[ids[lo]])]) lo=i; }); ids[lo]=UL[Math.floor(Math.random()*UL.length)]; } }catch(e){}
-  try{ const GF=VARIANTS.filter(p=>p.v==="gf").map(p=>p.id); if(!gold&&pack==="legende"&&GF.length&&Math.random()<.03){ let lo=0; ids.forEach((id,i)=>{ if(rank[cardTier(BY_ID[id])]<rank[cardTier(BY_ID[ids[lo]])]) lo=i; }); ids[lo]=GF[Math.floor(Math.random()*GF.length)]; } }catch(e){}
   if(gold) post(`✨ ${NAMES[me]} a ouvert un GOLD PACK !!!`);
   for(const id of ids){ const t=cardTier(BY_ID[id]); if(BY_ID[id].v==="ul") post(`👑 ${NAMES[me]} a tiré la LÉGENDE ULTIME ${BY_ID[id].name} (${BY_ID[id].ovr}) !!!`); else if(BY_ID[id].v==="lm") post(`⭐ ${NAMES[me]} a tiré la LÉGENDE MODERNE ${BY_ID[id].name} (${BY_ID[id].ovr}) !!`); else if(BY_ID[id].v==="gf") post(`💥 ${NAMES[me]} a tiré la GRANDE FORME de ${BY_ID[id].name} (${BY_ID[id].title}) !`); else if(t==="myth"||t==="icon") post(`${t==="myth"?"🌈":"🌟"} ${NAMES[me]} a tiré ${BY_ID[id].name} (${TIER_NAME[t]}) !`); }
   if(pack==="starter") placeStarter(c,ids);
@@ -5828,7 +5847,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-26d"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-26e"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
