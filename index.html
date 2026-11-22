@@ -1921,7 +1921,7 @@ function renderHubs(){ if(!me) return;
       ${hubTile("duo","👥","2 contre 2",duoS[0]||"En duo avec un pote, à 4 en direct","linear-gradient(135deg,#7c3aed,#2e1065)",duoS[1])}
       ${hubTile("league","🏆","Championnats",Li.length?"📨 Invitation à « "+esc(Li[0].name)+" »":Lm.length?Lm.length+" en cours · matchs auto":"Chacun contre tous, matchs auto","linear-gradient(135deg,#0f766e,#053b37)",Li.length?"📨":null)}
       ${hubTile("cup","🏟️","Coupes",Ki.length?"📨 Invitation à « "+esc(Ki[0].name)+" »":Km.length?Km.length+" en cours · aller-retour":"Élimination directe, tirs au but","linear-gradient(135deg,#be123c,#4c0519)",Ki.length?"📨":null)}
-      ${hubTile("match","⚔️","Match amical",live?"🔴 Un match est en direct":"Ton 11 type contre celui d'un pote","linear-gradient(135deg,#334155,#0f172a)",null)}
+      ${hubTile("match","⚔️","Match amical",live?"🔴 Un match est en direct":"Ton 11 type contre celui d'un pote · pour le plaisir (sans gains)","linear-gradient(135deg,#334155,#0f172a)",null)}
       </div>`;
     if(setHub(H,html)){ H.querySelectorAll("[data-tile]").forEach(b=>b.onclick=()=>openTile(b.dataset.tile)); bindObjMini(H); } }
   if(mode==="solo"&&!soSel){ const H=$("#soHub"); const c=W(); let car="", df="", qz="";
@@ -2617,7 +2617,7 @@ async function launchMatch(){
     const h={id:m.id,at:m.at,mode:"cpu",score:r.score,labels:[tA.label,tB.label],owners:[pA,pB],names:[pName(pA),pName(pB)],motm:r.motm?{pid:r.motm.pid,t:r.motm.t,note:r.notes[r.motm.t][r.motm.pid]}:null,st:mStats(m)};
     await addHist(h);
     return; }
-  const hist=[{id:m.id,at:m.at,score:r.score,labels:[tA.label,tB.label],owners:[pA,pB],names:[NAMES[pA],NAMES[pB]],motm:r.motm?{pid:r.motm.pid,t:r.motm.t,note:r.notes[r.motm.t][r.motm.pid]}:null,st:mStats(m)},...matches].slice(0,200);
+  const hist=[{id:m.id,at:m.at,mode:"amical",nr:1,score:r.score,labels:[tA.label,tB.label],owners:[pA,pB],names:[NAMES[pA],NAMES[pB]],motm:r.motm?{pid:r.motm.pid,t:r.motm.t,note:r.notes[r.motm.t][r.motm.pid]}:null,st:mStats(m)},...matches].slice(0,200);
   if(!(await addHist(hist[0],m))) toast("Pas de connexion, réessaie",true);
 }
 // Réparation unique : recalcule la carrière depuis l'historique des matchs (après l'ancien bouton « Tout effacer »)
@@ -2801,7 +2801,7 @@ function matchSetupHTML(){ const ops=others().filter(u=>u!==CPU&&compos[u]); pA=
     <div class="field"><span>${cpu?"Niveau":"Son équipe"}</span><select id="mSelB">${oB.map(o=>`<option value="${esc(o.key)}" ${o.key===selB?"selected":""}>${esc(o.label)}</option>`).join("")}</select></div>
     ${rA&&rB?`<div class="vsavg"><div><small>Ton équipe</small><b>${rA.global??"–"}</b></div><span>VS</span><div><small>${cpu?"🤖 Ordi":esc(NAMES[pB]||"?")}</small><b>${rB.global??"–"}</b></div></div>`:""}
     <button class="btn big" id="mGo">▶️ Lancer le match</button>
-    <div class="mute" style="font-size:12px;text-align:center;margin-top:6px">${cpu?(cpuLeft()>0?`Joué sur ton téléphone seulement · gains divisés par 2 · <b>${cpuLeft()}/${CPU_MAX} match${cpuLeft()>1?"s":""} récompensé${cpuLeft()>1?"s":""}</b> encore aujourd'hui.`:`⏳ Tes ${CPU_MAX} matchs récompensés contre l'ordi sont joués : celui-ci sera un <b>entraînement</b> (ni pièces ni objectifs). Reviens demain !`):"Le match se joue en direct chez vous deux · seules les cartes possédées jouent."}</div>`; }
+    <div class="mute" style="font-size:12px;text-align:center;margin-top:6px">${cpu?(cpuLeft()>0?`Joué sur ton téléphone seulement · gains divisés par 2 · <b>${cpuLeft()}/${CPU_MAX} match${cpuLeft()>1?"s":""} récompensé${cpuLeft()>1?"s":""}</b> encore aujourd'hui.`:`⏳ Tes ${CPU_MAX} matchs récompensés contre l'ordi sont joués : celui-ci sera un <b>entraînement</b> (ni pièces ni objectifs). Reviens demain !`):"Match amical : pour le plaisir, sans pièces ni objectifs · il se joue en direct chez vous deux · seules les cartes possédées jouent."}</div>`; }
 function bindMatchSetup(){ const g=$("#mGo"); if(!g) return;
   $("#mSelA").onchange=e=>{ selA=e.target.value; renderMatch(); };
   $("#mOpp").onchange=e=>{ pB=e.target.value; mPreset=pB===CPU?"cpu":"friend"; selB=null; renderMatch(); };
@@ -5378,7 +5378,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-24g"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-24h"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
