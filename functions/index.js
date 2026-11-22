@@ -255,3 +255,17 @@ exports.trophyBackfill = onSchedule({ schedule: "*/30 * * * *", timeZone: "Europ
   const qs = await db.collection("onzeol_users").get();
   for (const d of qs.docs) { const T = trophiesFor(d.data() || {}); if (T) await d.ref.update({ trophies: T }); }
 });
+
+// 📊 Récap du dimanche soir : la semaine de chacun + le meilleur du club (matchs des 7 derniers jours)
+exports.weeklyRecap = onSchedule({ schedule: "13 20 * * 0", timeZone: "Europe/Paris", region: REGION }, async () => {
+  const meta = await db.collection("onzeol_meta").doc("main").get(); const M = ((meta.exists && meta.data().matches) || []).filter(h => h && h.at > Date.now() - 7 * 86400000 && h.score && h.owners);
+  const users = await allUsers(); const S = {};
+  for (const u of users) S[u.id] = { w: 0, g: 0, p: 0, tr: (u.trophies || []).filter(t => t.at > Date.now() - 7 * 86400000).length };
+  for (const h of M) h.owners.forEach((u, i) => { if (!S[u] || h.nr) return; const a = h.score[i], b = h.score[1 - i]; S[u].p++; S[u].g += a || 0; if (a > b) S[u].w++; });
+  const best = users.filter(u => S[u.id].p).sort((a, b) => S[b.id].w - S[a.id].w || S[b.id].g - S[a.id].g)[0];
+  const scorer = users.filter(u => S[u.id].g).sort((a, b) => S[b.id].g - S[a.id].g)[0];
+  for (const u of users) { if (!(u.fcm || []).length) continue; const s = S[u.id];
+    const me = s.p ? `Ta semaine : ${s.p} match${s.p > 1 ? "s" : ""}, ${s.w} victoire${s.w > 1 ? "s" : ""}, ${s.g} but${s.g > 1 ? "s" : ""}${s.tr ? `, ${s.tr} trophée${s.tr > 1 ? "s" : ""}` : ""}.` : "Tu n'as pas joué cette semaine, ton 11 t'attend !";
+    const club = best ? ` 🏆 Joueur de la semaine : ${best.name || "?"} (${S[best.id].w} victoires)${scorer && scorer.id !== best.id ? ` · ⚽ meilleure attaque : ${scorer.name || "?"} (${S[scorer.id].g} buts)` : ""}.` : "";
+    await notify(u.id, "📊 Le récap de la semaine", me + club); }
+});

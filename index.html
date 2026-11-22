@@ -1096,6 +1096,9 @@ header{padding-top:calc(10px + var(--hdt))!important;min-height:calc(72px + var(
 body[data-mode="match"]::before{content:"";position:fixed;inset:0;z-index:-1;background:linear-gradient(180deg,#02061155 0%,#020611aa 45%,#020611ee 100%),url(img/stade.webp) center top/cover no-repeat;pointer-events:none}
 body[data-mode="match"] #mBoard{background:#0b153099;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid #ffffff14}
 body[data-mode="match"] #mBoard .sboard{padding:8px 0 2px}body[data-mode="match"] #mBoard .sc{text-shadow:0 0 24px #e3002b66,0 4px 12px #000}
+.cm-where{margin:6px 0 2px;padding:8px 10px;border-radius:10px;background:#ffffff0d;font-size:12px;line-height:1.45;text-align:left}.cm-where b{display:block;font-size:12.5px;margin-bottom:2px}
+body.lowfx .fc-fx,body.lowfx .fc-shine,body.lowfx .px-holo,body.lowfx .px-shine,body.lowfx .vsh,body.lowfx .px-beams,body.lowfx .px-crowd,body.lowfx .px-fog,body.lowfx .hypePop{display:none!important}
+body.lowfx .tile,body.lowfx .vt img,body.lowfx .hype,body.lowfx .pkbtn,body.lowfx .fcard{animation:none!important}
 </style>
 </head>
 <body>
@@ -1523,7 +1526,7 @@ $("#aSignup").onclick=async()=>{
   $("#aSignup").disabled=false; };
 $("#shareBtn").onclick=async()=>{ const url=location.origin+location.pathname; try{ if(navigator.share){ await navigator.share({title:"Les Gones Legends",text:"Crée ton compte, fais ton 11 type de l'OL et viens me défier !",url}); return; } }catch(e){ return; } try{ await navigator.clipboard.writeText(url); toast("Lien copié !"); }catch(e){ toast(url); } };
 $("#admBtn").onclick=()=>adminPanel();
-$("#who").onclick=()=>openModal(`Connecté en tant que ${NAMES[me]||"?"} · ${$("#sync").textContent.replace(/^✓ /,"")} · version ${APP_V}`,null,[[notifState()==="granted"?"🔔 Notifications activées":"🔔 Activer les notifications",()=>{ enableNotifs(); }],...(notifState()==="granted"?[["🧪 Tester les notifications",()=>{ testNotif(); }]]:[]),["🛡️ Mon écusson",()=>{ setTimeout(openCrestPicker,150); }],["☀️ Résumé du jour",()=>{ setTimeout(()=>showHome(true),150); }],["🎂 Mon anniversaire",()=>{ setTimeout(birthdayPicker,150); }],[SFX.on?"🔊 Son activé (couper)":"🔇 Son coupé (activer)",()=>{ SFX.set(!SFX.on); toast(SFX.on?"🔊 Son activé":"🔇 Son coupé"); if(SFX.on) SFX.chime("gold"); }],["📲 Installer l'appli",()=>{ setTimeout(()=>installGuide(true),200); }],["💡 Revoir les explications",()=>{ resetTips(); }],...(me===ADMIN?[["🛠️ Panneau admin",()=>{ setTimeout(adminPanel,150); }]]:[]),["Se déconnecter",()=>{ firebase.auth().signOut(); }],["Inviter quelqu'un",()=>$("#shareBtn").click(),true],["Fermer",null,true]]);
+$("#who").onclick=()=>openModal(`Connecté en tant que ${NAMES[me]||"?"} · ${$("#sync").textContent.replace(/^✓ /,"")} · version ${APP_V}`,null,[[notifState()==="granted"?"🔔 Notifications activées":"🔔 Activer les notifications",()=>{ enableNotifs(); }],...(notifState()==="granted"?[["🧪 Tester les notifications",()=>{ testNotif(); }]]:[]),["🛡️ Mon écusson",()=>{ setTimeout(openCrestPicker,150); }],[LOWFX?"🎬 Animations réduites (tout réactiver)":"🎬 Réduire les animations",()=>{ LOWFX=!LOWFX; try{ localStorage.setItem("gl_lowfx",LOWFX?"1":""); }catch(e){} document.body.classList.toggle("lowfx",LOWFX); toast(LOWFX?"🎬 Animations réduites":"🎬 Animations complètes"); }],["☀️ Résumé du jour",()=>{ setTimeout(()=>showHome(true),150); }],["🎂 Mon anniversaire",()=>{ setTimeout(birthdayPicker,150); }],[SFX.on?"🔊 Son activé (couper)":"🔇 Son coupé (activer)",()=>{ SFX.set(!SFX.on); toast(SFX.on?"🔊 Son activé":"🔇 Son coupé"); if(SFX.on) SFX.chime("gold"); }],["📲 Installer l'appli",()=>{ setTimeout(()=>installGuide(true),200); }],["💡 Revoir les explications",()=>{ resetTips(); }],...(me===ADMIN?[["🛠️ Panneau admin",()=>{ setTimeout(adminPanel,150); }]]:[]),["Se déconnecter",()=>{ firebase.auth().signOut(); }],["Inviter quelqu'un",()=>$("#shareBtn").click(),true],["Fermer",null,true]]);
 
 // ---------- Rendu ----------
 // Note moyenne du 11 (cartes possédées, évolutions et forme réelle comprises)
@@ -2268,13 +2271,21 @@ document.addEventListener("click",ev=>{
 },true);
 // 🔍 toucher une mini-carte (marché, enchères, échanges) l'agrandit
 document.addEventListener("click",e=>{ const z=e.target.closest&&e.target.closest("[data-zoom]"); if(!z) return; e.preventDefault(); e.stopPropagation(); showCard(z.dataset.zoom); },true);
+// 🔎 Où obtenir une carte qu'on n'a pas
+function whereHTML(p){ const L=[]; const t=cardTier(p);
+  const V={tf:"🔥 Pack Événement et Pack Légende, pendant 7 jours après le match",gf:"💥 Pack Légende (≈3 %)",ul:"👑 Pack Légende (≈1 %)",lm:"⭐ Pack Légende (≈1,5 %)",xm:"🎄 Calendrier de l'Avent"};
+  if(V[p.v]) L.push(V[p.v]);
+  else { const pk=["bronze","or","legende","jour"].map(k=>[k,PACKS[k]]).filter(([k,P])=>P&&P.w&&P.w[t]>0).sort((a,b)=>b[1].w[t]-a[1].w[t]).map(([k,P])=>`${P.name.replace("Pack ","")} ${(P.w[t]>=1?Math.round(P.w[t]):P.w[t]).toLocaleString("fr-FR")} %`); if(pk.length) L.push(`🎴 Chance d'une carte ${TIER_NAME[t]} par carte tirée : ${pk.join(" · ")}`);
+    const sb={silver:"Recyclage",gold:"Montée en gamme",icon:"Élite"}[t]; if(sb) L.push(`🧩 Défi d'équipe « ${sb} » (carte ${TIER_NAME[t]} garantie, au hasard)`); }
+  if(!["xm"].includes(p.v)){ const sellers=Object.values(market||{}).filter(l=>l.status==="open"&&l.pid===p.id).length; L.push(`🏪 Marché, enchères ou échange avec un joueur qui l'a en double${sellers?` · <b style="color:#7ee2a0">${sellers} en vente maintenant</b>`:""}`); }
+  return `<div class="cm-where"><b>🔎 Où l'obtenir ?</b>${L.map(x=>`<div>${x}</div>`).join("")}</div>`; }
 function showCard(pid,act,lv){
   const p=BY_ID[pid]; if(!p) return;
   const M=$("#cardModal");
   const t_=cardTier(p), bcls=(p.pos[0]==="COACH"?"coach r-"+t_:t_)+(p.v?" v-"+p.v:"");
   M.innerHTML=`<div class="cm-box"><div class="cm-card"><div class="cflip flip-in" id="cmFlip"><div class="cf-front">${cardHTML(pid,{w:230,ovr:p.ovr+(lv||0)})}</div>
     <div class="cf-back">${cardBackHTML(pid,230,lv)}</div></div></div>
-    <div class="cm-hint">👆 Touche la carte pour la retourner</div><div class="mbtns" id="cmBtns"></div><div class="cm-note">Stats inspirées des jeux FIFA/FC (note, poste, profil). Rareté selon le palmarès : titres avec l'OL et grands trophées en carrière.</div></div>`;
+    <div class="cm-hint">👆 Touche la carte pour la retourner</div>${me&&!((C(me)||{}).coll||{})[pid]?whereHTML(p):""}<div class="mbtns" id="cmBtns"></div><div class="cm-note">Stats inspirées des jeux FIFA/FC (note, poste, profil). Rareté selon le palmarès : titres avec l'OL et grands trophées en carrière.</div></div>`;
   const B=$("#cmBtns");
   const mk=(t,fn,ghost)=>{const b=document.createElement("button");b.className="btn"+(ghost?" ghost":"");b.textContent=t;b.onclick=()=>{M.classList.remove("open");fn&&fn();};B.appendChild(b);};
   if(act&&act.change) mk("🔁 Changer de joueur",act.change);
@@ -3223,7 +3234,8 @@ const PX_COL={bronze:["#e2a774","#8a4b1c"],silver:["#e9edf2","#7d8794"],gold:["#
   ul:["#ffd970","#e3002b"],lm:["#ffffff","#1d4ed8"],gf:["#ffb020","#ff3d00"],tf:["#ff9a3a","#e5480f"],fs:["#5dffd0","#8a3dff"],ml:["#e8c45a","#5a430c"],xm:["#ffffff","#c8102e"]};
 const pxKey=id=>{ const p=BY_ID[id]; return p&&p.v&&PX_COL[p.v]?p.v:cardTier(p); };
 const pxScore=id=>{ const p=BY_ID[id]; const v=p&&p.v; return v==="ul"?9:v==="lm"?8.5:v==="gf"?8:v==="xm"?7.5:v==="ml"?7:v==="tf"||v==="fs"?6:PX_RANK[cardTier(p)]+(p.ovr>=85?.5:0); };
-const pxBig=id=>{ const p=BY_ID[id]; return !!(p&&(p.v||["gold","icon","myth"].includes(cardTier(p)))); };
+let LOWFX=false; try{ LOWFX=!!localStorage.getItem("gl_lowfx"); }catch(e){} if(LOWFX) document.body.classList.add("lowfx");
+const pxBig=id=>{ if(LOWFX) return false; const p=BY_ID[id]; return !!(p&&(p.v||["gold","icon","myth"].includes(cardTier(p)))); };
 const pxLabel=id=>{ const p=BY_ID[id]; return p.v&&VAR_INFO[p.v]?VAR_INFO[p.v].n:TIER_NAME[cardTier(p)]; };
 const pxVib=pat=>{ try{ if(navigator.vibrate) navigator.vibrate(pat); }catch(_){} };
 function pxSparks(n,col,spread){ let h=""; for(let i=0;i<n;i++){ const a=Math.random()*Math.PI*2, d=(spread||220)*(.45+Math.random()*.7); h+=`<i style="--x:${(Math.cos(a)*d).toFixed(0)}px;--y:${(Math.sin(a)*d).toFixed(0)}px;--s:${(.5+Math.random()).toFixed(2)};background:${col[i%col.length]};animation-delay:${(Math.random()*.12).toFixed(2)}s"></i>`; } return h; }
@@ -5658,7 +5670,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-25k"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-25m"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
