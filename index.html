@@ -721,6 +721,19 @@ header{padding:10px 16px 4px;min-height:44px}header h1{font-size:19px;margin:0;l
 .cdb{min-width:58px;padding:7px 4px 5px;border-radius:10px;background:linear-gradient(160deg,#fff3c4,#f3d27a 35%,#d4a13d 70%,#b8862b);box-shadow:0 0 0 1px #fff1b8,0 4px 10px #000a;color:#14204a}
 .cdb b{display:block;font-family:Georgia,serif;font-size:26px;font-weight:900;line-height:1}.cdb small{font-size:9px;font-weight:900;letter-spacing:1px;text-transform:uppercase}
 .adv-pre-s{font-size:11.5px;color:#d6def5;margin-top:9px}
+/* 🎨 Fonds de cartes illustrés (img/fonds) : remplacent les dégradés, la forme vient de l'image */
+.fcard.bronze{--art:url(img/fonds/commune.webp)}.fcard.silver{--art:url(img/fonds/rare.webp)}.fcard.gold{--art:url(img/fonds/epique.webp)}
+.fcard.icon{--art:url(img/fonds/legendaire.webp)}.fcard.myth{--art:url(img/fonds/mythique.webp)}.fcard.coach{--art:url(img/fonds/entraineur.webp)}
+.fcard.v-fs{--art:url(img/fonds/pepite.webp)}.fcard.v-tf{--art:url(img/fonds/forme.webp)}.fcard.v-ml{--art:url(img/fonds/moment.webp)}
+.fcard.v-gf{--art:url(img/fonds/grande-forme.webp)}.fcard.v-ul{--art:url(img/fonds/ultime.webp)}.fcard.v-xm{--art:url(img/fonds/noel.webp)}.fcard.hero{--art:url(img/fonds/heros.webp)}
+.fcard{background:transparent var(--art) center/100% 100% no-repeat!important;clip-path:none!important}
+.fcard .fc-bg,.fcard .fc-tex{display:none}
+.fcard .fc-glow{clip-path:none;inset:0;-webkit-mask:var(--art) center/100% 100% no-repeat;mask:var(--art) center/100% 100% no-repeat;opacity:.35}
+.fcard .fc-shine{-webkit-mask:var(--art) center/100% 100% no-repeat;mask:var(--art) center/100% 100% no-repeat}
+.fcard::before,.fcard::after{-webkit-mask:var(--art) center/100% 100% no-repeat;mask:var(--art) center/100% 100% no-repeat}
+/* encres lisibles sur les nouveaux fonds */
+.fcard.myth,.fcard.coach,.fcard.v-fs,.fcard.v-tf,.fcard.v-ml,.fcard.v-gf,.fcard.v-xm,.fcard.v-ul,.fcard.hero{--ink:#fff6df}
+.fcard.hero{--acc:#ffd970;--tagc:#0b1a4f}
 </style>
 </head>
 <body>
@@ -2408,7 +2421,7 @@ function hypeList(){
   const LP=Object.entries((LIVE&&LIVE.players)||{}).filter(([id])=>BY_ID[id]);
   const hot=LP.filter(([,x])=>x.st==="up").sort((a,b)=>b[1].mod-a[1].mod)[0]; if(hot) add(6,`📈 ${P(hot[0])} est en forme dans la vraie vie`,`${esc(hot[1].note)} · bonus +${hot[1].mod} sur sa carte`);
   const inj=LP.filter(([,x])=>x.st==="inj"); if(inj.length) add(5,`🚑 Infirmerie de l'OL : ${inj.map(([id])=>P(id)).join(", ")}`,"Leurs cartes sont affaiblies",{cold:1});
-  try{ const tf=tfWeek(); if(tf.length) add(4,`🔥 Forme du moment : ${tf.map(id=>P(id)+(BY_ID[id].tfNote!=null?` ${BY_ID[id].tfNote}/10`:"")).join(", ")}`,`Cartes dispo cette semaine seulement · 8 % dans le Pack Légende`); }catch(e){}
+  try{ const tf=tfWeek(); if(tf.length) add(4,`🔥 Forme du moment : ${tf.map(id=>P(id)+(BY_ID[id].tfNote!=null?` ${BY_ID[id].tfNote}/10`:"")).join(", ")}`,`Dispo 7 jours après le match · 8 % dans le Pack Légende`); }catch(e){}
   try{ const ev=curEvent(); if(ev&&ev.name) add(3,`🎉 Événement : ${esc(ev.name)}`,esc(ev.desc||"")); }catch(e){}
   const seen=new Set(); return out.filter(x=>!seen.has(x.t)&&seen.add(x.t)).sort((a,b)=>b.p-a.p).slice(0,25);
 }
@@ -2566,14 +2579,15 @@ mkVar("juninho","xm",98,"Édition Noël — 24/24 au calendrier de l'Avent");
 const GF_LIST=[
 // ⬇ ajouter les nouvelles cartes ici
 ];
-// 🔥 FORME DU MOMENT : chaque lundi, les 4 joueurs les mieux notés du/des match(s) de la semaine écoulée.
-// La carte est plus ou moins forte selon la note réelle (9/10 → +9, 7/10 → +3). Dispo 7 jours, gardée à vie si obtenue.
-// [id du joueur, lundi de la semaine où la carte est dispo AAAA-MM-JJ, note du match /10, "raison"]
+// 🔥 FORME DU MOMENT : après CHAQUE match officiel de l'OL (championnat, coupes), les 4 joueurs les mieux notés.
+// La carte est plus ou moins forte selon la note réelle (9/10 → +9, 7/10 → +3). Dispo 7 jours à partir du match,
+// gardée à vie si obtenue. Le même joueur peut avoir une nouvelle carte à chaque match.
+// [id du joueur, id du match (live.json → fixtures, commence par AAAA-MM-JJ), note du match /10, "raison courte"]
 const TF_LIST=[
-// ⬇ ajouter les 4 cartes de la semaine ici
+// ⬇ ajouter les 4 cartes de chaque match ici
 ];
 const tfBonus=n=>n>=9.5?11:n>=9?9:n>=8.5?7:n>=8?6:n>=7.5?4:n>=7?3:2;
-TF_LIST.forEach(([pid,mon,note,t])=>{ const b=BY_ID[pid]; if(!b) return; const id=pid+"--tf-"+mon; const p=Object.assign({},b,{id,base:pid,v:"tf",ovr:Math.min(96,b.ovr+tfBonus(note)),title:`Forme du moment · ${note}/10${t?" · "+t:""}`,tfMon:mon,tfNote:note,tfWhy:t}); VARIANTS.push(p); BY_ID[id]=p; for(const T of [NAT,SPANS,MAJ,STYLE_OF]) if(T[pid]!=null) T[id]=T[pid]; });
+TF_LIST.forEach(([pid,mid,note,t])=>{ const b=BY_ID[pid]; if(!b) return; const id=pid+"--tf-"+mid, mon=String(mid).slice(0,10); const p=Object.assign({},b,{id,base:pid,v:"tf",ovr:Math.min(96,b.ovr+tfBonus(note)),title:`Forme du moment · ${note}/10${t?" · "+t:""}`,tfMon:mon,tfNote:note,tfWhy:t}); VARIANTS.push(p); BY_ID[id]=p; for(const T of [NAT,SPANS,MAJ,STYLE_OF]) if(T[pid]!=null) T[id]=T[pid]; });
 GF_LIST.forEach(([pid,key,o,t])=>{ const b=BY_ID[pid]; if(!b) return; const id=pid+"--gf-"+key; const p=Object.assign({},b,{id,base:pid,v:"gf",ovr:Math.min(99,o),title:t}); VARIANTS.push(p); BY_ID[id]=p; for(const T of [NAT,SPANS,MAJ,STYLE_OF]) if(T[pid]!=null) T[id]=T[pid]; });
 [...CURRENT].forEach(id=>{ const b=BY_ID[id], fs=BY_ID[id+"--fs"]; if(b) mkVar(id,"tf",Math.min(92,Math.max(b.ovr+7,fs?fs.ovr+2:0)),"Forme du moment"); });
 const baseOf=id=>(BY_ID[id]&&BY_ID[id].base)||id;
@@ -4817,7 +4831,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-23o"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-23p"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
