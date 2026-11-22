@@ -2666,17 +2666,25 @@ async function duoPlay(){ const {a,b,c}=duoSel; if(!a||!b||!c||new Set([me,a,b,c
 let RANK={};
 const RANK_R=[{pack:"legende"},{pack:"or"},{pack:"bronze"}], RANK_MIN=3;
 const monthName=k=>{ const [y,m]=k.split("-"); return new Date(+y,+m-1,1).toLocaleDateString("fr-FR",{month:"long",year:"numeric"}); };
-function rankRows(mk){ const M=(RANK.months||{})[mk]||{}; return Object.entries(M).filter(([u])=>NAMES[u]).sort((a,b)=>b[1].p-a[1].p||(b[1].bp-b[1].bc)-(a[1].bp-a[1].bc)||b[1].bp-a[1].bp); }
+let rankAll=false;
+function rankAllM(){ const T={}; for(const M of Object.values(RANK.months||{})) for(const [u,r] of Object.entries(M||{})){ const t=T[u]=T[u]||{p:0,w:0,d:0,l:0,j:0,bp:0,bc:0}; for(const k in t) t[k]+=+r[k]||0; } return T; }
+function rankRows(mk){ const M=mk==="all"?rankAllM():(RANK.months||{})[mk]||{}; return Object.entries(M).filter(([u])=>NAMES[u]).sort((a,b)=>b[1].p-a[1].p||(b[1].bp-b[1].bc)-(a[1].bp-a[1].bc)||b[1].bp-a[1].bp); }
 function prevMonth(){ const d=new Date(); d.setDate(1); d.setMonth(d.getMonth()-1); return MONTHK(d.getTime()); }
 function claimRank(){ if(!me||!compos[me]) return; const pm=prevMonth(); const c=W(); c.rankDone=c.rankDone||{}; if(c.rankDone[pm]) return;
   const R=rankRows(pm).filter(([,r])=>r.j>=RANK_MIN); if(!R.length) return; const i=R.findIndex(([u])=>u===me); c.rankDone[pm]=i<0?"-":i+1; save();
   if(i>=0&&i<3) setTimeout(()=>grant(RANK_R[i],`${["🥇","🥈","🥉"][i]} Classement de ${monthName(pm)}`),1500); }
-function rankHTML(){ const mk=MONTHK(); const R=rankRows(mk); const end=new Date(); end.setMonth(end.getMonth()+1,1); end.setHours(0,0,0,0); const dl=Math.ceil((end-Date.now())/86400000);
+function rankHTML(){ const mk=MONTHK(); const R=rankRows(rankAll?"all":mk); const end=new Date(); end.setMonth(end.getMonth()+1,1); end.setHours(0,0,0,0); const dl=Math.ceil((end-Date.now())/86400000);
   const pm=prevMonth(), P=rankRows(pm).filter(([,r])=>r.j>=RANK_MIN).slice(0,3);
-  return `<h3>🏅 Classement du mois <small>${monthName(mk)} · fin dans ${dl} j</small></h3>
+  const tg=`<div class="arow" style="margin:0 0 8px"><button class="btn sm${rankAll?" ghost":""}" data-rka="0">📅 Ce mois</button><button class="btn sm${rankAll?"":" ghost"}" data-rka="1">🏛️ Depuis le début</button></div>`;
+  if(rankAll) return `<h3>🏛️ Classement depuis le début</h3>${tg}<div class="rules" style="font-size:12px;margin-top:0">Tous les matchs entre joueurs depuis le lancement du classement (victoire 3 pts, nul 1 pt). Ton bilan face à chacun : touche son nom.</div>
+  ${R.length?`<table class="rk"><tr><th></th><th>Joueur</th><th>Pts</th><th>J</th><th>V-N-D</th><th>Diff</th></tr>${R.map(([u,r],i)=>`<tr class="${u===me?"me":""}"><td>${["🥇","🥈","🥉"][i]||i+1}</td><td><button class="lnk" data-prof="${u}">${esc(NAMES[u])}</button></td><td><b>${r.p}</b></td><td>${r.j}</td><td>${r.w}-${r.d}-${r.l}</td><td>${r.bp-r.bc>0?"+":""}${r.bp-r.bc}</td></tr>`).join("")}</table>`:`<div class="mute" style="font-size:13px">Aucun match entre joueurs pour l'instant.</div>`}
+  ${h2hAllHTML()}`;
+  return `<h3>🏅 Classement du mois <small>${monthName(mk)} · fin dans ${dl} j</small></h3>${tg}
   <div class="rules" style="font-size:12px;margin-top:0">Tous les matchs contre d'autres joueurs comptent (match, draft, championnat, coupe) : victoire 3 pts, nul 1 pt. Le 1er du mois gagne un <b>Pack Légende</b>, le 2e un <b>Pack Épique</b>, le 3e un <b>Pack Classique</b> (${RANK_MIN} matchs minimum). Remise à zéro chaque mois.</div>
   ${R.length?`<table class="rk"><tr><th></th><th>Joueur</th><th>Pts</th><th>J</th><th>V-N-D</th><th>Diff</th></tr>${R.map(([u,r],i)=>`<tr class="${u===me?"me":""}"><td>${["🥇","🥈","🥉"][i]||i+1}</td><td><button class="lnk" data-prof="${u}">${esc(NAMES[u])}</button></td><td><b>${r.p}</b></td><td>${r.j}</td><td>${r.w}-${r.d}-${r.l}</td><td>${r.bp-r.bc>0?"+":""}${r.bp-r.bc}</td></tr>`).join("")}</table>`:`<div class="mute" style="font-size:13px">Aucun match entre joueurs ce mois-ci. Lance un défi !</div>`}
   ${P.length?`<div class="mute" style="font-size:12px;margin-top:8px">Podium de ${monthName(pm)} : ${P.map(([u,r],i)=>`${["🥇","🥈","🥉"][i]} ${esc(NAMES[u])} (${r.p} pts)`).join(" · ")}</div>`:""}`; }
+function h2hAllHTML(){ const L=Object.keys(NAMES).filter(u=>u!==me&&u!==CPU&&(RANK.h2h||{})[[me,u].sort().join("__")]);
+  if(!L.length) return ""; return `<h4 style="margin:12px 0 4px">⚔️ Mes face-à-face</h4>${L.map(u=>{ const H=RANK.h2h[[me,u].sort().join("__")]; const v=H[me]||0, d=H[u]||0, n=H.d||0; return `<div class="dh"><div><b>vs ${esc(NAMES[u])}</b><small>${v+n+d} matchs</small></div><b class="${v>d?"win":v<d?"lose":""}">${v} V · ${n} N · ${d} D</b></div>`; }).join("")}`; }
 function h2hHTML(id){ if(id===me) return ""; const H=(RANK.h2h||{})[[me,id].sort().join("__")]; if(!H) return `<div class="h2h mute">⚔️ Jamais affrontés en match entre joueurs.</div>`;
   const v=H[me]||0, d=H[id]||0, n=H.d||0; return `<div class="h2h"><b>⚔️ Toi contre ${esc(NAMES[id])}</b><div class="h2hb"><span class="v">${v} V</span><span class="n">${n} N</span><span class="d">${d} D</span></div></div>`; }
 const BADGES=[
@@ -3284,7 +3292,7 @@ function renderLigue(){
   $("#lLeague").querySelectorAll("[data-ld]").forEach(b=>b.onclick=()=>deleteLeague(b.dataset.ld));
   $("#lLeague").querySelectorAll("[data-ls]").forEach(b=>b.onclick=()=>startLeague(b.dataset.ls));
   $("#lLeague").querySelectorAll("[data-rp]").forEach(b=>b.onclick=()=>openReplay(b.dataset.rp));
-  $("#lRank").innerHTML=rankHTML(); $("#lRank").querySelectorAll("[data-prof]").forEach(b=>b.onclick=()=>showProfile(b.dataset.prof));
+  $("#lRank").innerHTML=rankHTML(); $("#lRank").querySelectorAll("[data-rka]").forEach(b=>b.onclick=()=>{ rankAll=b.dataset.rka==="1"; renderLigue(); }); $("#lRank").querySelectorAll("[data-prof]").forEach(b=>b.onclick=()=>showProfile(b.dataset.prof));
   $("#lFeed").innerHTML=`<h3>📰 Fil d'actu</h3>${feed.length?feed.slice(0,25).map(f=>`<div class="fd"><span>${esc(f.text)}</span><small>${new Date(f.at).toLocaleDateString("fr-FR",{day:"numeric",month:"short"})} ${new Date(f.at).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})}</small></div>`).join(""):`<div class="mute" style="font-size:13px">Rien pour l'instant.</div>`}`;
   $("#lPlayers").innerHTML=`<h3>👥 Joueurs</h3><div class="plrs">${Object.keys(NAMES).map(id=>`<button class="plr${id===me?" me":""}" data-prof="${id}"><b>${esc(NAMES[id])}</b><small>${ALL_CARDS.filter(p=>(C(id).coll||{})[p.id]).length}/${ALL_CARDS.length}</small></button>`).join("")}</div>`;
   $("#lPlayers").querySelectorAll("[data-prof]").forEach(b=>b.onclick=()=>showProfile(b.dataset.prof));
@@ -3863,7 +3871,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-22f"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-22g"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
