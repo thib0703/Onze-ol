@@ -2225,7 +2225,7 @@ const POOL={bronze:[],silver:[],gold:[],icon:[],myth:[]}; for(const p of ALL_CAR
 const W=()=>C(me);
 function addCoins(n,why){ const c=W(); c.coins=(c.coins||0)+n; save(); renderCoins(); if(why) toast(`${n>0?"+":""}${n} 🪙 ${why}`); }
 function renderCoins(){ const el=$("#coins"); if(!el) return; if(!me){el.style.display="none";return;} el.style.display=""; el.textContent=`🪙 ${(W().coins||0).toLocaleString("fr-FR")}`; }
-// matchs de Draft / Budget / 2 contre 2 : longs à préparer → gains ×2 et hors limite des 5 matchs/jour
+// matchs de Draft / Budget / 2 contre 2 : longs à préparer → gains ×2
 const isDraftH=h=>!!(h&&(h.draft==="budget"||h.draft==="classic"||h.duo));
 function rewardFor(h,i){ const [a,b]=i===0?h.score:[h.score[1],h.score[0]]; const base=a>b?100:a===b?50:25, x=isDraftH(h)?2:1; return {coins:(base+10*a)*x,res:(a>b?"victoire":a===b?"nul":"défaite")+(x>1?(h.duo?" 2c2":h.draft==="budget"?" Budget":" Draft")+" ×2":""),a,b}; }
 function claimRewards(){
@@ -2237,7 +2237,7 @@ function claimRewards(){
     if(!c.mday||c.mday.d!==day) c.mday={d:day,n:0}; if(!isDraftH(h)) c.mday.n++;
     track("play"); if(r.a>r.b) track("win"); if(r.a) track("goals",r.a);
     if(h.motm&&h.owners[h.motm.t]===me&&BY_ID[h.motm.pid]){ c.heroes=c.heroes||[]; c.heroes.push({id:h.id,pid:h.motm.pid,note:h.motm.note,at:h.at}); c.heroes=c.heroes.slice(-60); setTimeout(()=>toast(`⭐ Carte Héros du match : ${BY_ID[h.motm.pid].name} (${h.motm.note}/10)`),2500); }
-    const k=isDraftH(h)||c.mday.n<=5?1:.25; got+=Math.round(r.coins*k); lines.push(`${r.res} ${r.a}-${r.b}${k<1?" (gains réduits après 5 matchs/jour)":""}`); c.claimed.push(h.id); }
+    const k=1; /* plus de gains réduits : même récompense quel que soit le nombre de matchs */ got+=Math.round(r.coins*k); lines.push(`${r.res} ${r.a}-${r.b}${k<1?" (gains réduits après 5 matchs/jour)":""}`); c.claimed.push(h.id); }
   if(got){ c.claimed=c.claimed.slice(-300); addCoins(got,`match : ${lines.join(", ")}`); }
   claimLeague();
 }
@@ -2327,7 +2327,7 @@ function renderCollec(){
     ${Object.entries(c.freePacks||{}).filter(([k,n])=>n>0&&PACKS[k]).map(([k,n])=>`<button class="pkbtn daily" data-free="${k}" style="--pc:${PACKS[k].color}"><b>🎁 ${PACKS[k].name} offert ×${n}</b><span>récompense</span><em>Ouvrir</em></button>`).join("")}
     <button class="pkbtn daily" data-pk="event" style="--pc:#ff9a6a;animation:none"><b>${curEvent().name}</b><span>Pack Événement · 3 cartes du thème</span><em>🪙 600</em></button>
     <div class="shop">${Object.entries(PACKS).filter(([k])=>!["jour","event","reward","starter"].includes(k)).map(([k,P])=>`<button class="pkbtn" data-pk="${k}" style="--pc:${P.color}"><b>${P.name}</b><span>${P.n} cartes${P.guarantee==="gold"?" · 1 Épique min.":P.guarantee==="icon"?" · 1 Légendaire min.":""}</span><em>🪙 ${P.price}</em></button>`).join("")}</div>
-    <div class="rules" style="font-size:12.5px">Gagne des pièces en jouant : <b>victoire 100</b>, nul 50, défaite 25, <b>+10 par but</b> (gains pleins sur tes 5 premiers matchs du jour, ¼ ensuite). <b>Draft, Budget et 2 contre 2 : gains ×2</b>, sans limite par jour et <b>1 pack gratuit par jour</b>. Doublons : revente 4 / 12 / 32 / 100 / 300 🪙 (Commune → Mythique), ou échange avec les autres pour plus de valeur.</div>
+    <div class="rules" style="font-size:12.5px">Gagne des pièces en jouant : <b>victoire 100</b>, nul 50, défaite 25, <b>+10 par but</b> (sans limite de matchs par jour). <b>Draft, Budget et 2 contre 2 : gains ×2</b> et <b>1 pack gratuit par jour</b>. Doublons : revente 4 / 12 / 32 / 100 / 300 🪙 (Commune → Mythique), ou échange avec les autres pour plus de valeur.</div>
     ${dupes?`<button class="btn ghost big" id="sellBtn">Vendre mes doublons (+${dupes} 🪙)</button>`:""}`;
   document.querySelectorAll(".pkbtn[data-pk]").forEach(b=>b.onclick=()=>openPack(b.dataset.pk));
   document.querySelectorAll(".pkbtn[data-free]").forEach(b=>b.onclick=()=>openPack(b.dataset.free,true));
@@ -4032,7 +4032,7 @@ const TIPS={
   Une fois les équipes finies, faites-les s'affronter dans l'onglet Match.`},
  tab_match:{t:"🏟️ Match",x:`C'est ici que les matchs s'affichent <b>en direct en ~1 minute</b> : buts, cartons, penalties, VAR…<br><br>
   Ils se lancent depuis ⚡ Draft, 🎮 Jeux (Carrière, Coupes, Défi) et 🏆 Ligue (Championnats). En bas, tes derniers matchs se revoient avec ▶️.<br><br>
-  🪙 Victoire 100, nul 50, défaite 25, +10 par but (pleins gains sur 5 matchs par jour).`},
+  🪙 Victoire 100, nul 50, défaite 25, +10 par but, sans limite de matchs par jour. Draft, Budget et 2 contre 2 : gains ×2.`},
  tab_collec:{t:"🎴 Collection",x:`Ici tu gères tes cartes :<br><br>🎁 <b>Pack du jour</b> gratuit, et d'autres packs à acheter avec tes pièces.<br>
   📒 <b>Album</b> façon Panini, avec des récompenses par collection complète.<br>🔄 <b>Échanges</b>, 🏪 <b>marché</b> et 🔨 <b>enchères</b> de doublons entre joueurs.<br>
   🧩 <b>Défis SBC</b> : donne des cartes en échange de récompenses.<br><br>Touche une carte pour voir ses stats et son palmarès.`},
@@ -4121,7 +4121,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-22r"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-22s"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
