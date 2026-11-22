@@ -1908,7 +1908,6 @@ function renderHubs(){ if(!me) return;
     const html=`<div class="hubh"><h2>🌐 En ligne</h2><small>Affronte tes potes : drafts, championnats, coupes…</small></div>${objMiniHTML()}
       ${live?hubTile("live","🔴","Match en direct","Touche pour regarder","linear-gradient(135deg,#e3002b,#7a0018)","LIVE",true):""}
       <div class="hub">
-      ${(()=>{ try{ const D=divState(); return hubTile("div",DIV_IC(D.d),"Divisions",`${DIV_NAME(D.d)} · ${divLeft()}/${DIV_MAX} matchs aujourd'hui`,"linear-gradient(135deg,#e3002b,#1d4ed8)",divLeft()>0?"Jouer":null,true); }catch(e){ return ""; } })()}
       ${hubTile("draft","⚡","Draft",dr[0]||"5 joueurs proposés par poste, chacun son tour","linear-gradient(135deg,#1d4ed8,#0b1f5c)",dr[1])}
       ${hubTile("budget","💰","Draft Budget",bu[0]||"Même budget, mêmes propositions","linear-gradient(135deg,#b7791f,#5a3a07)",bu[1])}
       ${hubTile("duo","👥","2 contre 2",duoS[0]||"En duo avec un pote, à 4 en direct","linear-gradient(135deg,#7c3aed,#2e1065)",duoS[1])}
@@ -1927,15 +1926,16 @@ function renderHubs(){ if(!me) return;
       ${hubTile("defi","🎯","Défi du jour",df,"linear-gradient(135deg,#ea580c,#7c2d12)",defiTodo?"À jouer":null)}
       ${hubTile("quiz","🧠","Quiz OL",qz,"linear-gradient(135deg,#9333ea,#3b0764)",quizTodo?"Dispo":null)}
       ${hubTile("sofa","🛋️","Canapé",sofa?"⏳ Partie en cours":"2 joueurs, 1 téléphone","linear-gradient(135deg,#15803d,#052e16)",null)}
+      ${(()=>{ try{ const D=divState(); return hubTile("div",DIV_IC(D.d),"Divisions",`${DIV_NAME(D.d)} · ${divLeft()}/${DIV_MAX} matchs aujourd'hui`,"linear-gradient(135deg,#e3002b,#1d4ed8)",divLeft()>0?"Jouer":null,true); }catch(e){ return ""; } })()}
       ${hubTile("cpu","🤖","Contre l'ordi",(()=>{ try{ const n=cpuLeft(); return n>0?`Ton 11 type contre l'ordinateur · ${n}/${CPU_MAX} matchs récompensés aujourd'hui`:"⏳ Limite du jour atteinte · entraînement seulement"; }catch(e){ return "Ton 11 type contre l'ordinateur"; } })(),"linear-gradient(135deg,#475569,#0f172a)",null,true)}
       </div>`;
     if(setHub(H,html)){ H.querySelectorAll("[data-tile]").forEach(b=>b.onclick=()=>openTile(b.dataset.tile)); bindObjMini(H); } } }
 function openTile(k){ hubCache={};
   if(k==="draft"||k==="budget"){ dSub=k==="budget"?"budget":"classic"; setMode("draft"); return; }
   if(k==="match"||k==="live"||k==="cpu"){ if(k!=="live"){ mPreset=k==="cpu"?"cpu":"friend"; pB=null; selB=null; } if(mode==="solo") matchBack="solo"; setMode("match"); return; }
-  if(["duo","cup","league","div"].includes(k)){ onSel=k; renderOnline(); renderBack(); window.scrollTo(0,0); try{ tip(k==="league"?"league":k==="cup"?"cup":"tab_online"); }catch(e){} return; }
+  if(["duo","cup","league"].includes(k)){ onSel=k; renderOnline(); renderBack(); window.scrollTo(0,0); try{ tip(k==="league"?"league":k==="cup"?"cup":"tab_online"); }catch(e){} return; }
   soSel=k; renderSolo(); renderBack(); window.scrollTo(0,0); try{ tip(k); }catch(e){} }
-const ON_SUB={duo:"#jDuo",cup:"#jCup",league:"#lLeague",div:"#jDiv"}, SO_SUB={career:"#jCareer",defi:"#jDefi",quiz:"#jQuizS",sofa:"#jSofa"};
+const ON_SUB={duo:"#jDuo",cup:"#jCup",league:"#lLeague"}, SO_SUB={div:"#jDiv",career:"#jCareer",defi:"#jDefi",quiz:"#jQuizS",sofa:"#jSofa"};
 function showSub(map,sel){ for(const [k,q] of Object.entries(map)){ const e=$(q); if(e) e.style.display=k===sel?"":"none"; } }
 function renderOnline(){ if(!me) return; $("#onHub").style.display=onSel?"none":""; showSub(ON_SUB,onSel);
   if(onSel==="league") renderLigue(); else if(onSel) renderJeux(); hubCache.onHub=null; renderHubs(); }
@@ -1949,7 +1949,7 @@ function renderOL(){ if(!me) return; const S=$("#olSegs");
 $("#nCompo").onclick=()=>setMode("compo"); $("#nOnline").onclick=()=>{ onSel=null; setMode("online"); }; $("#nSolo").onclick=()=>{ soSel=null; setMode("solo"); }; $("#nCollec").onclick=()=>setMode("collec"); $("#nOL").onclick=()=>setMode("ol"); $("#socBtn").onclick=()=>{ socClub=null; setMode("social"); };
 // on range les sections existantes dans leurs nouvelles pages
 (()=>{ const mv=(q,to)=>{ const e=$(q), t=$(to); if(e&&t) t.appendChild(e); };
-  ["#jDuo","#jCup","#lLeague","#jDiv"].forEach(q=>mv(q,"#onSub")); ["#jCareer","#jDefi","#jQuizS","#jSofa"].forEach(q=>mv(q,"#soSub"));
+  ["#jDuo","#jCup","#lLeague"].forEach(q=>mv(q,"#onSub")); ["#jDiv","#jCareer","#jDefi","#jQuizS","#jSofa"].forEach(q=>mv(q,"#soSub"));
   ["#lEvent","#jNews","#lFeed","#jTable","#lRank","#lPlayers","#jStats","#jPred","#lObj","#lPass"].forEach(q=>mv(q,"#olBody")); })();
 $("#mCompo").onclick=()=>setMode("compo"); $("#mDraft").onclick=()=>setMode("draft"); $("#mMatch").onclick=()=>setMode("match"); $("#mCollec").onclick=()=>setMode("collec"); $("#mLigue").onclick=()=>setMode("ligue"); $("#mJeux").onclick=()=>setMode("jeux");
 function renderDraft(){
@@ -4707,7 +4707,7 @@ async function divPlay(){
 function divFx(ev,d){ const up=ev==="up"; const [c1,c2]=DIV_COL(d); const el=document.createElement("div"); el.className="tipov divfx"; el.style.cssText=`--c1:${c1};--c2:${c2}`;
   el.innerHTML=`<div class="divbox ${up?"up":"down"}"><div class="divrays"></div><div class="divbadge"><span>${DIV_IC(d)}</span></div><div class="divk">${up?"PROMOTION !":"RELÉGATION"}</div><h2>${DIV_NAME(d)}</h2><div class="mute" style="font-size:13px">${up?(d===0?"Tu es au sommet : la Ligue des Champions ! 🏆":"Continue comme ça pour monter encore !"):"Accroche-toi, tu vas remonter !"}</div><button class="btn big" id="divOk">${up?"Allez l'OL ! 🔴🔵":"Compris"}</button></div>`;
   document.body.appendChild(el); try{ if(up){ SFX.boom(true); SFX.fanfare(); SFX.cheer(); } else SFX.thump(); }catch(_){}
-  el.querySelector("#divOk").onclick=()=>{ el.remove(); if(mode==="online") renderOnline(); }; }
+  el.querySelector("#divOk").onclick=()=>{ el.remove(); if(mode==="solo") renderSolo(); }; }
 function divHTML(){ const D=divState(), left=divLeft(), [c1,c2]=DIV_COL(D.d), [lo,hi]=DIV_RANGE(D.d);
   const ladder=Array.from({length:DIV_UP},(_,i)=>`<i class="${i<D.p?"on":""}"></i>`).join("");
   const others=Object.keys(NAMES).filter(u=>compos[u]&&C(u).div).map(u=>({u,d:C(u).div.d,p:C(u).div.p||0})).sort((a,b)=>a.d-b.d||b.p-a.p).slice(0,10);
@@ -5353,7 +5353,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-24d"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-24e"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
