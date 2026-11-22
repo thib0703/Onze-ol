@@ -985,6 +985,18 @@ header{padding:10px 16px 4px;min-height:44px}header h1{font-size:19px;margin:0;l
 .px-goldtxt b{animation:pxGlowT 1.4s 1s ease-in-out infinite}@keyframes pxGlowT{50%{filter:drop-shadow(0 0 30px #ffd970) drop-shadow(0 0 60px #ffb020)}}
 .px-goldtxt b{background:none!important;color:#ffd970}
 .px-goldtxt b em{background:linear-gradient(180deg,#fff 0%,#ffd970 50%,#b0841f 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+/* 🏅 divisions */
+.divhead{display:flex;align-items:center;gap:14px;padding:12px;border-radius:16px;background:radial-gradient(circle at 20% 50%,color-mix(in srgb,var(--c1) 30%,transparent),transparent 60%),linear-gradient(160deg,#13234f,#0b1530);border:1px solid color-mix(in srgb,var(--c1) 50%,transparent)}
+.divhead h3{margin:0;font-size:22px;color:var(--c1)}.divhead small{color:var(--mute);font-size:11.5px}
+.divbadge{flex:none;width:58px;height:66px;display:flex;align-items:center;justify-content:center;background:linear-gradient(160deg,var(--c1),var(--c2));clip-path:polygon(50% 0,100% 18%,100% 70%,50% 100%,0 70%,0 18%);box-shadow:0 0 20px var(--c1)}
+.divbadge span{font-size:28px;filter:drop-shadow(0 2px 3px #0008)}.divbadge.big{width:72px;height:82px}.divbadge.big span{font-size:36px}
+.divlad{display:flex;gap:4px;margin:6px 0 4px}.divlad i{flex:1;height:8px;border-radius:4px;background:#ffffff1a}.divlad i.on{background:linear-gradient(90deg,var(--c2),var(--c1));box-shadow:0 0 6px var(--c1)}
+.divfx{z-index:150}.divbox{position:relative;overflow:hidden;width:min(90vw,340px);padding:26px 18px 18px;border-radius:20px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px;background:radial-gradient(circle at 50% 30%,#1d3a80,#0a1433 70%);border:1px solid var(--c1);box-shadow:0 0 40px color-mix(in srgb,var(--c1) 50%,transparent);animation:pxPop .6s cubic-bezier(.2,1.5,.4,1) both}
+.divbox>*{position:relative}.divbox h2{margin:0;font-size:28px;color:var(--c1)}
+.divrays{position:absolute!important;left:50%;top:35%;width:600px;height:600px;margin:-300px;background:repeating-conic-gradient(color-mix(in srgb,var(--c1) 35%,transparent) 0 6deg,transparent 6deg 16deg);animation:axSpin 10s linear infinite;-webkit-mask:radial-gradient(circle,#000,#0000 60%);mask:radial-gradient(circle,#000,#0000 60%)}
+.divbox.down .divrays{display:none}.divbox .divbadge{width:90px;height:102px;animation:bkCup 2s ease-in-out infinite}.divbox .divbadge span{font-size:46px}
+.divk{font-size:13px;font-weight:900;letter-spacing:.3em;color:#fff}
+.divbox.down{filter:saturate(.6)}
 </style>
 </head>
 <body>
@@ -1099,6 +1111,7 @@ header{padding:10px 16px 4px;min-height:44px}header h1{font-size:19px;margin:0;l
   <div class="section" id="jQuizS"></div>
   <div class="section" id="jSofa"></div>
   <div class="section" id="jDuo"></div>
+  <div class="section" id="jDiv"></div>
   <div class="section" id="jStats"></div>
 </div>
 <div id="viewOnline" class="wrap" style="display:none"><div id="onTodo"></div><div id="onHub"></div><div id="onSub"></div></div>
@@ -1814,7 +1827,7 @@ function setMode(m){ if(m==="jeux") m="solo"; if(m==="ligue") m="ol";
   $("#dHistWrap").style.display=m==="draft"?"":"none";
   if(m==="draft"){ renderDraft(); renderDraftHist(); } else if(m==="match") renderMatch(); else if(m==="collec") renderCollec(); else if(m==="online") renderOnline(); else if(m==="solo") renderSolo(); else if(m==="ol") renderOL(); else if(m==="social") renderSocial(); else render();
   renderBack(); try{ renderTodo(); }catch(e){} window.scrollTo(0,0); }
-const SUBN={duo:"👥 2 contre 2",cup:"🏟️ Coupes",league:"🏆 Championnats",career:"🧗 Carrière",defi:"🎯 Défi du jour",quiz:"🧠 Quiz OL",sofa:"🛋️ Canapé"};
+const SUBN={div:"🏅 Divisions",duo:"👥 2 contre 2",cup:"🏟️ Coupes",league:"🏆 Championnats",career:"🧗 Carrière",defi:"🎯 Défi du jour",quiz:"🧠 Quiz OL",sofa:"🛋️ Canapé"};
 function renderBack(){ const B=$("#backbar"); if(!B) return; let t=null, go=null;
   if(mode==="draft"){ t=dSub==="budget"?"💰 Draft Budget":"⚡ Draft"; go=()=>setMode("online"); }
   else if(mode==="match"){ t="🏟️ Match"; go=()=>setMode(matchBack); }
@@ -1876,6 +1889,7 @@ function renderHubs(){ if(!me) return;
     const html=`<div class="hubh"><h2>🌐 En ligne</h2><small>Affronte tes potes : drafts, championnats, coupes…</small></div>${objMiniHTML()}
       ${live?hubTile("live","🔴","Match en direct","Touche pour regarder","linear-gradient(135deg,#e3002b,#7a0018)","LIVE",true):""}
       <div class="hub">
+      ${(()=>{ try{ const D=divState(); return hubTile("div",DIV_IC(D.d),"Divisions",`${DIV_NAME(D.d)} · ${divLeft()}/${DIV_MAX} matchs aujourd'hui`,"linear-gradient(135deg,#e3002b,#1d4ed8)",divLeft()>0?"Jouer":null,true); }catch(e){ return ""; } })()}
       ${hubTile("draft","⚡","Draft",dr[0]||"5 joueurs proposés par poste, chacun son tour","linear-gradient(135deg,#1d4ed8,#0b1f5c)",dr[1])}
       ${hubTile("budget","💰","Draft Budget",bu[0]||"Même budget, mêmes propositions","linear-gradient(135deg,#b7791f,#5a3a07)",bu[1])}
       ${hubTile("duo","👥","2 contre 2",duoS[0]||"En duo avec un pote, à 4 en direct","linear-gradient(135deg,#7c3aed,#2e1065)",duoS[1])}
@@ -1900,9 +1914,9 @@ function renderHubs(){ if(!me) return;
 function openTile(k){ hubCache={};
   if(k==="draft"||k==="budget"){ dSub=k==="budget"?"budget":"classic"; setMode("draft"); return; }
   if(k==="match"||k==="live"||k==="cpu"){ if(k!=="live"){ mPreset=k==="cpu"?"cpu":"friend"; pB=null; selB=null; } if(mode==="solo") matchBack="solo"; setMode("match"); return; }
-  if(["duo","cup","league"].includes(k)){ onSel=k; renderOnline(); renderBack(); window.scrollTo(0,0); try{ tip(k==="league"?"league":k==="cup"?"cup":"tab_online"); }catch(e){} return; }
+  if(["duo","cup","league","div"].includes(k)){ onSel=k; renderOnline(); renderBack(); window.scrollTo(0,0); try{ tip(k==="league"?"league":k==="cup"?"cup":"tab_online"); }catch(e){} return; }
   soSel=k; renderSolo(); renderBack(); window.scrollTo(0,0); try{ tip(k); }catch(e){} }
-const ON_SUB={duo:"#jDuo",cup:"#jCup",league:"#lLeague"}, SO_SUB={career:"#jCareer",defi:"#jDefi",quiz:"#jQuizS",sofa:"#jSofa"};
+const ON_SUB={duo:"#jDuo",cup:"#jCup",league:"#lLeague",div:"#jDiv"}, SO_SUB={career:"#jCareer",defi:"#jDefi",quiz:"#jQuizS",sofa:"#jSofa"};
 function showSub(map,sel){ for(const [k,q] of Object.entries(map)){ const e=$(q); if(e) e.style.display=k===sel?"":"none"; } }
 function renderOnline(){ if(!me) return; $("#onHub").style.display=onSel?"none":""; showSub(ON_SUB,onSel);
   if(onSel==="league") renderLigue(); else if(onSel) renderJeux(); hubCache.onHub=null; renderHubs(); }
@@ -1916,7 +1930,7 @@ function renderOL(){ if(!me) return; const S=$("#olSegs");
 $("#nCompo").onclick=()=>setMode("compo"); $("#nOnline").onclick=()=>{ onSel=null; setMode("online"); }; $("#nSolo").onclick=()=>{ soSel=null; setMode("solo"); }; $("#nCollec").onclick=()=>setMode("collec"); $("#nOL").onclick=()=>setMode("ol"); $("#nSocial").onclick=()=>{ socClub=null; setMode("social"); };
 // on range les sections existantes dans leurs nouvelles pages
 (()=>{ const mv=(q,to)=>{ const e=$(q), t=$(to); if(e&&t) t.appendChild(e); };
-  ["#jDuo","#jCup","#lLeague"].forEach(q=>mv(q,"#onSub")); ["#jCareer","#jDefi","#jQuizS","#jSofa"].forEach(q=>mv(q,"#soSub"));
+  ["#jDuo","#jCup","#lLeague","#jDiv"].forEach(q=>mv(q,"#onSub")); ["#jCareer","#jDefi","#jQuizS","#jSofa"].forEach(q=>mv(q,"#soSub"));
   ["#lEvent","#jNews","#lFeed","#jTable","#lRank","#lPlayers","#jStats","#jPred","#lObj"].forEach(q=>mv(q,"#olBody")); })();
 $("#mCompo").onclick=()=>setMode("compo"); $("#mDraft").onclick=()=>setMode("draft"); $("#mMatch").onclick=()=>setMode("match"); $("#mCollec").onclick=()=>setMode("collec"); $("#mLigue").onclick=()=>setMode("ligue"); $("#mJeux").onclick=()=>setMode("jeux");
 function renderDraft(){
@@ -4602,6 +4616,67 @@ function bracketHTML(K){ const nR=Math.round(Math.log2(K.size||4)); const N=x=>x
   return `<div class="brk">${cols.join("")}</div>`; }
 
 // ======================================================================
+// 🏅 DIVISIONS (façon « Division Rivals ») : matchs classés contre les 11 types des autres joueurs
+// ou des clubs gérés par l'ordi, du niveau de ta division. Monte jusqu'à la Ligue des Champions !
+// ======================================================================
+const DIV_MAX=10, DIV_UP=9;
+const DIV_NAME=d=>d===0?"Ligue des Champions":`Division ${d}`;
+const DIV_IC=d=>d===0?"⭐":d===1?"💎":d<=4?"🥇":d<=7?"🥈":"🥉";
+const DIV_COL=d=>d===0?["#7fb2ff","#1d4ed8"]:d===1?["#d39bff","#6b2bb0"]:d<=4?["#ffd970","#b0841f"]:d<=7?["#e9edf2","#7d8794"]:["#e2a774","#8a4b1c"];
+const DIV_RANGE=d=>d===0?[88,97]:[60+(10-d)*3,66+(10-d)*3];
+const DIV_REWARD=d=>d===0?{pack:"legende",coins:1000}:d===1?{pack:"legende"}:d<=4?{pack:"or",n:2}:d<=7?{pack:"or"}:{pack:"bronze"};
+const DIV_CLUBS=["AS Gerland","Racing Fourvière","FC Croix-Rousse","Olympique Confluence","US Part-Dieu","Stade Bellecour","AC Vaise","Sporting Villeurbanne","Real Saint-Jean","Inter Guillotière","Dynamo Monplaisir","Athletic Brotteaux"];
+function divState(){ const c=W(); const D=c.div=c.div||{d:10,p:0,best:10,wb:10,w:WEEKN(),log:[]};
+  if(D.w!==WEEKN()){ // 🎁 récompense de la semaine écoulée selon la meilleure division atteinte
+    if(D.played){ const r=DIV_REWARD(D.wb); grant(r,`🏅 Récompense hebdo : ${DIV_NAME(D.wb)}`); }
+    D.w=WEEKN(); D.wb=D.d; D.played=0; save(); }
+  return D; }
+function divLeft(){ const D=divState(); if(D.day!==DAYK()){ D.day=DAYK(); D.n=0; } return Math.max(0,DIV_MAX-(D.n||0)); }
+function divOpponent(d){ const [lo,hi]=DIV_RANGE(d);
+  // 1) un vrai joueur de ton niveau (en priorité, 1 fois sur 2 s'il y en a)
+  const real=Object.keys(NAMES).filter(u=>u!==me&&u!==CPU&&compos[u]).map(u=>{ let r=null; try{ const S=strength(C(u),u,true); if(!enough(S)) return null; r=teamRate(C(u),u,true,false).global; }catch(e){} return r==null?null:{u,r}; }).filter(x=>x&&x.r>=lo-4&&x.r<=hi+4);
+  if(real.length&&Math.random()<.55){ const x=real[Math.floor(Math.random()*real.length)]; return {owner:x.u,name:NAMES[x.u],c:C(x.u),club:true,r:x.r}; }
+  // 2) un vrai club du niveau
+  const clubs=Object.keys(CLUB_XI).filter(k=>{ const r=clubRate(k); return r>=lo-2&&r<=hi+2; });
+  if(clubs.length&&Math.random()<.6){ const k=clubs[Math.floor(Math.random()*clubs.length)]; return {owner:CPU,name:k,c:clubTeam(k),club:false,r:clubRate(k)}; }
+  // 3) une équipe générée
+  const n=DIV_CLUBS[Math.floor(Math.random()*DIV_CLUBS.length)]; return {owner:CPU,name:n,c:genTeam(lo,hi),club:false,r:null}; }
+function divApply(D,res){ // res : "v" | "n" | "d"
+  const before={d:D.d,p:D.p}; let ev=null;
+  if(res==="v") D.p+=3; else if(res==="n") D.p+=1; else if(D.d<=7) D.p-=1;
+  if(D.p>=DIV_UP&&D.d>0){ D.d--; D.p=0; ev="up"; }
+  else if(D.p<0){ if(D.d<10&&D.d<=7){ D.d++; D.p=6; ev="down"; } else D.p=0; }
+  if(D.d===0&&D.p>=DIV_UP) D.p=DIV_UP;
+  D.best=Math.min(D.best??10,D.d); D.wb=Math.min(D.wb??10,D.d); return {before,ev}; }
+async function divPlay(){
+  const D=divState(); if(divLeft()<=0){ toast(`Plus de match classé aujourd'hui (${DIV_MAX}/jour) : reviens demain !`,true); return; }
+  const mine=W(), A=strength(mine,me,true); if(!enough(A)){ toast("Il te faut au moins 7 joueurs possédés dans ton 11 type",true); return; }
+  const O=divOpponent(D.d); const B=strength(O.c,O.owner===CPU?null:O.owner,O.club);
+  const m=buildMatch([{c:mine,S:A,label:DIV_NAME(D.d),owner:me,name:NAMES[me]},{c:O.c,S:B,label:O.owner===CPU?"🤖 Ordi":"Classé",owner:O.owner,name:O.name}]);
+  D.n=(D.n||0)+1; D.played=(D.played||0)+1; const snap=JSON.parse(JSON.stringify({d:D.d,p:D.p,best:D.best,wb:D.wb}));
+  let out=null; const apply=m=>{ const [a,b]=m.score; const res=a>b?"v":a<b?"d":"n"; out=divApply(D,res);
+    later({coins:(res==="v"?120:res==="n"?60:30)+10*a},`🏅 ${DIV_NAME(snap.d)} : ${res==="v"?"victoire":res==="n"?"nul":"défaite"} ${a}-${b} contre ${O.name}`,m);
+    D.log=[{at:Date.now(),o:O.name,s:[a,b],res,d:snap.d},...(D.log||[])].slice(0,10);
+    track("play"); if(res==="v") track("win"); if(a) track("goals",a); };
+  apply(m); save();
+  const showEv=()=>{ if(!out||!out.ev) return; setTimeout(()=>divFx(out.ev,D.d),endDelay(m)+800); };
+  showEv();
+  playLocal(m,{t:0,c:mine,w:me,club:true,oc:O.c,OS:B,fin:(m2,changed)=>{ if(changed){ Object.assign(D,snap); D.log=(D.log||[]).slice(1); const c=W(); c.pend=(c.pend||[]).filter(p=>p.mid!==m2.id); apply(m2); showEv(); } save(); saveReplay(m2); addHist(histOf(m2,{nr:1,mode:"div"})); }});
+}
+function divFx(ev,d){ const up=ev==="up"; const [c1,c2]=DIV_COL(d); const el=document.createElement("div"); el.className="tipov divfx"; el.style.cssText=`--c1:${c1};--c2:${c2}`;
+  el.innerHTML=`<div class="divbox ${up?"up":"down"}"><div class="divrays"></div><div class="divbadge"><span>${DIV_IC(d)}</span></div><div class="divk">${up?"PROMOTION !":"RELÉGATION"}</div><h2>${DIV_NAME(d)}</h2><div class="mute" style="font-size:13px">${up?(d===0?"Tu es au sommet : la Ligue des Champions ! 🏆":"Continue comme ça pour monter encore !"):"Accroche-toi, tu vas remonter !"}</div><button class="btn big" id="divOk">${up?"Allez l'OL ! 🔴🔵":"Compris"}</button></div>`;
+  document.body.appendChild(el); try{ if(up){ SFX.boom(true); SFX.fanfare(); SFX.cheer(); } else SFX.thump(); }catch(_){}
+  el.querySelector("#divOk").onclick=()=>{ el.remove(); if(mode==="online") renderOnline(); }; }
+function divHTML(){ const D=divState(), left=divLeft(), [c1,c2]=DIV_COL(D.d), [lo,hi]=DIV_RANGE(D.d);
+  const ladder=Array.from({length:DIV_UP},(_,i)=>`<i class="${i<D.p?"on":""}"></i>`).join("");
+  const others=Object.keys(NAMES).filter(u=>compos[u]&&C(u).div).map(u=>({u,d:C(u).div.d,p:C(u).div.p||0})).sort((a,b)=>a.d-b.d||b.p-a.p).slice(0,10);
+  return `<div class="divhead" style="--c1:${c1};--c2:${c2}"><div class="divbadge big"><span>${DIV_IC(D.d)}</span></div><div><small>Ta division</small><h3>${DIV_NAME(D.d)}</h3><div class="divlad">${ladder}</div><small>${D.d===0?"Tu es au sommet !":`${D.p}/${DIV_UP} points pour monter`}${D.d<=7&&D.d>0?" · une défaite retire 1 point":""}</small></div></div>
+    <button class="btn big" id="jDivGo" ${left?"":"disabled"} style="margin:10px 0 4px">${left?`⚔️ Match classé <small style="opacity:.8">(${left}/${DIV_MAX} aujourd'hui)</small>`:"⏳ Reviens demain pour d'autres matchs classés"}</button>
+    <div class="rules" style="font-size:12px">Tu affrontes le <b>11 type d'un autre joueur</b> de ton niveau, ou un <b>club géré par l'ordi</b> (niveau ${lo}-${hi}). Victoire +3, nul +1${D.d<=7?", défaite −1":""}. ${DIV_UP} points = <b>promotion</b>. Gains : victoire 120 🪙, nul 60, défaite 30, +10 par but. <b>Chaque lundi</b>, récompense selon ta meilleure division de la semaine : ${rTxt(DIV_REWARD(D.wb??D.d))} pour l'instant.</div>
+    ${(D.log||[]).length?`<h4>Derniers matchs classés</h4>${D.log.map(x=>`<div class="resr"><span class="rk ${x.res}">${x.res==="v"?"V":x.res==="d"?"D":"N"}</span><span class="rt">contre <b>${esc(x.o)}</b><small>${DIV_NAME(x.d)} · ${new Date(x.at).toLocaleDateString("fr-FR",{day:"numeric",month:"short"})}</small></span><span class="rs">${x.s[0]} - ${x.s[1]}</span></div>`).join("")}`:""}
+    ${others.length>1?`<h4>Classement des joueurs</h4>${others.map((x,i)=>`<div class="resr"><span class="rk n">${i+1}</span><span class="rt"><b>${esc(NAMES[x.u]||"?")}</b>${x.u===me?" <small style='display:inline'>(toi)</small>":""}</span><span class="rs" style="font-size:13px">${DIV_IC(x.d)} ${DIV_NAME(x.d)}</span></div>`).join("")}`:""}`; }
+
+// ======================================================================
 // 🎮 JEUX : carrière, coupe, défi du jour, quiz, canapé, stats, réactions
 // ======================================================================
 function rng(seed){ let a=seed>>>0; return ()=>{ a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
@@ -4628,7 +4703,7 @@ function buildMatch(sides){
   const m={id:Date.now().toString(36)+Math.random().toString(36).slice(2,4),at:Date.now()+1500,by:me,teams:sides.map(snap),...r}; delete m.played; return m;
 }
 function histOf(m,extra){ return Object.assign({id:m.id,at:m.at,score:m.score,labels:m.teams.map(t=>t.label),owners:m.teams.map(t=>t.owner),names:m.teams.map(t=>t.ownerName),motm:m.motm?{pid:m.motm.pid,t:m.motm.t,note:m.notes[m.motm.t][m.motm.pid]}:null,st:mStats(m)},extra||{}); }
-const isPvP=h=>h&&h.owners&&h.owners.length===2&&h.owners[0]&&h.owners[1]&&h.owners[0]!==h.owners[1]&&!h.owners.includes(CPU)&&!h.duo;
+const isPvP=h=>h&&h.owners&&h.owners.length===2&&h.owners[0]&&h.owners[1]&&h.owners[0]!==h.owners[1]&&!h.owners.includes(CPU)&&!h.duo&&h.mode!=="div";
 const MONTHK=t=>new Date(t||Date.now()).toLocaleDateString("fr-CA").slice(0,7);
 function rankApply(R,h){ R.months=R.months||{}; R.h2h=R.h2h||{}; const mk=MONTHK(h.at); const M=R.months[mk]=R.months[mk]||{};
   const [a,b]=h.owners, [x,y]=h.score; for(const [u,gf,ga] of [[a,x,y],[b,y,x]]){ const r=M[u]=M[u]||{p:0,w:0,d:0,l:0,j:0,bp:0,bc:0}; r.j++; r.bp+=gf; r.bc+=ga; if(gf>ga){r.w++;r.p+=3;} else if(gf===ga){r.d++;r.p+=1;} else r.l++; }
@@ -5061,6 +5136,7 @@ setInterval(chatTick,1000);
 function renderJeux(){
   if(!me) return; claimDefi();
   $("#jPred").innerHTML=predHTML(); bindPred(); renderTable(); renderNews(); renderDuo();
+  try{ $("#jDiv").innerHTML=divHTML(); const dg=$("#jDivGo"); if(dg) dg.onclick=divPlay; }catch(e){}
   $("#jCareer").innerHTML=careerHTML(); $("#jCup").innerHTML=cupHTML(); $("#jDefi").innerHTML=defiHTML(); $("#jQuizS").innerHTML=quizHTML(); $("#jSofa").innerHTML=sofaHTML(); $("#jStats").innerHTML=statsHTML();
   const on=(s,f)=>{ const e=$(s); if(e) e.onclick=f; };
   on("#jCarGo",careerPlay); on("#jCarReset",()=>{ careerState().lvl=0; save(); renderJeux(); });
@@ -5197,7 +5273,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-24a"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-24b"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
