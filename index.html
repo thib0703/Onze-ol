@@ -1119,6 +1119,7 @@ body.lowfx .tile,body.lowfx .vt img,body.lowfx .hype,body.lowfx .pkbtn,body.lowf
 .medal b{font-size:11px;line-height:1.15}.medal small{font-size:9.5px;color:var(--mute);line-height:1.2;margin-top:2px}.medal .mdp{display:block;width:90%;height:4px;border-radius:3px;background:#ffffff18;margin-top:5px;overflow:hidden}.medal .mdp i{display:block;height:100%;background:#ffd970}.medal em{font-style:normal;font-size:9.5px;color:#ffd970;margin-top:2px}
 .mis{margin-bottom:14px;padding:10px;border-radius:14px;background:linear-gradient(160deg,#2a1d4a,#0f1d40);border:1px solid #a78bfa44}.mis h3{margin:0 0 6px}
 .misr{display:flex;align-items:center;gap:8px;padding:8px 4px;border-top:1px solid #ffffff10}.misr b{flex:1;font-size:13px}.misr em{font-style:normal;font-size:11px;color:#ffd970;white-space:nowrap}.misr.ok b{text-decoration:line-through;opacity:.6}.misr.ok em{color:#7ee2a0}
+.winter{position:relative;overflow:hidden;background:linear-gradient(170deg,#1e3a6e,#0b1530 70%);border:1px solid #9fd2ff44}.winter h3{position:relative}.winter>div,.winter>button{position:relative}
 </style>
 </head>
 <body>
@@ -3349,7 +3350,7 @@ function renderColSegs(){ const S=$("#colSegs"); if(!S) return; const c=W();
 function renderCollec(){
   if(!me) return; renderTrades(); renderMarket(); const c=W(); const coll=c.coll||{}; setTimeout(renderColSegs,0);
   try{ $("#cTroph").innerHTML=trophiesHTML(me)+`<div class="section">${badgesHTML(me)}</div>`; }catch(e){}
-  try{ const AE=$("#cAdvent"); AE.innerHTML=adventHTML(); AE.querySelectorAll("[data-adv]").forEach(b=>b.onclick=()=>openAdvent(+b.dataset.adv)); }catch(e){}
+  try{ const AE=$("#cAdvent"); AE.innerHTML=adventHTML()+winterHTML(); AE.querySelectorAll("[data-pk]").forEach(b=>b.onclick=()=>openPack(b.dataset.pk)); AE.querySelectorAll("[data-adv]").forEach(b=>b.onclick=()=>openAdvent(+b.dataset.adv)); }catch(e){}
   const owned=ALL_CARDS.filter(p=>coll[p.id]).length;
   const dupes=Object.entries(coll).reduce((s,[id,n])=>s+(n>1?(n-1)*SELL[cardTier(BY_ID[id])]:0),0);
   $("#cShop").innerHTML=`<h3>🎴 Boutique <small>🪙 ${(c.coins||0).toLocaleString("fr-FR")}</small></h3>
@@ -4307,7 +4308,14 @@ const EVENTS=[
   {k:"buteurs",name:"Semaine des Buteurs ⚽",desc:"Avant-centres et ailiers",f:p=>["BU","AG","AD"].includes(p.pos[0])},
   {k:"murs",name:"Semaine des Murs 🧱",desc:"Gardiens et défenseurs",f:p=>["GB","DC","DD","DG"].includes(p.pos[0])},
 ];
-const curEvent=()=>EVENTS[WEEKN()%EVENTS.length];
+// ❄️ Trêve hivernale (27 déc → 15 janv) : remplace l'événement de la semaine et le calendrier de l'Avent
+const winterOn=t=>{ const d=t||new Date(); return (d.getMonth()===11&&d.getDate()>=27)||(d.getMonth()===0&&d.getDate()<=15); };
+const WINTER_EV={k:"hiver",name:"Trêve hivernale ❄️",desc:"Les anciens reviennent : joueurs arrivés avant 2005",f:p=>p.year<2005};
+const curEvent=()=>winterOn()?WINTER_EV:EVENTS[WEEKN()%EVENTS.length];
+function winterHTML(){ if(!me||!winterOn()) return ""; const d=new Date(), end=new Date(d.getMonth()===11?d.getFullYear()+1:d.getFullYear(),0,16); const dl=Math.ceil((end-d)/86400000);
+  return `<div class="section winter"><div class="adv-snow">${typeof snowHTML==="function"?snowHTML(18):""}</div><h3>❄️ Trêve hivernale <small>encore ${dl} j</small></h3>
+    <div style="font-size:13px;line-height:1.45">Le championnat fait une pause, les anciens reviennent ! Pendant la trêve :<br>🎴 le <b>Pack Événement</b> est rempli de joueurs arrivés <b>avant 2005</b> (Coupet, Juninho, Sonny Anderson…)<br>🎯 les <b>missions de la semaine</b> continuent, et les cadeaux des fêtes arrivent tout seuls.</div>
+    <button class="btn big" data-pk="event" style="margin-top:10px">❄️ Ouvrir un Pack Événement · 🪙 600</button></div>`; }
 PACKS.rare3={name:"Pack Rare",price:0,n:3,w:{silver:100},color:"#9fc3ff"};
 PACKS.event={name:"Pack Événement",price:600,n:3,w:{bronze:40,silver:38,gold:17,icon:4.5,myth:.5},guarantee:"silver",color:"#ff9a6a"};
 PACKS.reward={name:"Récompense",price:0,n:1,w:{bronze:1},color:"#7ee2a0"};
@@ -5762,7 +5770,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-25v"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-25w"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
