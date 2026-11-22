@@ -120,6 +120,22 @@ exports.cupCreated = onDocumentCreated({ document: "onzeol_cups/{id}", region: R
   const K = ev.data.data(); await notifyAll("🏆 Nouvelle coupe !", `${await nameOf(K.owner)} a créé la coupe « ${K.name} » (${K.size} joueurs). Inscris-toi dans 🎮 Jeux.`, K.owner);
 });
 
+// 📨 Invitation à une coupe ou un championnat (le créateur ajoute des joueurs dans inv)
+async function notifyInvites(b, a, kind, tab) {
+  const before = (b && b.inv) || {}, after = (a && a.inv) || {};
+  const by = await nameOf(a.owner);
+  for (const [u, at] of Object.entries(after)) {
+    if (before[u] === at || (a.members || []).includes(u)) continue;
+    await notify(u, `📨 Invitation : ${a.name}`, `${by} t'invite dans ${kind} « ${a.name} ». Rejoins-le dans l'onglet ${tab}.`);
+  }
+}
+exports.cupInvite = onDocumentUpdated({ document: "onzeol_cups/{id}", region: REGION }, async ev => {
+  await notifyInvites(ev.data.before.data(), ev.data.after.data(), "la coupe", "🎮 Jeux");
+});
+exports.leagueInvite = onDocumentUpdated({ document: "onzeol_leagues/{id}", region: REGION }, async ev => {
+  await notifyInvites(ev.data.before.data(), ev.data.after.data(), "le championnat", "🏆 Ligue");
+});
+
 // ⚽ Résultats des matchs automatiques de coupe
 exports.cupTieReady = onDocumentUpdated({ document: "onzeol_cups/{id}", region: REGION }, async ev => {
   const b = ev.data.before.data(), a = ev.data.after.data();

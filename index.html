@@ -430,6 +430,7 @@ html:has(.modal.open),body:has(.modal.open){overflow:hidden}
 .tpd{font-style:normal;font-size:11px;font-weight:800;white-space:nowrap;animation:tpf 6s ease forwards}.tpd.up{color:#7ee2a0}.tpd.dn{color:#ff6b7d}.tpg .tpd{font-size:12px}@keyframes tpf{0%{opacity:0;transform:translateY(5px) scale(1.3)}8%{opacity:1;transform:none}75%{opacity:1}100%{opacity:.25}}
 .tpc{font-size:11.5px;color:#c8d6ff;margin-top:8px;line-height:1.4}.tpc b{color:#ffd970}.tpvs{font-size:11.5px;color:var(--mute);margin-top:4px}
 .ann{display:flex;gap:2px;justify-content:center;margin-top:1px}.ann i{font-style:normal;font-size:9px;font-weight:800;padding:0 3px;border-radius:5px;background:#000c;line-height:1.45;white-space:nowrap}.ann i.up{color:#7ee2a0}.ann i.dn{color:#ff8a8a}
+.invl{display:flex;flex-direction:column;gap:4px}.invr{display:flex;align-items:center;gap:10px;padding:9px 10px;background:#1d2b55;border-radius:10px;font-weight:700}.invr input{width:20px;height:20px}.invr small{margin-left:auto;font-weight:500}
 .tdl{display:block;font-size:11.5px;font-weight:600;color:#c8d6ff;margin-top:2px}.duor:disabled{cursor:default;opacity:1}.duor.duocan{outline:2px dashed #7ee2a0;outline-offset:-2px}.duor em{font-style:normal;font-weight:700}
 .otherlive{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 10px;padding:8px 10px;border-radius:10px;background:#1d2b55;font-size:13px}
 .livel{margin:6px 0;padding:6px 8px;border-radius:8px;background:rgba(31,138,76,.22);font-size:13px}.livel.neg{background:rgba(180,67,43,.25)}
@@ -3316,7 +3317,7 @@ async function startLeague(id){
 async function deleteLeague(id){
   openModal(`Supprimer le championnat « ${leagues[id]?.name||""} » ?`,null,[["Supprimer",async()=>{ try{ await db.collection("onzeol_leagues").doc(id).delete(); toast("Championnat supprimé"); }catch(e){ toast("Impossible",true); } }],["Annuler",null,true]]);
 }
-function onLeagues(all){ leagues=all; if(me){ claimLeague(); autoPlay(); if(mode==="ligue") renderLigue(); } }
+function onLeagues(all){ leagues=all; if(me){ try{ invWatchX(); }catch(_){} claimLeague(); autoPlay(); if(mode==="ligue") renderLigue(); } }
 const fmtWhen=t=>{ const d=new Date(t); return d.toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"short"})+" "+d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}); };
 function leagueHTML(id,L){
   const mine=(L.members||[]).includes(me), st=L.status||"open", S=standings(L);
@@ -3326,9 +3327,9 @@ function leagueHTML(id,L){
   const fx=r=>`<div class="fixr"><h5>Journée ${r}${F.find(f=>f.r===r&&!f.s)?` · ${fmtWhen(F.find(f=>f.r===r).t)}`:""}</h5>${F.filter(f=>f.r===r).map(f=>`<div class="fixm${f.a===me||f.b===me?" me":""}"><span>${esc(NAMES[f.a]||"?")}</span><b>${f.s?f.s.join(" - "):"–"}</b><span>${esc(NAMES[f.b]||"?")}</span>${f.mid?`<button class="btn sm ghost" data-rp="${f.mid}">▶️</button>`:""}</div>`).join("")}</div>`;
   const status=st==="open"?`Inscriptions ouvertes · ${L.days||7} j`:st==="running"?`En cours · ${F.filter(f=>f.s).length}/${F.length} matchs`:"Terminé";
   return `<div class="lg${mine?" mine":""}"><div class="lgh"><b>${esc(L.name)}</b><small>${status} · ${(L.members||[]).length} joueur${(L.members||[]).length>1?"s":""} · créé par ${esc(NAMES[L.owner]||"?")}</small></div>
-    ${st==="open"?`<div class="mute" style="font-size:12px">${(L.members||[]).map(x=>esc(NAMES[x]||"?")).join(", ")}</div>`:tbl+
+    ${st==="open"?`${invitedMe(L)?`<div class="invst me">📨 <b>${esc(NAMES[L.owner]||"?")}</b> t'invite dans ce championnat !</div>`:""}<div class="mute" style="font-size:12px">${(L.members||[]).map(x=>esc(NAMES[x]||"?")).join(", ")}${Object.keys(invOf(L)).filter(u=>!(L.members||[]).includes(u)).length?` · 📨 invités : ${Object.keys(invOf(L)).filter(u=>!(L.members||[]).includes(u)).map(u=>esc(NAMES[u]||"?")).join(", ")}`:""}</div>`:tbl+
       (mine||st==="done"?`<details class="fixd"${st==="running"?" open":""}><summary>📅 Calendrier et résultats</summary>${(lastR?[lastR]:[]).concat(nextR&&nextR!==lastR?[nextR]:[]).map(fx).join("")}<details><summary>Toutes les journées</summary>${rounds.map(fx).join("")}</details></details>`:"")}
-    <div class="lgb">${st==="open"?(mine?(L.owner===me?`<button class="btn sm" data-ls="${id}">🚀 Lancer (${(L.members||[]).length} joueurs)</button>`:`<button class="btn sm ghost" data-lq="${id}">Quitter</button>`):`<button class="btn sm" data-lj="${id}">Rejoindre</button>`):""}${L.owner===me?`<button class="btn sm ghost" data-ld="${id}">Supprimer</button>`:""}</div></div>`;
+    <div class="lgb">${st==="open"&&L.owner===me?`<button class="btn sm ghost" data-li="${id}">📨 Inviter</button>`:""}${st==="open"?(mine?(L.owner===me?`<button class="btn sm" data-ls="${id}">🚀 Lancer (${(L.members||[]).length} joueurs)</button>`:`<button class="btn sm ghost" data-lq="${id}">Quitter</button>`):`<button class="btn sm" data-lj="${id}">Rejoindre</button>`):""}${L.owner===me?`<button class="btn sm ghost" data-ld="${id}">Supprimer</button>`:""}</div></div>`;
 }
 
 // ---------- ✅ Les deux joueurs « prêts » → le match se lance en direct chez les deux ----------
@@ -3426,7 +3427,7 @@ setInterval(autoPlay,60000);
 function heroOvr(h){ return Math.min(99,BY_ID[h.pid].ovr+Math.max(1,Math.round((h.note-6)*1.5))); }
 
 // ---------- Onglet Ligue ----------
-function badgeLigue(){ const b=$("#mLigue"); if(b&&me) b.dataset.badge=objClaimable()||""; }
+function badgeLigue(){ const b=$("#mLigue"); if(b&&me) b.dataset.badge=objClaimable()||(Object.values(leagues).some(invitedMe)?"!":""); }
 // ❗ Petits points d'exclamation sur les onglets quand quelque chose t'attend
 function badgeAll(){
   if(!me||!C(me)) return; const c=W(); const set=(sel,v)=>{ const b=$(sel); if(b) b.dataset.badge=v?"!":""; };
@@ -3439,7 +3440,7 @@ function badgeAll(){
     const D=c.dch; const defi=!(D&&D.day===today()&&D.done);
     const cup=Object.values(cups||{}).some(K=>K.status==="running"&&K.rounds.length&&K.rounds[K.rounds.length-1].ties.some(T=>!T.w&&(T.a===me||T.b===me)));
     const quiz=!(c.quiz&&c.quiz.d===today()&&c.quiz.n>=QUIZ_MAX);
-    set("#mJeux",defi||cup||quiz||newsUnread()||duoAttn());
+    set("#mJeux",defi||cup||quiz||newsUnread()||duoAttn()||Object.values(cups||{}).some(invitedMe));
   }catch(e){}
   badgeLigue();
 }
@@ -3457,7 +3458,7 @@ function renderLigue(){
   $("#lEvent").innerHTML=(notifState()!=="granted"?`<button class="btn ghost big" id="lNotif" style="margin:8px 0 0">🔔 Activer les notifications (ton tour, défis, échanges…)</button>`:"")+`<div class="evban"><b>${ev.name}</b><span>${ev.desc}</span><small>Pack Événement : 600 🪙 · 3 cartes du thème · 1 Rare min. — dans la Boutique</small></div><div class="evban tfban"><b>🔥 Forme du moment cette semaine</b><span>${tfWeek().map(id=>esc(BY_ID[id].name)+" ("+BY_ID[id].ovr+")").join(" · ")}</span><small>Cartes boostées dispo seulement cette semaine : 1 chance sur 5 dans le Pack Événement, 8 % dans le Pack Légende</small></div>`;
   const now=Date.now(), LL=Object.entries(leagues).sort((x,y)=>y[1].created-x[1].created);
   const act=LL.filter(([,L])=>L.status!=="done"), done=LL.filter(([,L])=>L.status==="done"&&now-(L.end||0)<14*86400000);
-  const mineA=act.filter(([,L])=>(L.members||[]).includes(me)), other=act.filter(([,L])=>!(L.members||[]).includes(me));
+  const mineA=act.filter(([,L])=>(L.members||[]).includes(me)), other=act.filter(([,L])=>!(L.members||[]).includes(me)).sort((x,y)=>invitedMe(y[1])-invitedMe(x[1]));
   $("#lLeague").innerHTML=`<h3>🏆 Championnats</h3>
     <div class="rules" style="font-size:12px;margin-top:0">Facultatif : crée un championnat ou rejoins-en un. Quand le créateur le lance, <b>tous les matchs se jouent automatiquement</b> avec vos 11 types, répartis sur la durée choisie. Revois chaque match avec ▶️. À la fin : 1er Pack Légende, 2e Pack Épique, 3e Pack Classique (si au moins 2 joueurs ont joué).</div>
     <button class="btn big" id="lCreate" style="margin:4px 0 10px">➕ Créer un championnat</button>
@@ -3467,6 +3468,7 @@ function renderLigue(){
     ${done.length?`<h4>Terminés récemment</h4>`+done.map(([i,L])=>leagueHTML(i,L)).join(""):""}`;
   $("#lCreate").onclick=createLeague;
   $("#lLeague").querySelectorAll("[data-lj]").forEach(b=>b.onclick=()=>joinLeague(b.dataset.lj,true));
+  $("#lLeague").querySelectorAll("[data-li]").forEach(b=>b.onclick=()=>{ const L=leagues[b.dataset.li]; if(L) invitePicker("league",b.dataset.li,L); });
   $("#lLeague").querySelectorAll("[data-lq]").forEach(b=>b.onclick=()=>joinLeague(b.dataset.lq,false));
   $("#lLeague").querySelectorAll("[data-ld]").forEach(b=>b.onclick=()=>deleteLeague(b.dataset.ld));
   $("#lLeague").querySelectorAll("[data-ls]").forEach(b=>b.onclick=()=>startLeague(b.dataset.ls));
@@ -3674,7 +3676,28 @@ function careerHTML(){
 
 // ---------- 🏆 Coupe à élimination ----------
 let cups={};
-function onCups(all){ cups=all; if(me){ claimCups(); autoPlay(); if(mode==="jeux") renderJeux(); } }
+// 📨 Invitations aux coupes et championnats (le créateur invite, l'invité n'a plus qu'à rejoindre)
+const invOf=(X)=>Object.assign({},(X&&X.inv)||{});
+const invitedMe=(X)=>!!(X&&X.status==="open"&&invOf(X)[me]&&!(X.members||[]).includes(me));
+function invitePicker(kind,id,X){ // kind : "cup" | "league"
+  const M=$("#cardModal"); const inv=invOf(X), mem=new Set(X.members||[]);
+  const us=Object.keys(NAMES).filter(u=>u!==me&&u!==CPU&&!mem.has(u)&&compos[u]).sort((a,b)=>(NAMES[a]||"").localeCompare(NAMES[b]||"","fr"));
+  M.innerHTML=`<div class="cm-box panel" style="max-height:85vh;overflow:auto;text-align:left"><h3 style="margin-top:0">📨 Inviter à « ${esc(X.name)} »</h3>
+    ${us.length?`<div class="invl">${us.map(u=>`<label class="invr"><input type="checkbox" value="${u}" ${inv[u]?"checked disabled":""}><span>${esc(NAMES[u])}</span>${inv[u]?`<small class="mute">déjà invité</small>`:""}</label>`).join("")}</div>`:`<div class="mute">Tout le monde est déjà inscrit.</div>`}
+    <div class="mute" style="font-size:12px;margin:8px 0">Ils reçoivent une notification et n'ont plus qu'à appuyer sur « Rejoindre ».</div>
+    <div class="mbtns">${us.length?`<button class="btn" id="invOk">📨 Envoyer</button>`:""}<button class="btn ghost" id="invX">Fermer</button></div></div>`;
+  M.classList.add("open"); $("#invX").onclick=()=>M.classList.remove("open");
+  const ok=$("#invOk"); if(ok) ok.onclick=async()=>{ const sel=[...M.querySelectorAll("input:checked:not(:disabled)")].map(x=>x.value); if(!sel.length){ toast("Choisis au moins un joueur",true); return; }
+    const now=Date.now(), ref=db.collection(kind==="cup"?"onzeol_cups":"onzeol_leagues").doc(id);
+    try{ await db.runTransaction(async tx=>{ const d=await tx.get(ref); if(!d.exists) throw new Error("Introuvable"); const x=d.data(); if(x.owner!==me) throw new Error("Seul le créateur peut inviter"); if(x.status&&x.status!=="open") throw new Error("Inscriptions fermées");
+        const I=invOf(x); sel.forEach(u=>I[u]=now); tx.update(ref,{inv:I}); });
+      M.classList.remove("open"); toast("📨 Invitation envoyée à "+sel.map(u=>NAMES[u]||"?").join(", ")); }
+    catch(e){ toast(e.message&&e.message.length<60?e.message:"Impossible, réessaie",true); } }; }
+let invSeen=null;
+function invWatchX(){ const cur={}; for(const [id,K] of Object.entries(cups)) if(invitedMe(K)) cur["c"+id]=[K,"la coupe","🎮 Jeux"]; for(const [id,L] of Object.entries(leagues)) if(invitedMe(L)) cur["l"+id]=[L,"le championnat","🏆 Ligue"];
+  if(invSeen) for(const [k,[X,t,tab]] of Object.entries(cur)) if(!invSeen[k]) toast(`📨 ${NAMES[X.owner]||"?"} t'invite dans ${t} « ${X.name} » (${tab})`);
+  invSeen={}; for(const k in cur) invSeen[k]=1; }
+function onCups(all){ cups=all; if(me){ try{ invWatchX(); }catch(_){} claimCups(); autoPlay(); if(mode==="jeux") renderJeux(); } }
 function createCup(){
   openModal("Nom de la coupe","",[...[4,8].map(n=>[`${n} joueurs`,async v=>{
     if(!v){ toast("Donne un nom à la coupe",true); return false; }
@@ -3723,7 +3746,7 @@ function claimCups(){ const c=W(); c.cupDone=c.cupDone||[]; let ch=false;
 function trophyFx(name){ const el=document.createElement("div"); el.className="trophy"; el.innerHTML=`<div><span>🏆</span><b>CHAMPION !</b><small>${esc(name)}</small></div>`; document.body.appendChild(el); el.onclick=()=>el.remove(); setTimeout(()=>el.remove(),6000); }
 const RNAME=n=>n===1?"Finale":n===2?"Demi-finales":"Quarts de finale";
 function cupHTML(){
-  const L=Object.entries(cups).sort((x,y)=>y[1].created-x[1].created).filter(([,K])=>K.status!=="done"||Date.now()-K.created<21*86400000);
+  const L=Object.entries(cups).sort((x,y)=>(invitedMe(y[1])-invitedMe(x[1]))||y[1].created-x[1].created).filter(([,K])=>K.status!=="done"||Date.now()-K.created<21*86400000);
   const tieH=(id,K,ri,ti,T)=>{ const N=x=>esc(NAMES[x]||"?"); const ag=T.legs.length?[T.legs.reduce((s,l)=>s+l.s[0],0),T.legs.reduce((s,l)=>s+l.s[1],0)]:null;
     const mine=T.a===me||T.b===me; const nxt=!T.w&&K.status==="running"&&ri===K.rounds.length-1?cupLegTime(K,ri,T.legs.length):null;
     return `<div class="tie${T.w?" done":""}"><span class="${T.w===T.a?"win":""}">${N(T.a)}</span><b>${T.legs.map(l=>l.s.join("-")).join(" / ")||"–"}${ag&&T.legs.length===2?`<small>(${ag.join("-")}${T.tab?` · t.a.b ${T.tab[1]}-${T.tab[0]}`:""})</small>`:""}</b><span class="${T.w===T.b?"win":""}">${N(T.b)}</span>
@@ -3731,7 +3754,7 @@ function cupHTML(){
   return `<h3>🏆 Coupes à élimination</h3><div class="rules" style="font-size:12px;margin-top:0">4 ou 8 joueurs, tirage au sort, matchs aller-retour avec vos 11 types (cartes possédées), <b>joués automatiquement toutes les 12 h</b> : revois les résumés avec ▶️. Égalité au total : tirs au but. Vainqueur : Pack Légende + 300 🪙, finaliste : Pack Épique.</div>
   <button class="btn big" id="jCupNew">➕ Créer une coupe</button>
   ${L.map(([id,K])=>`<div class="lg${(K.members||[]).includes(me)?" mine":""}"><div class="lgh"><b>${esc(K.name)}</b><small>${K.status==="open"?`Inscriptions ${K.members.length}/${K.size}`:K.status==="running"?"En cours":`Terminée · 🏆 ${esc(NAMES[K.winner]||"?")}`} · créée par ${esc(NAMES[K.owner]||"?")}</small></div>
-    ${K.status==="open"?`<div class="mute" style="font-size:12px">${K.members.map(x=>esc(NAMES[x]||"?")).join(", ")}</div><div class="lgb">${K.members.includes(me)?(K.owner===me?"":`<button class="btn sm ghost" data-cq="${id}">Se désinscrire</button>`):K.members.length<K.size?`<button class="btn sm" data-cj="${id}">S'inscrire</button>`:""}${K.owner===me&&K.members.length===K.size?`<button class="btn sm" data-cs="${id}">🎲 Lancer le tirage</button>`:""}${K.owner===me?`<button class="btn sm ghost" data-cd="${id}">Supprimer</button>`:""}</div>`
+    ${K.status==="open"?`${invitedMe(K)?`<div class="invst me">📨 <b>${esc(NAMES[K.owner]||"?")}</b> t'invite dans cette coupe !</div>`:""}<div class="mute" style="font-size:12px">${K.members.map(x=>esc(NAMES[x]||"?")).join(", ")}${Object.keys(invOf(K)).filter(u=>!K.members.includes(u)).length?` · 📨 invités : ${Object.keys(invOf(K)).filter(u=>!K.members.includes(u)).map(u=>esc(NAMES[u]||"?")).join(", ")}`:""}</div><div class="lgb">${K.owner===me&&K.members.length<K.size?`<button class="btn sm ghost" data-ci="${id}">📨 Inviter</button>`:""}${K.members.includes(me)?(K.owner===me?"":`<button class="btn sm ghost" data-cq="${id}">Se désinscrire</button>`):K.members.length<K.size?`<button class="btn sm" data-cj="${id}">S'inscrire</button>`:""}${K.owner===me&&K.members.length===K.size?`<button class="btn sm" data-cs="${id}">🎲 Lancer le tirage</button>`:""}${K.owner===me?`<button class="btn sm ghost" data-cd="${id}">Supprimer</button>`:""}</div>`
     :K.rounds.map((R,ri)=>`<h4>${RNAME(R.ties.length)}</h4>${R.ties.map((T,ti)=>tieH(id,K,ri,ti,T)).join("")}`).join("")}</div>`).join("")||`<div class="mute" style="font-size:13px">Aucune coupe pour l'instant.</div>`}`;
 }
 
@@ -3924,12 +3947,13 @@ setInterval(chatTick,1000);
 function renderJeux(){
   if(!me) return; claimDefi();
   $("#jPred").innerHTML=predHTML(); bindPred(); renderTable(); renderNews(); renderDuo();
-  $("#jCareer").innerHTML=careerHTML(); $("#jCup").innerHTML=cupHTML(); $("#jDefi").innerHTML=defiHTML(); $("#jQuizS").innerHTML=quizHTML(); $("#jSofa").innerHTML=sofaHTML(); $("#jStats").innerHTML=statsHTML();
+  $("#jCareer").innerHTML=careerHTML(); $("#jCup").innerHTML=cupHTML(); { const e=$("#jCup"); if(e&&Object.values(cups||{}).some(invitedMe)&&e.parentNode.firstElementChild!==e) e.parentNode.prepend(e); } $("#jDefi").innerHTML=defiHTML(); $("#jQuizS").innerHTML=quizHTML(); $("#jSofa").innerHTML=sofaHTML(); $("#jStats").innerHTML=statsHTML();
   const on=(s,f)=>{ const e=$(s); if(e) e.onclick=f; };
   on("#jCarGo",careerPlay); on("#jCarReset",()=>{ careerState().lvl=0; save(); renderJeux(); });
   on("#jCupNew",createCup);
   const J=$("#viewJeux");
   J.querySelectorAll("[data-cj]").forEach(b=>b.onclick=()=>joinCup(b.dataset.cj,true));
+  J.querySelectorAll("[data-ci]").forEach(b=>b.onclick=()=>{ const K=cups[b.dataset.ci]; if(K) invitePicker("cup",b.dataset.ci,K); });
   J.querySelectorAll("[data-cq]").forEach(b=>b.onclick=()=>joinCup(b.dataset.cq,false));
   J.querySelectorAll("[data-cs]").forEach(b=>b.onclick=()=>startCup(b.dataset.cs));
   J.querySelectorAll("[data-cd]").forEach(b=>b.onclick=()=>openModal(`Supprimer la coupe « ${cups[b.dataset.cd]?.name||""} » ?`,null,[["Supprimer",()=>{ db.collection("onzeol_cups").doc(b.dataset.cd).delete().catch(()=>toast("Impossible",true)); }],["Annuler",null,true]]));
@@ -4052,7 +4076,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-22o"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-22p"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
