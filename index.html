@@ -1137,7 +1137,7 @@ body.lowfx .tile,body.lowfx .vt img,body.lowfx .hype,body.lowfx .pkbtn,body.lowf
 </head>
 <body>
 <div id="start">
-  <img src="img/logo.webp" alt="" style="width:110px;display:block;margin:0 auto 6px;filter:drop-shadow(0 8px 18px #000a)">
+  <img src="img/logo.webp?v=2" alt="" style="width:110px;display:block;margin:0 auto 6px;filter:drop-shadow(0 8px 18px #000a)">
   <h1>Les Gones <span style="color:var(--rouge)">Legends</span></h1>
   <div class="stslides" id="stSlides">
     <div class="sts" style="--bg:url(img/tuiles/career.webp)"><b>⚽ Ton 11 de légendes</b><small>Tous les joueurs passés par l'OL depuis 2000, et les anciens</small></div>
@@ -1157,7 +1157,7 @@ body.lowfx .tile,body.lowfx .vt img,body.lowfx .hype,body.lowfx .pkbtn,body.lowf
 
 <header>
   <button class="who" id="who">Changer</button><button class="who" id="admBtn" style="display:none;top:40px;color:#ffd970;border-color:#6b5a1e">🛠️ Admin</button><button class="coins" id="coins" style="display:none"></button><button class="socbtn" id="socBtn" title="Social : clubs, amis, invitations">👥 Social<b id="socBadge"></b></button>
-  <h1><img class="hlogo" src="img/logo.webp" alt="">Les Gones <span>Legends</span></h1>
+  <h1><img class="hlogo" src="img/logo.webp?v=2" alt="">Les Gones <span>Legends</span></h1>
   <div class="sub">Tous les joueurs passés par Lyon depuis 2000</div>
   <div class="sync" id="sync">Connexion…</div><div id="appV" style="text-align:center;font-size:10px;opacity:.45;margin-top:2px"></div>
 </header>
@@ -3103,7 +3103,7 @@ async function shareCard(pid,lv){ try{ const p=BY_ID[pid]; if(!p) return; const 
   if(st){ [0,3,1,4,2,5].forEach((i,k)=>{ const col=k%2, row=Math.floor(k/2); const cx=X0+(col?345:110), cy=Y0+620+row*66; cvText(x,st.vals[i],cx,cy,"900 46px system-ui,sans-serif",ink,"left"); cvText(x,st.labels[i],cx+70,cy,"700 34px system-ui,sans-serif",ink,"left"); }); }
   else if(p.pos[0]==="COACH") cvText(x,"Entraîneur de l'OL",W_/2,Y0+640,"700 36px system-ui,sans-serif",ink);
   const lab=p.v?VAR_INFO[p.v].n:(TIER_NAME[t]||""); cvText(x,lab.toUpperCase(),W_/2,110,"900 44px system-ui,sans-serif","#ffd970");
-  const logo=await ldImg("img/logo.webp"); if(logo){ const h=110,w=logo.width*h/logo.height; x.drawImage(logo,W_/2-w/2,Y0+CH+30,w,h); }
+  const logo=await ldImg("img/logo.webp?v=2"); if(logo){ const h=110,w=logo.width*h/logo.height; x.drawImage(logo,W_/2-w/2,Y0+CH+30,w,h); }
   cvText(x,"Les Gones Legends · thib0703.github.io/Onze-ol",W_/2,H_-50,"700 30px system-ui,sans-serif","#9fb0e0");
   await shareCanvas(cv,"gones-legends-carte.png",`${p.name} ${ovr} · Les Gones Legends`);
  }catch(e){ toast("Partage impossible",true); } }
@@ -3119,7 +3119,7 @@ async function shareResult(M){ try{
   const g=x.createLinearGradient(0,0,0,H_); g.addColorStop(0,"#0b1a45"); g.addColorStop(.55,"#071230"); g.addColorStop(1,"#02040c"); x.fillStyle=g; x.fillRect(0,0,W_,H_);
   const bg=await ldImg("img/stade.webp"); if(bg){ x.globalAlpha=.55; const r=Math.max(W_/bg.width,H_/bg.height); x.drawImage(bg,(W_-bg.width*r)/2,(H_-bg.height*r)/2,bg.width*r,bg.height*r); x.globalAlpha=1; x.fillStyle="#020611aa"; x.fillRect(0,0,W_,H_); }
   const rg=x.createRadialGradient(W_/2,520,40,W_/2,520,560); rg.addColorStop(0,"#e3002b33"); rg.addColorStop(1,"#0000"); x.fillStyle=rg; x.fillRect(0,0,W_,H_);
-  const logo=await ldImg("img/logo.webp"); if(logo){ const h=150, w=logo.width*h/logo.height; x.drawImage(logo,W_/2-w/2,50,w,h); }
+  const logo=await ldImg("img/logo.webp?v=2"); if(logo){ const h=150, w=logo.width*h/logo.height; x.drawImage(logo,W_/2-w/2,50,w,h); }
   cvText(x,"LES GONES LEGENDS",W_/2,235,"900 34px system-ui,sans-serif","#ffd970"); 
   const own=t=>{ const T=M.teams[t]||{}; return T.owner&&T.owner!==CPU?T.owner:(T.owners||[]).find(u=>u&&u!==CPU)||null; };
   const sc=[0,0]; M.ev.forEach(e=>{ if(e.k==="goal") sc[e.t]++; });
@@ -5820,7 +5820,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-26b"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-26c"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
