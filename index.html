@@ -1085,6 +1085,10 @@ details.fold#libSec>summary::after{float:right}
 .cav.crest{background:none!important;box-shadow:none!important;border-radius:0}.cav.crest.big{width:64px!important;height:64px!important;flex:none}.clubh .cnote.big{width:auto;padding:0;margin:0;display:block;border-radius:0}.cav.crest img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 3px 5px #000a)}
 .crgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:8px}.crgrid button{background:#0f1d40;border:2px solid transparent;border-radius:14px;padding:8px;cursor:pointer}.crgrid button.on{border-color:#ffd970;background:#ffd97022}.crgrid img{width:100%;aspect-ratio:1;object-fit:contain}
 .pitch{background:url(img/terrain.webp) center/cover,repeating-linear-gradient(180deg,#1f7a3a 0 10%,#1b6e34 10% 20%)!important}
+/* iOS 26 : la zone juste sous l'heure/batterie est floutée par le système → on décale l'en-tête */
+:root{--hdt:28px}
+header{padding-top:calc(10px + var(--hdt))!important;min-height:calc(72px + var(--hdt))!important}
+.coins,.who{top:calc(8px + var(--hdt))!important}.socbtn{top:calc(40px + var(--hdt))!important}#admBtn{top:calc(40px + var(--hdt))!important}
 </style>
 </head>
 <body>
@@ -5574,7 +5578,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-25f"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-25g"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
