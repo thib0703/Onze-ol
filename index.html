@@ -4694,7 +4694,8 @@ function trophyCheck(quiet){ if(!me||!C(me)) return; const c=W(); const T=c.trop
   const D=c.div; if(D){ { const i0=T.findIndex(x=>x.id==="div-up"); if(i0>=0) T.splice(i0,1); // ancien bouclier unique → un bouclier par montée
       for(let d=9;d>=(D.best??10);d--) put("div-up-"+d,"up",`Montée en ${DIV_NAME(d)}`); }
     if(D.d===0&&D.p>=DIV_UP) put("ldc-"+D.w,"ldc","Titre en Ligue des Champions"); }
-  const K=c.career; if(K&&(K.best||0)>=CAREER.length) put("car","car","Carrière terminée");
+  const K=c.career; if(K){ const i0=T.findIndex(x=>x.id==="car"); if(i0>=0) T.splice(i0,1); // un trophée par compétition remportée en Carrière
+    Object.keys(CAREER_END).map(Number).forEach(i=>{ if((K.best||0)>=i+1) put("car-"+i,"car",`Carrière : ${CAREER[i].comp} remportée`); }); }
   const P=c.pass; if(P&&P.lv>=PASS_N) put("pass-"+P.s,"pass",`Pass ${(()=>{ const [y,m]=String(P.s).split("-").map(Number); return y&&m?new Date(y,m-1,1).toLocaleDateString("fr-FR",{month:"long",year:"numeric"}):PASS_NAME(); })()}`);
   const A=c.advent; if(A&&Object.keys(A.o||{}).length>=24) put("noel-"+A.y,"noel",`Noël ${A.y} : 24/24`);
   (c.albumDone||[]).forEach(id=>{ const st=SETS.find(x=>x.id===id); if(st) put("alb-"+id,"alb",st.t.replace(/ \(.*\)$/,"")); });
@@ -5430,7 +5431,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-24o"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-24p"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
