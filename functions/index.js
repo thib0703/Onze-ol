@@ -227,3 +227,31 @@ exports.nightlyBackup = onSchedule({ schedule: "15 3 * * *", timeZone: "Europe/P
   const old = await db.collection("onzeol_backups").get(); const lim = new Date(Date.now() - 21 * 86400000).toLocaleDateString("fr-CA");
   for (const d of old.docs) if (d.id < lim) await d.ref.delete();
 });
+
+// 🏆 Trophées de progression pour TOUS les joueurs (même ceux qui n'ouvrent pas l'appli) — même logique que trophyCheck() dans index.html
+const UL_OLD_IDS = {"fleury-di-nallo": "Fleury Di Nallo", "serge-chiesa": "Serge Chiesa", "bernard-lacombe": "Bernard Lacombe", "nestor-combin": "Néstor Combin", "angel-rambert": "Ángel Rambert", "yves-chauveau": "Yves Chauveau", "aime-mignot": "Aimé Mignot", "raymond-domenech": "Raymond Domenech", "jean-djorkaeff": "Jean Djorkaeff", "jean-tigana": "Jean Tigana", "remi-garde": "Rémi Garde"};
+const SET_T = {"bronze": "Toutes les Communes", "silver": "Toutes les Rares", "gold": "Toutes les Épiques", "icon": "Toutes les Légendaires", "myth": "Toutes les Mythiques", "coach": "Tous les entraîneurs", "bresil": "Les Brésiliens", "septuple": "Les champions du septuplé", "actuel": "L'effectif actuel", "e2000": "Les années 2000", "e2010": "Les années 2010", "e2020": "La nouvelle génération", "france": "Les Bleus de l'OL 🇫🇷", "lmod": "Toutes les Légendes modernes ⭐", "ultime": "Toutes les Légendes Ultimes 👑", "all": "L'album complet"};
+const CAREER_STAGES = [[7, "Ligue 1"], [11, "Europa League"], [15, "Ligue des champions"]];
+const DIV_NAME = d => d === 0 ? "Ligue des Champions" : `Division ${d}`;
+const prettyId = id => id.replace(/--\w+$/, "").split("-").map(w => w ? w[0].toUpperCase() + w.slice(1) : w).join(" ");
+function trophiesFor(c) {
+  const T = (c.trophies || []).map(x => ({ ...x })); let ch = false; const now = Date.now();
+  const has = id => T.some(x => x.id === id); const put = (id, k, n) => { if (has(id)) return; T.push({ id, k, n, at: now }); ch = true; };
+  T.forEach(x => { if (x.k === "cup" && String(x.id).startsWith("wk-")) { x.k = "wk"; ch = true; } });
+  const rm = id => { const i = T.findIndex(x => x.id === id); if (i >= 0) { T.splice(i, 1); ch = true; } };
+  const D = c.div; if (D) { rm("div-up"); for (let d = 9; d >= (D.best ?? 10); d--) put("div-up-" + d, "up", `Montée en ${DIV_NAME(d)}`);
+    if (D.d === 0 && D.p >= 9) put("ldc-" + D.w, "ldc", "Titre en Ligue des Champions"); }
+  const K = c.career; if (K) { rm("car"); CAREER_STAGES.forEach(([n, comp], i) => { if ((K.best || 0) >= n) put("car-" + (n - 1), "car", `Carrière : ${comp} remportée`); }); }
+  const P = c.pass; if (P && P.lv >= 30 && P.s) { const [y, m] = String(P.s).split("-").map(Number); put("pass-" + P.s, "pass", "Pass " + new Date(y, m - 1, 1).toLocaleDateString("fr-FR", { month: "long", year: "numeric" })); }
+  const A = c.advent; if (A && Object.keys(A.o || {}).length >= 24) put("noel-" + A.y, "noel", `Noël ${A.y} : 24/24`);
+  (c.albumDone || []).forEach(id => { if (SET_T[id]) put("alb-" + id, "alb", SET_T[id].trim()); });
+  if ((c.goldPacks || 0) > 0) put("gold", "gold", "Gold Pack ouvert");
+  const own = Object.keys(c.coll || {}).filter(id => c.coll[id] > 0);
+  const gf = own.find(id => id.endsWith("--gf")); if (gf) put("gf", "gf", prettyId(gf));
+  const ul = own.find(id => id.endsWith("--ul") || UL_OLD_IDS[id]); if (ul) put("ul", "ul", UL_OLD_IDS[ul] || prettyId(ul));
+  return ch ? T : null;
+}
+exports.trophyBackfill = onSchedule({ schedule: "*/30 * * * *", timeZone: "Europe/Paris", region: REGION }, async () => {
+  const qs = await db.collection("onzeol_users").get();
+  for (const d of qs.docs) { const T = trophiesFor(d.data() || {}); if (T) await d.ref.update({ trophies: T }); }
+});

@@ -4702,6 +4702,7 @@ function trophyCheck(quiet){ if(!me||!C(me)) return; const c=W(); const T=c.trop
   if((c.goldPacks||0)>0) put("gold","gold","Gold Pack ouvert");
   const own=c.coll||{}; const gf=VARIANTS.find(p=>p.v==="gf"&&own[p.id]); if(gf) put("gf","gf",gf.name);
   const ul=VARIANTS.find(p=>p.v==="ul"&&own[p.id]); if(ul) put("ul","ul",ul.name);
+  T.forEach(x=>{ if((x.k==="gf"||x.k==="ul")){ const v=VARIANTS.find(p=>p.v===x.k&&own[p.id]&&p.name!==x.n&&slug(p.name)===slug(x.n)); if(v){ x.n=v.name; add.push(x); } } }); // noms posés par le serveur (sans accents)
   if(!add.length) return; save();
   if(quiet&&add.length>1) toast(`🏆 ${add.length} trophées ajoutés à ton armoire !`);
   else add.forEach((x,i)=>setTimeout(()=>{ toast(`🏆 Nouveau trophée : ${(TROPHY[x.k]||{}).t} · ${x.n}`); },i*2500)); }
@@ -5431,7 +5432,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-24p"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-24q"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
