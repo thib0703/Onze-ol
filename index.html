@@ -1089,6 +1089,13 @@ details.fold#libSec>summary::after{float:right}
 :root{--hdt:28px}
 header{padding-top:calc(10px + var(--hdt))!important;min-height:calc(72px + var(--hdt))!important}
 .coins,.who{top:calc(8px + var(--hdt))!important}.socbtn{top:calc(40px + var(--hdt))!important}#admBtn{top:calc(40px + var(--hdt))!important}
+.sboard .tm{display:flex;flex-direction:column;align-items:center;gap:2px}.mcrest{width:46px;height:46px;object-fit:contain;filter:drop-shadow(0 3px 6px #000a);margin-bottom:2px}.mcrest.mcpu{font-size:34px;line-height:46px;display:block;filter:none}
+.mline{position:relative;height:8px;border-radius:5px;background:#ffffff14;margin:10px 4px 14px}.mline .mfill{position:absolute;left:0;top:0;bottom:0;border-radius:5px;background:linear-gradient(90deg,#1d4ed8,#e3002b);transition:width .8s linear}
+.mline .mht{position:absolute;left:50%;top:-3px;bottom:-3px;width:2px;background:#ffffff55}.mline .mg{position:absolute;top:50%;transform:translate(-50%,-50%);font-size:14px;filter:drop-shadow(0 1px 2px #000)}.mline .mg.t1{top:calc(50% + 12px)}.mline .mg.t0{top:calc(50% - 12px)}
+/* 🏟️ fond de stade pendant les matchs */
+body[data-mode="match"]::before{content:"";position:fixed;inset:0;z-index:-1;background:linear-gradient(180deg,#02061155 0%,#020611aa 45%,#020611ee 100%),url(img/stade.webp) center top/cover no-repeat;pointer-events:none}
+body[data-mode="match"] #mBoard{background:#0b153099;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid #ffffff14}
+body[data-mode="match"] #mBoard .sboard{padding:8px 0 2px}body[data-mode="match"] #mBoard .sc{text-shadow:0 0 24px #e3002b66,0 4px 12px #000}
 </style>
 </head>
 <body>
@@ -2950,7 +2957,11 @@ function renderBoard(){
   }
   const sc=[0,0]; shown.forEach(e=>{if(e.k==="goal")sc[e.t]++;});
   const clock= cur<0?"Coup d'envoi…": done?"Terminé": cur>=45&&cur<45.5?"45'":`${Math.min(Math.floor(cur)||1,match.len)}'`;
-  let h=`<div class="score"><div class="tm">${esc(tn(match,0))}<small>${esc(match.teams[0].label)}</small></div><div class="sc">${sc[0]} - ${sc[1]}<small>${clock}</small></div><div class="tm">${esc(tn(match,1))}<small>${esc(match.teams[1].label)}</small></div></div>`;
+  const own=t=>{ const T=match.teams[t]||{}; return T.owner&&T.owner!==CPU?T.owner:(T.owners||[]).find(u=>u&&u!==CPU)||null; };
+  const crest=t=>{ const u=own(t); return u?`<img class="mcrest" src="img/ecussons/${String(crestOf(u)).padStart(2,"0")}.webp" alt="">`:`<span class="mcrest mcpu">🤖</span>`; };
+  const goals=match.ev.filter(e=>e.k==="goal"), L=match.len||90, pc=Math.max(0,Math.min(1,cur/L));
+  let h=`<div class="score sboard"><div class="tm">${crest(0)}${esc(tn(match,0))}<small>${esc(match.teams[0].label)}</small></div><div class="sc">${sc[0]} - ${sc[1]}<small>${clock}</small></div><div class="tm">${crest(1)}${esc(tn(match,1))}<small>${esc(match.teams[1].label)}</small></div></div>
+    <div class="mline"><i class="mfill" style="width:${pc*100}%"></i><i class="mht"></i>${goals.filter(e=>e.m<=cur).map(e=>`<b class="mg t${e.t}" style="left:${Math.min(98,e.m/L*100)}%">⚽</b>`).join("")}</div>`;
   h+=`<div class="feed">${shown.slice().reverse().map(e=>`<div class="ev ${e.k}"><b>${e.k==="ht"||e.k==="ft"?"":Math.floor(e.m)+"'"}</b><span>${evText(e)}</span></div>`).join("")||`<div class="ev"><span class="mute">Les joueurs entrent sur la pelouse…</span></div>`}</div>`;
   if(!done) h+=`<button class="btn ghost big" id="mSkipBtn">⏩ Voir le résultat</button>`;
   else{
@@ -2959,16 +2970,46 @@ function renderBoard(){
     const mo=M.motm; if(mo) h+=`<div class="motm">⭐ Homme du match : <b>${esc(BY_ID[mo.pid]?.name||"?")}</b> (${esc(tn(M,mo.t))}) · ${M.notes[mo.t][mo.pid]}/10</div>`;
     h+=`<div class="notes">${[0,1].map(t=>`<div><h4>Notes ${esc(tn(M,t))}</h4>${(M.teams[t].played||M.teams[t].lineup).filter(l=>l.pid&&M.notes[t][l.pid]!=null).map(l=>`<div class="nr" onclick="showCard('${l.pid}')"><span>${l.sub?"🔁 ":""}${l.role} ${esc(pn(l.pid))}</span><b class="${M.notes[t][l.pid]>=7.5?"hi":M.notes[t][l.pid]<5.5?"lo":""}">${M.notes[t][l.pid]}</b></div>`).join("")}</div>`).join("")}</div>`;
   }
+  if(done) h+=`<button class="btn big" id="mShareBtn" style="margin-top:8px">📤 Partager le résultat</button>`;
   h+=`<button class="btn ghost big" id="mCloseBtn" style="margin-top:6px">✖ Fermer le match</button>`;
   if(otherLive&&otherLive.id!==match.id) h=`<div class="otherlive"><span>${mLiveNow(otherLive)?"🔴 En direct":"🏁 Terminé"} : <b>${esc(tn(otherLive,0))} vs ${esc(tn(otherLive,1))}</b></span><button class="btn sm ghost" id="mOtherBtn">👀 Regarder</button></div>`+h;
   el.innerHTML=h;
   const ob=$("#mOtherBtn"); if(ob) ob.onclick=watchOther;
   const cb=$("#mCloseBtn"); if(cb) cb.onclick=()=>{ mClosed=match.id; fxQ=[]; if(otherLive){ match=otherLive; otherLive=null; mClosed=match.id; } renderMatch(); window.scrollTo(0,0); };
+  const shb=$("#mShareBtn"); if(shb) shb.onclick=()=>shareResult(match);
   const sk=$("#mSkipBtn"); if(sk) sk.onclick=()=>{mSkip=match.id;fxQ=[];renderMatch();processPend();setTimeout(claimRewards,300);};
   if(!done&&!mTimer) mTimer=setInterval(()=>{ if(mode!=="match") return; const d=matchMinute()>=match.len+.5; renderBoard(); if(d){clearInterval(mTimer);mTimer=null;renderMatch();} },MSPEED);
   if(done&&mTimer){clearInterval(mTimer);mTimer=null;}
 }
 
+// 📤 Partage : image du résultat (WhatsApp, Messages…)
+const ldImg=src=>new Promise(r=>{ const i=new Image(); i.onload=()=>r(i); i.onerror=()=>r(null); i.src=src; });
+async function shareCanvas(cv,name,text){ const blob=await new Promise(r=>cv.toBlob(r,"image/png")); if(!blob){ toast("Image impossible à créer",true); return; }
+  const file=new File([blob],name,{type:"image/png"});
+  try{ if(navigator.canShare&&navigator.canShare({files:[file]})){ await navigator.share({files:[file],text}); return; } }catch(e){ if(e&&e.name==="AbortError") return; }
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); a.remove(); toast("📥 Image enregistrée"); }
+function cvText(x,t,X,Y,font,col,al,maxW){ x.font=font; x.fillStyle=col; x.textAlign=al||"center"; x.textBaseline="middle"; let s=String(t); if(maxW) while(x.measureText(s).width>maxW&&s.length>3) s=s.slice(0,-2)+"…"; x.fillText(s,X,Y); }
+async function shareResult(M){ try{
+  const W_=1080,H_=1350, cv=document.createElement("canvas"); cv.width=W_; cv.height=H_; const x=cv.getContext("2d");
+  const g=x.createLinearGradient(0,0,0,H_); g.addColorStop(0,"#0b1a45"); g.addColorStop(.55,"#071230"); g.addColorStop(1,"#02040c"); x.fillStyle=g; x.fillRect(0,0,W_,H_);
+  const bg=await ldImg("img/stade.webp"); if(bg){ x.globalAlpha=.55; const r=Math.max(W_/bg.width,H_/bg.height); x.drawImage(bg,(W_-bg.width*r)/2,(H_-bg.height*r)/2,bg.width*r,bg.height*r); x.globalAlpha=1; x.fillStyle="#020611aa"; x.fillRect(0,0,W_,H_); }
+  const rg=x.createRadialGradient(W_/2,520,40,W_/2,520,560); rg.addColorStop(0,"#e3002b33"); rg.addColorStop(1,"#0000"); x.fillStyle=rg; x.fillRect(0,0,W_,H_);
+  const logo=await ldImg("img/logo.webp"); if(logo){ const h=150, w=logo.width*h/logo.height; x.drawImage(logo,W_/2-w/2,50,w,h); }
+  cvText(x,"LES GONES LEGENDS",W_/2,235,"900 34px system-ui,sans-serif","#ffd970"); 
+  const own=t=>{ const T=M.teams[t]||{}; return T.owner&&T.owner!==CPU?T.owner:(T.owners||[]).find(u=>u&&u!==CPU)||null; };
+  const sc=[0,0]; M.ev.forEach(e=>{ if(e.k==="goal") sc[e.t]++; });
+  for(const t of [0,1]){ const cx=t?W_-230:230; const u=own(t); const im=u?await ldImg(`img/ecussons/${String(crestOf(u)).padStart(2,"0")}.webp`):null;
+    if(im) x.drawImage(im,cx-120,330,240,240); else cvText(x,"🤖",cx,450,"150px system-ui","#fff");
+    cvText(x,tn(M,t),cx,615,"900 46px system-ui,sans-serif","#fff","center",400); cvText(x,M.teams[t].label||"",cx,660,"600 28px system-ui,sans-serif","#9fb0e0","center",400); }
+  x.shadowColor="#000"; x.shadowBlur=20; cvText(x,`${sc[0]} - ${sc[1]}`,W_/2,450,"900 150px system-ui,sans-serif","#fff"); x.shadowBlur=0;
+  cvText(x,"TERMINÉ",W_/2,560,"800 30px system-ui,sans-serif","#ffd970");
+  x.strokeStyle="#ffffff22"; x.lineWidth=2; x.beginPath(); x.moveTo(90,720); x.lineTo(W_-90,720); x.stroke();
+  const G=M.ev.filter(e=>e.k==="goal");
+  for(const t of [0,1]){ const L=G.filter(e=>e.t===t).slice(0,7); L.forEach((e,i)=>cvText(x,`⚽ ${pn(e.p)} ${Math.floor(e.m)}'${e.gt==="csc"?" (csc)":""}`,t?W_-90:90,775+i*52,"700 34px system-ui,sans-serif","#e8eeff",t?"right":"left",440)); }
+  const mo=M.motm; if(mo){ cvText(x,`⭐ Homme du match : ${BY_ID[mo.pid]?.name||"?"} · ${M.notes[mo.t][mo.pid]}/10`,W_/2,1170,"800 36px system-ui,sans-serif","#ffd970","center",980); }
+  cvText(x,"Viens jouer : thib0703.github.io/Onze-ol",W_/2,1270,"700 30px system-ui,sans-serif","#9fb0e0");
+  await shareCanvas(cv,"gones-legends-resultat.png",`${tn(M,0)} ${sc[0]}-${sc[1]} ${tn(M,1)} · Les Gones Legends`);
+ }catch(e){ toast("Partage impossible",true); } }
 // ---------- Récompenses, packs et collection ----------
 const PACKS={
   jour:{name:"Pack du jour",price:0,n:2,w:{bronze:72,silver:24,gold:3.6,icon:.4,myth:0},color:"#7ee2a0"},
@@ -5578,7 +5619,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-25g"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-25i"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
