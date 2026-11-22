@@ -3157,7 +3157,10 @@ function renderCollec(){
   // défis
   c.sbcDone=c.sbcDone||{};
   $("#cSbc").innerHTML=`<h3>🧩 Défis d'équipes <small>avec tes doublons</small></h3>${SBCS.map(x=>{ const done=!x.rep&&c.sbcDone[x.id]; const ok=!done&&sbcPick(x);
-    return `<div class="obj${done?" done":""}"><div class="oinfo"><b>${x.t}${x.rep?' <span class="mute" style="font-weight:400;font-size:11px">répétable</span>':""}</b><small>${x.req.map(g=>g.l).join(" ")} → ${rTxt(x.r)}</small></div><div class="oact">${done?"✅":`<button class="btn sm" data-sbc="${x.id}" ${ok?"":"disabled"}>${ok?"Compléter":"Manque"}</button>`}</div></div>`; }).join("")}`;
+    const pr=done?null:sbcProg(x), tot=pr&&pr.reduce((a,g)=>a+g.n,0), got=pr&&pr.reduce((a,g)=>a+g.have,0);
+    const prog=pr?`<div style="margin-top:4px">${pr.map(g=>`<div style="font-size:12px;display:flex;justify-content:space-between;gap:6px"><span>${g.have>=g.n?"✅":"⬜"} ${g.l.replace(/^\+ ?/,"")}</span><b style="color:${g.have>=g.n?"#7ee2a0":g.have?"#ffd970":"#ff8a8a"}">${g.have}/${g.n}</b></div>${g.have?`<div class="mute" style="font-size:11px;margin:0 0 2px 18px">${Object.entries(g.used).map(([id,n])=>esc(short(BY_ID[id].name))+(n>1?" ×"+n:"")).join(", ")}</div>`:""}`).join("")}
+      <div style="height:5px;border-radius:3px;background:#ffffff1a;margin-top:4px;overflow:hidden"><div style="height:100%;width:${Math.round(got/tot*100)}%;background:${got>=tot?"#7ee2a0":"#ffd970"}"></div></div></div>`:"";
+    return `<div class="obj${done?" done":""}"><div class="oinfo"><b>${x.t}${x.rep?' <span class="mute" style="font-weight:400;font-size:11px">répétable</span>':""}</b><small>${done?x.req.map(g=>g.l).join(" ")+" → ":"Récompense : "}${rTxt(x.r)}</small>${prog}</div><div class="oact">${done?"✅":`<button class="btn sm${ok?"":" ghost"}" data-sbc="${x.id}" ${ok?"":"disabled"}>${ok?"Compléter":"En cours"}</button>`}</div></div>`; }).join("")}`;
   document.querySelectorAll("[data-sbc]").forEach(b=>b.onclick=()=>doSbc(b.dataset.sbc));
   renderAuctions();
 }
@@ -4022,6 +4025,10 @@ const SBCS=[
   {id:"banc",t:"Le banc",req:[{n:2,f:p=>p.pos[0]==="COACH",l:"2 entraîneurs"}],r:{coins:400}},
   {id:"septuple",t:"Légende du septuplé",req:[{n:1,f:p=>cardTier(p)==="icon",l:"1 Légendaire"},{n:2,f:p=>cardTier(p)==="gold",l:"+ 2 Épiques"}],r:{pack:"legende"}},
 ];
+// progression : combien de doublons en stock pour chaque condition (même logique que sbcPick)
+function sbcProg(s){ const avail=Object.fromEntries(dupesOf(me).map(x=>[x.id,x.n]));
+  return s.req.map(g=>{ let have=0; const used={}; Object.keys(avail).filter(id=>avail[id]>0&&g.f(BY_ID[id])).sort((a,b)=>TPTS[cardTier(BY_ID[a])]-TPTS[cardTier(BY_ID[b])]||BY_ID[a].ovr-BY_ID[b].ovr)
+    .forEach(id=>{ while(have<g.n&&avail[id]>0){ avail[id]--; used[id]=(used[id]||0)+1; have++; } }); return {l:g.l,n:g.n,have,used}; }); }
 function sbcPick(s){
   // choisit les doublons les moins précieux qui remplissent chaque groupe
   const avail=Object.fromEntries(dupesOf(me).map(x=>[x.id,x.n])); const chosen={};
@@ -5393,7 +5400,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-24j"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-24k"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
