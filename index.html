@@ -1106,6 +1106,13 @@ body.lowfx .tile,body.lowfx .vt img,body.lowfx .hype,body.lowfx .pkbtn,body.lowf
 .plr .cmini{display:block;margin:0 auto 3px}table.rk .lnk{display:inline-flex;align-items:center;white-space:nowrap}table.rk td{white-space:nowrap}table.rk .cmini{width:18px!important;height:18px!important}
 .dbanner.me,#dBanner.me{animation:dbPulse 1.6s ease-in-out infinite}@keyframes dbPulse{50%{box-shadow:0 0 0 4px #e3002b55,0 0 26px #e3002b88}}
 .tabs .tab .cmini{vertical-align:-7px}
+.nwx{display:flex!important;gap:10px;align-items:flex-start}.nwb{flex:1;min-width:0}
+.nwth{flex:none;width:54px;height:54px;border-radius:12px;overflow:hidden;background:linear-gradient(150deg,var(--nc),#0b1530);display:flex;align-items:center;justify-content:center;box-shadow:inset 0 0 0 1px #ffffff22}
+.nwth img{width:100%;height:100%;object-fit:cover;object-position:50% 15%}.nwth i{font-style:normal;font-size:26px}
+.nextm{display:block;width:100%;margin:0 0 10px;padding:12px;border:0;border-radius:16px;color:#fff;font:inherit;text-align:center;cursor:pointer;background:linear-gradient(180deg,#02061188,#020611ee),url(img/stade.webp) center 35%/cover;box-shadow:0 8px 22px #0008,inset 0 0 0 1px #ffffff1a}
+.nextm .nmh{display:block;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#ffd970;font-weight:800}.nextm .nmt{display:flex;justify-content:center;align-items:center;gap:10px;margin:6px 0;font-size:18px}.nextm .nmt em{font-style:normal;font-size:12px;color:#9fb0e0}
+.nmcd{display:flex;justify-content:center;gap:6px}.nmcd i{font-style:normal;background:#ffffff14;border-radius:8px;padding:4px 8px;font-size:11px;color:#c8d6ff}.nmcd b{font-size:20px;color:#fff;margin-right:2px}.nmlive{color:#ff6a6a;animation:pxBlink 1.4s infinite}
+.nextm small{display:block;margin-top:6px;font-size:11.5px;color:#c8d6ff}
 </style>
 </head>
 <body>
@@ -2078,7 +2085,13 @@ function renderOnline(){ if(!me) return; $("#onHub").style.display=onSel?"none":
   if(onSel==="league") renderLigue(); else if(onSel) renderJeux(); hubCache.onHub=null; renderHubs(); }
 function renderSolo(){ if(!me) return; $("#soHub").style.display=soSel?"none":""; showSub(SO_SUB,soSel); if(soSel) renderJeux(); hubCache.soHub=null; renderHubs(); }
 const OL_SEGS=[["actu","📰 Actu",["#jNews","#lFeed"]],["rank","📊 Classements",["#jTable","#lRank","#lPlayers","#jStats"]],["prono","🔮 Pronos",["#jPred"]],["obj","🎯 Objectifs",["#lEvent","#lObj"]],["pass","🎟️ Pass",["#lPass"]]];
-function renderOL(){ if(!me) return; const S=$("#olSegs");
+function nextMatchHTML(){ try{ const f=fxOf().find(f=>!f.score&&new Date(f.date).getTime()>Date.now()-2*3600000); if(!f) return ""; const t=new Date(f.date).getTime(), d=t-Date.now();
+  const live=d<=0; const dd=Math.floor(d/86400000), hh=Math.floor(d%86400000/3600000), mm=Math.floor(d%3600000/60000);
+  const cd=live?`<b class="nmlive">🔴 EN COURS</b>`:`<span class="nmcd">${dd?`<i><b>${dd}</b>j</i>`:""}<i><b>${String(hh).padStart(2,"0")}</b>h</i><i><b>${String(mm).padStart(2,"0")}</b>min</i></span>`;
+  const nP=Object.keys(PREDS[f.id]||{}).length, mine=!!(PREDS[f.id]||{})[me];
+  return `<button class="nextm" data-nextm="1"><span class="nmh">⚽ Prochain match · ${esc(f.comp||"")}</span><span class="nmt"><b>${esc(f.home)}</b><em>vs</em><b>${esc(f.away)}</b></span>${cd}<small>${new Date(t).toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})} à ${new Date(t).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})} · ${mine?"✅ ton prono est posé":"🔮 pose ton prono"}${nP?` · ${nP} prono${nP>1?"s":""}`:""}</small></button>`; }catch(e){ return ""; } }
+setInterval(()=>{ if(mode==="ol"&&!document.hidden){ const nm=$("#olNext"); if(nm){ nm.innerHTML=nextMatchHTML(); const b=nm.querySelector("[data-nextm]"); if(b) b.onclick=()=>{ olSel="prono"; renderOL(); }; } } },30000);
+function renderOL(){ if(!me) return; const S=$("#olSegs"); { let nm=$("#olNext"); if(!nm){ S.insertAdjacentHTML("beforebegin",`<div id="olNext"></div>`); nm=$("#olNext"); } nm.innerHTML=nextMatchHTML(); const b=nm.querySelector("[data-nextm]"); if(b) b.onclick=()=>{ olSel="prono"; renderOL(); }; }
   S.innerHTML=OL_SEGS.map(([k,l])=>`<button class="${k===olSel?"on":""}" data-ol="${k}">${l}${k==="actu"&&typeof newsUnread==="function"&&newsUnread()?" <i class='dot'></i>":k==="obj"&&objClaimable()?` <i class='num'>${objClaimable()}</i>`:""}</button>`).join("");
   S.querySelectorAll("[data-ol]").forEach(b=>b.onclick=()=>{ olSel=b.dataset.ol; renderOL(); });
   for(const [k,,ids] of OL_SEGS) for(const q of ids){ const e=$(q); if(e) e.style.display=k===olSel?"":"none"; }
@@ -4039,13 +4052,19 @@ const newsOf=()=>((LIVE&&LIVE.news)||[]).filter(n=>n&&n.t&&n.url&&/^https:\/\//.
 const newsSeen=()=>{ try{ return localStorage.getItem("onze-ol-news")||""; }catch(e){ return ""; } };
 const newsUnread=()=>{ const L=newsOf(); return !!(L.length&&String(L[0].d||"")>newsSeen()); };
 const newsAgo=d=>{ if(!d) return ""; const t=new Date(d.length<=10?d+"T12:00:00":d); const z=x=>{ const y=new Date(x); y.setHours(0,0,0,0); return y; }; const n=Math.round((z(Date.now())-z(t))/864e5); return n<=0?"aujourd'hui":n===1?"hier":n<7?"il y a "+n+" jours":t.toLocaleDateString("fr-FR",{day:"numeric",month:"short"}); };
+const NEWS_COL={match:"#1d4ed8",mercato:"#16a34a",infirmerie:"#dc2626",club:"#a16207",joueurs:"#7c3aed",feminines:"#db2777",academie:"#059669"};
+let NEWS_PL=null;
+function newsThumb(n){ if(!NEWS_PL) NEWS_PL=PLAYERS.filter(p=>!p.v&&PORTRAITS.has(p.id)).map(p=>{ const parts=p.name.split(" "); return {id:p.id,k:slug(parts.length>1?parts.slice(1).join(" "):p.name)}; }).filter(x=>x.k.length>3);
+  const t="-"+slug((n.t||"")+" "+(n.s||""))+"-"; const hit=NEWS_PL.find(x=>t.includes("-"+x.k+"-"));
+  const ic=(NEWS_TAG[n.tag]||"📰 ").split(" ")[0];
+  return `<span class="nwth" style="--nc:${NEWS_COL[n.tag]||"#334155"}">${hit?`<img src="img/cartes/${hit.id}.webp?v=${IMGV}" alt="" loading="lazy">`:`<i>${ic}</i>`}</span>`; }
 function renderNews(){ const el=$("#jNews"); if(!el) return; const L=newsOf(); const seen=newsSeen();
   if(!L.length){ el.innerHTML=`<h3>📰 Actu OL</h3><div class="mute" style="font-size:12.5px">Le fil d'actu arrive à la prochaine mise à jour.</div>`; return; }
   const tags=[...new Set(L.map(n=>n.tag).filter(t=>NEWS_TAG[t]))]; if(newsF!=="all"&&!tags.includes(newsF)) newsF="all";
   const F=L.filter(n=>newsF==="all"||n.tag===newsF); const show=newsAll?F:F.slice(0,6);
   el.innerHTML=`<h3>📰 Actu OL <small>${L.length}</small></h3><div class="mute" style="font-size:12px">Ce qui se dit sur l'OL dans les médias · mis à jour le ${esc(LIVE.newsUpdated||LIVE.updated||"?")}</div>
     ${tags.length>1?`<div class="nwf"><button data-nf="all" class="${newsF==="all"?"on":""}">Tout</button>${tags.map(t=>`<button data-nf="${t}" class="${newsF===t?"on":""}">${NEWS_TAG[t]}</button>`).join("")}</div>`:""}
-    <div class="nws">${show.map(n=>`<a class="nw${String(n.d||"")>seen?" new":""}" href="${esc(n.url)}" target="_blank" rel="noopener noreferrer"><b>${esc(n.t)}</b>${n.s?`<p>${esc(n.s)}</p>`:""}<small>${NEWS_TAG[n.tag]?NEWS_TAG[n.tag]+" · ":""}${esc(n.src||"")} · ${newsAgo(n.d)} ↗</small></a>`).join("")}</div>
+    <div class="nws">${show.map(n=>`<a class="nw nwx${String(n.d||"")>seen?" new":""}" href="${esc(n.url)}" target="_blank" rel="noopener noreferrer">${newsThumb(n)}<span class="nwb"><b>${esc(n.t)}</b>${n.s?`<p>${esc(n.s)}</p>`:""}<small>${NEWS_TAG[n.tag]?NEWS_TAG[n.tag]+" · ":""}${esc(n.src||"")} · ${newsAgo(n.d)} ↗</small></span></a>`).join("")}</div>
     ${F.length>6?`<button class="btn ghost big" id="nwMore" style="margin-top:8px">${newsAll?"Voir moins":"Voir les "+F.length+" actus"}</button>`:""}`;
   el.querySelectorAll("[data-nf]").forEach(b=>b.onclick=()=>{ newsF=b.dataset.nf; newsAll=false; renderNews(); });
   const m=$("#nwMore"); if(m) m.onclick=()=>{ newsAll=!newsAll; renderNews(); };
@@ -5701,7 +5720,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-25s"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-25t"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
