@@ -71,7 +71,10 @@
       "home": "Lille",
       "away": "OL",
       "comp": "Ligue 1 · J11",
-      "score": null
+      "score": [
+        0,
+        1
+      ]
     },
     {
       "id": "2026-11-26-ol-lillestrom",
@@ -104,6 +107,177 @@
       "away": "Union Saint-Gilloise",
       "comp": "Ligue Europa · J6",
       "score": null
+    }
+  ],
+  "newsUpdated": "22/11/2026",
+  "news": [
+    {
+      "d": "2026-11-21T23:15",
+      "tag": "match",
+      "t": "Vicens savoure sa première : « Ne pas leur laisser de temps »",
+      "s": "Le nouveau coach a demandé à ses joueurs d'être agressifs et de presser Lille sans relâche, et ça a payé.",
+      "src": "Olympique-et-Lyonnais",
+      "url": "https://www.olympique-et-lyonnais.com/vicens-apres-lille-ol-0-1-ne-pas-leur-laisser-de-temps-et-etre-agressifs,414326.html"
+    },
+    {
+      "d": "2026-11-21T23:00",
+      "tag": "match",
+      "t": "Lille 0-1 OL : fin de la série noire à l'extérieur",
+      "s": "Lyon met fin à trois défaites de suite en déplacement et revient à un point du LOSC au classement.",
+      "src": "Tonic Radio",
+      "url": "https://www.tonicradio.fr/lille-ol-0-1-carlos-vicens-reussit-sa-premiere-lyon-frappe-un-grand-coup/"
+    },
+    {
+      "d": "2026-11-21T22:50",
+      "tag": "match",
+      "t": "Bidstrup débloque son compteur, Lyon se rapproche du podium",
+      "s": "Premier but du Danois avec l'OL, à la 40e minute. Seul Tolisso a été averti côté lyonnais.",
+      "src": "LyonFoot",
+      "url": "https://www.lyonfoot.com/article/14917/lille-ol-lyon-et-carlos-vicens-deja-d-attaque-0-1"
+    },
+    {
+      "d": "2026-11-21T22:41",
+      "tag": "match",
+      "t": "L'OL gagne à Lille pour la première de Carlos Vicens (0-1)",
+      "s": "Victoire chez le 2e de Ligue 1, qui n'avait perdu que deux fois en 24 matchs de championnat.",
+      "src": "Olympique-et-Lyonnais",
+      "url": "https://www.olympique-et-lyonnais.com/grace-a-mads-bidstrup-lol-gagne-a-lille-pour-la-premiere-de-carlos-vicens-0-1,414314.html"
+    },
+    {
+      "d": "2026-11-21T07:30",
+      "tag": "academie",
+      "t": "OL Académie : le programme du week-end",
+      "s": "Les matchs des équipes de jeunes lyonnaises ce week-end.",
+      "src": "Olympique-et-Lyonnais",
+      "url": "https://www.olympique-et-lyonnais.com/ol-academie-le-programme-du-week-end-111,414039.html"
+    },
+    {
+      "d": "2026-11-20T19:03",
+      "tag": "joueurs",
+      "t": "Tagliafico dans le premier groupe de Vicens",
+      "s": "Absent à l'entraînement jeudi, l'Argentin a finalement été retenu pour Lille.",
+      "src": "Olympique-et-Lyonnais",
+      "url": "https://www.olympique-et-lyonnais.com/lille-ol-vicens-devoile-son-premier-groupe-avec-tagliafico,414226.html"
+    },
+    {
+      "d": "2026-11-20T16:50",
+      "tag": "joueurs",
+      "t": "Tessmann rêve de la sélection américaine",
+      "s": "Le milieu de l'OL veut retrouver l'équipe nationale des États-Unis.",
+      "src": "Olympique-et-Lyonnais",
+      "url": "https://www.olympique-et-lyonnais.com/tessmann-ol-je-veux-jouer-avec-lequipe-nationale,414068.html"
+    },
+    {
+      "d": "2026-11-20T11:50",
+      "tag": "club",
+      "t": "Benzema relance les rumeurs d'un retour à l'OL",
+      "s": "Une simple photo publiée par l'ancien attaquant a suffi à enflammer les réseaux.",
+      "src": "Olympique-et-Lyonnais",
+      "url": "https://www.olympique-et-lyonnais.com/avec-une-simple-photo-benzema-enflamme-les-reseaux-autour-dun-retour-a-lol,414191.html"
+    },
+    {
+      "d": "2026-11-19T22:52",
+      "tag": "feminines",
+      "t": "OL Lyonnes s'impose 2-0 à Arsenal en Ligue des champions",
+      "s": "Les Lyonnaises sont assurées de finir dans le top 4 et visent maintenant la première place.",
+      "src": "Olympique-et-Lyonnais",
+      "url": "https://www.olympique-et-lyonnais.com/ligue-des-champions-ol-lyonnes-a-repondu-a-lappel-de-londres,414123.html"
+    },
+    {
+      "d": "2026-11-19T15:45",
+      "tag": "mercato",
+      "t": "Vicens et Louis-Jean ont déjà parlé du mercato d'hiver",
+      "s": "Le coach et la direction sportive ont commencé à préparer janvier.",
+      "src": "Olympique-et-Lyonnais",
+      "url": "https://www.olympique-et-lyonnais.com/ol-vicens-et-louis-jean-ont-deja-echange-sur-le-mercato-hivernal,414062.html"
+    },
+    {
+      "d": "2026-11-19T14:12",
+      "tag": "infirmerie",
+      "t": "Clinton Mata forfait pour Lille",
+      "s": "Le défenseur angolais, gêné physiquement, a manqué le déplacement dans le Nord.",
+      "src": "Olympique-et-Lyonnais",
+      "url": "https://www.olympique-et-lyonnais.com/ligue-1-clinton-mata-forfait-pour-lille-ol,414054.html"
+    },
+    {
+      "d": "2026-11-19T12:00",
+      "tag": "club",
+      "t": "Tolisso tacle encore Paulo Fonseca",
+      "s": "Le capitaine lyonnais reproche à son ancien entraîneur d'avoir abandonné le groupe en partant au Sporting.",
+      "src": "Foot Mercato",
+      "url": "https://www.footmercato.net/a2506182578587322711-cest-vous-qui-nous-abandonnez-corentin-tolisso-dezingue-encore-paulo-fonseca"
+    },
+    {
+      "d": "2026-11-18T21:00",
+      "tag": "club",
+      "t": "Michele Kang déçue par le départ de Fonseca",
+      "s": "En conférence de presse, la présidente est revenue sur le départ surprise du coach portugais.",
+      "src": "Foot Mercato",
+      "url": "https://www.footmercato.net/a2400783925860134737-ol-paulo-fonseca-a-decu-michele-kang"
+    },
+    {
+      "d": "2026-11-18T20:00",
+      "tag": "mercato",
+      "t": "Gerlinger n'exclut pas des recrues cet hiver",
+      "s": "Le directeur général laisse la porte ouverte à des arrivées en janvier.",
+      "src": "Foot Mercato",
+      "url": "https://www.footmercato.net/a4109918147763215985-ol-michael-gerlinger-ouvre-la-porte-a-des-arrivees-au-mercato-hivernal"
+    },
+    {
+      "d": "2026-11-18T19:00",
+      "tag": "club",
+      "t": "Michele Kang s'exprime sur une vente de l'OL",
+      "s": "La présidente a répondu aux questions sur l'avenir de l'actionnariat du club.",
+      "src": "Foot Mercato",
+      "url": "https://www.footmercato.net/a5838048748079823278-la-declaration-de-michele-kang-sur-la-vente-de-lol"
+    },
+    {
+      "d": "2026-11-18T18:00",
+      "tag": "club",
+      "t": "L'OL hausse le ton contre le racisme",
+      "s": "Le club a pris une position forte face aux problèmes de racisme autour de ses matchs.",
+      "src": "Foot Mercato",
+      "url": "https://www.footmercato.net/a3595163184488081937-limmense-coup-de-gueule-de-lol-contre-ses-problemes-de-racisme"
+    },
+    {
+      "d": "2026-11-18T12:00",
+      "tag": "infirmerie",
+      "t": "Pavel Sulc raconte son opération du genou",
+      "s": "Le Tchèque, opéré du ménisque, décrit une convalescence très douloureuse. Retour espéré fin février.",
+      "src": "Foot Mercato",
+      "url": "https://www.footmercato.net/a4670410249574000832-ca-fait-un-mal-de-chien-les-mots-de-pavel-sulc-apres-son-operation"
+    },
+    {
+      "d": "2026-11-17T18:00",
+      "tag": "infirmerie",
+      "t": "Longue absence confirmée pour Tyler Morton",
+      "s": "Opéré de l'adducteur, le milieu anglais ne reviendra pas avant février.",
+      "src": "Foot Mercato",
+      "url": "https://www.footmercato.net/a4309897884366693620-lol-annonce-une-longue-absence-pour-tyler-morton"
+    },
+    {
+      "d": "2026-11-17T12:00",
+      "tag": "club",
+      "t": "Supporters lyonnais interdits de déplacement à Lille",
+      "s": "Les fans de l'OL n'ont pas pu se rendre au stade Pierre-Mauroy.",
+      "src": "Foot Mercato",
+      "url": "https://www.footmercato.net/a4272267414343191560-les-supporters-de-lol-interdits-de-deplacement-a-lille"
+    },
+    {
+      "d": "2026-11-13T12:00",
+      "tag": "mercato",
+      "t": "La DNCG met encore la pression sur l'OL",
+      "s": "Le gendarme financier surveille toujours les comptes, et des ventes pourraient être nécessaires en janvier.",
+      "src": "Foot Mercato",
+      "url": "https://www.footmercato.net/a8350431975298201164-la-dncg-fait-encore-trembler-lol"
+    },
+    {
+      "d": "2026-11-12T12:00",
+      "tag": "mercato",
+      "t": "L'AC Milan veut récupérer Athekame",
+      "s": "Le club italien pousse pour faire revenir le latéral prêté à Lyon.",
+      "src": "Foot Mercato",
+      "url": "https://www.footmercato.net/a7682850729047141655-ol-lac-milan-force-pour-le-retour-de-zachary-athekame"
     }
   ]
 }

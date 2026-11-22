@@ -424,6 +424,7 @@ html:has(.modal.open),body:has(.modal.open){overflow:hidden}
 .evban.tfban{background:linear-gradient(120deg,#5a0d06,#b3200e,#ff7a1a);margin-top:8px}
 .fc-ovr{position:relative}.fc-live{position:absolute;left:100%;top:0;font-style:normal;font-size:.42em;margin-left:2px}
 .livel{margin:6px 0;padding:6px 8px;border-radius:8px;background:rgba(31,138,76,.22);font-size:13px}.livel.neg{background:rgba(180,67,43,.25)}
+.nws{display:flex;flex-direction:column;gap:8px;margin-top:8px}.nw{display:block;background:#16244a;border:1px solid #2b3c6e;border-radius:12px;padding:10px 12px;color:var(--txt);text-decoration:none}.nw b{display:block;font-size:14px;line-height:1.3}.nw p{margin:4px 0 0;font-size:12.5px;color:#c8d6ff;line-height:1.4}.nw small{display:block;margin-top:5px;font-size:11px;color:var(--mute)}.nw.new{border-color:#ffd970}.nwf{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.nwf button{background:#1d2b55;border:0;color:var(--mute);border-radius:999px;padding:4px 10px;font-size:12px;cursor:pointer}.nwf button.on{background:var(--rouge);color:#fff}
 .fixd{margin-top:8px;font-size:13px}.fixd summary{cursor:pointer;color:var(--mute);margin:4px 0}.fixr h5{margin:8px 0 4px;font-size:12px;color:var(--mute)}
 .fixm{display:grid;grid-template-columns:1fr auto 1fr 34px;gap:6px;align-items:center;padding:4px 0;border-top:1px solid rgba(255,255,255,.06)}.fixm>span:nth-of-type(2){text-align:right}.fixm b{text-align:center;min-width:40px}.fixm.me{color:#ffd970}
 .fixm .btn{padding:2px 6px}.tieb{grid-column:1/-1;display:flex;gap:6px;justify-content:center;align-items:center;flex-wrap:wrap}
@@ -623,6 +624,7 @@ html:has(.modal.open),body:has(.modal.open){overflow:hidden}
 </div>
 <div id="viewJeux" class="wrap" style="display:none">
   <div class="section" id="jPred"></div>
+  <div class="section" id="jNews"></div>
   <div class="section" id="jCareer"></div>
   <div class="section" id="jCup"></div>
   <div class="section" id="jDefi"></div>
@@ -1440,7 +1442,7 @@ function cardTier(p){ return rarity(p); }
 const TIER_TAG={myth:"MYTHIQUE",icon:"LÉGENDAIRE",gold:"ÉPIQUE",silver:"RARE",bronze:"COMMUNE"};
 const TIER_NAME={myth:"Mythique",icon:"Légendaire",gold:"Épique",silver:"Rare",bronze:"Commune"};
 function initials(n){return n.replace(/[^A-Za-zÀ-ÿ \-']/g,"").split(/[\s\-]+/).filter(Boolean).map(w=>w[0]).slice(0,2).join("").toUpperCase();}
-// ---------- 📡 Forme réelle (synchro avec la vraie vie, fichier live.json mis à jour 2×/semaine) ----------
+// ---------- 📡 Forme réelle (synchro avec la vraie vie, fichier live.json mis à jour chaque matin + le soir des matchs) ----------
 let LIVE={players:{}};
 const liveOf=id=>{ const b=(BY_ID[id]&&BY_ID[id].base)||id; return (LIVE.players||{})[b]||null; };
 const liveMod=id=>{ const x=liveOf(id); return x?Math.max(-6,Math.min(3,x.mod|0)):0; };
@@ -2655,6 +2657,24 @@ function badgesHTML(id){ const c=C(id)||{}; const got=BADGES.filter(b=>{ try{ re
   return `<div class="bdg"><b>🎖️ Badges ${got.length}/${BADGES.length}</b><div class="bdgl">${BADGES.map(b=>{ const ok=got.includes(b); return `<span class="${ok?"ok":""}" title="${esc(b.d)}">${ok?b.ic:"🔒"} ${esc(b.n)}<small>${esc(b.d)}</small></span>`; }).join("")}</div></div>`; }
 
 
+// =================== 📰 Fil d'actu OL (rempli par la tâche programmée, dans live.json → "news") ===================
+const NEWS_TAG={match:"⚽ Match",mercato:"💸 Mercato",infirmerie:"🤕 Infirmerie",club:"🏛️ Club",joueurs:"👤 Joueurs",feminines:"👩 Féminines",academie:"🌱 Académie"};
+let newsF="all", newsAll=false;
+const newsOf=()=>((LIVE&&LIVE.news)||[]).filter(n=>n&&n.t&&n.url&&/^https:\/\//.test(n.url)).slice().sort((a,b)=>String(b.d||"").localeCompare(String(a.d||"")));
+const newsSeen=()=>{ try{ return localStorage.getItem("onze-ol-news")||""; }catch(e){ return ""; } };
+const newsUnread=()=>{ const L=newsOf(); return !!(L.length&&String(L[0].d||"")>newsSeen()); };
+const newsAgo=d=>{ if(!d) return ""; const t=new Date(d.length<=10?d+"T12:00:00":d); const z=x=>{ const y=new Date(x); y.setHours(0,0,0,0); return y; }; const n=Math.round((z(Date.now())-z(t))/864e5); return n<=0?"aujourd'hui":n===1?"hier":n<7?"il y a "+n+" jours":t.toLocaleDateString("fr-FR",{day:"numeric",month:"short"}); };
+function renderNews(){ const el=$("#jNews"); if(!el) return; const L=newsOf(); const seen=newsSeen();
+  if(!L.length){ el.innerHTML=`<h3>📰 Actu OL</h3><div class="mute" style="font-size:12.5px">Le fil d'actu arrive à la prochaine mise à jour.</div>`; return; }
+  const tags=[...new Set(L.map(n=>n.tag).filter(t=>NEWS_TAG[t]))]; if(newsF!=="all"&&!tags.includes(newsF)) newsF="all";
+  const F=L.filter(n=>newsF==="all"||n.tag===newsF); const show=newsAll?F:F.slice(0,6);
+  el.innerHTML=`<h3>📰 Actu OL <small>${L.length}</small></h3><div class="mute" style="font-size:12px">Ce qui se dit sur l'OL dans les médias · mis à jour le ${esc(LIVE.newsUpdated||LIVE.updated||"?")}</div>
+    ${tags.length>1?`<div class="nwf"><button data-nf="all" class="${newsF==="all"?"on":""}">Tout</button>${tags.map(t=>`<button data-nf="${t}" class="${newsF===t?"on":""}">${NEWS_TAG[t]}</button>`).join("")}</div>`:""}
+    <div class="nws">${show.map(n=>`<a class="nw${String(n.d||"")>seen?" new":""}" href="${esc(n.url)}" target="_blank" rel="noopener noreferrer"><b>${esc(n.t)}</b>${n.s?`<p>${esc(n.s)}</p>`:""}<small>${NEWS_TAG[n.tag]?NEWS_TAG[n.tag]+" · ":""}${esc(n.src||"")} · ${newsAgo(n.d)} ↗</small></a>`).join("")}</div>
+    ${F.length>6?`<button class="btn ghost big" id="nwMore" style="margin-top:8px">${newsAll?"Voir moins":"Voir les "+F.length+" actus"}</button>`:""}`;
+  el.querySelectorAll("[data-nf]").forEach(b=>b.onclick=()=>{ newsF=b.dataset.nf; newsAll=false; renderNews(); });
+  const m=$("#nwMore"); if(m) m.onclick=()=>{ newsAll=!newsAll; renderNews(); };
+  if(mode==="jeux"){ try{ localStorage.setItem("onze-ol-news",String(L[0].d||"")); }catch(e){} } }
 // =================== 🔮 Pronostics sur les vrais matchs de l'OL ===================
 let PREDS={};
 const PRED_R={exact:150,res:50};
@@ -3136,7 +3156,7 @@ function badgeAll(){
     const D=c.dch; const defi=!(D&&D.day===today()&&D.done);
     const cup=Object.values(cups||{}).some(K=>K.status==="running"&&K.rounds.length&&K.rounds[K.rounds.length-1].ties.some(T=>!T.w&&(T.a===me||T.b===me)));
     const quiz=!(c.quiz&&c.quiz.d===today()&&c.quiz.n>=QUIZ_MAX);
-    set("#mJeux",defi||cup||quiz);
+    set("#mJeux",defi||cup||quiz||newsUnread());
   }catch(e){}
   badgeLigue();
 }
@@ -3618,7 +3638,7 @@ setInterval(chatTick,1000);
 // ---------- Onglet Jeux ----------
 function renderJeux(){
   if(!me) return; claimDefi();
-  $("#jPred").innerHTML=predHTML(); bindPred(); $("#jDuo").innerHTML=duoHTML(); bindDuo();
+  $("#jPred").innerHTML=predHTML(); bindPred(); renderNews(); $("#jDuo").innerHTML=duoHTML(); bindDuo();
   $("#jCareer").innerHTML=careerHTML(); $("#jCup").innerHTML=cupHTML(); $("#jDefi").innerHTML=defiHTML(); $("#jQuizS").innerHTML=quizHTML(); $("#jSofa").innerHTML=sofaHTML(); $("#jStats").innerHTML=statsHTML();
   const on=(s,f)=>{ const e=$(s); if(e) e.onclick=f; };
   on("#jCarGo",careerPlay); on("#jCarReset",()=>{ careerState().lvl=0; save(); renderJeux(); });
@@ -3747,7 +3767,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-21f"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-22a"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
