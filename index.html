@@ -1117,6 +1117,8 @@ body.lowfx .tile,body.lowfx .vt img,body.lowfx .hype,body.lowfx .pkbtn,body.lowf
 .medal .mdi{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;background:radial-gradient(circle at 35% 30%,#3a4670,#141c38);box-shadow:inset 0 0 0 2px #ffffff22;margin-bottom:4px;filter:grayscale(1)}
 .medal.ok{opacity:1;border-color:#ffd97044;background:linear-gradient(170deg,#2a2208,#0f1d40)}.medal.ok .mdi{filter:none;background:radial-gradient(circle at 35% 30%,#fff3c4,#d4a53a 55%,#7a5a10);box-shadow:0 0 14px #ffd97066,inset 0 0 0 2px #fff8}
 .medal b{font-size:11px;line-height:1.15}.medal small{font-size:9.5px;color:var(--mute);line-height:1.2;margin-top:2px}.medal .mdp{display:block;width:90%;height:4px;border-radius:3px;background:#ffffff18;margin-top:5px;overflow:hidden}.medal .mdp i{display:block;height:100%;background:#ffd970}.medal em{font-style:normal;font-size:9.5px;color:#ffd970;margin-top:2px}
+.mis{margin-bottom:14px;padding:10px;border-radius:14px;background:linear-gradient(160deg,#2a1d4a,#0f1d40);border:1px solid #a78bfa44}.mis h3{margin:0 0 6px}
+.misr{display:flex;align-items:center;gap:8px;padding:8px 4px;border-top:1px solid #ffffff10}.misr b{flex:1;font-size:13px}.misr em{font-style:normal;font-size:11px;color:#ffd970;white-space:nowrap}.misr.ok b{text-decoration:line-through;opacity:.6}.misr.ok em{color:#7ee2a0}
 </style>
 </head>
 <body>
@@ -2773,7 +2775,7 @@ async function launchMatch(){
   if(pA===CPU||pB===CPU){ // match solo : joué seulement sur ton téléphone
     cpuMatch=m; match=m; fxSeen[m.id]=null; lastMatchId=lastMatchId; cpuTeams={}; renderMatch();
     const h={id:m.id,at:m.at,mode:"cpu",score:r.score,labels:[tA.label,tB.label],owners:[pA,pB],names:[pName(pA),pName(pB)],motm:r.motm?{pid:r.motm.pid,t:r.motm.t,note:r.notes[r.motm.t][r.motm.pid]}:null,st:mStats(m)};
-    await addHist(h);
+    try{ missionCheck(m); }catch(e){} await addHist(h);
     return; }
   const hist=[{id:m.id,at:m.at,mode:"amical",nr:1,score:r.score,labels:[tA.label,tB.label],owners:[pA,pB],names:[NAMES[pA],NAMES[pB]],motm:r.motm?{pid:r.motm.pid,t:r.motm.t,note:r.notes[r.motm.t][r.motm.pid]}:null,st:mStats(m)},...matches].slice(0,200);
   if(!(await addHist(hist[0],m))) toast("Pas de connexion, réessaie",true);
@@ -4226,6 +4228,33 @@ function grant(r,why){
 const rTxt=r=>[r.coins?`${r.coins} 🪙`:"",r.pack?`${r.n>1?r.n+"× ":""}${PACKS[r.pack].name}`:"",r.card?`1 carte ${TIER_NAME[r.card]} garantie`:""].filter(Boolean).join(" + ");
 
 // ---------- Objectifs ----------
+// 🗺️ MISSIONS DE LA SEMAINE : 3 défis à thème tirés chaque lundi, vérifiés à la fin de chaque match
+const MIS_POOL=[
+ {id:"e2000",t:"Gagne avec 5 joueurs des années 2000 dans ton 11",f:x=>x.win&&x.P.filter(p=>p.year>=2000&&p.year<=2009).length>=5},
+ {id:"cur",t:"Gagne avec 4 joueurs de l'effectif actuel",f:x=>x.win&&x.P.filter(p=>CURRENT.has(p.base||p.id)).length>=4},
+ {id:"defg",t:"Fais marquer un défenseur",f:x=>x.G.some(p=>p&&["DC","DG","DD","PG","PD"].includes(p.pos[0]))},
+ {id:"big",t:"Gagne avec 3 buts d'écart",f:x=>x.win&&x.a-x.b>=3},
+ {id:"cs",t:"Gagne sans encaisser de but",f:x=>x.win&&x.b===0},
+ {id:"br",t:"Gagne avec 3 Brésiliens dans ton 11",f:x=>x.win&&x.P.filter(p=>NAT[p.base||p.id]==="BR").length>=3},
+ {id:"dbl",t:"Un de tes joueurs marque un doublé",f:x=>{ const n={}; x.G.forEach(p=>{ if(p) n[p.id]=(n[p.id]||0)+1; }); return Object.values(n).some(v=>v>=2); }},
+ {id:"pvp",t:"Gagne un match contre un autre joueur",f:x=>x.win&&x.pvp},
+ {id:"under",t:"Gagne sans aucune carte Légendaire ni Mythique",f:x=>x.win&&x.P.length>=7&&!x.P.some(p=>["icon","myth"].includes(cardTier(p)))},
+ {id:"three",t:"Gagne en jouant à 3 défenseurs (3-5-2 ou 3-4-3)",f:x=>x.win&&/^3-/.test(x.form||"")},
+ {id:"fr",t:"Gagne avec 6 Français dans ton 11",f:x=>x.win&&x.P.filter(p=>NAT[p.base||p.id]==="FR").length>=6},
+ {id:"g4",t:"Marque 4 buts dans un match",f:x=>x.a>=4}];
+const MIS_R={pack:"or"}, MIS_ALL={pack:"legende"};
+function missionsOf(wk){ wk=wk||WEEKN(); return MIS_POOL.slice().sort((a,b)=>hashS(wk+a.id)-hashS(wk+b.id)).slice(0,3); }
+function misState(){ const c=W(), wk=WEEKN(); if(!c.mis||c.mis.w!==wk) c.mis={w:wk,done:{},seen:[]}; return c.mis; }
+function missionCheck(m,extra){ if(!me||!C(me)||!m||!m.teams||(extra&&extra.nr)) return; const side=m.teams.findIndex(t=>t.owner===me||(t.owners||[]).includes(me)); if(side<0) return;
+  const S=misState(); if(S.seen.includes(m.id)) return; S.seen=[...S.seen,m.id].slice(-40);
+  const sc=[0,0]; const G=[]; (m.ev||[]).forEach(e=>{ if(e.k==="goal"){ sc[e.t]++; if(e.t===side&&e.gt!=="csc") G.push(BY_ID[e.p]); } }); if(m.score) { sc[0]=m.score[0]; sc[1]=m.score[1]; }
+  const T=m.teams[side]; const P=(T.lineup||[]).map(l=>BY_ID[l.pid]).filter(Boolean); const o=m.teams[1-side]||{};
+  const x={win:sc[side]>sc[1-side],a:sc[side],b:sc[1-side],P,G,form:T.formation,pvp:!!(o.owner&&o.owner!==CPU&&o.owner!==me)};
+  for(const M of missionsOf(S.w)){ if(S.done[M.id]) continue; let ok=false; try{ ok=M.f(x); }catch(e){} if(ok){ S.done[M.id]=1; later(MIS_R,`🗺️ Mission réussie : ${M.t}`,m); } }
+  if(!S.all&&missionsOf(S.w).every(M=>S.done[M.id])){ S.all=1; later(MIS_ALL,"🗺️ Les 3 missions de la semaine sont réussies !",m); }
+  save(); }
+function missionsHTML(){ const S=misState(), L=missionsOf(S.w); const n=L.filter(M=>S.done[M.id]).length; const end=new Date(); end.setDate(end.getDate()+((8-end.getDay())%7||7)); end.setHours(0,0,0,0); const dl=Math.ceil((end-Date.now())/86400000);
+  return `<div class="mis"><h3>🗺️ Missions de la semaine <small>${n}/3 · nouvelles dans ${dl} j</small></h3>${L.map(M=>`<div class="misr${S.done[M.id]?" ok":""}"><span>${S.done[M.id]?"✅":"🎯"}</span><b>${esc(M.t)}</b><em>${S.done[M.id]?"Réussie":"Pack Épique"}</em></div>`).join("")}<div class="mute" style="font-size:11.5px;margin-top:6px">Les 3 réussies : un <b>Pack Légende</b> en plus. Tous les matchs comptent, sauf les amicaux.</div></div>`; }
 const DAILY=[{k:"play",t:"Joue 2 matchs",n:2,r:{coins:80}},{k:"win",t:"Gagne 1 match",n:1,r:{coins:100}},{k:"goals",t:"Marque 3 buts",n:3,r:{coins:60}},{k:"pack",t:"Ouvre 1 pack",n:1,r:{coins:40}}];
 const WEEKLY=[{k:"win",t:"Gagne 7 matchs",n:7,r:{pack:"or"}},{k:"goals",t:"Marque 20 buts",n:20,r:{coins:400}},{k:"pack",t:"Ouvre 7 packs",n:7,r:{coins:300}},{k:"deal",t:"Fais 2 échanges, ventes ou enchères",n:2,r:{coins:300}},{k:"sbc",t:"Termine 1 défi d'équipe",n:1,r:{pack:"bronze"}}];
 function objState(){
@@ -4615,7 +4644,7 @@ function renderLigue(){
   if(!me) return; const o=objState(); const c=W(); const ev=curEvent(); const wk=WEEKN();
   const objRow=(scope,x)=>{ const s=o[scope], v=Math.min(x.n,s.p[x.k]||0), done=s.done.includes(x.k), ok=v>=x.n;
     return `<div class="obj${done?" done":""}"><div class="oinfo"><b>${x.t}</b><small>${rTxt(x.r)}</small><div class="track" style="height:6px;margin-top:4px"><i style="width:${v/x.n*100}%"></i></div></div><div class="oact">${done?"✅":ok?`<button class="btn sm" data-oc="${scope}:${x.k}">Récupérer</button>`:`${v}/${x.n}`}</div></div>`; };
-  $("#lObj").innerHTML=`<h3>🎯 Objectifs <small>🔥 série : ${c.streak?.n||1} jour${(c.streak?.n||1)>1?"s":""}</small></h3>
+  $("#lObj").innerHTML=missionsHTML()+`<h3>🎯 Objectifs <small>🔥 série : ${c.streak?.n||1} jour${(c.streak?.n||1)>1?"s":""}</small></h3>
     <h4>Aujourd'hui</h4>${DAILY.map(x=>objRow("day",x)).join("")}
     <h4>Cette semaine</h4>${WEEKLY.map(x=>objRow("week",x)).join("")}
     <div class="rules" style="font-size:12px">Connecte-toi chaque jour : petits bonus, et un <b>Pack Épique offert tous les 7 jours</b> d'affilée.</div>`;
@@ -5161,7 +5190,7 @@ function buildMatch(sides){
   const snap=(x,i)=>({label:x.label,owner:x.owner||null,ownerName:x.name,formation:x.c.formation,lineup:x.S.lineup.map(l=>({role:l.role,pid:l.pid})),played:r.played[i],coach:x.S.coachId,global:x.S.global});
   const m={id:Date.now().toString(36)+Math.random().toString(36).slice(2,4),at:Date.now()+1500,by:me,teams:sides.map(snap),...r}; delete m.played; return m;
 }
-function histOf(m,extra){ return Object.assign({id:m.id,at:m.at,score:m.score,labels:m.teams.map(t=>t.label),owners:m.teams.map(t=>t.owner),names:m.teams.map(t=>t.ownerName),motm:m.motm?{pid:m.motm.pid,t:m.motm.t,note:m.notes[m.motm.t][m.motm.pid]}:null,st:mStats(m)},extra||{}); }
+function histOf(m,extra){ try{ missionCheck(m,extra); }catch(e){} return Object.assign({id:m.id,at:m.at,score:m.score,labels:m.teams.map(t=>t.label),owners:m.teams.map(t=>t.owner),names:m.teams.map(t=>t.ownerName),motm:m.motm?{pid:m.motm.pid,t:m.motm.t,note:m.notes[m.motm.t][m.motm.pid]}:null,st:mStats(m)},extra||{}); }
 const isPvP=h=>h&&h.owners&&h.owners.length===2&&h.owners[0]&&h.owners[1]&&h.owners[0]!==h.owners[1]&&!h.owners.includes(CPU)&&!h.duo&&h.mode!=="div";
 const MONTHK=t=>new Date(t||Date.now()).toLocaleDateString("fr-CA").slice(0,7);
 function rankApply(R,h){ R.months=R.months||{}; R.h2h=R.h2h||{}; const mk=MONTHK(h.at); const M=R.months[mk]=R.months[mk]||{};
@@ -5733,7 +5762,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-25u"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-25v"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
