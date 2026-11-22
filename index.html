@@ -2406,7 +2406,7 @@ let FIT_FORM=null;
 function fit(p,role,form){
   if(p.pos.includes(role)) return 1;
   form=form||FIT_FORM; if(role==="MC"&&form&&F[form]&&(p.pos[0]==="MDC"||p.pos[0]==="MOC")&&!F[form].some(r=>r[0]===p.pos[0])) return 1;
-  const eq=ROLE_EQ[role]; if(eq&&p.pos.some(x=>eq.includes(x))) return eq.includes(p.pos[0])?1:.98; // poste principal = 100 %, secondaire = 98 %
+  const eq=ROLE_EQ[role]; if(eq&&p.pos.some(x=>eq.includes(x))) return 1; // ailier (même en 2e poste) en milieu latéral / piston : 100 %
   const ok=ROLE_OK[role]||[];
   if(ok.includes(p.pos[0])) return .95;
   if(p.pos.some(x=>ok.includes(x))) return .9;
@@ -5817,7 +5817,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-25y"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-25z"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
