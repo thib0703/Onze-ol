@@ -90,7 +90,7 @@ exports.tradeAnswered = onDocumentUpdated({ document: "onzeol_trades/{id}", regi
   if (a.status === "refused") await notify(a.from, "🔄 Échange refusé", `${await nameOf(a.to)} a refusé ton échange.`);
 });
 // 🧪 Notification de test (bouton dans le menu du compte)
-exports.notifTest = onDocumentUpdated({ document: "onzeol_users/{uid}", region: REGION }, async ev => {
+exports.notifPing = onDocumentUpdated({ document: "onzeol_users/{uid}", region: REGION }, async ev => {
   const b = ev.data.before.data() || {}, a = ev.data.after.data() || {};
   if (!a.pingAt || a.pingAt === b.pingAt) return;
   await new Promise(r => setTimeout(r, 8000));
