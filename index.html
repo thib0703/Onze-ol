@@ -997,6 +997,18 @@ header{padding:10px 16px 4px;min-height:44px}header h1{font-size:19px;margin:0;l
 .divbox.down .divrays{display:none}.divbox .divbadge{width:90px;height:102px;animation:bkCup 2s ease-in-out infinite}.divbox .divbadge span{font-size:46px}
 .divk{font-size:13px;font-weight:900;letter-spacing:.3em;color:#fff}
 .divbox.down{filter:saturate(.6)}
+.fx-res{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;animation:pxPop .6s cubic-bezier(.2,1.6,.4,1) both}
+.fx-rt{font-size:54px;font-weight:900;font-style:italic;letter-spacing:.02em;text-shadow:0 0 30px currentColor,0 4px 0 #0008}
+.fx-res.loss .fx-rt{font-size:44px}
+.fx-rs{display:flex;align-items:center;gap:14px;font-weight:800;color:#e8eeff}.fx-rs b{font-size:42px;color:#fff;text-shadow:0 0 18px #0008}.fx-rs span{max-width:110px;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fx-rsub{font-size:14px;color:#c3cdea}
+.tuto{background:linear-gradient(160deg,#1d3a80,#0b1530);border:1px solid #7fb2ff66;border-radius:16px;padding:10px 12px;margin:8px 0 4px;box-shadow:0 0 18px #1d4ed844}
+.tuh{display:flex;justify-content:space-between;align-items:center;gap:8px}.tuh b{font-size:15px}.tuh span{font-size:11px;color:#c3cdea;text-align:right}
+.tur{display:flex;align-items:center;gap:10px;padding:6px 0;border-top:1px solid #ffffff10;cursor:pointer}.tur>span{font-size:18px;width:24px;text-align:center}.tur div{flex:1}.tur b{display:block;font-size:13px}.tur small{color:var(--mute);font-size:11px}
+.tur.ok{opacity:.5}.tur.nx b{color:#ffd970}
+.socbtn{position:absolute;left:12px;top:40px;font-size:12px;font-weight:800;color:#c8d6ff;background:var(--carte);border:1px solid #2b3c6e;border-radius:999px;padding:5px 10px;cursor:pointer;font-family:inherit}
+.socbtn.on{border-color:var(--rouge);color:#fff;box-shadow:0 0 10px #e3002b66}
+.socbtn b{margin-left:5px;background:#ffd970;color:#111;border-radius:999px;padding:0 6px;font-size:10px}.socbtn b:empty{display:none}
 </style>
 </head>
 <body>
@@ -1014,16 +1026,17 @@ header{padding:10px 16px 4px;min-height:44px}header h1{font-size:19px;margin:0;l
 </div>
 
 <header>
-  <button class="who" id="who">Changer</button><button class="who" id="admBtn" style="display:none;top:40px;color:#ffd970;border-color:#6b5a1e">🛠️ Admin</button><button class="coins" id="coins" style="display:none"></button>
+  <button class="who" id="who">Changer</button><button class="who" id="admBtn" style="display:none;top:40px;color:#ffd970;border-color:#6b5a1e">🛠️ Admin</button><button class="coins" id="coins" style="display:none"></button><button class="socbtn" id="socBtn" title="Social : clubs, amis, invitations">👥 Social<b id="socBadge"></b></button>
   <h1>Les Gones <span>Legends</span></h1>
   <div class="sub">Tous les joueurs passés par Lyon depuis 2000</div>
   <div class="sync" id="sync">Connexion…</div><div id="appV" style="text-align:center;font-size:10px;opacity:.45;margin-top:2px"></div>
 </header>
 <div class="backbar" id="backbar" style="display:none"></div>
-<nav class="bnav" id="bnav"><button id="nCompo" class="on"><i>⚽</i>Mon 11</button><button id="nOnline"><i>🌐</i>En ligne</button><button id="nSolo"><i>🎮</i>Solo</button><button id="nCollec"><i>🎴</i>Collec</button><button id="nSocial"><i>👥</i>Social</button><button id="nOL"><i>📰</i>OL</button></nav>
+<nav class="bnav" id="bnav"><button id="nCompo" class="on"><i>⚽</i>Mon 11</button><button id="nOnline"><i>🌐</i>En ligne</button><button id="nSolo"><i>🎮</i>Solo</button><button id="nCollec"><i>🎴</i>Collec</button><button id="nOL"><i>📰</i>OL</button></nav>
 <div class="modes" style="display:none"><button id="mCompo" class="on">11 type</button><button id="mDraft">⚡ Draft</button><button id="mMatch">🏟️ Match</button><button id="mCollec">🎴 Collec</button><button id="mLigue">🏆 Ligue</button><button id="mJeux">🎮 Jeux</button></div>
 <div class="hype" id="hype"></div>
 <div id="viewCompo">
+<div id="tuto" class="wrap" style="padding-bottom:0"></div>
 <div class="tabs" id="tabs"></div>
 <div class="wrap">
   <div class="bar" id="bar">
@@ -1815,7 +1828,7 @@ let dResetArm=false;
 $("#dReset").onclick=e=>{ if(!dResetArm){dResetArm=true;e.target.textContent="Sûr ? Tout le draft sera effacé (re-touche)";setTimeout(()=>{dResetArm=false;e.target.textContent="Recommencer le draft";},3500);return;} dResetArm=false; e.target.textContent="Recommencer le draft"; dRestart(); };
 $("#dNew").onclick=dRestart; $("#dPlay").onclick=()=>playDraftMatch("classic");
 // 📱 Navigation façon jeu mobile : 5 onglets en bas, pages « En ligne » et « Solo » en tuiles, page « OL »
-const NAV_OF={compo:"nCompo",draft:"nOnline",online:"nOnline",solo:"nSolo",collec:"nCollec",ol:"nOL",social:"nSocial"};
+const NAV_OF={compo:"nCompo",draft:"nOnline",online:"nOnline",solo:"nSolo",collec:"nCollec",ol:"nOL",social:"socBtn"};
 const VIEWS={compo:"#viewCompo",draft:"#viewDraft",match:"#viewMatch",collec:"#viewCollec",online:"#viewOnline",solo:"#viewSolo",ol:"#viewOL",social:"#viewSocial"};
 let onSel=null, soSel=null, olSel="actu", matchBack="online";
 const inJ=()=>["online","solo","ol"].includes(mode);
@@ -1823,7 +1836,7 @@ function setMode(m){ if(m==="jeux") m="solo"; if(m==="ligue") m="ol";
   if(m==="match"&&mode!=="match") matchBack=["solo","ol","compo"].includes(mode)?(mode==="compo"?"online":mode):"online";
   mode=m; peek=null; setTimeout(()=>{ if(tipSeen("welcome")) tip("tab_"+m); },350);
   for(const [k,v] of Object.entries(VIEWS)){ const e=$(v); if(e) e.style.display=m===k?"":"none"; }
-  const nv=m==="match"?(matchBack==="solo"?"nSolo":matchBack==="ol"?"nOL":"nOnline"):NAV_OF[m]; document.querySelectorAll("#bnav button").forEach(b=>b.classList.toggle("on",b.id===nv));
+  const nv=m==="match"?(matchBack==="solo"?"nSolo":matchBack==="ol"?"nOL":"nOnline"):NAV_OF[m]; document.querySelectorAll("#bnav button").forEach(b=>b.classList.toggle("on",b.id===nv)); try{ $("#socBtn").classList.toggle("on",m==="social"); }catch(_){}
   $("#dHistWrap").style.display=m==="draft"?"":"none";
   if(m==="draft"){ renderDraft(); renderDraftHist(); } else if(m==="match") renderMatch(); else if(m==="collec") renderCollec(); else if(m==="online") renderOnline(); else if(m==="solo") renderSolo(); else if(m==="ol") renderOL(); else if(m==="social") renderSocial(); else render();
   renderBack(); try{ renderTodo(); }catch(e){} window.scrollTo(0,0); }
@@ -1927,7 +1940,7 @@ function renderOL(){ if(!me) return; const S=$("#olSegs");
   S.querySelectorAll("[data-ol]").forEach(b=>b.onclick=()=>{ olSel=b.dataset.ol; renderOL(); });
   for(const [k,,ids] of OL_SEGS) for(const q of ids){ const e=$(q); if(e) e.style.display=k===olSel?"":"none"; }
   renderJeux(); renderLigue(); }
-$("#nCompo").onclick=()=>setMode("compo"); $("#nOnline").onclick=()=>{ onSel=null; setMode("online"); }; $("#nSolo").onclick=()=>{ soSel=null; setMode("solo"); }; $("#nCollec").onclick=()=>setMode("collec"); $("#nOL").onclick=()=>setMode("ol"); $("#nSocial").onclick=()=>{ socClub=null; setMode("social"); };
+$("#nCompo").onclick=()=>setMode("compo"); $("#nOnline").onclick=()=>{ onSel=null; setMode("online"); }; $("#nSolo").onclick=()=>{ soSel=null; setMode("solo"); }; $("#nCollec").onclick=()=>setMode("collec"); $("#nOL").onclick=()=>setMode("ol"); $("#socBtn").onclick=()=>{ socClub=null; setMode("social"); };
 // on range les sections existantes dans leurs nouvelles pages
 (()=>{ const mv=(q,to)=>{ const e=$(q), t=$(to); if(e&&t) t.appendChild(e); };
   ["#jDuo","#jCup","#lLeague","#jDiv"].forEach(q=>mv(q,"#onSub")); ["#jCareer","#jDefi","#jQuizS","#jSofa"].forEach(q=>mv(q,"#soSub"));
@@ -2171,6 +2184,14 @@ function nextFx(){
   } else if(e.k==="save"){
     dur=1400;
     html=`<div class="fx-bg" style="--c:${col}"></div><div class="fx-label save" style="--c:${col}">ARRÊT !</div><div class="fx-card">${cardHTML(e.p,{w:150,role:"GB",cls:"slide-in"})}</div>`;
+  } else if(e.k==="result"){
+    dur=4200; const sc=[0,1].map(k=>m.ev.filter(x=>x.k==="goal"&&x.t===k).length); const a=sc[e.t], b=sc[1-e.t], r=a>b?"win":a<b?"loss":"draw";
+    const T=r==="win"?"VICTOIRE !":r==="draw"?"MATCH NUL":"DÉFAITE", C=r==="win"?"#ffd970":r==="draw"?"#9fc3ff":"#ff8a8a";
+    const conf=r==="win"?Array.from({length:60},(_,i)=>`<i style="left:${(i*37)%100}%;background:${["#e3002b","#1d4ed8","#ffd970","#fff"][i%4]};animation-delay:${((i*13)%20)/20}s;--dx:${((i*53)%80)-40}px"></i>`).join(""):"";
+    html=`<div class="fx-bg" style="--c:${C}"></div>${r==="win"?`<div class="rays"></div><div class="confetti">${conf}</div>`:""}<div class="fx-res ${r}"><div class="fx-rt" style="color:${C}">${T}</div>
+      <div class="fx-rs"><span>${esc(m.teams[e.t].ownerName||m.teams[e.t].label||"")}</span><b>${a} - ${b}</b><span>${esc(m.teams[1-e.t].ownerName||m.teams[1-e.t].label||"")}</span></div>
+      <div class="fx-rsub">${r==="win"?"Les Gones sont fiers de toi ! 🔴🔵":r==="draw"?"Un point, c'est toujours ça.":"On se relève, la prochaine sera la bonne."}</div></div>`;
+    try{ if(r==="win"){ SFX.fanfare(); SFX.cheer(); } else if(r==="draw") SFX.whistle(); else SFX.thump(); }catch(_){}
   } else if(e.k==="motm"){
     dur=3200;
     html=`<div class="fx-bg" style="--c:#c9a227"></div><div class="rays"></div><div class="fx-label motm">HOMME DU MATCH</div><div class="fx-card">${cardHTML(e.p,{w:210,role:role(e.p),ovr:Math.round(BY_ID[e.p].ovr+(e.note-6)*1.5),cls:"flip-in glow"})}</div><div class="fx-sub">${esc(tn(m,e.t))} · ${e.note}/10</div>`;
@@ -2796,7 +2817,8 @@ function renderBoard(){
     if(fxSeen[match.id]==null) fxSeen[match.id]= cur>2 ? shown.length : 0;
     while(fxSeen[match.id]<shown.length){ const e=shown[fxSeen[match.id]++]; if(mode!=="match") continue;
       if(["goal","red","pen_award","pen_save","post","var"].includes(e.k)||(e.k==="save"&&e.big)) queueFx(e,match);
-      if(e.k==="ft"&&match.motm) queueFx({k:"motm",p:match.motm.pid,t:match.motm.t,note:match.notes[match.motm.t][match.motm.pid]},match); }
+      if(e.k==="ft"&&match.motm) queueFx({k:"motm",p:match.motm.pid,t:match.motm.t,note:match.notes[match.motm.t][match.motm.pid]},match);
+      if(e.k==="ft"){ const side=(match.teams||[]).findIndex(t=>t.owner===me||(t.owners||[]).includes(me)); if(side>=0) queueFx({k:"result",t:side},match); } }
   }
   const sc=[0,0]; shown.forEach(e=>{if(e.k==="goal")sc[e.t]++;});
   const clock= cur<0?"Coup d'envoi…": done?"Terminé": cur>=45&&cur<45.5?"45'":`${Math.min(Math.floor(cur)||1,match.len)}'`;
@@ -3798,6 +3820,7 @@ async function applyAdminOp(id,o){ if(!o||o.done||opsDone.has(id)||!compos[me]) 
     else if(o.type==="setpack"){ c.freePacks=c.freePacks||{}; const n=Math.max(0,o.n|0); if(n) c.freePacks[o.pack]=n; else delete c.freePacks[o.pack]; save(); renderCoins(); try{ if(mode==="collec") renderCollec(); }catch(_){} toast(`🛠️ Packs offerts corrigés par l'admin : ${(PACKS[o.pack]||{}).name||o.pack} ×${n}`); }
     else if(o.type==="card"){ const n=(c.coll[o.card]||0)+o.n; if(n>0) c.coll[o.card]=n; else { delete c.coll[o.card]; for(const k in c.slots) if(c.slots[k]===o.card) delete c.slots[k]; for(const k in c.bench) if(c.bench[k]===o.card) delete c.bench[k]; if(c.coach===o.card) c.coach=null; }
       save(); render(); toast(o.n>0?`🎁 ${why} : ${BY_ID[o.card]?.name||"carte"}`:`🛠️ Carte retirée par l'admin : ${BY_ID[o.card]?.name||""}`); }
+    else if(o.type==="birth"){ if(o.b){ c.birth=o.b; c.birthSetAt=Date.now()-30*86400000; delete c.bdayGiven; } else { delete c.birth; delete c.birthSetAt; } save(); toast(o.b?`🛠️ Anniversaire corrigé par l'admin : ${bdayTxt(o.b)}`:"🛠️ Anniversaire remis à zéro par l'admin"); }
     else if(o.type==="restore"&&o.data){ const keep={fcm:c.fcm,name:c.name}; compos[me]=norm(Object.assign({},o.data,keep.fcm?{fcm:keep.fcm}:{})); save(); render(); renderCoins(); toast("💾 Ton compte a été restauré depuis la sauvegarde du "+o.date); }
     await db.collection("onzeol_admin").doc(id).update({done:true,doneAt:Date.now()});
   }catch(e){ opsDone.delete(id); } }
@@ -3819,6 +3842,8 @@ async function adminPanel(){ if(me!==ADMIN) return; const T=$("#tradeUI"); T.cla
    <h4>🎁 Packs offerts en attente <small class="mute">(pas encore ouverts — modifiable)</small></h4><div id="aFree"></div>
    <h4>📦 Derniers packs ouverts</h4><div id="aPk"></div>
    <h4>🆕 Cartes gagnées depuis une sauvegarde</h4><div class="arow"><select id="aDiffBk">${bks.map(b=>`<option>${b}</option>`).join("")||"<option value=''>Aucune</option>"}</select><button class="btn sm ghost" id="aDiffGo">Comparer</button></div><div id="aDiffL"></div>
+   <h4>🎂 Anniversaire</h4><div class="arow"><select id="aBd">${Array.from({length:31},(_,i)=>`<option>${i+1}</option>`).join("")}</select><select id="aBm">${MOIS.map((m,i)=>`<option value="${i+1}">${m}</option>`).join("")}</select><button class="btn sm" id="aBdGo">Corriger</button><button class="btn sm ghost" id="aBdRm">Effacer</button></div>
+   <h4>🎄 Aperçu du calendrier de l'Avent <small class="mute">(sur ton téléphone seulement, sans rien gagner)</small></h4><div class="arow"><select id="aAvD">${Array.from({length:24},(_,i)=>`<option value="${i+1}">${i+1} décembre</option>`).join("")}<option value="0">Avant (décompte)</option></select><button class="btn sm" id="aAvGo">Voir</button><button class="btn sm ghost" id="aAvX">Quitter l'aperçu</button></div>
    <h4>🎴 Carte</h4><div class="arow"><input id="aCardQ" placeholder="Nom du joueur…" autocomplete="off"></div><div id="aCardL"></div>
    <h4>💾 Sauvegardes <small class="mute">(une par jour, automatique)</small></h4><div class="arow"><select id="aBk">${bks.map(b=>`<option>${b}</option>`).join("")||"<option value=''>Aucune</option>"}</select><button class="btn sm ghost" id="aBkGo">Restaurer ce joueur</button></div>
    <button class="btn sm ghost" id="aBkNow" style="margin-top:6px">💾 Sauvegarder maintenant</button></div></div>`;
@@ -3859,6 +3884,10 @@ async function adminPanel(){ if(me!==ADMIN) return; const T=$("#tradeUI"); T.cla
   pks(); pend(); free();
   $("#aCoinsGo").onclick=async()=>{ const n=Math.abs(+$("#aCoins").value||0); if(!n) return; await adminOp({to:U(),type:"coins",n}); done(`+${n} 🪙 pour ${NAMES[U()]}`); };
   $("#aCoinsRm").onclick=async()=>{ const n=Math.abs(+$("#aCoins").value||0); if(!n) return; await adminOp({to:U(),type:"coins",n:-n}); done(`-${n} 🪙 pour ${NAMES[U()]}`); };
+  $("#aBdGo").onclick=async()=>{ const b=String($("#aBm").value).padStart(2,"0")+"-"+String($("#aBd").value).padStart(2,"0"); await adminOp({to:U(),type:"birth",b}); done(`Anniversaire de ${NAMES[U()]} : ${bdayTxt(b)}`); };
+  $("#aBdRm").onclick=async()=>{ await adminOp({to:U(),type:"birth",b:null}); done(`Anniversaire de ${NAMES[U()]} effacé`); };
+  $("#aAvGo").onclick=()=>{ const d=+$("#aAvD").value, y=new Date().getFullYear(); window.__advPreview=true; window.__advPrevState={y,o:{}}; for(let i=1;i<Math.max(1,d);i++) if(i%5) window.__advPrevState.o[i]=1; window.__fakeNow=d?new Date(y,11,d,12).getTime():new Date(y,10,25,12).getTime(); T.classList.remove("open"); setMode("collec"); setTimeout(()=>{ const e=$("#cAdvent"); if(e) e.scrollIntoView({behavior:"smooth"}); },200); toast("🎄 Aperçu du calendrier (rien n'est gagné)"); };
+  $("#aAvX").onclick=()=>{ window.__advPreview=false; window.__fakeNow=null; window.__advPrevState=null; T.classList.remove("open"); renderCollec(); toast("Aperçu terminé"); };
   $("#aPackGo").onclick=async()=>{ const n=Math.max(1,+$("#aPackN").value||1); await adminOp({to:U(),type:"pack",pack:$("#aPack").value,n}); done(`${n}× ${PACKS[$("#aPack").value].name} pour ${NAMES[U()]}`); };
   $("#aCardQ").oninput=()=>{ const q=slug($("#aCardQ").value.trim()); const own=(compos[U()]||{}).coll||{}; const L=$("#aCardL");
     if(q.length<2){ L.innerHTML=""; return; }
@@ -3989,6 +4018,12 @@ const SETS=[
   {id:"bresil",t:"Les Brésiliens",f:p=>NAT[p.id]==="BR",r:{pack:"or"}},
   {id:"septuple",t:"Les champions du septuplé",f:p=>p.pos[0]!=="COACH"&&olTitles(p).l1>0,r:{pack:"legende"}},
   {id:"actuel",t:"L'effectif actuel",f:p=>CURRENT.has(p.id)&&p.pos[0]!=="COACH",r:{pack:"or"}},
+  {id:"e2000",t:"Les années 2000 (arrivés de 2000 à 2009)",f:p=>!p.v&&p.pos[0]!=="COACH"&&p.year>=2000&&p.year<=2009,r:{pack:"or",n:2}},
+  {id:"e2010",t:"Les années 2010 (arrivés de 2010 à 2019)",f:p=>!p.v&&p.pos[0]!=="COACH"&&p.year>=2010&&p.year<=2019,r:{pack:"or",n:2}},
+  {id:"e2020",t:"La nouvelle génération (arrivés depuis 2020)",f:p=>!p.v&&p.pos[0]!=="COACH"&&p.year>=2020,r:{pack:"or",n:2}},
+  {id:"france",t:"Les Bleus de l'OL 🇫🇷",f:p=>!p.v&&p.pos[0]!=="COACH"&&NAT[p.id]==="FR",r:{pack:"legende"}},
+  {id:"lmod",t:"Toutes les Légendes modernes ⭐",f:p=>p.v==="lm",r:{pack:"legende",n:2,coins:2000}},
+  {id:"ultime",t:"Toutes les Légendes Ultimes 👑",f:p=>p.v==="ul",r:{pack:"legende",n:3,coins:5000}},
   {id:"all",t:`L'album complet (${ALL_CARDS.length} cartes)`,f:p=>true,r:{coins:10000,pack:"legende",n:3}},
 ];
 function setProg(s){ const coll=W().coll||{}; const L=ALL_CARDS.filter(s.f); return {have:L.filter(p=>coll[p.id]).length,tot:L.length}; }
@@ -4257,7 +4292,7 @@ function badgeAll(){
     const quiz=!(c.quiz&&c.quiz.d===today()&&c.quiz.n>=QUIZ_MAX);
     set("#mJeux",defi||cup||quiz||newsUnread()||duoAttn()||Object.values(cups||{}).some(invitedMe));
     const TL=todoList(), cnt=pg=>TL.filter(x=>x.pg===pg).length, setN=(sel,n)=>{ const b=$(sel); if(b) b.dataset.badge=n?String(n):""; };
-    setN("#nCollec",cnt("collec")); setN("#nOnline",cnt("online")); setN("#nSolo",cnt("solo")); setN("#nOL",cnt("ol")); setN("#nSocial",cnt("social"));
+    setN("#nCollec",cnt("collec")); setN("#nOnline",cnt("online")); setN("#nSolo",cnt("solo")); setN("#nOL",cnt("ol")); { const n=cnt("social")+(()=>{ try{ return socInvItems().length; }catch(e){ return 0; } })(); const sb=$("#socBadge"); if(sb) sb.textContent=n?String(n):""; }
     if(mode==="online"||mode==="solo") renderHubs();
     renderTodo();
   }catch(e){}
@@ -4490,7 +4525,7 @@ function birthdayPicker(){ const c=W(); const M=$("#cardModal");
     c2.birth=b; c2.birthSetAt=Date.now(); save(); M.classList.remove("open"); toast(`🎂 Anniversaire enregistré : ${bdayTxt(b)}`); try{ renderSocial(); }catch(_){} };
 }
 // demande la date une fois (puis de nouveau au bout de 30 jours si « Plus tard »)
-function askBirthday(){ if(!me||!compos[me]) return; const c=W(); if(c.birth||document.querySelector(".tipov,.modal.open")) return; const sk=(c.seen||{}).bdayAsk; if(sk&&Date.now()-sk<30*86400000) return; birthdayPicker(); }
+function askBirthday(){ if(!me||!compos[me]) return; const c=W(); if(c.birth) return; if(mode==="match"||document.querySelector(".tipov,.modal.open,.packfx.open")){ setTimeout(askBirthday,60000); return; } const sk=(c.seen||{}).bdayAsk; if(sk&&Date.now()-sk<30*86400000) return; birthdayPicker(); }
 setInterval(()=>{ try{ checkBirthday(); checkHolidays(); }catch(e){} },60000);
 
 // ======================================================================
@@ -4521,7 +4556,7 @@ const ADVENT=[{coins:150},{pack:"bronze"},{coins:200},{pack:"rare3"},{coins:250}
   {coins:300},{pack:"or"},{coins:250},{pack:"bronze"},{coins:300},{pack:"bronze",n:2},{coins:350},{pack:"or"},{coins:500},{pack:"or"},{coins:600},{pack:"legende"}];
 const ADV_IC=r=>r.pack==="legende"?"🌟":r.pack==="or"?"💛":r.pack==="rare3"?"💙":r.pack?"🎴":"🪙";
 const ADV_CARD="juninho--xm";
-function adventState(){ const c=W(), y=nowD().getFullYear(); if(!c.advent||c.advent.y!==y) c.advent={y,o:{}}; return c.advent; }
+function adventState(){ if(window.__advPreview&&window.__advPrevState) return window.__advPrevState; const c=W(), y=nowD().getFullYear(); if(!c.advent||c.advent.y!==y) c.advent={y,o:{}}; return c.advent; }
 const adventOn=()=>{ const t=nowD(); return (t.getMonth()===11&&t.getDate()<=26)||t.getMonth()===10; }; // novembre : aperçu grisé + décompte
 const adventPre=()=>nowD().getMonth()===10;
 const advTarget=()=>new Date(nowD().getFullYear(),11,1,0,0,0).getTime();
@@ -4554,9 +4589,9 @@ const snowHTML=n=>Array.from({length:n},()=>`<i style="left:${(Math.random()*100
 const ADV_TONE=r=>r.pack==="legende"?"leg":r.pack==="or"?"epi":r.pack==="rare3"?"rare":r.pack?"cla":"coin";
 let advLastOpen=null;
 function openAdvent(d){ if(adventPre()){ toast("🎄 Le calendrier ouvre le 1er décembre à minuit !"); return; } if(d!==adventToday()){ toast(d<adventToday()?"Ce match est passé : la case reste vide 😢":"Patience, la porte "+d+" ouvre le "+d+" décembre 🎄",true); return; }
-  const A=adventState(); if(A.o[d]) return; A.o[d]=1; const r=ADVENT[d-1]; grant(r,`🎄 Calendrier de l'Avent, case ${d}`); advLastOpen=d;
-  let bonus=false; if(d===24&&Array.from({length:24},(_,i)=>A.o[i+1]).every(Boolean)){ const c=W(); c.coll=c.coll||{}; c.coll[ADV_CARD]=(c.coll[ADV_CARD]||0)+1; bonus=true; post(`🎄 ${NAMES[me]} a ouvert les 24 cases du calendrier de l'Avent et gagne la carte exclusive ${BY_ID[ADV_CARD].name} Édition Noël !`); }
-  save(); const M=$("#cardModal"); const tone=bonus?"leg":ADV_TONE(r);
+  const A=adventState(); if(A.o[d]) return; A.o[d]=1; const r=ADVENT[d-1]; const PV=!!window.__advPreview; if(!PV) grant(r,`🎄 Calendrier de l'Avent, case ${d}`); advLastOpen=d;
+  let bonus=false; if(d===24&&Array.from({length:24},(_,i)=>A.o[i+1]).every(Boolean)){ bonus=true; if(!PV){ const c=W(); c.coll=c.coll||{}; c.coll[ADV_CARD]=(c.coll[ADV_CARD]||0)+1; } if(!PV) post(`🎄 ${NAMES[me]} a ouvert les 24 cases du calendrier de l'Avent et gagne la carte exclusive ${BY_ID[ADV_CARD].name} Édition Noël !`); }
+  if(!PV) save(); const M=$("#cardModal"); const tone=bonus?"leg":ADV_TONE(r);
   const rnd=(a,b)=>a+Math.random()*(b-a);
   const sparks=Array.from({length:60},()=>{ const a=rnd(0,Math.PI*2), dist=rnd(110,260); return `<i style="--x:${(Math.cos(a)*dist).toFixed(0)}px;--y:${(Math.sin(a)*dist).toFixed(0)}px;--s:${rnd(.5,1.4).toFixed(2)};animation-delay:${rnd(0,.15).toFixed(2)}s"></i>`; }).join("");
   const conf=Array.from({length:40},()=>`<i style="--x:${rnd(-170,170).toFixed(0)}px;--y:${rnd(-260,-120).toFixed(0)}px;--r:${rnd(-540,540).toFixed(0)}deg;--d:${rnd(1.8,2.8).toFixed(2)}s;background:${["#e3002b","#1d4ed8","#ffd970","#ffffff","#2f9e55"][Math.floor(Math.random()*5)]};animation-delay:${rnd(0,.25).toFixed(2)}s"></i>`).join("");
@@ -4675,6 +4710,28 @@ function divHTML(){ const D=divState(), left=divLeft(), [c1,c2]=DIV_COL(D.d), [l
     <div class="rules" style="font-size:12px">Tu affrontes le <b>11 type d'un autre joueur</b> de ton niveau, ou un <b>club géré par l'ordi</b> (niveau ${lo}-${hi}). Victoire +3, nul +1${D.d<=7?", défaite −1":""}. ${DIV_UP} points = <b>promotion</b>. Gains : victoire 120 🪙, nul 60, défaite 30, +10 par but. <b>Chaque lundi</b>, récompense selon ta meilleure division de la semaine : ${rTxt(DIV_REWARD(D.wb??D.d))} pour l'instant.</div>
     ${(D.log||[]).length?`<h4>Derniers matchs classés</h4>${D.log.map(x=>`<div class="resr"><span class="rk ${x.res}">${x.res==="v"?"V":x.res==="d"?"D":"N"}</span><span class="rt">contre <b>${esc(x.o)}</b><small>${DIV_NAME(x.d)} · ${new Date(x.at).toLocaleDateString("fr-FR",{day:"numeric",month:"short"})}</small></span><span class="rs">${x.s[0]} - ${x.s[1]}</span></div>`).join("")}`:""}
     ${others.length>1?`<h4>Classement des joueurs</h4>${others.map((x,i)=>`<div class="resr"><span class="rk n">${i+1}</span><span class="rt"><b>${esc(NAMES[x.u]||"?")}</b>${x.u===me?" <small style='display:inline'>(toi)</small>":""}</span><span class="rs" style="font-size:13px">${DIV_IC(x.d)} ${DIV_NAME(x.d)}</span></div>`).join("")}`:""}`; }
+
+// ======================================================================
+// 🎓 PREMIERS PAS : 5 étapes guidées pour les nouveaux (récompensées), affichées en haut de « Mon 11 »
+// ======================================================================
+const TUTO=[
+ {k:"pack",t:"Ouvre ton pack de départ",d:"Dans 🎴 Collec",ok:c=>(c.opened||0)>0,go:()=>setMode("collec")},
+ {k:"xi",t:"Complète ton 11 type",d:"11 joueurs sur le terrain (🪄 Auto le fait pour toi)",ok:c=>filled(c)>=11,go:()=>setMode("compo")},
+ {k:"match",t:"Joue un match",d:"🎮 Solo › Contre l'ordi, ou un match en ligne",ok:(c)=>matches.some(h=>h.owners&&h.owners.includes(me)),go:()=>{ soSel=null; setMode("solo"); }},
+ {k:"daily",t:"Ouvre le pack du jour",d:"Gratuit chaque jour dans 🎴 Collec",ok:c=>!!c.daily,go:()=>setMode("collec")},
+ {k:"friend",t:"Ajoute un ami",d:"Dans 👥 Social › Amis",ok:()=>{ try{ return friendsList().length>0||frOut().length>0; }catch(e){ return false; } },go:()=>{ socSel="amis"; setMode("social"); }},
+];
+function tutoCheck(){ if(!me||!compos[me]) return; const c=W(); if(!c.tuto&&(c.opened||0)>3){ c.tuto={d:[],fin:1,vet:1}; save(); return; } c.tuto=c.tuto||{d:[]}; if(c.tuto.fin) return; let ch=false;
+  for(const x of TUTO) if(!c.tuto.d.includes(x.k)&&x.ok(c)){ c.tuto.d.push(x.k); grant({coins:100},`🎓 Premiers pas : ${x.t}`); ch=true; }
+  if(c.tuto.d.length>=TUTO.length&&!c.tuto.fin){ c.tuto.fin=Date.now(); grant({pack:"or"},"🎓 Premiers pas terminés !"); ch=true; try{ SFX.fanfare(); }catch(_){} }
+  if(ch){ save(); renderTuto(); } }
+function renderTuto(){ const el=$("#tuto"); if(!el||!me||!compos[me]) return; const c=W(); const T=c.tuto||{d:[]};
+  if(T.fin||(c.opened||0)>8&&!T.d.length){ el.innerHTML=""; return; } // anciens joueurs : pas de tuto
+  const n=T.d.length; const nx=TUTO.find(x=>!T.d.includes(x.k));
+  el.innerHTML=`<div class="tuto"><div class="tuh"><b>🎓 Premiers pas</b><span>${n}/${TUTO.length} · 100 🪙 par étape + Pack Épique à la fin</span></div><div class="track" style="height:6px;margin:6px 0 8px"><i style="width:${n/TUTO.length*100}%"></i></div>
+    ${TUTO.map(x=>`<div class="tur${T.d.includes(x.k)?" ok":""}${x===nx?" nx":""}" data-tu="${x.k}"><span>${T.d.includes(x.k)?"✅":x===nx?"👉":"▫️"}</span><div><b>${x.t}</b><small>${x.d}</small></div>${x===nx?`<button class="btn sm">Y aller</button>`:""}</div>`).join("")}</div>`;
+  el.querySelectorAll("[data-tu]").forEach(r=>r.onclick=()=>{ const x=TUTO.find(y=>y.k===r.dataset.tu); if(x&&!T.d.includes(x.k)) x.go(); }); }
+setInterval(()=>{ try{ tutoCheck(); if(mode==="compo") renderTuto(); }catch(e){} },3000);
 
 // ======================================================================
 // 🎮 JEUX : carrière, coupe, défi du jour, quiz, canapé, stats, réactions
@@ -4935,7 +4992,7 @@ function cupHTML(){
       <div class="tieb">${T.legs.map((l,k)=>l.mid?`<button class="btn sm ghost" data-rp="${l.mid}">▶️ ${k?"Retour":"Aller"}</button>`:"").join("")}${nxt?`<small class="mute">${T.legs.length?"Retour":"Aller"} : ${fmtWhen(nxt)}</small>`:""}</div></div>`; };
   return `<h3>🏆 Coupes à élimination</h3><div class="rules" style="font-size:12px;margin-top:0">4 ou 8 joueurs, tirage au sort, matchs aller-retour avec vos 11 types (cartes possédées), <b>joués automatiquement toutes les 12 h</b> : revois les résumés avec ▶️. Égalité au total : tirs au but. Vainqueur : Pack Légende + 300 🪙, finaliste : Pack Épique.</div>
   <button class="btn big" id="jCupNew">➕ Créer une coupe</button>
-  ${L.map(([id,K])=>`<div class="lg${(K.members||[]).includes(me)?" mine":""}"><div class="lgh"><b>${esc(K.name)}</b><small>${K.status==="open"?`Inscriptions ${K.members.length}/${K.size}`:K.status==="running"?"En cours":`Terminée · 🏆 ${esc(NAMES[K.winner]||"?")}`} · créée par ${esc(NAMES[K.owner]||"?")}</small></div>
+  ${L.map(([id,K])=>`<div class="lg${(K.members||[]).includes(me)?" mine":""}"><div class="lgh"><b>${esc(K.name)}</b><small>${K.status==="open"?`Inscriptions ${K.members.length}/${K.size}${K.weekend?" · 🗓️ tirage samedi 20 h (4 inscrits minimum)":""}`:K.status==="running"?"En cours":K.cancelled?"Annulée (pas assez d'inscrits)":`Terminée · 🏆 ${esc(NAMES[K.winner]||"?")}`} · ${K.weekend?"🤖 Coupe automatique du week-end":"créée par "+esc(NAMES[K.owner]||"?")}</small></div>
     ${K.status==="open"?`${invitedMe(K)?`<div class="invst me">📨 <b>${esc(NAMES[K.owner]||"?")}</b> t'invite dans cette coupe !</div>`:""}<div class="mute" style="font-size:12px">${K.members.map(x=>esc(NAMES[x]||"?")).join(", ")}${Object.keys(invOf(K)).filter(u=>!K.members.includes(u)).length?` · 📨 invités : ${Object.keys(invOf(K)).filter(u=>!K.members.includes(u)).map(u=>esc(NAMES[u]||"?")).join(", ")}`:""}</div><div class="lgb">${K.owner===me&&K.members.length<K.size?`<button class="btn sm ghost" data-ci="${id}">📨 Inviter</button>`:""}${K.members.includes(me)?(K.owner===me?"":`<button class="btn sm ghost" data-cq="${id}">Se désinscrire</button>`):K.members.length<K.size?`<button class="btn sm" data-cj="${id}">S'inscrire</button>`:""}${K.owner===me&&K.members.length===K.size?`<button class="btn sm" data-cs="${id}">🎲 Lancer le tirage</button>`:""}${K.owner===me?`<button class="btn sm ghost" data-cd="${id}">Supprimer</button>`:""}</div>`
     :`${bracketHTML(K)}<details class="brk-d"><summary>📋 Détail des matchs et résumés ▶️</summary>${K.rounds.map((R,ri)=>`<h4>${RNAME(R.ties.length)}</h4>${R.ties.map((T,ti)=>tieH(id,K,ri,ti,T)).join("")}`).join("")}</details>`}</div>`).join("")||`<div class="mute" style="font-size:13px">Aucune coupe pour l'instant.</div>`}`;
 }
@@ -5273,7 +5330,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-24b"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-24c"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
@@ -5331,7 +5388,8 @@ function startListeners(){
     qs.forEach(doc=>{ const d=doc.data()||{}; seen[doc.id]=1; NAMES[doc.id]=d.name||"?"; if(doc.id===me&&dirty) return; compos[doc.id]=norm(d); });
     for(const id of Object.keys(NAMES)) if(!seen[id]&&id!==me) delete NAMES[id];
     try{ localStorage.setItem("onze-ol-names2",JSON.stringify(NAMES)); }catch(e){}
-    cache(); setSync("✓ Synchronisé","ok"); render(); renderCoins(); if(mode==="match") renderMatch(); if(mode==="draft") renderDraft(); if(mode==="collec"&&!$("#packfx").classList.contains("open")) renderCollec();
+    setSync("✓ Synchronisé","ok"); clearTimeout(window.__usrT); // ⚡ on regroupe les mises à jour rapprochées (moins de calculs, appli plus fluide)
+    window.__usrT=setTimeout(()=>{ cache(); render(); renderCoins(); if(mode==="match") renderMatch(); if(mode==="draft") renderDraft(); if(mode==="collec"&&!$("#packfx").classList.contains("open")) renderCollec(); if(mode==="social") try{ renderSocial(); }catch(_){} },350);
     if(dirty) push();
   },()=>setSync("⚠️ Synchro coupée — recharge la page","err")));
   unsubs.push(db.collection("onzeol_drafts").onSnapshot(qs=>{ const all={}; qs.forEach(doc=>all[doc.id]=doc.data()); onDraftData(all); },()=>{}));

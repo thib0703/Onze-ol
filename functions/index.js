@@ -134,7 +134,26 @@ exports.leagueCreated = onDocumentCreated({ document: "onzeol_leagues/{id}", reg
   const L = ev.data.data(); await notifyAll("🏆 Nouveau championnat !", `${await nameOf(L.owner)} a créé « ${L.name} ». Rejoins-le dans 🌐 En ligne › Championnats.`, L.owner);
 });
 exports.cupCreated = onDocumentCreated({ document: "onzeol_cups/{id}", region: REGION }, async ev => {
-  const K = ev.data.data(); await notifyAll("🏆 Nouvelle coupe !", `${await nameOf(K.owner)} a créé la coupe « ${K.name} » (${K.size} joueurs). Inscris-toi dans 🌐 En ligne › Coupes.`, K.owner);
+  const K = ev.data.data(); if (K.weekend) return notifyAll("🏆 La Coupe du week-end est ouverte !", "Inscris-toi avant samedi 20 h dans 🌐 En ligne › Coupes : Pack Légende pour le vainqueur !");
+  await notifyAll("🏆 Nouvelle coupe !", `${await nameOf(K.owner)} a créé la coupe « ${K.name} » (${K.size} joueurs). Inscris-toi dans 🌐 En ligne › Coupes.`, K.owner);
+});
+
+// 🏆 COUPE DU WEEK-END automatique : créée le vendredi 18 h, inscriptions libres, tirage le samedi 20 h
+const ADMIN_UID = "EMx6WLN3DtazTVDRozJmdvUHnVE2";
+const wkId = () => { const d = new Date(); const w = Math.floor((d.getTime() / 86400000 + 3) / 7); return "wk-" + w; };
+exports.weekendCupCreate = onSchedule({ schedule: "3 18 * * 5", timeZone: "Europe/Paris", region: REGION }, async () => {
+  const ref = db.collection("onzeol_cups").doc(wkId()); if ((await ref.get()).exists) return;
+  const d = new Date(); const label = d.toLocaleDateString("fr-FR", { day: "numeric", month: "long", timeZone: "Europe/Paris" });
+  await ref.set({ name: "Coupe du week-end · " + label, owner: ADMIN_UID, size: 8, members: [], status: "open", rounds: [], created: Date.now(), weekend: true });
+});
+exports.weekendCupStart = onSchedule({ schedule: "7 20 * * 6", timeZone: "Europe/Paris", region: REGION }, async () => {
+  const ref = db.collection("onzeol_cups").doc(wkId()); const s = await ref.get(); if (!s.exists) return; const K = s.data(); if (K.status !== "open") return;
+  const M = (K.members || []).slice();
+  if (M.length < 4) { await ref.update({ status: "done", cancelled: true }); return notifyAll("🏆 Coupe du week-end annulée", "Pas assez d'inscrits cette semaine (4 minimum). Rendez-vous vendredi prochain !"); }
+  const size = M.length >= 8 ? 8 : 4; const P = M.slice(0, size).sort(() => Math.random() - .5); const ties = [];
+  for (let i = 0; i < P.length; i += 2) ties.push({ a: P[i], b: P[i + 1], legs: [], w: null });
+  await ref.update({ size, members: P, status: "running", rounds: [{ ties }], start: Date.now() });
+  for (const u of P) await notify(u, "🏆 Coupe du week-end : c'est parti !", "Le tirage est fait, les matchs se jouent automatiquement. Suis le tableau dans 🌐 En ligne › Coupes.");
 });
 
 // 📨 Invitation à une coupe ou un championnat (le créateur ajoute des joueurs dans inv)
