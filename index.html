@@ -421,6 +421,8 @@ html:has(.modal.open),body:has(.modal.open){overflow:hidden}
 .fcard.v-tf::before{content:"";position:absolute;inset:4%;clip-path:inherit;border:calc(var(--w)/70) solid #ffd36a77}
 .fcard.v-ml{background:linear-gradient(155deg,#050505,#262626 35%,#b8901f 72%,#fff1b8);color:#fff1b8}
 .fcard.v-ml .fc-shine{background:linear-gradient(115deg,transparent 30%,#fff1b8cc 48%,transparent 62%)}
+.fcard.v-gf{background:linear-gradient(155deg,#1a0000,#7a0a00 35%,#ff4d00 70%,#ffd36a);color:#fff3e0}
+.fcard.v-gf .fc-shine{background:linear-gradient(115deg,transparent 30%,#fff3c4dd 48%,transparent 62%)}
 .fcard.v-xm{background:linear-gradient(155deg,#04260f,#0d6b2c 35%,#c8102e 70%,#ffe9a8);color:#fff8e1}
 .fcard.v-xm .fc-shine{background:linear-gradient(115deg,transparent 30%,#ffffffcc 48%,transparent 62%)}
 .fc-vmini{position:absolute;right:4%;top:3%;font-size:calc(var(--w)/4);line-height:1;z-index:3}
@@ -513,6 +515,7 @@ html:has(.modal.open),body:has(.modal.open){overflow:hidden}
 .fcard.v-tf{--rim:linear-gradient(160deg,#fff0c0,#ff8a1a 30%,#8a1206 55%,#ffd36a 80%,#ff5a1a);--bgc:radial-gradient(ellipse at 50% 100%,#ffb03a 0%,#e5480f 35%,#8a1206 70%,#3a0303 100%);--ink:#fff3e0;--acc:#ffd36a;--glow:#ffcf6a;--tex:repeating-linear-gradient(80deg,#ffffff0f 0 2px,transparent 2px 10px)}
 .fcard.v-ml{--rim:linear-gradient(160deg,#fff1b8,#d4a933 30%,#5a430c 55%,#fff1b8 80%,#b8901f);--bgc:linear-gradient(165deg,#0c0c0c 0%,#1f1f1f 40%,#3a2d0b 75%,#8a6a16 100%);--ink:#fff1b8;--acc:#e8c45a;--glow:#ffe08a;--tex:repeating-conic-gradient(from 0deg at 50% 30%,#e8c45a12 0 3deg,transparent 3deg 10deg)}
 .fcard.v-xm{--rim:linear-gradient(160deg,#ffffff,#e8c45a 25%,#c8102e 50%,#ffffff 75%,#0d6b2c);--bgc:linear-gradient(165deg,#04260f 0%,#0d6b2c 35%,#8a0b1f 70%,#c8102e 100%);--ink:#fff8e1;--acc:#ffd970;--glow:#ffffff;--tex:repeating-conic-gradient(from 0deg at 50% 30%,#ffffff14 0 3deg,transparent 3deg 10deg);--tagc:#1a1206}
+.fcard.v-gf{--rim:linear-gradient(160deg,#ffd36a,#ff4d00 30%,#7a0a00 55%,#ffd36a 80%,#ff4d00);--bgc:linear-gradient(165deg,#120000 0%,#5a0800 40%,#c42a00 75%,#ff7a1a 100%);--ink:#fff3e0;--acc:#ffd36a;--glow:#ff7a1a;--tex:repeating-conic-gradient(from 0deg at 50% 30%,#ffb02018 0 3deg,transparent 3deg 10deg);--tagc:#1a0600}
 .fcard.v-fs::before,.fcard.v-tf::before{border:none!important}
 .fcard.hero{--rim:linear-gradient(160deg,#fff3c4,#ffd970 30%,#16794a 55%,#ffd970 80%,#0f3d2a);--bgc:linear-gradient(165deg,#0f3d2a,#16794a 45%,#0b2a1c 100%);--ink:#fff3c4;--acc:#ffd970;--glow:#7dffb8}
 .fcard.mini .fc-glow{opacity:.5}
@@ -1768,7 +1771,7 @@ function palmScore(p){
   if(p.pos[0]!=="COACH") sc+=Math.max(0,(p.ovr-75)/2)+(p.m||0)/80; else sc+=Math.max(0,(p.ovr-75)/3);
   return _rcache[p.id]=sc;
 }
-function rarity(p){ if(p.v) return p.v==="ml"||p.v==="xm"?"myth":p.v==="fs"?"icon":(p.ovr>=85?"icon":"gold"); const s=palmScore(p); return s>=24?"myth":s>=12?"icon":s>=6?"gold":s>=2.5?"silver":"bronze"; }
+function rarity(p){ if(p.v) return p.v==="ml"||p.v==="xm"||p.v==="gf"?"myth":p.v==="fs"?"icon":(p.ovr>=85?"icon":"gold"); const s=palmScore(p); return s>=24?"myth":s>=12?"icon":s>=6?"gold":s>=2.5?"silver":"bronze"; }
 function palmText(p){
   const t=olTitles(p), M=MAJ[p.id]||{}; const L=[];
   if(t.l1) L.push(`${t.l1}× Champion de France`); if(t.cdf) L.push(`${t.cdf}× Coupe de France`); if(t.cdl) L.push(`${t.cdl}× Coupe de la Ligue`); if(t.tdc) L.push(`${t.tdc}× Trophée des champions`);
@@ -2545,7 +2548,7 @@ const PACKS={
 PACKS.starter={name:"Pack de départ",price:0,n:12,w:{bronze:100},color:"#7ec8ff"};
 const SELL={bronze:4,silver:12,gold:32,icon:100,myth:300};
 // ---------- ✨ Cartes spéciales (variantes plus fortes de certains joueurs) ----------
-const VAR_INFO={fs:{l:"PÉPITE",n:"Pépite",ic:"🌟"},tf:{l:"EN FORME",n:"Forme du moment",ic:"🔥"},ml:{l:"MOMENT",n:"Moment de légende",ic:"🏆"},xm:{l:"NOËL",n:"Édition Noël",ic:"🎄"}};
+const VAR_INFO={fs:{l:"PÉPITE",n:"Pépite",ic:"🌟"},tf:{l:"EN FORME",n:"Forme du moment",ic:"🔥"},ml:{l:"MOMENT",n:"Moment de légende",ic:"🏆"},xm:{l:"NOËL",n:"Édition Noël",ic:"🎄"},gf:{l:"GRANDE FORME",n:"Grande Forme",ic:"💥"}};
 const FS_LIST=[["kail-boudache",84],["khalis-merah",82],["noah-nartey",82],["julien-duranville",81],["zachary-athekame",80],["remi-himbert",80]];
 const ML_LIST=[["juninho",97,"Roi du coup franc"],["karim-benzema",94,"Meilleur joueur de Ligue 1 en 2008"],["hugo-lloris",93,"Le mur de Gerland"],["michael-essien",92,"Le Bison"],["sonny-anderson",92,"Le buteur du premier titre"],
   ["alexandre-lacazette",92,"Meilleur buteur de Ligue 1 en 2015"],["cris",91,"Le Policier"],["nabil-fekir",91,"Capitaine courage"],["bafetimbi-gomis",90,"Quadruplé à Zagreb (2011)"],["sidney-govou",89,"Héros du Septuplé"]];
@@ -2557,6 +2560,13 @@ FS_LIST.forEach(([id,o])=>mkVar(id,"fs",o,"Pépite du centre de formation"));
 ML_LIST.forEach(([id,o,t])=>mkVar(id,"ml",o,t));
 // 🎄 Carte exclusive du calendrier de l'Avent (24 cases ouvertes) : jamais dans les packs
 mkVar("juninho","xm",98,"Édition Noël — 24/24 au calendrier de l'Avent");
+// 💥 GRANDE FORME : une carte créée après un TRÈS gros match réel (doublé, triplé, plusieurs passes décisives, festival d'arrêts…).
+// Elle reste dans le jeu POUR TOUJOURS (très rare : Pack Légende seulement). Une ligne par carte, ne jamais en supprimer :
+// [id du joueur, id du match (live.json → fixtures), note de la carte, "exploit"]
+const GF_LIST=[
+// ⬇ ajouter les nouvelles cartes ici
+];
+GF_LIST.forEach(([pid,key,o,t])=>{ const b=BY_ID[pid]; if(!b) return; const id=pid+"--gf-"+key; const p=Object.assign({},b,{id,base:pid,v:"gf",ovr:Math.min(99,o),title:t}); VARIANTS.push(p); BY_ID[id]=p; for(const T of [NAT,SPANS,MAJ,STYLE_OF]) if(T[pid]!=null) T[id]=T[pid]; });
 [...CURRENT].forEach(id=>{ const b=BY_ID[id], fs=BY_ID[id+"--fs"]; if(b) mkVar(id,"tf",Math.min(92,Math.max(b.ovr+7,fs?fs.ovr+2:0)),"Forme du moment"); });
 const baseOf=id=>(BY_ID[id]&&BY_ID[id].base)||id;
 const TF_IDS=VARIANTS.filter(p=>p.v==="tf").map(p=>p.id);
@@ -2568,11 +2578,11 @@ function tfActive(){ const d=new Date(), t=d.getFullYear()+"-"+String(d.getMonth
   return Object.entries((LIVE&&LIVE.players)||{}).filter(([id,x])=>x&&x.st==="up"&&BY_ID[id+"--tf"]).map(([id])=>id+"--tf"); }
 const tfWhy=id=>{ const b=baseOf(id); const f=((LIVE&&LIVE.forms)||[]).filter(x=>x&&x.id===b).slice(-1)[0]; return (f&&f.why)||(((LIVE&&LIVE.players)||{})[b]||{}).note||""; };
 function tfWeek(){ return tfActive(); }
-const VORD={fs:0,tf:1,ml:2,xm:3};
+const VORD={fs:0,tf:1,gf:2,ml:3,xm:4};
 const ALL_CARDS=[...PLAYERS.slice().sort((a,b)=>a.year-b.year||a.name.localeCompare(b.name,"fr")),...COACHES,...VARIANTS.slice().sort((a,b)=>VORD[a.v]-VORD[b.v]||a.name.localeCompare(b.name,"fr"))];
 const CARD_NO=Object.fromEntries(ALL_CARDS.map((p,i)=>[p.id,i+1]));
 const poolTier=p=>cardTier(p);
-const POOL={bronze:[],silver:[],gold:[],icon:[],myth:[]}; for(const p of ALL_CARDS) if(p.v!=="tf"&&p.v!=="xm") POOL[poolTier(p)].push(p.id);
+const POOL={bronze:[],silver:[],gold:[],icon:[],myth:[]}; for(const p of ALL_CARDS) if(p.v!=="tf"&&p.v!=="xm"&&p.v!=="gf") POOL[poolTier(p)].push(p.id);
 const W=()=>C(me);
 function addCoins(n,why){ const c=W(); c.coins=(c.coins||0)+n; save(); renderCoins(); if(why) toast(`${n>0?"+":""}${n} 🪙 ${why}`); }
 function renderCoins(){ const el=$("#coins"); if(!el) return; if(!me){el.style.display="none";return;} el.style.display=""; el.textContent=`🪙 ${(W().coins||0).toLocaleString("fr-FR")}`; }
@@ -2626,8 +2636,9 @@ function openPack(pack,free){
   c.opened=(c.opened||0)+1;
   c.packLog=[...(c.packLog||[]),{p:pack,ids,at:Date.now(),paid:free||pack==="jour"?0:P.price}].slice(-10); // historique pour l'admin
   save(); renderCoins(); track("pack");
+  try{ const GF=VARIANTS.filter(p=>p.v==="gf").map(p=>p.id); if(!gold&&pack==="legende"&&GF.length&&Math.random()<.03){ let lo=0; ids.forEach((id,i)=>{ if(rank[cardTier(BY_ID[id])]<rank[cardTier(BY_ID[ids[lo]])]) lo=i; }); ids[lo]=GF[Math.floor(Math.random()*GF.length)]; } }catch(e){}
   if(gold) post(`✨ ${NAMES[me]} a ouvert un GOLD PACK !!!`);
-  for(const id of ids){ const t=cardTier(BY_ID[id]); if(t==="myth"||t==="icon") post(`${t==="myth"?"🌈":"🌟"} ${NAMES[me]} a tiré ${BY_ID[id].name} (${TIER_NAME[t]}) !`); }
+  for(const id of ids){ const t=cardTier(BY_ID[id]); if(BY_ID[id].v==="gf") post(`💥 ${NAMES[me]} a tiré la GRANDE FORME de ${BY_ID[id].name} (${BY_ID[id].title}) !`); else if(t==="myth"||t==="icon") post(`${t==="myth"?"🌈":"🌟"} ${NAMES[me]} a tiré ${BY_ID[id].name} (${TIER_NAME[t]}) !`); }
   if(pack==="starter") placeStarter(c,ids);
   packFx(pack,ids,isNew,gold);
 }
@@ -4798,7 +4809,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-23m"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-23n"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
