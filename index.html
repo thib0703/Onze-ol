@@ -1113,6 +1113,10 @@ body.lowfx .tile,body.lowfx .vt img,body.lowfx .hype,body.lowfx .pkbtn,body.lowf
 .nextm .nmh{display:block;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#ffd970;font-weight:800}.nextm .nmt{display:flex;justify-content:center;align-items:center;gap:10px;margin:6px 0;font-size:18px}.nextm .nmt em{font-style:normal;font-size:12px;color:#9fb0e0}
 .nmcd{display:flex;justify-content:center;gap:6px}.nmcd i{font-style:normal;background:#ffffff14;border-radius:8px;padding:4px 8px;font-size:11px;color:#c8d6ff}.nmcd b{font-size:20px;color:#fff;margin-right:2px}.nmlive{color:#ff6a6a;animation:pxBlink 1.4s infinite}
 .nextm small{display:block;margin-top:6px;font-size:11.5px;color:#c8d6ff}
+.medals{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.medal{display:flex;flex-direction:column;align-items:center;text-align:center;padding:10px 6px 8px;border-radius:14px;background:#0f1d40;border:1px solid #ffffff10;opacity:.75}
+.medal .mdi{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;background:radial-gradient(circle at 35% 30%,#3a4670,#141c38);box-shadow:inset 0 0 0 2px #ffffff22;margin-bottom:4px;filter:grayscale(1)}
+.medal.ok{opacity:1;border-color:#ffd97044;background:linear-gradient(170deg,#2a2208,#0f1d40)}.medal.ok .mdi{filter:none;background:radial-gradient(circle at 35% 30%,#fff3c4,#d4a53a 55%,#7a5a10);box-shadow:0 0 14px #ffd97066,inset 0 0 0 2px #fff8}
+.medal b{font-size:11px;line-height:1.15}.medal small{font-size:9.5px;color:var(--mute);line-height:1.2;margin-top:2px}.medal .mdp{display:block;width:90%;height:4px;border-radius:3px;background:#ffffff18;margin-top:5px;overflow:hidden}.medal .mdp i{display:block;height:100%;background:#ffd970}.medal em{font-style:normal;font-size:9.5px;color:#ffd970;margin-top:2px}
 </style>
 </head>
 <body>
@@ -3342,7 +3346,7 @@ function renderColSegs(){ const S=$("#colSegs"); if(!S) return; const c=W();
   for(const [k,,ids] of COL_SEGS) for(const q of ids){ const e=$(q); if(e) e.style.display=k===colSel?"":"none"; } }
 function renderCollec(){
   if(!me) return; renderTrades(); renderMarket(); const c=W(); const coll=c.coll||{}; setTimeout(renderColSegs,0);
-  try{ $("#cTroph").innerHTML=trophiesHTML(me); }catch(e){}
+  try{ $("#cTroph").innerHTML=trophiesHTML(me)+`<div class="section">${badgesHTML(me)}</div>`; }catch(e){}
   try{ const AE=$("#cAdvent"); AE.innerHTML=adventHTML(); AE.querySelectorAll("[data-adv]").forEach(b=>b.onclick=()=>openAdvent(+b.dataset.adv)); }catch(e){}
   const owned=ALL_CARDS.filter(p=>coll[p.id]).length;
   const dupes=Object.entries(coll).reduce((s,[id,n])=>s+(n>1?(n-1)*SELL[cardTier(BY_ID[id])]:0),0);
@@ -3981,21 +3985,30 @@ function h2hAllHTML(){ const L=Object.keys(NAMES).filter(u=>u!==me&&u!==CPU&&(RA
 function h2hHTML(id){ if(id===me) return ""; const H=(RANK.h2h||{})[[me,id].sort().join("__")]; if(!H) return `<div class="h2h mute">⚔️ Jamais affrontés en match entre joueurs.</div>`;
   const v=H[me]||0, d=H[id]||0, n=H.d||0; return `<div class="h2h"><b>⚔️ Toi contre ${esc(NAMES[id])}</b><div class="h2hb"><span class="v">${v} V</span><span class="n">${n} N</span><span class="d">${d} D</span></div></div>`; }
 const BADGES=[
-  {id:"car",ic:"🧗",n:"Carriériste",d:"Finir la Carrière solo",ok:c=>(c.career||{}).best>=CAREER.length},
-  {id:"car5",ic:"🥾",n:"En route",d:"Battre 5 clubs en Carrière",ok:c=>(c.career||{}).best>=5},
+  {id:"car",ic:"🧗",n:"Carriériste",d:"Finir la Carrière solo",ok:c=>(c.career||{}).best>=CAREER.length,pr:c=>[(c.career||{}).best||0,CAREER.length]},
+  {id:"car5",ic:"🥾",n:"En route",d:"Battre 5 clubs en Carrière",ok:c=>(c.career||{}).best>=5,pr:c=>[(c.career||{}).best||0,5]},
   {id:"cup",ic:"🏆",n:"Vainqueur de coupe",d:"Gagner une coupe",ok:(c,u)=>Object.values(cups||{}).some(K=>K.winner===u)},
   {id:"lg",ic:"👑",n:"Champion",d:"Gagner un championnat",ok:(c,u)=>Object.values(leagues||{}).some(L=>L.status==="done"&&standings(L)[0]&&standings(L)[0].id===u)},
-  {id:"alb50",ic:"📒",n:"Collectionneur",d:"50 cartes dans l'album",ok:c=>Object.keys(c.coll||{}).length>=50},
-  {id:"alb100",ic:"📚",n:"Archiviste",d:"100 cartes dans l'album",ok:c=>Object.keys(c.coll||{}).length>=100},
+  {id:"alb50",ic:"📒",n:"Collectionneur",d:"50 cartes dans l'album",ok:c=>Object.keys(c.coll||{}).length>=50,pr:c=>[Object.keys(c.coll||{}).length,50]},
+  {id:"alb100",ic:"📚",n:"Archiviste",d:"100 cartes dans l'album",ok:c=>Object.keys(c.coll||{}).length>=100,pr:c=>[Object.keys(c.coll||{}).length,100]},
+  {id:"alb200",ic:"🏛️",n:"Musée",d:"200 cartes dans l'album",ok:c=>Object.keys(c.coll||{}).length>=200,pr:c=>[Object.keys(c.coll||{}).length,200]},
   {id:"myth",ic:"🌈",n:"Mythique",d:"Avoir une carte Mythique",ok:c=>Object.keys(c.coll||{}).some(id=>BY_ID[id]&&cardTier(BY_ID[id])==="myth")},
-  {id:"pk",ic:"🎴",n:"Accro aux packs",d:"Ouvrir 30 packs",ok:c=>(c.opened||0)>=30},
-  {id:"rich",ic:"💰",n:"Riche",d:"Avoir 3000 pièces",ok:c=>(c.coins||0)>=3000},
-  {id:"str",ic:"🔥",n:"Fidèle",d:"7 jours de connexion d'affilée",ok:c=>(c.streak||{}).n>=7},
+  {id:"pk",ic:"🎴",n:"Accro aux packs",d:"Ouvrir 30 packs",ok:c=>(c.opened||0)>=30,pr:c=>[c.opened||0,30]},
+  {id:"rich",ic:"💰",n:"Riche",d:"Avoir 3000 pièces",ok:c=>(c.coins||0)>=3000,pr:c=>[c.coins||0,3000]},
+  {id:"str",ic:"🔥",n:"Fidèle",d:"7 jours de connexion d'affilée",ok:c=>(c.streak||{}).n>=7,pr:c=>[(c.streak||{}).n||0,7]},
+  {id:"str30",ic:"📅",n:"Inséparable",d:"30 jours de connexion d'affilée",ok:c=>(c.streak||{}).n>=30,pr:c=>[(c.streak||{}).n||0,30]},
+  {id:"ldc",ic:"⭐",n:"Ligue des Champions",d:"Atteindre la Ligue des Champions en Divisions",ok:c=>((c.div||{}).best??10)===0,pr:c=>[10-((c.div||{}).best??10),10]},
+  {id:"gold",ic:"✨",n:"Chanceux",d:"Ouvrir un Gold Pack",ok:c=>(c.goldPacks||0)>0},
+  {id:"ulc",ic:"👑",n:"Légendaire parmi les légendes",d:"Avoir une Légende Ultime",ok:c=>VARIANTS.some(p=>p.v==="ul"&&(c.coll||{})[p.id])},
+  {id:"evo3",ic:"⬆️",n:"Entraîneur de l'année",d:"Faire évoluer une carte au +3",ok:c=>Object.values(c.evo||{}).some(v=>v>=3)},
+  {id:"tr10",ic:"🏆",n:"Vitrine pleine",d:"Avoir 10 trophées",ok:c=>(c.trophies||[]).length>=10,pr:c=>[(c.trophies||[]).length,10]},
   {id:"rk",ic:"🥇",n:"Roi du mois",d:"Finir 1er du classement mensuel",ok:(c,u)=>Object.values(RANK.months||{}).some((M,i,arr)=>{ const k=Object.keys(RANK.months)[i]; if(k===MONTHK()) return false; const R=Object.entries(M).filter(([,r])=>r.j>=RANK_MIN).sort((a,b)=>b[1].p-a[1].p); return R[0]&&R[0][0]===u; })},
   {id:"pr",ic:"🔮",n:"Devin",d:"Trouver un score exact en pronostic",ok:(c,u)=>fxOf().some(f=>f.score&&predPts((PREDS[f.id]||{})[u],f.score)==="exact")},
 ];
-function badgesHTML(id){ const c=C(id)||{}; const got=BADGES.filter(b=>{ try{ return b.ok(c,id); }catch(e){ return false; } });
-  return `<div class="bdg"><b>🎖️ Badges ${got.length}/${BADGES.length}</b><div class="bdgl">${BADGES.map(b=>{ const ok=got.includes(b); return `<span class="${ok?"ok":""}" title="${esc(b.d)}">${ok?b.ic:"🔒"} ${esc(b.n)}<small>${esc(b.d)}</small></span>`; }).join("")}</div></div>`; }
+function badgesHTML(id){ const c=C(id)||{}; const mine=id===me; const got=BADGES.filter(b=>{ try{ return b.ok(c,id); }catch(e){ return false; } });
+  const L=BADGES.slice().sort((a,b)=>got.includes(b)-got.includes(a));
+  return `<div class="bdg"><h3 style="margin:0 0 4px">🎖️ ${mine?"Mes badges":"Badges"} <small>${got.length}/${BADGES.length}</small></h3><div class="track" style="height:6px;margin-bottom:8px"><i style="width:${got.length/BADGES.length*100}%"></i></div><div class="medals">${L.map(b=>{ const ok=got.includes(b); let pr=null; try{ pr=!ok&&b.pr?b.pr(c):null; }catch(e){}
+    return `<div class="medal${ok?" ok":""}" title="${esc(b.d)}"><span class="mdi">${ok?b.ic:"🔒"}</span><b>${esc(b.n)}</b><small>${esc(b.d)}</small>${pr?`<i class="mdp"><i style="width:${Math.min(100,pr[0]/pr[1]*100)}%"></i></i><em>${Math.min(pr[0],pr[1]).toLocaleString("fr-FR")}/${pr[1].toLocaleString("fr-FR")}</em>`:""}</div>`; }).join("")}</div></div>`; }
 
 
 // =================== 🏆 Classement Ligue 1 en direct ===================
@@ -5720,7 +5733,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-25t"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-25u"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
