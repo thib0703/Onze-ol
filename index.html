@@ -1014,6 +1014,9 @@ header{padding:10px 16px 4px;min-height:44px}header h1{font-size:19px;margin:0;l
 .passc{display:flex;flex-direction:column;align-items:center;gap:1px;padding:6px 2px;border-radius:10px;background:#0f1d40;border:1px solid #2b3c6e;font-size:10px;color:var(--mute)}
 .passc span{font-size:18px}.passc em{font-style:normal;font-size:9px;font-weight:800;color:#c3cdea;text-align:center}
 .passc.ok{background:linear-gradient(160deg,#14532d,#0b2a1c);border-color:#2f7a45;opacity:.75}.passc.nx{border-color:#ffd970;box-shadow:0 0 10px #ffd97066}.passc.big{border-width:2px}
+.trimg{width:64px;height:64px;object-fit:contain;display:block}
+.tri .trimg{filter:drop-shadow(0 6px 10px #000a)}.brk-cup .trimg{width:46px;height:46px}
+.trc{padding-top:8px}.trc:hover .trimg{transform:scale(1.05)}
 </style>
 </head>
 <body>
@@ -4019,7 +4022,7 @@ const SETS=[
   {id:"silver",t:"Toutes les Rares",f:p=>cardTier(p)==="silver",r:{coins:800}},
   {id:"gold",t:"Toutes les Épiques",f:p=>cardTier(p)==="gold",r:{pack:"or",n:2}},
   {id:"icon",t:"Toutes les Légendaires",f:p=>cardTier(p)==="icon",r:{pack:"legende",n:2}},
-  {id:"myth",t:"Toutes les Mythiques",f:p=>cardTier(p)==="myth",r:{coins:5000}},
+  {id:"myth",t:"Toutes les Mythiques",f:p=>cardTier(p)==="myth"&&!["ul","lm","gf","xm"].includes(p.v),r:{coins:5000}},
   {id:"coach",t:"Tous les entraîneurs",f:p=>p.pos[0]==="COACH",r:{coins:600}},
   {id:"bresil",t:"Les Brésiliens",f:p=>NAT[p.id]==="BR",r:{pack:"or"}},
   {id:"septuple",t:"Les champions du septuplé",f:p=>p.pos[0]!=="COACH"&&olTitles(p).l1>0,r:{pack:"legende"}},
@@ -4643,9 +4646,10 @@ function adventHTML(){ if(!me||!adventOn()) return ""; const A=adventState(), td
 // ======================================================================
 // 🏆 TABLEAU DE COUPE + ARMOIRE À TROPHÉES
 // ======================================================================
-const TROPHY={cup:{ic:"🏆",t:"Coupe",c:"gold"},cup2:{ic:"🥈",t:"Finaliste",c:"silver"},lg:{ic:"👑",t:"Champion",c:"gold"},lg2:{ic:"🥈",t:"Vice-champion",c:"silver"},lg3:{ic:"🥉",t:"3e du championnat",c:"bronze"}};
+const TROPHY={cup:{ic:"🏆",img:"coupe",t:"Coupe",c:"gold"},cup2:{ic:"🥈",img:"finaliste",t:"Finaliste",c:"silver"},lg:{ic:"👑",img:"champion",t:"Champion",c:"gold"},lg2:{ic:"🥈",img:"vice-champion",t:"Vice-champion",c:"silver"},lg3:{ic:"🥉",img:"troisieme",t:"3e du championnat",c:"bronze"}};
+const trIcon=D=>D.img?`<img class="trimg" src="img/trophees/${D.img}.webp" alt="" loading="lazy">`:D.ic;
 function trophiesHTML(id,title){ const T=((C(id)||{}).trophies||[]).slice().sort((a,b)=>(b.k==="cup"||b.k==="lg")-(a.k==="cup"||a.k==="lg")||b.at-a.at); const big=T.filter(x=>x.k==="cup"||x.k==="lg").length;
-  return `<div class="section troph"><h3>🏆 ${title||"Armoire à trophées"} <small>${big} titre${big>1?"s":""}</small></h3>${T.length?`<div class="trg">${T.map(x=>{ const D=TROPHY[x.k]||TROPHY.cup; return `<div class="trc ${D.c}"><div class="trshine"></div><span class="tri">${D.ic}</span><b>${esc(x.n)}</b><small>${D.t}${x.size?` · ${x.size} joueurs`:""}</small>${x.vs&&NAMES[x.vs]?`<small class="trvs">${x.k==="cup"?"face à":"battu par"} ${esc(NAMES[x.vs])}</small>`:""}<em>${new Date(x.at).toLocaleDateString("fr-FR",{month:"short",year:"numeric"})}</em></div>`; }).join("")}</div>`:`<div class="mute" style="font-size:13px">Aucun trophée pour l'instant : gagne une coupe ou un championnat pour remplir l'armoire !</div>`}</div>`; }
+  return `<div class="section troph"><h3>🏆 ${title||"Armoire à trophées"} <small>${big} titre${big>1?"s":""}</small></h3>${T.length?`<div class="trg">${T.map(x=>{ const D=TROPHY[x.k]||TROPHY.cup; return `<div class="trc ${D.c}"><div class="trshine"></div><span class="tri">${trIcon(D)}</span><b>${esc(x.n)}</b><small>${D.t}${x.size?` · ${x.size} joueurs`:""}</small>${x.vs&&NAMES[x.vs]?`<small class="trvs">${x.k==="cup"?"face à":"battu par"} ${esc(NAMES[x.vs])}</small>`:""}<em>${new Date(x.at).toLocaleDateString("fr-FR",{month:"short",year:"numeric"})}</em></div>`; }).join("")}</div>`:`<div class="mute" style="font-size:13px">Aucun trophée pour l'instant : gagne une coupe ou un championnat pour remplir l'armoire !</div>`}</div>`; }
 function bracketHTML(K){ const nR=Math.round(Math.log2(K.size||4)); const N=x=>x?esc((NAMES[x]||"?").slice(0,11)):`<i class="tbd">à venir</i>`;
   const cols=[]; for(let r=0;r<nR;r++){ const n=(K.size||4)/Math.pow(2,r+1), R=K.rounds[r];
     const ties=Array.from({length:n},(_,i)=>{ const T=R&&R.ties[i]; if(!T) return `<div class="brk-t"><div class="brk-p"><span>${N(null)}</span></div><div class="brk-p"><span>${N(null)}</span></div></div>`;
@@ -4653,7 +4657,7 @@ function bracketHTML(K){ const nR=Math.round(Math.log2(K.size||4)); const N=x=>x
       const row=(u,g,w)=>`<div class="brk-p${T.w?(w?" w":" l"):""}${u===me?" me":""}"><span>${N(u)}</span><b>${g==null?"":g}</b></div>`;
       return `<div class="brk-t${live?" live":""}">${row(T.a,ag?ag[0]:null,T.w===T.a)}${row(T.b,ag?ag[1]:null,T.w===T.b)}${T.tab?`<small class="brk-tab">t.a.b ${T.tab[1]}-${T.tab[0]}</small>`:""}</div>`; }).join("");
     cols.push(`<div class="brk-c"><div class="brk-h">${RNAME(n)}</div><div class="brk-ts">${ties}</div></div>`); }
-  cols.push(`<div class="brk-c brk-w"><div class="brk-h">Vainqueur</div><div class="brk-ts"><div class="brk-cup${K.winner?" on":""}"><span>🏆</span><b>${K.winner?esc(NAMES[K.winner]||"?"):"?"}</b></div></div></div>`);
+  cols.push(`<div class="brk-c brk-w"><div class="brk-h">Vainqueur</div><div class="brk-ts"><div class="brk-cup${K.winner?" on":""}"><span><img class="trimg" src="img/trophees/coupe.webp" alt=""></span><b>${K.winner?esc(NAMES[K.winner]||"?"):"?"}</b></div></div></div>`);
   return `<div class="brk">${cols.join("")}</div>`; }
 
 // ======================================================================
@@ -5005,7 +5009,7 @@ function claimCups(){ const c=W(); c.cupDone=c.cupDone||[]; let ch=false;
     if(K.winner===me){ c.pend.push({t,r:{pack:"legende",coins:300},why:`🏆 Vainqueur de la coupe « ${K.name} »`,trophy:K.name}); post(`🏆 ${NAMES[me]} remporte la coupe « ${K.name} » !`); if(!c.trophies.some(x=>x.id===id)) c.trophies.push({id,k:"cup",n:K.name,at:Date.now(),size:K.size,vs:K.finalist||null}); }
     else { c.pend.push({t,r:{pack:"or"},why:`🥈 Finaliste de la coupe « ${K.name} »`}); if(!c.trophies.some(x=>x.id===id)) c.trophies.push({id,k:"cup2",n:K.name,at:Date.now(),size:K.size,vs:K.winner||null}); } }
   if(ch){ c.cupDone=c.cupDone.slice(-40); save(); } }
-function trophyFx(name){ const el=document.createElement("div"); el.className="trophy"; el.innerHTML=`<div><span>🏆</span><b>CHAMPION !</b><small>${esc(name)}</small></div>`; document.body.appendChild(el); el.onclick=()=>el.remove(); setTimeout(()=>el.remove(),6000); }
+function trophyFx(name){ const el=document.createElement("div"); el.className="trophy"; el.innerHTML=`<div><span><img src="img/trophees/coupe.webp" alt="" style="width:130px;height:130px;object-fit:contain;filter:drop-shadow(0 0 24px #ffd970)"></span><b>CHAMPION !</b><small>${esc(name)}</small></div>`; try{ SFX.fanfare(); SFX.cheer(); }catch(_){} document.body.appendChild(el); el.onclick=()=>el.remove(); setTimeout(()=>el.remove(),6000); }
 const RNAME=n=>n===1?"Finale":n===2?"Demi-finales":"Quarts de finale";
 function cupHTML(){
   const L=Object.entries(cups).sort((x,y)=>(invitedMe(y[1])-invitedMe(x[1]))||y[1].created-x[1].created).filter(([,K])=>K.status!=="done"||Date.now()-K.created<21*86400000);
@@ -5353,7 +5357,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-24e"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-24f"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
