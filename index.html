@@ -2811,7 +2811,9 @@ const opsDone=new Set();
 async function applyAdminOp(id,o){ if(!o||o.done||opsDone.has(id)||!compos[me]) return; opsDone.add(id); const c=W(); const why="Cadeau de l'admin";
   try{
     if(o.type==="coins"){ if(o.n>=0) grant({coins:o.n},why); else { c.coins=Math.max(0,(c.coins||0)+o.n); save(); renderCoins(); toast(`${o.n} 🪙 (correction admin)`); } }
+    else if(o.type==="pack"&&(o.n||1)<0){ c.freePacks=c.freePacks||{}; c.freePacks[o.pack]=Math.max(0,(c.freePacks[o.pack]||0)+o.n); save(); renderCoins(); try{ if(mode==="collec") renderCollec(); }catch(_){} toast(`🛠️ ${-o.n}× ${(PACKS[o.pack]||{}).name||"pack"} retiré${-o.n>1?"s":""} par l'admin`); }
     else if(o.type==="pack") grant({pack:o.pack,n:o.n||1},why);
+    else if(o.type==="setpack"){ c.freePacks=c.freePacks||{}; const n=Math.max(0,o.n|0); if(n) c.freePacks[o.pack]=n; else delete c.freePacks[o.pack]; save(); renderCoins(); try{ if(mode==="collec") renderCollec(); }catch(_){} toast(`🛠️ Packs offerts corrigés par l'admin : ${(PACKS[o.pack]||{}).name||o.pack} ×${n}`); }
     else if(o.type==="card"){ const n=(c.coll[o.card]||0)+o.n; if(n>0) c.coll[o.card]=n; else { delete c.coll[o.card]; for(const k in c.slots) if(c.slots[k]===o.card) delete c.slots[k]; for(const k in c.bench) if(c.bench[k]===o.card) delete c.bench[k]; if(c.coach===o.card) c.coach=null; }
       save(); render(); toast(o.n>0?`🎁 ${why} : ${BY_ID[o.card]?.name||"carte"}`:`🛠️ Carte retirée par l'admin : ${BY_ID[o.card]?.name||""}`); }
     else if(o.type==="restore"&&o.data){ const keep={fcm:c.fcm,name:c.name}; compos[me]=norm(Object.assign({},o.data,keep.fcm?{fcm:keep.fcm}:{})); save(); render(); renderCoins(); toast("💾 Ton compte a été restauré depuis la sauvegarde du "+o.date); }
@@ -2832,6 +2834,7 @@ async function adminPanel(){ if(me!==ADMIN) return; const T=$("#tradeUI"); T.cla
    <h4>⏳ Suivi des actions <small class="mute">(appliquées quand il ouvre l'appli, mise à jour en direct)</small></h4><div id="aPend"></div>
    <h4>🪙 Pièces</h4><div class="arow"><input id="aCoins" type="number" value="200" inputmode="numeric"><button class="btn sm" id="aCoinsGo">Donner</button><button class="btn sm ghost" id="aCoinsRm">Retirer</button></div>
    <h4>🎁 Pack offert</h4><div class="arow"><select id="aPack">${Object.entries(PACKS).map(([k,v])=>`<option value="${k}">${esc(v.name)}</option>`).join("")}</select><input id="aPackN" type="number" value="1" style="width:60px"><button class="btn sm" id="aPackGo">Offrir</button></div>
+   <h4>🎁 Packs offerts en attente <small class="mute">(pas encore ouverts — modifiable)</small></h4><div id="aFree"></div>
    <h4>📦 Derniers packs ouverts</h4><div id="aPk"></div>
    <h4>🆕 Cartes gagnées depuis une sauvegarde</h4><div class="arow"><select id="aDiffBk">${bks.map(b=>`<option>${b}</option>`).join("")||"<option value=''>Aucune</option>"}</select><button class="btn sm ghost" id="aDiffGo">Comparer</button></div><div id="aDiffL"></div>
    <h4>🎴 Carte</h4><div class="arow"><input id="aCardQ" placeholder="Nom du joueur…" autocomplete="off"></div><div id="aCardL"></div>
@@ -2851,18 +2854,27 @@ async function adminPanel(){ if(me!==ADMIN) return; const T=$("#tradeUI"); T.cla
     const sn=await db.collection("onzeol_backups").doc(d).get(); const old=(sn.exists&&sn.data().users[U()]||{}).coll||{}; const own=(compos[U()]||{}).coll||{};
     const add=Object.keys(own).filter(id=>(own[id]||0)>(old[id]||0));
     box.innerHTML=add.map(id=>cardRow(id,own).replace("</small>",` · +${own[id]-(old[id]||0)} depuis le ${d}</small>`)).join("")||`<div class="mute">Aucune nouvelle carte depuis le ${d}.</div>`; bindRm(box); };
-  $("#aU").onchange=()=>{ info(); pks(); pend(); $("#aDiffL").innerHTML=""; $("#aCardQ").oninput(); };
+  $("#aU").onchange=()=>{ info(); pks(); pend(); free(); $("#aDiffL").innerHTML=""; $("#aCardQ").oninput(); };
   $("#tClose").onclick=()=>{ if(pendU) pendU(); T.classList.remove("open"); };
-  const opTxt=o=>o.type==="coins"?`${o.n>0?"+":""}${o.n} 🪙`:o.type==="card"?`${o.n>0?"+1":"−1"} ${BY_ID[o.card]?.name||o.card}`:o.type==="pack"?`${o.n||1}× ${(PACKS[o.pack]||{}).name||o.pack}`:o.type==="restore"?`Restauration du ${o.date}`:o.type;
+  const free=()=>{ const c=compos[U()]||{}, F_=c.freePacks||{}, box=$("#aFree"); const L=Object.keys(PACKS).filter(k=>F_[k]>0);
+    box.innerHTML=(L.map(k=>`<div class="arow"><span style="flex:1">${esc(PACKS[k].name)}</span><input type="number" min="0" value="${F_[k]}" data-fpn="${k}" style="width:80px" inputmode="numeric"><button class="btn sm" data-fp="${k}">Mettre</button><button class="btn sm ghost" data-fp0="${k}">Tout retirer</button></div>`).join(""))||`<div class="mute" style="font-size:12.5px">Aucun pack offert en attente.</div>`;
+    const setP=async(k,n)=>{ await adminOp({to:U(),type:"setpack",pack:k,n}); done(`${PACKS[k].name} ×${n} pour ${NAMES[U()]}`); };
+    box.querySelectorAll("[data-fp]").forEach(b=>b.onclick=()=>setP(b.dataset.fp,Math.max(0,+box.querySelector(`[data-fpn="${b.dataset.fp}"]`).value|0)));
+    box.querySelectorAll("[data-fp0]").forEach(b=>b.onclick=()=>setP(b.dataset.fp0,0)); };
+  const inv=o=>o.type==="coins"?{type:"coins",n:-o.n}:o.type==="pack"?{type:"pack",pack:o.pack,n:-(o.n||1)}:o.type==="card"?{type:"card",card:o.card,n:-o.n}:null;
+  const opTxt=o=>o.type==="setpack"?`${(PACKS[o.pack]||{}).name||o.pack} mis à ×${o.n}`:o.type==="pack"&&o.n<0?`${o.n}× ${(PACKS[o.pack]||{}).name||o.pack}`:o.type==="coins"?`${o.n>0?"+":""}${o.n} 🪙`:o.type==="card"?`${o.n>0?"+1":"−1"} ${BY_ID[o.card]?.name||o.card}`:o.type==="pack"?`${o.n||1}× ${(PACKS[o.pack]||{}).name||o.pack}`:o.type==="restore"?`Restauration du ${o.date}`:o.type;
   let pendU=null;
   const pend=()=>{ const u=U(); if(pendU) pendU(); const box=$("#aPend");
-    pendU=db.collection("onzeol_admin").where("to","==",u).onSnapshot(qs=>{ if(u!==U()) return; const L=[]; const lim=Date.now()-2*86400000; qs.forEach(d=>{ const o=d.data(); if(!o.done||(o.doneAt||0)>lim) L.push([d.id,o]); }); L.sort((a,b)=>b[1].at-a[1].at);
-      box.innerHTML=L.slice(0,20).map(([id,o])=>`<div class="sgl"><span>${o.done?"✅":"⏳"} ${esc(opTxt(o))} <small class="mute">${o.done?"appliqué le "+new Date(o.doneAt).toLocaleString("fr-FR"):"envoyé le "+new Date(o.at).toLocaleString("fr-FR")+" · en attente"}</small></span>${o.done?"":`<button class="btn sm ghost" data-del="${id}">✖ Annuler</button>`}</div>`).join("")||`<div class="mute" style="font-size:12.5px">Aucune action récente.</div>`;
+    pendU=db.collection("onzeol_admin").where("to","==",u).onSnapshot(qs=>{ if(u!==U()) return; const L=[]; const lim=Date.now()-30*86400000; qs.forEach(d=>{ const o=d.data(); if(!o.done||(o.doneAt||0)>lim) L.push([d.id,o]); }); L.sort((a,b)=>b[1].at-a[1].at);
+      box.innerHTML=L.slice(0,40).map(([id,o])=>`<div class="sgl"><span>${o.undone?"↩️":o.done?"✅":"⏳"} ${o.undone?`<s>${esc(opTxt(o))}</s>`:esc(opTxt(o))} <small class="mute">${o.undone?"annulé":o.done?"appliqué le "+new Date(o.doneAt).toLocaleString("fr-FR"):"envoyé le "+new Date(o.at).toLocaleString("fr-FR")+" · en attente"}</small></span>${!o.done?`<button class="btn sm ghost" data-del="${id}">✖ Annuler</button>`:!o.undone&&inv(o)?`<button class="btn sm ghost" data-inv="${id}">↩️ Annuler</button>`:""}</div>`).join("")||`<div class="mute" style="font-size:12.5px">Aucune action récente.</div>`;
+      const byId=Object.fromEntries(L);
+      box.querySelectorAll("[data-inv]").forEach(b=>{ let arm=false; b.onclick=async()=>{ if(!arm){ arm=true; b.textContent="Sûr ?"; return; } b.disabled=true; const o=byId[b.dataset.inv]; const r=inv(o); if(!r) return;
+        try{ await adminOp({to:o.to,...r,undoOf:b.dataset.inv}); await db.collection("onzeol_admin").doc(b.dataset.inv).update({undone:true}); done(`Annulé : ${opTxt(o)}`); }catch(e){ toast("Annulation impossible ("+(e.code||e.message)+")",true); } }; });
       box.querySelectorAll("[data-del]").forEach(b=>b.onclick=async()=>{ b.disabled=true; try{ await db.collection("onzeol_admin").doc(b.dataset.del).delete(); ok("Action annulée"); }catch(e){ toast("Annulation impossible ("+(e.code||e.message)+")",true); } }); },
       e=>{ box.innerHTML=`<div class="mute">Lecture impossible (${esc(e.code||e.message)})</div>`; }); };
   const ok=t=>{ const b=$("#aOk"); b.textContent="✅ "+t; b.style.display="block"; clearTimeout(ok.t); ok.t=setTimeout(()=>b.style.display="none",5000); toast("✅ "+t); };
   const done=t=>ok(t+" — envoyé ✓, sera appliqué à sa prochaine ouverture");
-  pks(); pend();
+  pks(); pend(); free();
   $("#aCoinsGo").onclick=async()=>{ const n=Math.abs(+$("#aCoins").value||0); if(!n) return; await adminOp({to:U(),type:"coins",n}); done(`+${n} 🪙 pour ${NAMES[U()]}`); };
   $("#aCoinsRm").onclick=async()=>{ const n=Math.abs(+$("#aCoins").value||0); if(!n) return; await adminOp({to:U(),type:"coins",n:-n}); done(`-${n} 🪙 pour ${NAMES[U()]}`); };
   $("#aPackGo").onclick=async()=>{ const n=Math.max(1,+$("#aPackN").value||1); await adminOp({to:U(),type:"pack",pack:$("#aPack").value,n}); done(`${n}× ${PACKS[$("#aPack").value].name} pour ${NAMES[U()]}`); };
@@ -3871,7 +3883,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-22g"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-22h"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
