@@ -2405,7 +2405,7 @@ function hypeList(){
   const LP=Object.entries((LIVE&&LIVE.players)||{}).filter(([id])=>BY_ID[id]);
   const hot=LP.filter(([,x])=>x.st==="up").sort((a,b)=>b[1].mod-a[1].mod)[0]; if(hot) add(6,`📈 ${P(hot[0])} est en forme dans la vraie vie`,`${esc(hot[1].note)} · bonus +${hot[1].mod} sur sa carte`);
   const inj=LP.filter(([,x])=>x.st==="inj"); if(inj.length) add(5,`🚑 Infirmerie de l'OL : ${inj.map(([id])=>P(id)).join(", ")}`,"Leurs cartes sont affaiblies",{cold:1});
-  try{ const tf=tfWeek(); if(tf.length) add(4,`🔥 Cartes en forme cette semaine : ${tf.map(P).join(", ")}`,"8 % de chances dans le Pack Légende"); }catch(e){}
+  try{ const tf=tfWeek(); if(tf.length) add(4,`🔥 Forme du moment : ${tf.map(P).join(", ")}`,`${tf.length===1&&tfWhy(tf[0])?tfWhy(tf[0])+" · ":""}carte dispo quelques jours seulement · 8 % dans le Pack Légende`); }catch(e){}
   try{ const ev=curEvent(); if(ev&&ev.name) add(3,`🎉 Événement : ${esc(ev.name)}`,esc(ev.desc||"")); }catch(e){}
   const seen=new Set(); return out.filter(x=>!seen.has(x.t)&&seen.add(x.t)).sort((a,b)=>b.p-a.p).slice(0,25);
 }
@@ -2560,7 +2560,14 @@ mkVar("juninho","xm",98,"Édition Noël — 24/24 au calendrier de l'Avent");
 [...CURRENT].forEach(id=>{ const b=BY_ID[id], fs=BY_ID[id+"--fs"]; if(b) mkVar(id,"tf",Math.min(92,Math.max(b.ovr+7,fs?fs.ovr+2:0)),"Forme du moment"); });
 const baseOf=id=>(BY_ID[id]&&BY_ID[id].base)||id;
 const TF_IDS=VARIANTS.filter(p=>p.v==="tf").map(p=>p.id);
-function tfWeek(w){ const R=rng(hashS("tf"+(w==null?WEEKN():w))); return TF_IDS.slice().sort(()=>R()-.5).slice(0,4); }
+// 🔥 Forme du moment = la VRAIE forme : joueurs listés dans live.json → "forms" (gros match réel, dispo ~7 jours),
+// sinon les joueurs « en forme » (st:"up") de live.json. Passé le délai, la carte n'est plus dans les packs : seuls ceux qui l'ont gardent.
+function tfActive(){ const d=new Date(), t=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+  const F=((LIVE&&LIVE.forms)||[]).filter(f=>f&&f.id&&(!f.to||f.to>=t)&&(!f.from||f.from<=t)).map(f=>f.id+"--tf").filter(id=>BY_ID[id]);
+  if(F.length) return [...new Set(F)];
+  return Object.entries((LIVE&&LIVE.players)||{}).filter(([id,x])=>x&&x.st==="up"&&BY_ID[id+"--tf"]).map(([id])=>id+"--tf"); }
+const tfWhy=id=>{ const b=baseOf(id); const f=((LIVE&&LIVE.forms)||[]).filter(x=>x&&x.id===b).slice(-1)[0]; return (f&&f.why)||(((LIVE&&LIVE.players)||{})[b]||{}).note||""; };
+function tfWeek(){ return tfActive(); }
 const VORD={fs:0,tf:1,ml:2,xm:3};
 const ALL_CARDS=[...PLAYERS.slice().sort((a,b)=>a.year-b.year||a.name.localeCompare(b.name,"fr")),...COACHES,...VARIANTS.slice().sort((a,b)=>VORD[a.v]-VORD[b.v]||a.name.localeCompare(b.name,"fr"))];
 const CARD_NO=Object.fromEntries(ALL_CARDS.map((p,i)=>[p.id,i+1]));
@@ -2612,7 +2619,7 @@ function openPack(pack,free){
     if(!ids.some(id=>rank[cardTier(BY_ID[id])]>=rank[P.guarantee])) ids[ids.length-1]=drawFrom(f,P.w,P.guarantee); }
   else { for(let i=0;i<P.n;i++) ids.push(drawCard(pack));
     if(P.guarantee&&!ids.some(id=>rank[cardTier(BY_ID[id])]>=rank[P.guarantee])) ids[ids.length-1]=drawCard(pack,P.guarantee); }
-  if(!gold&&((pack==="event"&&Math.random()<.2)||(pack==="legende"&&Math.random()<.08))){ const L=tfWeek(); let lo=0; ids.forEach((id,i)=>{ if(rank[cardTier(BY_ID[id])]<rank[cardTier(BY_ID[ids[lo]])]) lo=i; }); ids[lo]=L[Math.floor(Math.random()*L.length)]; } // remplace la carte la plus faible (jamais la Légendaire garantie)
+  if(!gold&&((pack==="event"&&Math.random()<.2)||(pack==="legende"&&Math.random()<.08))){ const L=tfWeek(); if(L.length){ let lo=0; ids.forEach((id,i)=>{ if(rank[cardTier(BY_ID[id])]<rank[cardTier(BY_ID[ids[lo]])]) lo=i; }); ids[lo]=L[Math.floor(Math.random()*L.length)]; } } // remplace la carte la plus faible (jamais la Légendaire garantie)
   if(pack!=="starter") ids.sort((a,b)=>rank[cardTier(BY_ID[a])]-rank[cardTier(BY_ID[b])]||BY_ID[a].ovr-BY_ID[b].ovr);
   c.coll=c.coll||{}; const isNew=ids.map(id=>!c.coll[id]);
   for(const id of ids) c.coll[id]=(c.coll[id]||0)+1;
@@ -2683,7 +2690,8 @@ function renderCollec(){
   document.querySelectorAll(".pkbtn[data-free]").forEach(b=>b.onclick=()=>openPack(b.dataset.free,true));
   const sb=$("#sellBtn"); if(sb) sb.onclick=()=>openModal(`Vendre tous tes doublons pour ${dupes} 🪙 ?`,null,[["Vendre",()=>{ for(const id in coll) if(coll[id]>1) coll[id]=1; addCoins(dupes,"doublons vendus"); renderCollec(); }],["Annuler",null,true]]);
   const F=[["all","Tous"],["myth","Mythiques"],["icon","Légendaires"],["gold","Épiques"],["silver","Rares"],["bronze","Communes"],["coach","Entraîneurs"],["miss","Manquants"]];
-  const list=ALL_CARDS.filter(p=>{ const t=cardTier(p); if(colFilter==="miss") return !coll[p.id]; if(colFilter==="coach") return p.pos[0]==="COACH"; return colFilter==="all"||t===colFilter; });
+  const tfOn=new Set(tfActive());
+  const list=ALL_CARDS.filter(p=>{ const t=cardTier(p); if(p.v==="tf"&&!coll[p.id]&&!tfOn.has(p.id)) return false; if(colFilter==="miss") return !coll[p.id]; if(colFilter==="coach") return p.pos[0]==="COACH"; return colFilter==="all"||t===colFilter; });
   $("#cAlbum").innerHTML=`<h3>📖 Mon album <small>${owned} / ${ALL_CARDS.length}</small></h3>
     <div class="track" style="height:10px;margin-bottom:10px"><i style="width:${owned/ALL_CARDS.length*100}%"></i></div>
     <div class="chips" style="margin-bottom:10px">${F.map(([k,l])=>`<button class="chip${colFilter===k?" on":""}" data-f="${k}">${l}</button>`).join("")}</div>
@@ -4790,7 +4798,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-23l"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-23m"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
