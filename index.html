@@ -1464,6 +1464,20 @@ function bestCompo(form){ const roles=F[form], ids=ownedPlayers(), pairs=[];
   const bench={}; ids.filter(id=>!bases.has(baseOf(id))).sort((a,b)=>effR(b)-effR(a)).forEach(id=>{ if(Object.keys(bench).length>=BENCH_N||bases.has(baseOf(id))) return; bench[Object.keys(bench).length]=id; bases.add(baseOf(id)); });
   const own=W().coll||{}; const coach=COACHES.filter(c=>own[c.id]).sort((a,b)=>b.ovr-a.ovr)[0];
   return {slots,bench,coach:coach?coach.id:null}; }
+// 🧠 Meilleure équipe possible : on essaie TOUS les systèmes et TOUS les entraîneurs possédés,
+// on garde la combinaison qui donne la meilleure note réelle du moteur de match (joueurs + collectif + capacité du coach)
+function bestOverall(){ const c=W(), own=c.coll||{}; const coaches=COACHES.filter(x=>own[x.id]).map(x=>x.id); if(!coaches.length) coaches.push(null);
+  let best=null;
+  for(const form of Object.keys(F)){ const B=bestCompo(form); if(!Object.keys(B.slots).length) continue; const slots=autoPlace(B.slots,form);
+    for(const co of coaches){ let r=null; try{ r=teamRate({formation:form,slots,bench:B.bench,coach:co},me,true,false).global; }catch(e){}
+      if(r!=null&&(!best||r>best.r)) best={r,formation:form,slots,bench:B.bench,coach:co}; } }
+  return best; }
+function applyBestOverall(){ const c=W(); let before=null; try{ before=teamRate(c,me,true,false).global; }catch(e){}
+  const B=bestOverall(); if(!B){ toast("Pas assez de cartes : ouvre des packs !",true); return; }
+  autoPrev={slots:{...c.slots},bench:{...c.bench},coach:c.coach,formation:c.formation};
+  Object.assign(c,{formation:B.formation,slots:B.slots,bench:B.bench,coach:B.coach,loadedId:null}); render(); save();
+  const d=before!=null?B.r-before:0; const co=B.coach&&BY_ID[B.coach];
+  toast(`🧠 Meilleure équipe : ${B.formation}${co?" · "+co.name:""} · note ${B.r}${d>0?` (+${d})`:d<0?"":""}`); }
 function suggestions(){ const c=W(), roles=F[c.formation]; const xiBase=new Set(Object.values(c.slots).filter(Boolean).map(baseOf)); const S=[];
   roles.forEach(([r],i)=>{ const cur=c.slots[i]; const curV=cur?effR(cur):0; let best=null;
     for(const id of ownedPlayers()){ if(xiBase.has(baseOf(id))) continue; if(!fitsRole(BY_ID[id],r)) continue; const v=effR(id); if(v>curV&&(!best||v>best.v)) best={id,v}; }
@@ -1475,15 +1489,14 @@ function suggestions(){ const c=W(), roles=F[c.formation]; const xiBase=new Set(
 let autoPrev=null, autoArm=false;
 function renderSugg(mine){ const el=$("#sugg"); if(!el) return; el.style.display=mine?"":"none"; if(!mine){ el.innerHTML=""; return; }
   const S=suggestions(); const short2=id=>id&&BY_ID[id]?esc(BY_ID[id].name):"vide";
-  el.innerHTML=`<div class="sgh"><b>💡 Suggestions</b><span>${autoPrev?`<button class="btn sm ghost" id="autoUndo">↩️ Annuler</button> `:""}<button class="btn sm" id="autoBtn">⚡ Compo auto</button></span></div>`+
+  el.innerHTML=`<div class="sgh"><b>💡 Suggestions</b><span>${autoPrev?`<button class="btn sm ghost" id="autoUndo">↩️ Annuler</button> `:""}<button class="btn sm" id="autoBtn">🧠 Meilleure équipe</button></span></div>`+
     (S.length?S.slice(0,4).map((x,k)=>`<div class="sgl"><span>${x.coach?"🧠 Entraîneur":`<b>${x.role}</b>`} : ${x.cur?`${short2(x.cur)} <small>(${x.curV})</small> → `:""}<b>${short2(x.id)}</b> <small>(${x.v})</small> <em>${x.cur?"+"+x.gain:"poste vide"}</em></span><button class="btn sm ghost" data-sg="${k}">Mettre</button></div>`).join("")
      :`<div class="mute" style="font-size:12.5px">✅ Ton 11 est déjà le meilleur possible avec tes cartes.</div>`);
   el.querySelectorAll("[data-sg]").forEach(b=>b.onclick=()=>{ const x=S[+b.dataset.sg], c=W();
     if(x.coach) c.coach=x.id; else { for(const k in c.bench) if(c.bench[k]===x.id){ if(x.cur) c.bench[k]=x.cur; else delete c.bench[k]; } c.slots[x.i]=x.id; }
     c.loadedId=null; render(); save(); toast("✅ "+BY_ID[x.id].name+" mis dans ton 11"); });
-  $("#autoBtn").onclick=e=>{ if(!autoArm){ autoArm=true; e.target.textContent="Remplacer mon 11 ? Re-touche"; setTimeout(()=>{ autoArm=false; const b=$("#autoBtn"); if(b) b.textContent="⚡ Compo auto"; },3000); return; }
-    autoArm=false; const c=W(); const B=bestCompo(c.formation); if(!Object.keys(B.slots).length){ toast("Pas assez de cartes : ouvre des packs !",true); return; }
-    autoPrev={slots:{...c.slots},bench:{...c.bench},coach:c.coach}; c.slots=B.slots; c.bench=B.bench; if(B.coach) c.coach=B.coach; c.loadedId=null; render(); save(); toast(`⚡ Meilleure compo en ${c.formation} mise en place`); };
+  $("#autoBtn").onclick=e=>{ if(!autoArm){ autoArm=true; e.target.textContent="Remplacer mon 11 ? Re-touche"; setTimeout(()=>{ autoArm=false; const b=$("#autoBtn"); if(b) b.textContent="🧠 Meilleure équipe"; },3000); return; }
+    autoArm=false; applyBestOverall(); };
   const u=$("#autoUndo"); if(u) u.onclick=()=>{ const c=W(); Object.assign(c,autoPrev); autoPrev=null; render(); save(); toast("↩️ Ancienne compo remise"); };
 }
 function filled(c){return Object.values(c.slots).filter(Boolean).length;}
@@ -1684,7 +1697,9 @@ $("#veil").onclick=closeSheet;
 $("#q").oninput=renderList;
 $("#formation").innerHTML=Object.keys(F).map(f=>`<option>${f}</option>`).join("");
 $("#formation").onchange=e=>{ compos[me].formation=e.target.value; render(); save(); };
-$("#autoXI").onclick=()=>{ const c=compos[me]; if(!c) return; c.slots=autoPlace(c.slots,c.formation); render(); save(); toast("🪄 Joueurs placés à leur meilleur poste"); };
+let autoXIArm=false;
+$("#autoXI").onclick=e=>{ const c=compos[me]; if(!c) return; if(filled(c)&&!autoXIArm){ autoXIArm=true; const b=e.currentTarget; b.textContent="Remplacer ? Re-touche"; setTimeout(()=>{ autoXIArm=false; b.textContent="🪄 Auto"; },3000); return; }
+  autoXIArm=false; e.currentTarget.textContent="🪄 Auto"; applyBestOverall(); };
 let resetArm=false;
 $("#reset").onclick=e=>{ if(!resetArm){resetArm=true;e.target.textContent="Sûr ?";setTimeout(()=>{resetArm=false;e.target.textContent="🗑️ Vider";},3000);return;}
   resetArm=false;e.target.textContent="🗑️ Vider"; const o=W(); o.slots={}; o.bench={}; o.coach=null; o.loadedId=null; render(); save(); toast("11 type vidé (ta collection et ta progression sont gardées)"); };
@@ -5378,7 +5393,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-24h"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-24i"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
