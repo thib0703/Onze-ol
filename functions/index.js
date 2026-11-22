@@ -269,3 +269,39 @@ exports.weeklyRecap = onSchedule({ schedule: "13 20 * * 0", timeZone: "Europe/Pa
     const club = best ? ` 🏆 Joueur de la semaine : ${best.name || "?"} (${S[best.id].w} victoires)${scorer && scorer.id !== best.id ? ` · ⚽ meilleure attaque : ${scorer.name || "?"} (${S[scorer.id].g} buts)` : ""}.` : "";
     await notify(u.id, "📊 Le récap de la semaine", me + club); }
 });
+
+// 🔴 LIVE SCORE OL : toutes les 2 min, on lit les matchs du jour (ESPN) dans les compétitions de l'OL.
+// Le score en direct est écrit dans onzeol_meta/olLive (l'appli l'écoute) + notification à chaque but et au coup de sifflet final.
+const OL_LEAGUES = ["fra.1", "uefa.europa", "uefa.champions", "uefa.europa.conf", "fra.coupe_de_france"];
+const isLyon = t => /^(olympique )?lyon(nais)?$/i.test(String((t && (t.displayName || t.name)) || "").trim()) || String((t && t.shortDisplayName) || "") === "Lyon";
+const shortTeam = t => { const n = String((t && (t.shortDisplayName || t.displayName)) || "?"); return isLyon(t) ? "OL" : n; };
+async function espn(url) { try { const ctl = new AbortController(); const to = setTimeout(() => ctl.abort(), 8000); const r = await fetch(url, { signal: ctl.signal }); clearTimeout(to); return r.ok ? await r.json() : null; } catch (e) { return null; } }
+exports.olLiveScore = onSchedule({ schedule: "*/2 * * * *", timeZone: "Europe/Paris", region: REGION }, async () => {
+  let found = null;
+  for (const lg of OL_LEAGUES) { const sb = await espn(`https://site.api.espn.com/apis/site/v2/sports/soccer/${lg}/scoreboard`); if (!sb) continue;
+    for (const ev of sb.events || []) { const c = (ev.competitions || [])[0]; if (!c) continue; const H = (c.competitors || []).find(x => x.homeAway === "home"), A = (c.competitors || []).find(x => x.homeAway === "away"); if (!H || !A) continue;
+      if (!isLyon(H.team) && !isLyon(A.team)) continue; const st = (c.status || ev.status || {}); const kick = new Date(ev.date || c.date).getTime();
+      if (Math.abs(kick - Date.now()) > 5 * 3600000) continue; found = { lg, ev, c, H, A, st, kick }; break; }
+    if (found) break; }
+  const ref = db.collection("onzeol_meta").doc("olLive"); const prevS = await ref.get(); const prev = prevS.exists ? prevS.data() : {};
+  if (!found) { if (prev.state && prev.state !== "none" && Date.now() - (prev.at || 0) > 3 * 3600000) await ref.set({ state: "none", at: Date.now() }); return; }
+  const { lg, ev, c, H, A, st, kick } = found; const state = (st.type && st.type.state) || "pre";
+  const side = id => String(id) === String(H.team && H.team.id) ? "h" : "a";
+  const goals = [], cards = [];
+  for (const d of c.details || []) { const who = ((d.athletesInvolved || [])[0] || {}).displayName || ""; const m = (d.clock && d.clock.displayValue) || "";
+    if (d.scoringPlay) goals.push({ m, t: side(d.team && d.team.id), p: who, og: !!d.ownGoal, pen: !!d.penaltyKick });
+    else if (d.redCard || d.yellowCard) cards.push({ m, t: side(d.team && d.team.id), p: who, red: !!d.redCard }); }
+  const doc = { state, ev: String(ev.id), lg, comp: (lg === "fra.1" ? "Ligue 1" : lg === "uefa.europa" ? "Ligue Europa" : lg === "uefa.champions" ? "Ligue des champions" : lg === "uefa.europa.conf" ? "Ligue Conférence" : "Coupe de France"),
+    h: shortTeam(H.team), a: shortTeam(A.team), olHome: isLyon(H.team), hs: +H.score || 0, as: +A.score || 0, clk: st.displayClock || "", det: (st.type && (st.type.shortDetail || st.type.detail)) || "", kick, goals, cards, at: Date.now() };
+  const same = prev.ev === doc.ev && prev.state === doc.state && prev.hs === doc.hs && prev.as === doc.as && prev.clk === doc.clk && JSON.stringify(prev.goals || []) === JSON.stringify(goals) && JSON.stringify(prev.cards || []) === JSON.stringify(cards);
+  if (!same) await ref.set(doc);
+  // 🔔 notifications : nouveaux buts, puis fin de match
+  if (prev.ev === doc.ev) {
+    const olSide = doc.olHome ? "h" : "a"; const sc = `${doc.h} ${doc.hs}-${doc.as} ${doc.a}`;
+    if (prev.state === "pre" && state === "in") await notifyAll("🔴 C'est parti !", `${doc.h} - ${doc.a} · ${doc.comp} : suis le live score dans l'appli.`);
+    for (const g of goals.slice((prev.goals || []).length)) {
+      const forOL = g.t === olSide; await notifyAll(forOL ? "⚽ BUUUT POUR L'OL !" : "😤 But adverse", `${sc} · ${g.p || "?"} ${g.m}${g.pen ? " (pen.)" : ""}${g.og ? " (csc)" : ""}`); }
+    if (prev.state === "in" && state === "post") { const ol = doc.olHome ? doc.hs : doc.as, op = doc.olHome ? doc.as : doc.hs;
+      await notifyAll(ol > op ? "🎉 Victoire de l'OL !" : ol < op ? "😞 Défaite de l'OL" : "🤝 Match nul", `${sc} · ${doc.comp}. Va voir tes points de prono !`); }
+  } else if (state === "in") await notifyAll("🔴 C'est parti !", `${doc.h} - ${doc.a} · ${doc.comp} : le live score est dans l'appli.`);
+});

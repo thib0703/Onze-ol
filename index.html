@@ -1126,6 +1126,13 @@ body.lowfx .tile,body.lowfx .vt img,body.lowfx .hype,body.lowfx .pkbtn,body.lowf
 .sts{flex:0 0 100%;scroll-snap-align:center;height:150px;border-radius:18px;display:flex;flex-direction:column;justify-content:flex-end;text-align:left;padding:14px;box-sizing:border-box;color:#fff;background:linear-gradient(180deg,#0000 25%,#000d),var(--bg) 70% center/cover;box-shadow:0 10px 24px #000a,inset 0 0 0 1px #ffffff22}
 .sts b{font-size:18px}.sts small{font-size:12.5px;color:#dbe4ff;margin-top:2px}
 .stdots{display:flex;gap:6px;justify-content:center;margin-bottom:4px}.stdots i{width:7px;height:7px;border-radius:50%;background:#ffffff40}.stdots i.on{background:#ffd970;width:18px;border-radius:4px}
+#olLiveBar{margin:6px 16px 0}.olv{width:100%;display:flex;flex-direction:column;align-items:center;gap:2px;border:0;border-radius:14px;padding:8px 10px;color:#fff;font:inherit;cursor:pointer;background:linear-gradient(90deg,#7a0018,#0b1530 40%,#0b1530 60%,#1b3d8a);box-shadow:0 4px 18px #e3002b44,inset 0 0 0 1px #ffffff22}
+.olv-live{font-size:10.5px;letter-spacing:1px;color:#ff8a8a;animation:pxBlink 1.6s infinite}.olv-ft,.olv-pre{font-size:10.5px;letter-spacing:1px;color:#ffd970}
+.olv-sc{display:flex;align-items:center;gap:10px;font-size:15px}.olv-sc em{font-style:normal;font-weight:800}.olv-sc b{font-size:22px;font-weight:900;letter-spacing:1px}.olv small{font-size:11px;color:#c8d6ff;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.olv-big{display:flex;align-items:center;justify-content:center;gap:14px;margin:10px 0 2px;font-weight:800;font-size:17px}.olv-big b{font-size:40px;font-weight:900}
+.olv-ev{display:flex;gap:10px;padding:7px 4px;border-top:1px solid #ffffff10;font-size:13px}.olv-ev span{width:38px;color:var(--mute)}.olv-ev.a{flex-direction:row-reverse;text-align:right}
+.olgoal{position:fixed;inset:0;z-index:90;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:radial-gradient(circle,#e3002bcc,#000e 70%);color:#fff;text-align:center;animation:hypeFade 3.6s forwards}
+.olgoal b{font-size:clamp(48px,16vw,90px);font-weight:900;font-style:italic;text-shadow:0 0 30px #ff9a1a,0 6px 0 #1d4ed8;animation:hypeZoom .6s cubic-bezier(.2,1.6,.4,1)}.olgoal span{font-size:22px;font-weight:800}.olgoal em{font-style:normal;font-size:16px;opacity:.9}
 </style>
 </head>
 <body>
@@ -1157,7 +1164,7 @@ body.lowfx .tile,body.lowfx .vt img,body.lowfx .hype,body.lowfx .pkbtn,body.lowf
 <div class="backbar" id="backbar" style="display:none"></div>
 <nav class="bnav" id="bnav"><button id="nCompo" class="on"><i><img class="navi" src="img/nav/11.webp" alt=""></i>Mon 11</button><button id="nOnline"><i><img class="navi" src="img/nav/enligne.webp" alt=""></i>En ligne</button><button id="nSolo"><i><img class="navi" src="img/nav/solo.webp" alt=""></i>Solo</button><button id="nCollec"><i><img class="navi" src="img/nav/collec.webp" alt=""></i>Collec</button><button id="nOL"><i><img class="navi" src="img/nav/ol.webp" alt=""></i>OL</button></nav>
 <div class="modes" style="display:none"><button id="mCompo" class="on">11 type</button><button id="mDraft">⚡ Draft</button><button id="mMatch">🏟️ Match</button><button id="mCollec">🎴 Collec</button><button id="mLigue">🏆 Ligue</button><button id="mJeux">🎮 Jeux</button></div>
-<div class="hype" id="hype"></div>
+<div id="olLiveBar"></div><div class="hype" id="hype"></div>
 <div id="viewCompo">
 <div id="tuto" class="wrap" style="padding-bottom:0"></div><div class="wrap" style="padding-bottom:0;padding-top:4px"><div class="topstrip" id="topStrip"></div></div>
 <div class="tabs" id="tabs"></div>
@@ -3036,6 +3043,32 @@ function renderBoard(){
   if(done&&mTimer){clearInterval(mTimer);mTimer=null;}
 }
 
+// 🔴 LIVE SCORE des matchs de l'OL (écrit par le serveur toutes les 2 min dans onzeol_meta/olLive)
+let OLLIVE=null;
+const olLiveShow=L=>!!L&&L.ev&&(L.state==="in"||(L.state==="post"&&Date.now()-(L.at||0)<45*60000)||(L.state==="pre"&&L.kick-Date.now()<60*60000&&L.kick>Date.now()-5*60000));
+function olLiveFix(L){ try{ return fxOf().find(f=>Math.abs(new Date(f.date).getTime()-L.kick)<3*3600000); }catch(e){ return null; } }
+function olLivePred(L){ const f=olLiveFix(L); if(!f) return ""; const p=(PREDS[f.id]||{})[me]; if(!p) return `🔮 Pas de prono posé`;
+  const sc=[L.hs,L.as]; const r=predPts(p,sc); return `🔮 Ton prono ${p[0]}-${p[1]} · ${L.state==="post"?"résultat":"si ça reste comme ça"} : ${r==="exact"?"<b style='color:#7ee2a0'>score exact !</b>":r==="res"?"<b style='color:#ffd970'>bon résultat</b>":"<b style='color:#ff8a8a'>raté</b>"}`; }
+function renderOlLive(){ const el=$("#olLiveBar"); if(!el) return; const L=OLLIVE; if(!olLiveShow(L)){ el.innerHTML=""; el.style.display="none"; return; } el.style.display="";
+  const tag=L.state==="in"?`<b class="olv-live">🔴 EN DIRECT · ${esc(L.clk||"")}</b>`:L.state==="post"?`<b class="olv-ft">🏁 TERMINÉ</b>`:`<b class="olv-pre">⏰ Coup d'envoi ${new Date(L.kick).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})}</b>`;
+  el.innerHTML=`<button class="olv" id="olvBtn">${tag}<span class="olv-sc"><em>${esc(L.h)}</em><b>${L.state==="pre"?"–":L.hs+" - "+L.as}</b><em>${esc(L.a)}</em></span><small>${esc(L.comp||"")}${(L.goals||[]).length?" · ⚽ "+L.goals.map(g=>esc((g.p||"?").split(" ").pop())+" "+esc(g.m)).join(", "):""}</small></button>`;
+  $("#olvBtn").onclick=openOlLive; }
+function openOlLive(){ const L=OLLIVE; if(!L) return; const T=$("#tradeUI"); if(!T) return; const ev=[...(L.goals||[]).map(g=>({...g,k:"g"})),...(L.cards||[]).map(c=>({...c,k:c.red?"r":"y"}))].sort((a,b)=>parseInt(b.m)-parseInt(a.m));
+  T.innerHTML=`<div class="tui-box"><div class="tui-head"><b>${L.state==="in"?"🔴 En direct":L.state==="post"?"🏁 Terminé":"⏰ Avant-match"} · ${esc(L.comp||"")}</b><button class="btn sm ghost" id="olvX">Fermer</button></div>
+    <div class="olv-big"><span>${esc(L.h)}</span><b>${L.state==="pre"?"–":L.hs+" - "+L.as}</b><span>${esc(L.a)}</span></div><div class="mute" style="text-align:center;font-size:12.5px">${esc(L.state==="in"?L.clk:L.det||"")}</div>
+    <div style="margin:10px 0;font-size:13px;text-align:center">${olLivePred(L)}</div>
+    ${ev.length?ev.map(e=>`<div class="olv-ev ${e.t}"><span>${esc(e.m)}</span><b>${e.k==="g"?"⚽":e.k==="r"?"🟥":"🟨"} ${esc(e.p||"?")}${e.pen?" (pen.)":""}${e.og?" (csc)":""}</b></div>`).join(""):`<div class="mute" style="font-size:13px;text-align:center">Pas encore de but.</div>`}
+    <div class="mute" style="font-size:11px;margin-top:10px;text-align:center">Actualisé toutes les 2 minutes · notification à chaque but</div>
+    <button class="btn ghost big" id="olvPr" style="margin-top:8px">🔮 Voir les pronos</button></div>`;
+  T.classList.add("open"); $("#olvX").onclick=()=>T.classList.remove("open"); $("#olvPr").onclick=()=>{ T.classList.remove("open"); olSel="prono"; setMode("ol"); }; }
+function olGoalFx(g,L){ const forOL=g.t===(L.olHome?"h":"a"); if(!forOL){ toast(`😤 But pour ${L.olHome?L.a:L.h} : ${L.h} ${L.hs}-${L.as} ${L.a}`,true); return; }
+  if(mode==="match") { toast(`⚽ BUUUT POUR L'OL ! ${g.p||""} ${g.m} · ${L.h} ${L.hs}-${L.as} ${L.a}`); return; }
+  const d=document.createElement("div"); d.className="olgoal"; d.innerHTML=`<b>BUUUT !</b><span>${esc(g.p||"OL")} ${esc(g.m)}</span><em>${esc(L.h)} ${L.hs} - ${L.as} ${esc(L.a)}</em>`; document.body.appendChild(d);
+  try{ SFX.goal(); SFX.cheer(); }catch(_){} try{ navigator.vibrate&&navigator.vibrate([80,40,200]); }catch(_){} d.onclick=()=>d.remove(); setTimeout(()=>d.remove(),3600); }
+function onOlLive(L){ const P=OLLIVE; OLLIVE=L;
+  if(P&&L&&P.ev===L.ev&&(L.goals||[]).length>(P.goals||[]).length&&Date.now()-(L.at||0)<10*60000) (L.goals||[]).slice((P.goals||[]).length).forEach((g,i)=>setTimeout(()=>olGoalFx(g,L),i*3800));
+  renderOlLive(); }
+setInterval(()=>{ if(OLLIVE) renderOlLive(); },60000);
 // 📤 Partage de la salle des trophées
 async function shareTrophies(id){ try{ const T=((C(id)||{}).trophies||[]).slice().sort((a,b)=>TBIG(b.k)-TBIG(a.k)||b.at-a.at); if(!T.length){ toast("Pas encore de trophée à montrer",true); return; }
   const groups=[]; for(const x of T){ const g=GROUP_K.has(x.k)?groups.find(y=>y.k===x.k):null; if(g) g.n++; else groups.push({k:x.k,n:1,nm:x.n}); }
@@ -5784,7 +5817,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-25x"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-25y"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
@@ -5855,6 +5888,7 @@ function startListeners(){
   if(me===ADMIN) setTimeout(autoBackup,8000);
   $("#admBtn").style.display=me===ADMIN?"":"none";
   unsubs.push(db.collection("onzeol_meta").doc("rank").onSnapshot(sn=>{ RANK=sn.exists?sn.data():{}; claimRank(); try{ claimSeason(); }catch(e){} if(inJ()) renderLigue(); },()=>{}));
+  unsubs.push(db.collection("onzeol_meta").doc("olLive").onSnapshot(sn=>{ onOlLive(sn.exists?sn.data():null); },()=>{}));
   unsubs.push(db.collection("onzeol_meta").doc("preds").onSnapshot(sn=>{ PREDS=sn.exists?sn.data():{}; settlePreds(); if(inJ()) renderJeux(); },()=>{}));
   try{ unsubs.push(db.collection("onzeol_social").where("u","array-contains",me).onSnapshot(qs=>{ const all={}; qs.forEach(doc=>all[doc.id]=doc.data()); onFriends(all); },()=>{})); }catch(e){}
   unsubs.push(db.collection("onzeol_cups").onSnapshot(qs=>{ const all={}; qs.forEach(doc=>{ const K=doc.data(); if(K&&K.name) all[doc.id]=K; }); onCups(all); },()=>{}));
