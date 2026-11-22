@@ -1017,6 +1017,10 @@ header{padding:10px 16px 4px;min-height:44px}header h1{font-size:19px;margin:0;l
 .trimg{width:64px;height:64px;object-fit:contain;display:block}
 .tri .trimg{filter:drop-shadow(0 6px 10px #000a)}.brk-cup .trimg{width:46px;height:46px}
 .trc{padding-top:8px}.trc:hover .trimg{transform:scale(1.05)}
+.passmini{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:linear-gradient(135deg,#3a2a05,#1a1406 55%,#0b1530);border:1px solid #c9a24a88;border-radius:16px;padding:9px 12px;margin:0 0 12px;color:#fff;font:inherit;cursor:pointer}
+.pmlv{flex:none;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle,#ffd970,#b0841f);color:#2a1a00;box-shadow:0 0 12px #ffd97066}.pmlv b{font-size:18px}
+.pmt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.pmt b{font-size:14px}.pmt small{font-size:11px;color:#e8d9a8}.pmt .track{display:block;height:5px;margin-top:3px}
+.pmgo{font-size:22px;color:#ffd970}
 </style>
 </head>
 <body>
@@ -1863,7 +1867,7 @@ function renderBack(){ const B=$("#backbar"); if(!B) return; let t=null, go=null
 // 🎯 Objectifs du jour, en résumé en haut des pages En ligne et Solo
 function objMiniHTML(){ try{ const o=objState(), oc=objClaimable();
   return `<button class="objmini" data-objmini="1"><div class="omh"><b>🎯 Objectifs du jour</b><span>${oc?`<i class="num">${oc} à récupérer</i>`:"Tout voir ›"}</span></div>${DAILY.map(x=>{ const v=Math.min(x.n,o.day.p[x.k]||0), done=o.day.done.includes(x.k); return `<div class="omr${done?" done":""}"><span>${done?"✅":v>=x.n?"🎁":"▫️"} ${x.t}</span><small>${done?"fait":`${v}/${x.n}`}</small><div class="track"><i style="width:${v/x.n*100}%"></i></div></div>`; }).join("")}</button>`; }catch(e){ return ""; } }
-function bindObjMini(root){ root.querySelectorAll("[data-objmini]").forEach(b=>b.onclick=()=>{ olSel="obj"; setMode("ol"); }); }
+function bindObjMini(root){ root.querySelectorAll("[data-objmini]").forEach(b=>b.onclick=()=>{ olSel="obj"; setMode("ol"); }); root.querySelectorAll("[data-passmini]").forEach(b=>b.onclick=()=>{ olSel="pass"; setMode("ol"); }); }
 function hubTile(k,ic,title,st,grad,badge,wide){ return `<button class="tile${wide?" wide":""}" data-tile="${k}" style="background:${grad}"><span class="tw">${ic}</span><span class="ti">${ic}</span><span><b>${title}</b><small>${st||""}</small></span>${badge?`<span class="tb">${badge}</span>`:""}</button>`; }
 function drStatus(list){ const mine=list.filter(d=>d&&Array.isArray(d.players)&&d.players.includes(me)); const o=d=>NAMES[d.players.find(x=>x!==me)]||"?";
   const t=mine.find(d=>d.status==="running"&&d.turn===me); if(t) return ["⚡ À toi de jouer vs "+o(t),"À toi !"];
@@ -1885,6 +1889,7 @@ function todoList(){ const L=[]; if(!me||!C(me)) return L; const c=W(); const ad
   try{ const D=c.dch; if(!(D&&D.day===today()&&D.done)) add("solo","🎯","Défi du jour <b>pas encore joué</b>",()=>{ soSel="defi"; mode==="solo"?(renderSolo(),renderBack()):setMode("solo"); },"Jouer");
        const n=c.quiz&&c.quiz.d===today()?c.quiz.n:0; if(n<QUIZ_MAX) add("solo","🧠",`Quiz OL : <b>${QUIZ_MAX-n} quiz récompensé${QUIZ_MAX-n>1?"s":""}</b> encore dispo aujourd'hui`,()=>{ soSel="quiz"; mode==="solo"?(renderSolo(),renderBack()):setMode("solo"); },"Jouer"); }catch(e){}
   try{ const goC=q=>()=>{ setMode("collec"); setTimeout(()=>{ const e=$(q); if(e) e.scrollIntoView({behavior:"smooth",block:"start"}); },150); };
+       try{ for(const it of missedMatches()) add("online",it.ic,it.txt,it.go,it.btn); }catch(e){}
        try{ if(adventTodo()) add("collec","🎄",`Calendrier de l'Avent : <b>case du ${adventToday()} décembre</b> à ouvrir`,goC("#cAdvent"),"Ouvrir"); }catch(e){}
        if(c.daily!==today()) add("collec","🎁","<b>Pack du jour</b> gratuit à ouvrir",goC("#cShop"),"Ouvrir");
        const fp=Object.values(c.freePacks||{}).reduce((a,b)=>a+(b>0?b:0),0); if(fp) add("collec","🎁",`<b>${fp} pack${fp>1?"s":""} offert${fp>1?"s":""}</b> à ouvrir`,goC("#cShop"),"Ouvrir");
@@ -1908,7 +1913,7 @@ function renderHubs(){ if(!me) return;
     const dl=duoMine(), dt=dl.find(d=>duoTodo(d)>=3); const duoS=dt?(dt.status==="lobby"?["📨 Invitation de "+(NAMES[dt.by]||"?"),"📨"]:dt.status==="running"?["⚡ À toi de choisir !","À toi !"]:["🏁 Prêts ?","Prêt ?"]):dl.length?["⏳ "+dl.length+" partie"+(dl.length>1?"s":"")+" en cours",null]:[null,null];
     const Lm=Object.values(leagues||{}).filter(L=>(L.members||[]).includes(me)&&L.status!=="done"), Li=Object.values(leagues||{}).filter(invitedMe);
     const Km=Object.values(cups||{}).filter(K=>(K.members||[]).includes(me)&&K.status!=="done"), Ki=Object.values(cups||{}).filter(invitedMe);
-    const html=`<div class="hubh"><h2>🌐 En ligne</h2><small>Affronte tes potes : drafts, championnats, coupes…</small></div>${objMiniHTML()}
+    const html=`<div class="hubh"><h2>🌐 En ligne</h2><small>Affronte tes potes : drafts, championnats, coupes…</small></div>${objMiniHTML()}${passMiniHTML()}
       ${live?hubTile("live","🔴","Match en direct","Touche pour regarder","linear-gradient(135deg,#e3002b,#7a0018)","LIVE",true):""}
       <div class="hub">
       ${hubTile("draft","⚡","Draft",dr[0]||"5 joueurs proposés par poste, chacun son tour","linear-gradient(135deg,#1d4ed8,#0b1f5c)",dr[1])}
@@ -1924,7 +1929,7 @@ function renderHubs(){ if(!me) return;
     try{ const D=c.dch; df=D&&D.day===today()&&D.done?`✅ Joué aujourd'hui : ${D.score.join("-")}`:"🎯 À jouer aujourd'hui · 1 essai"; }catch(e){}
     try{ const n=c.quiz&&c.quiz.d===today()?c.quiz.n:0; qz=`${n}/${QUIZ_MAX} quiz récompensés aujourd'hui`; }catch(e){}
     const defiTodo=!(c.dch&&c.dch.day===today()&&c.dch.done), quizTodo=!(c.quiz&&c.quiz.d===today()&&c.quiz.n>=QUIZ_MAX);
-    const html=`<div class="hubh"><h2>🎮 Solo</h2><small>Joue seul, ou à deux sur ce téléphone</small></div>${objMiniHTML()}<div class="hub">
+    const html=`<div class="hubh"><h2>🎮 Solo</h2><small>Joue seul, ou à deux sur ce téléphone</small></div>${objMiniHTML()}${passMiniHTML()}<div class="hub">
       ${hubTile("career","🧗","Carrière",car,"linear-gradient(135deg,#0369a1,#082f49)",null)}
       ${hubTile("defi","🎯","Défi du jour",df,"linear-gradient(135deg,#ea580c,#7c2d12)",defiTodo?"À jouer":null)}
       ${hubTile("quiz","🧠","Quiz OL",qz,"linear-gradient(135deg,#9333ea,#3b0764)",quizTodo?"Dispo":null)}
@@ -2815,7 +2820,7 @@ function renderMatch(){
   $("#mHist").querySelectorAll("[data-rp]").forEach(x=>x.onclick=()=>openReplay(x.dataset.rp));
 }
 function renderBoard(){
-  const el=$("#mBoard");
+  const el=$("#mBoard"); try{ if(match&&mode==="match") markSeenM(match.id); }catch(_){}
   const showB=match&&mClosed!==match.id;
   $("#mSetup").style.display=showB?"none":""; $("#mHist").style.display=showB?"none":"";
   if(!showB){ el.style.display="none"; clearInterval(mTimer); mTimer=null; return; }
@@ -4760,6 +4765,21 @@ function passHTML(){ const P=passState(), cur=P.xp-P.lv*PASS_XP, d=new Date(), e
     <div class="rules" style="font-size:12px">De l'XP à chaque action : match joué 100, victoire +60, but +15, pack ouvert 40, échange/vente 50, défi d'équipe 80. Les récompenses arrivent toutes seules à chaque palier. Nouvelle saison chaque mois !</div>
     <div class="passg">${Array.from({length:PASS_N},(_,i)=>{ const r=PASS_R(i), ok=i<P.lv, nx=i===P.lv; return `<div class="passc${ok?" ok":""}${nx?" nx":""}${(i+1)%10===0?" big":""}"><small>${i+1}</small><span>${r.pack==="legende"?"🌟":r.pack==="or"?"💛":r.pack?"🎴":"🪙"}</span><em>${r.pack?(PACKS[r.pack].name.replace("Pack ","")+(r.n>1?" ×"+r.n:"")):r.coins}</em></div>`; }).join("")}</div>`; }
 
+// 🏟️ Matchs lancés par d'autres avec/contre moi : en direct → « Regarder », terminés → « Revoir » (le résumé est gardé)
+const seenM=()=>{ try{ return new Set(JSON.parse(localStorage.getItem("gl_seenM")||"[]")); }catch(e){ return new Set(); } };
+function markSeenM(id){ try{ const S=seenM(); S.add(id); localStorage.setItem("gl_seenM",JSON.stringify([...S].slice(-60))); }catch(e){} }
+function missedMatches(){ if(!me) return []; const S=seenM(), now=Date.now(), L=[];
+  for(const h of matches.slice(0,40)){ if(!h||!h.by||h.by===me||S.has(h.id)||now-(h.at||0)>36*3600000) continue;
+    const who=h.owners4||h.owners||[]; if(!who.includes(me)) continue;
+    const live=match&&match.id===h.id&&sharedLive(); const by=esc(NAMES[h.by]||"?");
+    const sc=h.score?`${h.score[0]}-${h.score[1]}`:"";
+    L.push(live?{ic:"🔴",txt:`<b>${by}</b> a lancé un match ${h.duo?"en duo ":""}avec toi : <b>en direct</b>`,btn:"Regarder",go:()=>{ markSeenM(h.id); matchBack="online"; setMode("match"); }}
+      :{ic:h.duo?"👥":"🏟️",txt:`Match ${h.duo?"en duo ":""}lancé par <b>${by}</b> : ${esc((h.names||[]).join(" vs "))} <b>${sc}</b>`,btn:"▶️ Revoir",go:()=>{ markSeenM(h.id); openReplay(h.id); }}); }
+  return L.slice(0,4); }
+// 🎟️ mini pass de saison, en haut des pages En ligne et Solo
+function passMiniHTML(){ try{ const P=passState(), cur=P.xp-P.lv*PASS_XP, nx=P.lv<PASS_N?PASS_R(P.lv):null;
+  return `<button class="passmini" data-passmini="1"><span class="pmlv"><b>${P.lv}</b></span><span class="pmt"><b>🎟️ Pass de saison</b><small>${P.lv>=PASS_N?"Terminé ce mois-ci 🏆":`${cur}/${PASS_XP} XP · prochain : ${nx.pack?PACKS[nx.pack].name:nx.coins+" 🪙"}`}</small><i class="track"><i style="width:${P.lv>=PASS_N?100:cur/PASS_XP*100}%"></i></i></span><span class="pmgo">›</span></button>`; }catch(e){ return ""; } }
+
 // ======================================================================
 // 🎮 JEUX : carrière, coupe, défi du jour, quiz, canapé, stats, réactions
 // ======================================================================
@@ -4792,7 +4812,8 @@ const MONTHK=t=>new Date(t||Date.now()).toLocaleDateString("fr-CA").slice(0,7);
 function rankApply(R,h){ R.months=R.months||{}; R.h2h=R.h2h||{}; const mk=MONTHK(h.at); const M=R.months[mk]=R.months[mk]||{};
   const [a,b]=h.owners, [x,y]=h.score; for(const [u,gf,ga] of [[a,x,y],[b,y,x]]){ const r=M[u]=M[u]||{p:0,w:0,d:0,l:0,j:0,bp:0,bc:0}; r.j++; r.bp+=gf; r.bc+=ga; if(gf>ga){r.w++;r.p+=3;} else if(gf===ga){r.d++;r.p+=1;} else r.l++; }
   const k=[a,b].sort().join("__"); const H=R.h2h[k]=R.h2h[k]||{d:0}; if(x>y) H[a]=(H[a]||0)+1; else if(y>x) H[b]=(H[b]||0)+1; else H.d++; }
-async function addHist(h,shared){ try{ const ref=db.collection("onzeol_meta").doc("main"), rref=db.collection("onzeol_meta").doc("rank");
+async function addHist(h,shared){ if(shared){ h.by=shared.by||me; if(shared.duo&&!h.owners4) h.owners4=(shared.teams||[]).flatMap(t=>t.owners||[t.owner]); saveReplay(shared); }
+  try{ const ref=db.collection("onzeol_meta").doc("main"), rref=db.collection("onzeol_meta").doc("rank");
   await db.runTransaction(async tx=>{ const d=await tx.get(ref); const rd=isPvP(h)?await tx.get(rref):null; const cur=(d.exists&&d.data().matches)||[]; if(cur.some(x=>x.id===h.id)) return;
     const u={matches:[h,...cur].slice(0,200)}; if(shared) u.match=shared; tx.set(ref,u,{merge:true});
     if(rd){ const R=rd.exists?rd.data():{}; rankApply(R,h); tx.set(rref,R); } }); return true; }catch(e){ return false; } }
@@ -5357,7 +5378,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-24f"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-24g"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
