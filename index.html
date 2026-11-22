@@ -592,63 +592,125 @@ header{padding:10px 16px 4px;min-height:44px}header h1{font-size:19px;margin:0;l
 .objmini .omh{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;font-size:14px}.objmini .omh span{color:var(--mute);font-size:12px}.objmini .num{font-style:normal;background:#ffd970;color:#111;border-radius:999px;padding:1px 8px;font-size:11px;font-weight:900}
 .omr{display:grid;grid-template-columns:1fr auto;gap:2px 8px;font-size:12.5px;padding:4px 0}.omr small{color:var(--mute)}.omr .track{grid-column:1/3;height:4px}.omr.done{opacity:.55}
 :root{color-scheme:dark only}
-.adv{position:relative;overflow:hidden;background:radial-gradient(120% 80% at 50% 0%,#17306b 0%,#0a1433 55%,#070d22 100%);border:1px solid #e3002b55;box-shadow:0 0 0 1px #1d4ed844 inset,0 10px 30px #0008}
-.adv-snow,.ao-snow{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:0}
-.adv-snow i,.ao-snow i{position:absolute;top:-14px;color:#fff;font-style:normal;animation:advSnow linear infinite}
-@keyframes advSnow{0%{transform:translateY(-10px) translateX(0) rotate(0)}50%{transform:translateY(220px) translateX(12px) rotate(180deg)}100%{transform:translateY(460px) translateX(-6px) rotate(360deg)}}
-.adv>*:not(.adv-snow){position:relative;z-index:1}
-.adv-head{position:relative;margin:-4px -4px 0}.parc{display:block;width:100%;height:auto}
-.adv-title{position:absolute;left:0;right:0;top:4px;display:flex;justify-content:space-between;align-items:center;padding:0 4px}
-.adv-title h3{margin:0;font-size:17px;text-shadow:0 2px 8px #000}.adv-title span{font-size:11.5px;font-weight:800;background:#0009;border:1px solid #ffd97066;color:#ffd970;border-radius:999px;padding:3px 9px}
-.pk-lights circle{fill:#fff6c8;animation:pkTw 1.5s ease-in-out infinite}@keyframes pkTw{50%{opacity:.25}}
-.pk-beams{animation:pkBeam 3.5s ease-in-out infinite;transform-origin:50% 10%}@keyframes pkBeam{50%{opacity:.45}}
-.pk-proj{fill:#fffbe0;filter:drop-shadow(0 0 4px #fffbe0)}
-.pk-star{animation:pkStar 1.2s ease-in-out infinite;transform-origin:180px 61px}@keyframes pkStar{50%{opacity:.5;transform:scale(.8)}}
-.adv-track{height:7px;margin:4px 0 6px}.adv-track i{background:linear-gradient(90deg,#e3002b,#ffd970,#1d4ed8)}
-.adv-sub{font-size:12px;color:#c3cdea;margin:0 0 10px}
-.advg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.advc{position:relative;aspect-ratio:.82;border:0;border-radius:10px;font:inherit;color:#fff;cursor:pointer;padding:6px 2px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;
-  background:linear-gradient(160deg,#1d4ed8,#0b2a7a);box-shadow:0 3px 0 #061a4d,0 6px 12px #0007;
-  -webkit-mask:radial-gradient(circle 5px at 0 55%,#0000 98%,#000) left/51% 100% no-repeat,radial-gradient(circle 5px at 100% 55%,#0000 98%,#000) right/51% 100% no-repeat;
-          mask:radial-gradient(circle 5px at 0 55%,#0000 98%,#000) left/51% 100% no-repeat,radial-gradient(circle 5px at 100% 55%,#0000 98%,#000) right/51% 100% no-repeat;transition:transform .15s}
-.advc:nth-child(even){background:linear-gradient(160deg,#e3002b,#7a0018);box-shadow:0 3px 0 #4a0010,0 6px 12px #0007}
-.advc:active{transform:scale(.95)}
-.advc::after{content:"";position:absolute;left:8%;right:8%;top:55%;border-top:1.5px dashed #ffffff55}
-.advc b{font-size:24px;font-weight:900;line-height:1;text-shadow:0 2px 6px #0008;margin-top:2px}
-.tk-top{font-size:8.5px;font-weight:900;letter-spacing:1.5px;opacity:.8}.tk-bot{font-size:9.5px;font-weight:900;letter-spacing:.3px;white-space:nowrap}
-.advc.lk{filter:saturate(.35) brightness(.6)}
-.advc.ko{filter:grayscale(1) brightness(.45)}.advc.ko b{text-decoration:line-through}
-.advc.op{filter:saturate(.75) brightness(.8)}.advc.op .tk-top{visibility:hidden}
-.tk-stamp{position:absolute;top:4px;right:3px;transform:rotate(12deg);font-style:normal;font-size:7.5px;font-weight:900;color:#7ee2a0;border:2px solid #7ee2a0;border-radius:5px;padding:1px 4px;background:#0a1433cc;letter-spacing:1px}
-.advc.td{background:linear-gradient(160deg,#fff1b8,#e8c45a 45%,#b8901f);color:#2a1a00;box-shadow:0 3px 0 #6b520e,0 0 22px #ffd970cc;animation:tdPulse 1.4s ease-in-out infinite;z-index:2}
-.advc.td b{text-shadow:none}.advc.td::after{border-color:#6b520e66}
-@keyframes tdPulse{0%,100%{transform:scale(1) rotate(0)}25%{transform:scale(1.06) rotate(-2deg)}50%{transform:scale(1.08) rotate(0)}75%{transform:scale(1.06) rotate(2deg)}}
-.advc.d24:not(.op):not(.ko){background:linear-gradient(160deg,#ffffff,#ffd970 40%,#e3002b);color:#2a0008}
-/* ouverture */
-.advopen{position:relative;width:min(92vw,360px);min-height:420px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border-radius:20px;overflow:hidden;
-  background:radial-gradient(100% 70% at 50% 30%,#1d3a80,#0a1433 70%);border:1px solid #ffd97066;box-shadow:0 0 40px #ffd97044;padding:24px 16px}
-.advopen>*:not(.ao-snow){position:relative;z-index:1}
-.ao-flash{position:absolute!important;inset:0;background:radial-gradient(circle at 50% 40%,#fffbe0,transparent 60%);opacity:0;animation:aoFlash 1.2s .85s ease-out forwards;pointer-events:none}
-@keyframes aoFlash{20%{opacity:1}100%{opacity:0}}
-.ao-tkt{display:flex;width:240px;height:130px;margin-top:20px;animation:aoShake .8s ease-in-out}
-@keyframes aoShake{0%,100%{transform:rotate(0)}15%{transform:rotate(-5deg) scale(1.03)}30%{transform:rotate(5deg) scale(1.06)}45%{transform:rotate(-4deg) scale(1.08)}60%{transform:rotate(4deg) scale(1.1)}80%{transform:rotate(-2deg) scale(1.12)}}
-.ao-half{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:linear-gradient(160deg,#fff1b8,#e8c45a 50%,#b8901f);color:#2a1a00;box-shadow:0 8px 20px #0009}
-.ao-half b{font-size:46px;font-weight:900;line-height:1}.ao-half small{font-size:9px;font-weight:900;letter-spacing:1px}
-.ao-half.l{flex:2.2;border-radius:12px 0 0 12px;border-right:2px dashed #6b520e;animation:aoTearL .7s .8s cubic-bezier(.5,0,.8,.4) forwards}
-.ao-half.r{flex:1;border-radius:0 12px 12px 0;background:linear-gradient(160deg,#e3002b,#7a0018);color:#fff;animation:aoTearR .7s .8s cubic-bezier(.5,0,.8,.4) forwards}
-.ao-half.r b{font-size:30px}
-@keyframes aoTearL{to{transform:translate(-160px,140px) rotate(-40deg);opacity:0}}
-@keyframes aoTearR{to{transform:translate(160px,160px) rotate(50deg);opacity:0}}
-.ao-prize{position:absolute!important;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:20px;opacity:0;transform:scale(.6);animation:aoPrize .6s 1.25s cubic-bezier(.2,1.4,.4,1) forwards}
-@keyframes aoPrize{to{opacity:1;transform:scale(1)}}
-.ao-prize h3{margin:0;font-size:22px;color:#ffd970;text-shadow:0 0 18px #e3002b}
-.ao-ic{font-size:64px;line-height:1;filter:drop-shadow(0 0 18px #ffd970);animation:aoBob 1.6s 1.9s ease-in-out infinite}@keyframes aoBob{50%{transform:translateY(-6px) scale(1.05)}}
-.ao-bonus{margin-top:6px;font-weight:900;color:#ffd970}
-.advopen.big .ao-ic{font-size:76px}
-.ao-conf{position:absolute!important;left:50%;top:40%;width:0;height:0;z-index:2!important}
-.ao-conf i{position:absolute;width:7px;height:11px;border-radius:2px;opacity:0;animation:aoConf 1.6s ease-out forwards}
-@keyframes aoConf{0%{opacity:1;transform:translate(0,0) rotate(0)}100%{opacity:0;transform:translate(var(--x),calc(var(--y) + 160px)) rotate(var(--r))}}
-.advopen .btn{margin-top:12px}
+.adv{position:relative;overflow:hidden;padding:0 10px 14px!important;border:1px solid #c9a24a66;border-radius:20px;
+  background:#13234f url(img/advent-bg.jpg) top center/100% auto no-repeat;box-shadow:0 0 0 1px #0b1530 inset,0 12px 34px #000a}
+.adv-snow{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:2}
+.adv-snow i,.ax-snow i{position:absolute;top:-14px;color:#fff;font-style:normal;animation:advSnow linear infinite;text-shadow:0 0 6px #fff}
+@keyframes advSnow{0%{transform:translateY(-10px) translateX(0) rotate(0)}50%{transform:translateY(300px) translateX(14px) rotate(180deg)}100%{transform:translateY(620px) translateX(-8px) rotate(360deg)}}
+.adv-top{position:relative;aspect-ratio:941/430;margin:0 -10px;z-index:1}
+.adv-star{position:absolute;left:73.4%;top:27%;width:26px;height:26px;margin:-13px;border-radius:50%;background:radial-gradient(circle,#fff 0,#ffe9a0 25%,#ffd97000 70%);animation:advStar 2.2s ease-in-out infinite;mix-blend-mode:screen}
+@keyframes advStar{0%,100%{transform:scale(.7);opacity:.6}50%{transform:scale(1.5);opacity:1}}
+.adv-glow{position:absolute;left:4%;right:4%;top:44%;height:20%;background:radial-gradient(ellipse at 50% 50%,#ffd98a55,transparent 70%);animation:advGlow 3s ease-in-out infinite;mix-blend-mode:screen}
+@keyframes advGlow{50%{opacity:.4}}
+.adv-title{position:absolute;left:0;right:0;top:4px;text-align:center;z-index:2}
+.adv-title h3{margin:0;font-family:"Cinzel","Trajan Pro",Georgia,"Times New Roman",serif;font-weight:900;font-size:clamp(15px,5vw,23px);letter-spacing:.3px;line-height:1.05;
+  background:linear-gradient(180deg,#fff8dc 0%,#f3d27a 40%,#b8862b 75%,#ffe9a8 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 2px 0 #3a2a08) drop-shadow(0 4px 10px #000c)}
+.adv-title .adv-sub2{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:3px;font-family:Georgia,serif;font-size:10.5px;letter-spacing:3.5px;color:#f3e4b5;text-shadow:0 1px 4px #000}
+.adv-title .adv-sub2::before,.adv-title .adv-sub2::after{content:"";width:34px;height:4px;background:linear-gradient(90deg,#e3002b 0 33%,#fff 33% 66%,#1d4ed8 66%)}
+.adv-count{position:absolute;right:8px;bottom:6px;z-index:2;font-size:11px;font-weight:800;color:#ffe9a8;background:#0b1530cc;border:1px solid #c9a24a88;border-radius:999px;padding:3px 9px;backdrop-filter:blur(4px)}
+.adv-track{position:relative;z-index:1;height:6px;margin:8px 2px 6px;background:#0b1530;border:1px solid #c9a24a55}.adv-track i{background:linear-gradient(90deg,#b8862b,#ffe9a8,#f3d27a)}
+.adv-sub{position:relative;z-index:1;font-size:12px;color:#d6def5;margin:0 2px 10px;text-shadow:0 1px 3px #000}
+.advg{position:relative;z-index:1;display:grid;grid-template-columns:repeat(4,1fr);gap:7px;perspective:900px}
+.advc{position:relative;aspect-ratio:1.18;border:0;padding:0;font:inherit;cursor:pointer;border-radius:9px;overflow:hidden;color:#fff;
+  background:linear-gradient(160deg,#1c3a8a,#0e2163 60%,#0a1a4f);box-shadow:0 0 0 1.5px #c9a24a,0 0 0 3px #0b1530,0 0 0 4px #c9a24a88,0 6px 12px #000a;
+  animation:tkIn .55s cubic-bezier(.2,1.3,.4,1) both;animation-delay:calc(var(--i)*25ms);transition:transform .15s}
+.advc:active{transform:scale(.94)}
+@keyframes tkIn{from{opacity:0;transform:translateY(16px) rotateX(-35deg) scale(.9)}}
+.advc .tx{position:absolute;inset:0;background:repeating-linear-gradient(45deg,#ffffff06 0 2px,transparent 2px 5px)}
+.advc .num{position:absolute;left:0;right:0;top:20%;text-align:center;font-family:Georgia,"Times New Roman",serif;font-style:italic;font-weight:900;font-size:clamp(20px,6.4vw,28px);line-height:1;color:#fff;text-shadow:0 2px 5px #000a}
+.advc .lau{position:absolute;top:20%;width:18%;height:52%;opacity:.55}.advc .lau.l{left:6%}.advc .lau.r{right:6%;transform:scaleX(-1)}
+.advc .lock{position:absolute;left:0;right:0;bottom:10%;text-align:center;font-size:14px;filter:sepia(1) saturate(4) hue-rotate(-12deg) drop-shadow(0 1px 2px #000)}
+/* ouverte : cadeau + parchemin */
+.advc.op{background:#1a1408 var(--gift) right center/62% auto no-repeat;background-size:cover}
+.advc.op .flap{position:absolute;left:0;top:0;bottom:0;width:58%;background:linear-gradient(135deg,#fbf3dc,#efe0b6 60%,#d9c48d);clip-path:polygon(0 0,100% 0,82% 30%,94% 55%,74% 78%,86% 100%,0 100%);box-shadow:inset -6px 0 10px #0003}
+.advc.op .flap::after{content:"";position:absolute;right:16%;top:0;width:3px;height:26%;background:#e3002b}
+.advc.op .num{left:7%;right:auto;top:14%;text-align:left;color:#14204a;text-shadow:none;font-size:clamp(17px,5.4vw,24px)}
+.advc.op .lau,.advc.op .lock,.advc.op .tx{display:none}
+.advc.op .gain{position:absolute;left:5%;bottom:8%;font-size:8.5px;font-weight:900;color:#5a4410;letter-spacing:.2px;white-space:nowrap}
+/* ratée */
+.advc.ko{background:#1a1d27}.advc.ko .num{color:#666b7a;text-decoration:line-through}.advc.ko .lock{filter:grayscale(1);font-size:10px;color:#9aa;letter-spacing:1px;font-weight:900}.advc.ko .lau{opacity:.15}
+/* aujourd'hui */
+.advc.td{background:linear-gradient(150deg,#fff3c4 0%,#f3d27a 30%,#d4a13d 60%,#ffe9a8 85%,#b8862b);box-shadow:0 0 0 2px #fff1b8,0 0 18px #ffd970,0 0 36px #ffb02088,0 6px 14px #000a;z-index:2;
+  animation:tkIn .55s cubic-bezier(.2,1.3,.4,1) both,tdPulse 1.8s .8s ease-in-out infinite}
+@keyframes tdPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+.advc.td .num{color:#14204a;text-shadow:0 1px 0 #fff8;font-size:clamp(24px,7.6vw,34px);top:12%}
+.advc.td .lau{opacity:.9}.advc.td .lau path,.advc.td .lau ellipse{fill:#8a6413}
+.advc.td .rib{position:absolute;left:6%;right:6%;bottom:9%;background:#14204a;color:#ffe9a8;font-size:7.5px;font-weight:900;letter-spacing:.8px;padding:2px 0;text-align:center;clip-path:polygon(0 0,100% 0,95% 50%,100% 100%,0 100%,5% 50%)}
+.advc.td::before{content:"";position:absolute;inset:0;z-index:3;background:linear-gradient(105deg,transparent 35%,#ffffffd9 50%,transparent 65%);background-size:250% 100%;animation:tkSweep 2.6s ease-in-out infinite;mix-blend-mode:overlay}
+@keyframes tkSweep{0%{background-position:150% 0}60%,100%{background-position:-60% 0}}
+.advc.justop{animation:tkFlip .9s cubic-bezier(.3,1.4,.5,1) both}
+@keyframes tkFlip{0%{transform:rotateY(180deg) scale(1.15);filter:brightness(2)}100%{transform:none}}
+/* ✨ ouverture premium */
+#cardModal:has(.ax){padding:0;background:#000d}
+.ax{position:fixed;inset:0;overflow:hidden;display:flex;align-items:center;justify-content:center;cursor:pointer;--c1:#ffd970;--c2:#e3002b;--c3:#1d4ed8;
+  background:radial-gradient(circle at 50% 45%,#16306e 0%,#070d22 60%,#02040c 100%);animation:axIn .35s ease-out both}
+@keyframes axIn{from{opacity:0}}
+.ax-epi{--c1:#ffd970;--c2:#ffb020;--c3:#fff1b8}.ax-leg{--c1:#ff6ad5;--c2:#6ad5ff;--c3:#ffd970}.ax-rare{--c1:#9fc3ff;--c2:#3b82f6;--c3:#e0ecff}.ax-cla{--c1:#e8a56a;--c2:#c98a52;--c3:#fff1e0}.ax-coin{--c1:#ffd970;--c2:#e8a400;--c3:#fff6c8}
+.ax-rays{position:absolute;left:50%;top:45%;width:180vmax;height:180vmax;margin:-90vmax 0 0 -90vmax;opacity:.0;
+  background:repeating-conic-gradient(from 0deg,color-mix(in srgb,var(--c1) 55%,transparent) 0 6deg,transparent 6deg 18deg);
+  -webkit-mask:radial-gradient(circle,#000 0,#0000 22%);mask:radial-gradient(circle,#000 0,#0000 22%);animation:axSpin 14s linear infinite,axRaysIn 1.6s .2s ease-in forwards}
+.ax-leg .ax-rays{background:repeating-conic-gradient(from 0deg,#ff6ad566 0 6deg,transparent 6deg 12deg,#6ad5ff66 12deg 18deg,transparent 18deg 24deg,#ffd97066 24deg 30deg,transparent 30deg 36deg)}
+@keyframes axSpin{to{transform:rotate(360deg)}}@keyframes axRaysIn{to{opacity:.4}}
+.ax.go .ax-rays{animation:axSpin 8s linear infinite;opacity:.7;transition:opacity .3s}
+.ax-vign{position:absolute;inset:0;background:radial-gradient(circle at 50% 45%,transparent 30%,#000a 85%);pointer-events:none}
+.ax-snow{position:absolute;inset:0;pointer-events:none;overflow:hidden}.ax-snow i{position:absolute;top:-14px;color:#fff;font-style:normal;animation:advSnow linear infinite}
+.ax-stage{position:relative;perspective:900px;display:flex;align-items:center;justify-content:center;width:300px;height:220px}
+.ax-tkt{display:flex;width:250px;height:136px;transform-style:preserve-3d;animation:axFloat 1.9s cubic-bezier(.3,0,.2,1) both}
+@keyframes axFloat{0%{transform:translateZ(-600px) rotateY(-70deg) rotateX(20deg);opacity:0}
+  35%{transform:translateZ(0) rotateY(12deg) rotateX(-4deg);opacity:1}
+  55%{transform:rotateY(-6deg) translateX(-3px)}62%{transform:rotateY(6deg) translateX(3px)}69%{transform:rotateY(-7deg) translateX(-4px) scale(1.03)}
+  76%{transform:rotateY(7deg) translateX(4px) scale(1.06)}82%{transform:rotateY(-8deg) translateX(-5px) scale(1.09)}88%{transform:rotateY(8deg) translateX(5px) scale(1.12)}
+  94%{transform:rotateY(-4deg) scale(1.15)}100%{transform:scale(1.18)}}
+.ax-tkt{filter:drop-shadow(0 0 0 var(--c1));animation:axFloat 1.9s cubic-bezier(.3,0,.2,1) both,axGlow 1.9s ease-in both}
+@keyframes axGlow{0%,40%{filter:drop-shadow(0 0 0 transparent)}100%{filter:drop-shadow(0 0 28px var(--c1)) drop-shadow(0 0 60px var(--c2))}}
+.ax-h{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:linear-gradient(160deg,#fff1b8,#e8c45a 50%,#b8901f);color:#2a1a00;box-shadow:inset 0 0 0 2px #ffffff55}
+.ax-h b{font-size:50px;font-weight:900;line-height:1}.ax-h small{font-size:9px;font-weight:900;letter-spacing:1.5px}
+.ax-h.l{flex:2.2;border-radius:14px 0 0 14px;border-right:2px dashed #6b520e}
+.ax-h.r{flex:1;border-radius:0 14px 14px 0;background:linear-gradient(160deg,#e3002b,#7a0018);color:#fff}.ax-h.r b{font-size:32px}
+.ax-shine{position:absolute;inset:0;background:linear-gradient(105deg,transparent 30%,#ffffffd0 48%,transparent 62%);background-size:300% 100%;animation:tkSweep 1.1s .5s ease-in-out infinite}
+.ax.go .ax-h.l{animation:axTearL .8s cubic-bezier(.4,0,.7,.4) forwards}.ax.go .ax-h.r{animation:axTearR .8s cubic-bezier(.4,0,.7,.4) forwards}
+@keyframes axTearL{to{transform:translate(-220px,260px) rotate(-55deg) rotateY(40deg);opacity:0}}
+@keyframes axTearR{to{transform:translate(220px,280px) rotate(70deg) rotateY(-40deg);opacity:0}}
+.ax-flash{position:absolute;left:50%;top:50%;width:20px;height:20px;margin:-10px;border-radius:50%;background:#fff;opacity:0;box-shadow:0 0 80px 60px #fff}
+.ax.go .ax-flash{animation:axFlash .7s ease-out forwards}@keyframes axFlash{0%{opacity:1;transform:scale(.4)}25%{opacity:1;transform:scale(14)}100%{opacity:0;transform:scale(22)}}
+.ax-ring{position:absolute;left:50%;top:50%;width:60px;height:60px;margin:-30px;border-radius:50%;border:4px solid var(--c1);opacity:0}
+.ax.go .ax-ring{animation:axRing .9s ease-out forwards}.ax.go .ax-ring.r2{border-color:var(--c2);animation-delay:.12s}
+@keyframes axRing{0%{opacity:1;transform:scale(.3)}100%{opacity:0;transform:scale(9);border-width:1px}}
+.ax-sparks{position:absolute;left:50%;top:50%}
+.ax-sparks i{position:absolute;width:5px;height:16px;margin:-8px -2px;border-radius:3px;background:linear-gradient(var(--c3),var(--c1));opacity:0}
+.ax.go .ax-sparks i{animation:axSpark .9s cubic-bezier(.1,.8,.3,1) forwards}
+@keyframes axSpark{0%{opacity:1;transform:translate(0,0) scale(var(--s))}100%{opacity:0;transform:translate(var(--x),var(--y)) scale(0)}}
+.ax-prize{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:24px;text-align:center;pointer-events:none;opacity:0}
+.ax.go .ax-prize{pointer-events:auto;animation:axPrize .01s .35s forwards}@keyframes axPrize{to{opacity:1}}
+.ax-halo{position:absolute;left:50%;top:38%;width:240px;height:240px;margin:-120px;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--c1) 70%,transparent),transparent 65%);filter:blur(6px);animation:axHalo 2.4s ease-in-out infinite}
+@keyframes axHalo{50%{transform:scale(1.15);opacity:.75}}
+.ax-ic{position:relative;font-size:92px;line-height:1;filter:drop-shadow(0 0 24px var(--c1)) drop-shadow(0 8px 18px #000a);transform:scale(0) rotate(-30deg)}
+.ax.go .ax-ic{animation:axPop .9s .4s cubic-bezier(.2,1.6,.4,1) forwards,axBob 2.2s 1.4s ease-in-out infinite}
+@keyframes axPop{to{transform:scale(1) rotate(0)}}@keyframes axBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px) rotate(3deg)}}
+.ax-kind,.ax-val,.ax-sub,.ax-bonus,.ax-prize .cm-card,.ax-btn{opacity:0;transform:translateY(14px)}
+.ax.go .ax-kind{animation:axUp .5s .75s ease-out forwards}.ax.go .ax-val{animation:axUp .5s .9s ease-out forwards}.ax.go .ax-sub{animation:axUp .5s 1.05s ease-out forwards}
+.ax.go .ax-bonus{animation:axUp .5s 1.2s ease-out forwards}.ax.go .ax-prize .cm-card{animation:axUp .6s 1.35s ease-out forwards}.ax.go .ax-btn{animation:axUp .5s 1.4s ease-out forwards}
+@keyframes axUp{to{opacity:1;transform:none}}
+.ax-kind{position:relative;font-size:12px;font-weight:900;letter-spacing:3px;color:var(--c3);text-shadow:0 0 12px var(--c2)}
+.ax-val{position:relative;margin:0;font-size:30px;font-weight:900;background:linear-gradient(180deg,#fff,var(--c1));-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 2px 10px #000a)}
+.ax-leg .ax-val{background:linear-gradient(90deg,#ff6ad5,#ffd970,#6ad5ff,#ff6ad5);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;animation:axUp .5s .9s ease-out forwards,axIri 3s linear infinite}
+@keyframes axIri{to{background-position:300% 0}}
+.ax-sub{position:relative;font-size:13px;color:#c3cdea}.ax-bonus{position:relative;font-weight:900;color:#ffd970;letter-spacing:1px;margin-top:4px}
+.ax-btn{position:relative;margin-top:14px;max-width:300px;box-shadow:0 0 24px #e3002b88}
+.ax-conf,.ax-emb,.ax-coins{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.ax-conf i{position:absolute;left:50%;top:48%;width:8px;height:12px;border-radius:2px;opacity:0}
+.ax.go .ax-conf i{animation:axConf var(--d) cubic-bezier(.2,.7,.4,1) forwards}
+@keyframes axConf{0%{opacity:1;transform:translate(0,0) rotate(0)}30%{opacity:1;transform:translate(calc(var(--x)*.8),var(--y)) rotate(calc(var(--r)*.4))}100%{opacity:0;transform:translate(var(--x),calc(var(--y) + 520px)) rotate(var(--r))}}
+.ax-emb i{position:absolute;bottom:-10px;width:5px;height:5px;border-radius:50%;background:var(--c1);box-shadow:0 0 10px var(--c1);opacity:0}
+.ax.go .ax-emb i{animation-name:axEmb;animation-timing-function:ease-out;animation-iteration-count:infinite}
+@keyframes axEmb{0%{opacity:0;transform:translateY(0) scale(var(--s))}15%{opacity:1}100%{opacity:0;transform:translateY(-75vh) translateX(20px) scale(0)}}
+.ax-coins i{position:absolute;top:-40px;font-style:normal;font-size:26px;opacity:0;filter:drop-shadow(0 0 8px #ffd970)}
+.ax.go .ax-coins i{animation-name:axCoin;animation-timing-function:cubic-bezier(.5,0,.8,.6);animation-iteration-count:1;animation-fill-mode:forwards}
+@keyframes axCoin{0%{opacity:1;transform:translateY(0) rotateY(0)}100%{opacity:.9;transform:translateY(110vh) rotateY(720deg)}}
+.ax-skip{position:absolute;bottom:calc(18px + env(safe-area-inset-bottom));left:0;right:0;text-align:center;font-size:11px;color:#ffffff66;letter-spacing:1px}
+.ax.go .ax-skip{display:none}
+.ax.fast .ax-tkt{animation-duration:.01s}
+@media (prefers-reduced-motion:reduce){.ax *{animation-duration:.01s!important;animation-iteration-count:1!important}}
 </style>
 </head>
 <body>
@@ -4076,24 +4138,52 @@ function parcSVG(){ return `<svg class="parc" viewBox="0 0 360 150" aria-hidden=
   <g fill="#c9d4f2"><rect x="44" y="20" width="3" height="78"/><rect x="313" y="20" width="3" height="78"/><rect x="36" y="14" width="19" height="8" rx="2" class="pk-proj"/><rect x="305" y="14" width="19" height="8" rx="2" class="pk-proj"/></g>
   <text x="180" y="140" text-anchor="middle" font-size="9" font-weight="900" fill="#ffffffaa" letter-spacing="4">PARC OL</text></svg>`; }
 const snowHTML=n=>Array.from({length:n},()=>`<i style="left:${(Math.random()*100).toFixed(1)}%;animation-duration:${(5+Math.random()*6).toFixed(1)}s;animation-delay:-${(Math.random()*10).toFixed(1)}s;font-size:${(6+Math.random()*7).toFixed(0)}px;opacity:${(.4+Math.random()*.6).toFixed(2)}">❄</i>`).join("");
+const ADV_TONE=r=>r.pack==="legende"?"leg":r.pack==="or"?"epi":r.pack==="rare3"?"rare":r.pack?"cla":"coin";
+let advLastOpen=null;
 function openAdvent(d){ if(d!==adventToday()){ toast(d<adventToday()?"Ce match est passé : la case reste vide 😢":"Patience, la porte "+d+" ouvre le "+d+" décembre 🎄",true); return; }
-  const A=adventState(); if(A.o[d]) return; A.o[d]=1; const r=ADVENT[d-1]; grant(r,`🎄 Calendrier de l'Avent, case ${d}`);
+  const A=adventState(); if(A.o[d]) return; A.o[d]=1; const r=ADVENT[d-1]; grant(r,`🎄 Calendrier de l'Avent, case ${d}`); advLastOpen=d;
   let bonus=false; if(d===24&&Array.from({length:24},(_,i)=>A.o[i+1]).every(Boolean)){ const c=W(); c.coll=c.coll||{}; c.coll[ADV_CARD]=(c.coll[ADV_CARD]||0)+1; bonus=true; post(`🎄 ${NAMES[me]} a ouvert les 24 cases du calendrier de l'Avent et gagne la carte exclusive ${BY_ID[ADV_CARD].name} Édition Noël !`); }
-  save(); const M=$("#cardModal"); const big=r.pack==="legende"||r.pack==="or"||bonus;
-  const conf=Array.from({length:46},()=>{ const a=Math.random()*Math.PI*2, dist=90+Math.random()*150; return `<i style="--x:${(Math.cos(a)*dist).toFixed(0)}px;--y:${(Math.sin(a)*dist-40).toFixed(0)}px;--r:${(Math.random()*720-360).toFixed(0)}deg;background:${["#e3002b","#1d4ed8","#ffd970","#ffffff","#2f9e55"][Math.floor(Math.random()*5)]};animation-delay:${(.9+Math.random()*.25).toFixed(2)}s"></i>`; }).join("");
-  M.innerHTML=`<div class="advopen${big?" big":""}"><div class="ao-snow">${snowHTML(26)}</div><div class="ao-flash"></div><div class="ao-conf">${conf}</div>
-    <div class="ao-tkt"><div class="ao-half l"><small>PARC OL · TRIBUNE NOËL</small><b>${d}</b><small>DÉCEMBRE</small></div><div class="ao-half r"><small>PORTE</small><b>${d}</b><small>🎄</small></div></div>
-    <div class="ao-prize"><div class="ao-ic">${ADV_IC(r)}</div><h3>${rTxt(r)}</h3><div class="mute" style="font-size:12.5px">${r.pack?"Ton pack t'attend dans la Boutique 🎴":"Ajouté à tes pièces"}</div>
-    ${bonus?`<div class="ao-bonus">🏆 24/24 ! Carte exclusive débloquée</div><div class="cm-card">${cardHTML(ADV_CARD,{w:160,cls:"flip-in glow"})}</div>`:""}
-    <button class="btn big" id="advOk">Joyeux Noël ! 🎄</button></div></div>`;
-  M.classList.add("open"); $("#advOk").onclick=()=>{ M.classList.remove("open"); renderCollec(); }; }
+  save(); const M=$("#cardModal"); const tone=bonus?"leg":ADV_TONE(r);
+  const rnd=(a,b)=>a+Math.random()*(b-a);
+  const sparks=Array.from({length:60},()=>{ const a=rnd(0,Math.PI*2), dist=rnd(110,260); return `<i style="--x:${(Math.cos(a)*dist).toFixed(0)}px;--y:${(Math.sin(a)*dist).toFixed(0)}px;--s:${rnd(.5,1.4).toFixed(2)};animation-delay:${rnd(0,.15).toFixed(2)}s"></i>`; }).join("");
+  const conf=Array.from({length:40},()=>`<i style="--x:${rnd(-170,170).toFixed(0)}px;--y:${rnd(-260,-120).toFixed(0)}px;--r:${rnd(-540,540).toFixed(0)}deg;--d:${rnd(1.8,2.8).toFixed(2)}s;background:${["#e3002b","#1d4ed8","#ffd970","#ffffff","#2f9e55"][Math.floor(Math.random()*5)]};animation-delay:${rnd(0,.25).toFixed(2)}s"></i>`).join("");
+  const embers=Array.from({length:18},()=>`<i style="left:${rnd(5,95).toFixed(0)}%;animation-duration:${rnd(2.5,5).toFixed(1)}s;animation-delay:${rnd(0,3).toFixed(1)}s;--s:${rnd(.5,1.2).toFixed(2)}"></i>`).join("");
+  const coinRain=r.coins&&!r.pack?Array.from({length:16},()=>`<i style="left:${rnd(4,92).toFixed(0)}%;animation-duration:${rnd(1.2,2.2).toFixed(2)}s;animation-delay:${rnd(0,1.2).toFixed(2)}s">🪙</i>`).join(""):"";
+  M.innerHTML=`<div class="ax ax-${tone}" id="axRoot">
+    <div class="ax-rays"></div><div class="ax-vign"></div><div class="ax-snow">${snowHTML(20)}</div>
+    <div class="ax-stage">
+      <div class="ax-tkt"><div class="ax-h l"><small>PARC OL · TRIBUNE NOËL</small><b>${d}</b><small>DÉCEMBRE</small><span class="ax-shine"></span></div><div class="ax-h r"><small>PORTE</small><b>${d}</b><small>🎄</small><span class="ax-shine"></span></div></div>
+      <div class="ax-ring"></div><div class="ax-ring r2"></div><div class="ax-flash"></div><div class="ax-sparks">${sparks}</div>
+    </div>
+    <div class="ax-prize">
+      <div class="ax-halo"></div>
+      <div class="ax-ic">${ADV_IC(r)}</div>
+      <div class="ax-kind">CASE ${d} · TU GAGNES</div>
+      <h3 class="ax-val">${r.coins&&!r.pack?`+<span id="axCount">0</span>`:esc(rTxt(r).replace(/ 🪙/g," pièces"))}</h3>${r.coins&&!r.pack?`<div class="ax-sub" style="font-size:15px;font-weight:800;color:#ffe9a8">pièces 🪙</div>`:""}
+      <div class="ax-sub">${r.pack?"Ton pack t'attend dans la Boutique 🎴":"Ajouté à tes pièces"}</div>
+      ${bonus?`<div class="ax-bonus">🏆 24/24 ! CARTE EXCLUSIVE</div><div class="cm-card">${cardHTML(ADV_CARD,{w:150,cls:"flip-in glow"})}</div>`:""}
+      <button class="btn big ax-btn" id="advOk">Joyeux Noël ! 🎄</button>
+    </div>
+    <div class="ax-conf">${conf}</div><div class="ax-emb">${embers}</div><div class="ax-coins">${coinRain}</div>
+    <div class="ax-skip">Touche pour passer</div></div>`;
+  M.classList.add("open"); const R=$("#axRoot");
+  try{ if(navigator.vibrate) navigator.vibrate([30,90,30,90,40,120,220]); }catch(_){}
+  let revealed=false; const reveal=()=>{ if(revealed) return; revealed=true; R.classList.add("go");
+    const el=$("#axCount"); if(el){ const tgt=r.coins, t0=performance.now(), dur=900; const step=t=>{ const k=Math.min(1,(t-t0)/dur), e=1-Math.pow(1-k,3); el.textContent=Math.round(tgt*e).toLocaleString("fr-FR"); if(k<1) requestAnimationFrame(step); }; setTimeout(()=>requestAnimationFrame(step),250); } };
+  const T=setTimeout(reveal,1900); R.onclick=e=>{ if(e.target.closest("#advOk")) return; if(!revealed){ clearTimeout(T); R.classList.add("fast"); reveal(); } };
+  $("#advOk").onclick=()=>{ M.classList.remove("open"); renderCollec(); }; }
+const LAU=`<svg class="lau" viewBox="0 0 20 52"><path d="M15 50 C4 40 2 22 9 4" stroke="#c9a24a" stroke-width="1.4" fill="none"/>${[8,15,22,29,36,43].map((y,i)=>`<ellipse cx="${(i<2?9:i<4?6:5)+ (i%2?5:0)}" cy="${y}" rx="2.4" ry="5" fill="#c9a24a" transform="rotate(${i%2?40:-30} ${(i<2?9:i<4?6:5)+(i%2?5:0)} ${y})"/>`).join("")}</svg>`;
 function adventHTML(){ if(!me||!adventOn()) return ""; const A=adventState(), td=adventToday(), n=Object.keys(A.o).length; const miss=Array.from({length:Math.max(0,(td||25)-1)},(_,i)=>i+1).filter(i=>!A.o[i]).length;
+  const nn=d=>String(d).padStart(2,"0");
   return `<div class="section adv"><div class="adv-snow">${snowHTML(22)}</div>
-    <div class="adv-head">${parcSVG()}<div class="adv-title"><h3>🎄 L'Avent au Parc OL</h3><span>${n}/24 portes ouvertes</span></div></div>
+    <div class="adv-top"><div class="adv-glow"></div><div class="adv-star"></div><div class="adv-title"><h3>CALENDRIER DE L'AVENT</h3><div class="adv-sub2">OLYMPIQUE LYONNAIS</div></div><div class="adv-count">🎁 ${n}/24</div></div>
     <div class="track adv-track"><i style="width:${n/24*100}%"></i></div>
-    <div class="adv-sub">${miss?"Une porte a été ratée : le 24/24 n'est plus possible cette année.":`Une porte par jour, à ouvrir le jour même. Les 24 ouvertes = carte exclusive <b>${esc(BY_ID[ADV_CARD].name)} Édition Noël</b> 🏆`}</div>
+    <div class="adv-sub">${miss?"Une case a été ratée : le 24/24 n'est plus possible cette année.":`Une case par jour, à ouvrir le jour même. Les 24 = carte exclusive <b>${esc(BY_ID[ADV_CARD].name)} Édition Noël</b> 🏆`}</div>
     <div class="advg">${Array.from({length:24},(_,i)=>{ const d=i+1, op=A.o[d], r=ADVENT[i]; const st=op?"op":d===td?"td":d<td||!td?"ko":"lk";
-      return `<button class="advc ${st}${d===24?" d24":""}" data-adv="${d}"><span class="tk-top">PORTE</span><b>${d}</b><span class="tk-bot">${op?ADV_LBL(r):st==="td"?"🎁 OUVRIR":st==="ko"?"RATÉE":d===24?"🌟 🔒":"🔒"}</span>${op?`<em class="tk-stamp">VALIDÉ</em>`:""}</button>`; }).join("")}</div></div>`; }
+      const inner=op?`<span class="flap"></span><span class="num">${nn(d)}</span><span class="gain">${ADV_LBL(r)}</span>`
+        :st==="td"?`${LAU.replace('class="lau"','class="lau l"')}${LAU.replace('class="lau"','class="lau r"')}<span class="num">${d}</span><span class="rib">AUJOURD'HUI</span>`
+        :`<span class="tx"></span>${LAU.replace('class="lau"','class="lau l"')}${LAU.replace('class="lau"','class="lau r"')}<span class="num">${nn(d)}</span><span class="lock">${st==="ko"?"RATÉE":"🔒"}</span>`;
+      return `<button class="advc ${st}${op&&d===advLastOpen?" justop":""}" data-adv="${d}" style="--i:${i};${op?`--gift:url(img/gift-${i%2?"b":"r"}.jpg)`:""}">${inner}</button>`; }).join("")}</div></div>`; }
 
 // ======================================================================
 // 🎮 JEUX : carrière, coupe, défi du jour, quiz, canapé, stats, réactions
@@ -4688,7 +4778,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-23i"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-23k"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
