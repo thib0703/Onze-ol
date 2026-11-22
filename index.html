@@ -1597,6 +1597,8 @@ function chemistry(ps){
   for(let i=0;i<ps.length;i++) for(let j=i+1;j<ps.length;j++){ const a=ps[i],b=ps[j]; if(NAT[a.id]&&NAT[a.id]===NAT[b.id]) links++; if(Math.abs(a.year-b.year)<=3) links++; }
   return Math.min(100,Math.round(links/(ps.length*1.6)*100));
 }
+// 🧠 Entraîneur : sa note ne pèse que peu (±1 max), ce sont surtout ses capacités (COACH_SKILL) qui changent le match
+const coachNote=co=>co?(co.ovr-75)/12:-1.5;
 function strength(c,w,club,pure){ // pure : sans évolutions ni forme réelle (draft à armes égales)
   const form=F[c.formation]||F["4-3-3"];
   const own=w&&club?(C(w).coll||{}):null;
@@ -1607,8 +1609,8 @@ function strength(c,w,club,pure){ // pure : sans évolutions ni forme réelle (d
   const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:35;
   let co=BY_ID[c.coach]; if(co&&own&&!own[co.id]) co=null;
   const chem=chemistry(lineup.filter(l=>l.pid).map(l=>BY_ID[l.pid]));
-  const cb=(co?(co.ovr-75)/4:-2)+chem/100*3;
-  const r={gk:avg(acc.gk)+cb,def:avg(acc.def)+cb,mid:avg(acc.mid)+cb,att:avg(acc.att)+cb,coach:co?co.ovr:0,chem,lineup,coachId:co?co.id:null};
+  const cb=coachNote(co)+chem/100*3; let skl={}; try{ skl=(co&&COACH_SKILL[co.id]&&COACH_SKILL[co.id].lines)||{}; }catch(_){}
+  const r={gk:avg(acc.gk)+cb+(skl.gk||0),def:avg(acc.def)+cb+(skl.def||0),mid:avg(acc.mid)+cb+(skl.mid||0),att:avg(acc.att)+cb+(skl.att||0),coach:co?co.ovr:0,chem,lineup,coachId:co?co.id:null};
   r.global=Math.round(r.gk*.12+r.def*.3+r.mid*.3+r.att*.28);
   return r;
 }
@@ -1678,7 +1680,7 @@ function simulate2(cA,SA,cB,SB){
     const bench=Object.values(c.bench||{}).filter(pid=>BY_ID[pid]&&!on.some(x=>x.pid===pid));
     const co=BY_ID[c.coach]; const sk=skillOf(co?co.id:null);
     for(const x of on){ const p=BY_ID[x.pid]; let b=0; if(sk.boostLow&&p.ovr<75) b+=sk.boostLow; if(sk.boostYoung&&p.year>=2020) b+=sk.boostYoung; if(b){ x.eff+=b; x.a=attrs(p,x.role,x.eff); } }
-    return {on,bench,subs:0,red:0,cb:co?(co.ovr-75)/4:-2,all:[...on],sk,ment:S.ment||{}};
+    return {on,bench,subs:0,red:0,cb:coachNote(co),all:[...on],sk,ment:S.ment||{}};
   };
   const T=[mkTeam(cA,SA),mkTeam(cB,SB)];
   // 🍀 part de chance : forme du jour de chaque équipe (±8 %) et de chaque joueur (±6 %)
@@ -3997,7 +3999,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-22j"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-22k"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
