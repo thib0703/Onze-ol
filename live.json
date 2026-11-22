@@ -1,6 +1,6 @@
 {
-  "updated": "21/11/2026",
-  "matches": "OL 2-0 Angers (01/11), Brest 2-0 OL (08/11) — notes Maxifoot",
+  "updated": "22/11/2026",
+  "matches": "Brest 2-0 OL (08/11), Lille 0-1 OL (21/11) — notes Maxifoot",
   "rules": "Blessé -3 à -6 selon la durée, suspendu -2 ; moyenne des 2 derniers matchs : >=7.5 +3, >=7 +2, >=6.5 +1, <=4 -2, <=5 -1",
   "players": {
     "pavel-sulc": {
@@ -8,60 +8,55 @@
       "mod": -5,
       "note": "Ménisque du genou droit opéré, retour prévu fin février-début mars 2027"
     },
-    "lois-openda": {
-      "st": "inj",
-      "mod": -3,
-      "note": "Fissure du péroné (09/10), dernière phase de rééducation, forfait à Lille"
-    },
-    "ernest-nuamah": {
-      "st": "up",
-      "mod": 2,
-      "note": "Homme du match contre Angers (8/10, buteur)"
-    },
-    "dominik-greif": {
-      "st": "down",
-      "mod": -2,
-      "note": "4/10 de moyenne sur les 2 derniers matchs"
-    },
-    "tanner-tessmann": {
-      "st": "down",
-      "mod": -1,
-      "note": "4,5/10 de moyenne sur les 2 derniers matchs"
-    },
-    "zachary-athekame": {
-      "st": "down",
-      "mod": -1,
-      "note": "Penalty concédé à Brest, 5,25/10 de moyenne"
-    },
-    "kail-boudache": {
-      "st": "down",
-      "mod": -1,
-      "note": "3/10 à Brest"
-    },
-    "noah-nartey": {
-      "st": "down",
-      "mod": -1,
-      "note": "4/10 à Brest"
-    },
-    "julien-duranville": {
-      "st": "down",
-      "mod": -1,
-      "note": "4/10 contre Angers"
-    },
-    "mads-bidstrup": {
-      "st": "down",
-      "mod": -1,
-      "note": "4,5/10 contre Angers"
-    },
     "tyler-morton": {
       "st": "inj",
       "mod": -5,
       "note": "Opéré de l'adducteur gauche (17/11), retour prévu courant février"
     },
+    "lois-openda": {
+      "st": "inj",
+      "mod": -3,
+      "note": "Fissure du péroné (09/10), absent au moins jusqu'à la trêve selon le club"
+    },
     "clinton-mata": {
       "st": "inj",
       "mod": -3,
-      "note": "Gêne musculaire, forfait à Lille"
+      "note": "Gêne musculaire, forfait à Lille, incertain pour Lillestrøm"
+    },
+    "mads-bidstrup": {
+      "st": "up",
+      "mod": 2,
+      "note": "Buteur et homme du match à Lille (7/10)"
+    },
+    "ruben-kluivert": {
+      "st": "down",
+      "mod": -1,
+      "note": "5/10 à Brest"
+    },
+    "nicolas-tagliafico": {
+      "st": "down",
+      "mod": -1,
+      "note": "5/10 à Brest"
+    },
+    "keito-nakamura": {
+      "st": "down",
+      "mod": -1,
+      "note": "5/10 de moyenne sur les 2 derniers matchs"
+    },
+    "ernest-nuamah": {
+      "st": "down",
+      "mod": -1,
+      "note": "5/10 à Lille, but refusé par la VAR"
+    },
+    "noah-nartey": {
+      "st": "down",
+      "mod": -2,
+      "note": "4/10 à Brest"
+    },
+    "kail-boudache": {
+      "st": "down",
+      "mod": -2,
+      "note": "3/10 à Brest"
     }
   },
   "fixtures": [
@@ -86,7 +81,7 @@
     },
     {
       "id": "2026-11-29-ol-monaco",
-      "date": "2026-11-29T17:00:00+01:00",
+      "date": "2026-11-29T20:45:00+01:00",
       "home": "OL",
       "away": "Monaco",
       "comp": "Ligue 1 · J12",
@@ -107,10 +102,42 @@
       "away": "Union Saint-Gilloise",
       "comp": "Ligue Europa · J6",
       "score": null
+    },
+    {
+      "id": "2026-12-13-ol-marseille",
+      "date": "2026-12-13T17:00:00+01:00",
+      "home": "OL",
+      "away": "Marseille",
+      "comp": "Ligue 1 · J14",
+      "score": null
     }
   ],
   "newsUpdated": "22/11/2026",
   "news": [
+    {
+      "d": "2026-11-22T09:30",
+      "tag": "joueurs",
+      "t": "Bidstrup salue l'esprit collectif après Lille",
+      "s": "Unique buteur à Pierre-Mauroy, le milieu danois se dit fier du groupe et de son nouvel entraîneur. L'OL revient à un point du LOSC.",
+      "src": "Olympique-et-Lyonnais",
+      "url": "https://www.olympique-et-lyonnais.com/bidstrup-fier-du-coach-et-de-lequipe-apres-lille-ol-0-1,414409.html"
+    },
+    {
+      "d": "2026-11-22T08:40",
+      "tag": "match",
+      "t": "Nuamah et Nakamura à la traîne pour la première de Vicens",
+      "s": "Les deux ailiers ont reçu les plus mauvaises notes de L'Équipe à Lille, alors que Greif, Athekame et Bidstrup ont été les mieux notés.",
+      "src": "Foot01",
+      "url": "https://www.foot01.com/ol/ol-deux-mauvais-eleves-se-ratent-pour-la-premiere-de-vicens"
+    },
+    {
+      "d": "2026-11-21T23:35",
+      "tag": "match",
+      "t": "Lille-OL : ce qu'il faut retenir du succès lyonnais",
+      "s": "Une victoire solide portée par un Khalis Merah précieux dans les liaisons, mais une dernière demi-heure plus poussive après l'heure de jeu.",
+      "src": "Olympique-et-Lyonnais",
+      "url": "https://www.olympique-et-lyonnais.com/lille-ol-0-1-le-barometre-du-match-ce-quil-faut-retenir,414332.html"
+    },
     {
       "d": "2026-11-21T23:15",
       "tag": "match",
@@ -118,6 +145,14 @@
       "s": "Le nouveau coach a demandé à ses joueurs d'être agressifs et de presser Lille sans relâche, et ça a payé.",
       "src": "Olympique-et-Lyonnais",
       "url": "https://www.olympique-et-lyonnais.com/vicens-apres-lille-ol-0-1-ne-pas-leur-laisser-de-temps-et-etre-agressifs,414326.html"
+    },
+    {
+      "d": "2026-11-21T23:05",
+      "tag": "match",
+      "t": "Les notes de LyonFoot : Bidstrup en patron",
+      "s": "La rédaction met en avant le buteur danois et l'entraîneur, et se montre sévère avec Tanner Tessmann.",
+      "src": "LyonFoot",
+      "url": "https://www.lyonfoot.com/article/14934/les-notes-de-lille-ol-mads-bidstrup-buteur-harceleur-et-heroique"
     },
     {
       "d": "2026-11-21T23:00",
@@ -142,6 +177,22 @@
       "s": "Victoire chez le 2e de Ligue 1, qui n'avait perdu que deux fois en 24 matchs de championnat.",
       "src": "Olympique-et-Lyonnais",
       "url": "https://www.olympique-et-lyonnais.com/grace-a-mads-bidstrup-lol-gagne-a-lille-pour-la-premiere-de-carlos-vicens-0-1,414314.html"
+    },
+    {
+      "d": "2026-11-21T17:35",
+      "tag": "feminines",
+      "t": "Première sélection en Bleues pour Liana Joseph",
+      "s": "L'attaquante d'OL Lyonnes, 20 ans, est appelée en équipe de France pour les amicaux contre le Venezuela et le Maroc. Giráldez s'en félicite.",
+      "src": "Olympique-et-Lyonnais",
+      "url": "https://www.olympique-et-lyonnais.com/jonatan-giraldez-tres-heureux-de-la-selection-de-liana-joseph-ol-lyonnes-avec-la-france,414270.html"
+    },
+    {
+      "d": "2026-11-21T11:50",
+      "tag": "match",
+      "t": "Monaco privé de Mamadou Coulibaly à Lyon",
+      "s": "Suspendu après son geste contre Le Mans, le milieu monégasque manquera le déplacement au Groupama Stadium le 29 novembre.",
+      "src": "Olympique-et-Lyonnais",
+      "url": "https://www.olympique-et-lyonnais.com/monaco-devra-faire-sans-mamadou-coulibaly-contre-lol,414194.html"
     },
     {
       "d": "2026-11-21T07:30",
@@ -262,6 +313,14 @@
       "s": "Les fans de l'OL n'ont pas pu se rendre au stade Pierre-Mauroy.",
       "src": "Foot Mercato",
       "url": "https://www.footmercato.net/a4272267414343191560-les-supporters-de-lol-interdits-de-deplacement-a-lille"
+    },
+    {
+      "d": "2026-11-13T12:15",
+      "tag": "mercato",
+      "t": "L'OL pourrait encore devoir vendre en janvier",
+      "s": "D'après L'Équipe, un ou deux départs seraient nécessaires cet hiver pour les finances du club ; Šulc et Nuamah sont cités.",
+      "src": "Ferveur Lyonnaise",
+      "url": "https://www.ferveurlyonnaise.fr/pour-rester-dans-les-clous-lol-va-encore-devoir-vendre-au-mercato-hivernal/"
     },
     {
       "d": "2026-11-13T12:00",
