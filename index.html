@@ -1599,6 +1599,10 @@ function draftOffer(kind,i,role){
   dWrite({[`offers.${me}.${key}`]:ids});
   return ids;
 }
+// 📊 Toutes les listes de joueurs : du plus fort au moins fort (note + évolution du propriétaire)
+const TRK={bronze:0,silver:1,gold:2,icon:3,myth:4};
+function strOf(id,w){ const p=BY_ID[id]; if(!p) return 0; const e=(((w!==undefined?C(w):(me&&C(me)))||{}).evo||{})[id]||0; return p.ovr+e; }
+function byStr(w){ return (a,b)=>{ const A=typeof a==="string"?a:a.id, B=typeof b==="string"?b:b.id; return strOf(B,w)-strOf(A,w)||TRK[cardTier(BY_ID[B])]-TRK[cardTier(BY_ID[A])]||BY_ID[A].name.localeCompare(BY_ID[B].name,"fr"); }; }
 function genOffer(kind,role,taken){
   const okR=kind==="xi"?(ROLE_OK[role]||[]):null;
   let base=(kind==="coach"?COACHES:PLAYERS).filter(p=>!taken[p.id]&&(!okR||zoneOK(p,role)));
@@ -1662,7 +1666,7 @@ function renderList(){
   const isDuo=editing.mode==="duo4";
   const d4=isDuo?duos[editing.id]:null;
   if(clubPick){ const own=d4?duoOwnD(d4,me):(id=>!!(C(me).coll||{})[id]); ps=ps.filter(p=>own(p.id)); }
-  if(clubPick) ps.sort((a,b)=>a.year-b.year||a.name.localeCompare(b.name,"fr"));
+  { const R=editing.kind==="xi"?editing.role:null, sc=p=>R?strOf(p.id)*fit(p,R):strOf(p.id); ps.sort((a,b)=>sc(b)-sc(a)||byStr()(a,b)); }
   const takenMap = editing.mode==="draft" ? dTaken(draft) : isDr ? duoTaken(duos[editing.id]) : null;
   const used = takenMap ? new Set(Object.keys(takenMap)) : (isCoach?new Set():usedIds());
   const L=$("#list"); L.innerHTML="";
@@ -3139,7 +3143,7 @@ function renderCollec(){
   const sb=$("#sellBtn"); if(sb) sb.onclick=()=>openModal(`Vendre tous tes doublons pour ${dupes} 🪙 ?`,null,[["Vendre",()=>{ for(const id in coll) if(coll[id]>1) coll[id]=1; addCoins(dupes,"doublons vendus"); renderCollec(); }],["Annuler",null,true]]);
   const F=[["all","Tous"],["myth","Mythiques"],["icon","Légendaires"],["gold","Épiques"],["silver","Rares"],["bronze","Communes"],["coach","Entraîneurs"],["miss","Manquants"]];
   const tfOn=new Set(tfActive());
-  const list=ALL_CARDS.filter(p=>{ const t=cardTier(p); if(p.v==="tf"&&!coll[p.id]&&!tfOn.has(p.id)) return false; if(colFilter==="miss") return !coll[p.id]; if(colFilter==="coach") return p.pos[0]==="COACH"; return colFilter==="all"||t===colFilter; });
+  const list=ALL_CARDS.filter(p=>{ const t=cardTier(p); if(p.v==="tf"&&!coll[p.id]&&!tfOn.has(p.id)) return false; if(colFilter==="miss") return !coll[p.id]; if(colFilter==="coach") return p.pos[0]==="COACH"; return colFilter==="all"||t===colFilter; }).sort(byStr());
   $("#cAlbum").innerHTML=`<h3>📖 Mon album <small>${owned} / ${ALL_CARDS.length}</small></h3>
     <div class="track" style="height:10px;margin-bottom:10px"><i style="width:${owned/ALL_CARDS.length*100}%"></i></div>
     <div class="chips" style="margin-bottom:10px">${F.map(([k,l])=>`<button class="chip${colFilter===k?" on":""}" data-f="${k}">${l}</button>`).join("")}</div>
@@ -3173,7 +3177,7 @@ setInterval(()=>{ if(me) claimRewards(); },5000);
 const TPTS={bronze:1,silver:3,gold:8,icon:25,myth:75};
 let trades={}, tradeSeen=null, tdraft=null;
 const ptsOf=m=>Object.entries(m||{}).reduce((s,[id,n])=>s+(BY_ID[id]?TPTS[cardTier(BY_ID[id])]*n:0),0);
-function dupesOf(w){ const c=C(w).coll||{}; return Object.entries(c).filter(([id,n])=>n>1&&BY_ID[id]).map(([id,n])=>({id,n:n-1})).sort((a,b)=>TPTS[cardTier(BY_ID[b.id])]-TPTS[cardTier(BY_ID[a.id])]||BY_ID[a.id].name.localeCompare(BY_ID[b.id].name,"fr")); }
+function dupesOf(w){ const c=C(w).coll||{}; return Object.entries(c).filter(([id,n])=>n>1&&BY_ID[id]).map(([id,n])=>({id,n:n-1})).sort(byStr(w)); }
 const listTxt=m=>Object.entries(m).map(([id,n])=>`${n>1?n+"× ":""}${BY_ID[id]?.name||"?"}`).join(", ");
 function onTrades(all){
   trades=all; const mine=Object.entries(trades);
@@ -3277,7 +3281,7 @@ function renderMarket(){
   const el=$("#cMarket"); if(!el||!me) return; const c=W();
   const rk={bronze:0,silver:1,gold:2,icon:3,myth:4};
   const open=Object.entries(market).filter(([i,l])=>l.status==="open"&&BY_ID[l.pid]);
-  const others_=open.filter(([i,l])=>l.seller!==me&&(mkFilter==="all"||(mkFilter==="new"?!c.coll[l.pid]:cardTier(BY_ID[l.pid])===mkFilter))).sort((a,b)=>rk[cardTier(BY_ID[b[1].pid])]-rk[cardTier(BY_ID[a[1].pid])]||a[1].price-b[1].price);
+  const others_=open.filter(([i,l])=>l.seller!==me&&(mkFilter==="all"||(mkFilter==="new"?!c.coll[l.pid]:cardTier(BY_ID[l.pid])===mkFilter))).sort((a,b)=>byStr(a[1].seller)(a[1].pid,b[1].pid)||a[1].price-b[1].price);
   const mine=open.filter(([i,l])=>l.seller===me);
   const sold=Object.entries(market).filter(([i,l])=>l.status==="sold"&&(l.seller===me||l.buyer===me)).sort((a,b)=>(b[1].soldAt||0)-(a[1].soldAt||0)).slice(0,5);
   const card=(l,btn)=>{ const p=BY_ID[l.pid], t=cardTier(p); return `<div class="mk"><span class="tmini" data-zoom="${l.pid}">${cardHTML(l.pid,{w:40,mini:true})}</span><span class="tname">${esc(p.name)}<small><span class="rar r-${t}">${TIER_NAME[t]}</span> ${l.seller===me?"":"par "+esc(NAMES[l.seller]||"?")}${!c.coll[l.pid]&&l.seller!==me?' · <b style="color:#7ee2a0">manque à ton album</b>':""}</small></span><span class="mkp">🪙 ${l.price}</span>${btn}</div>`; };
@@ -3509,7 +3513,7 @@ async function openBudgetSlot(k){
   const T=$("#tradeUI"); T.classList.add("open");
   T.innerHTML=`<div class="tui-box"><div class="tui-head"><b>${s.role==="COACH"?"Entraîneur":ROLE_LABEL[s.role]||s.role}${pr0&&pr0!==s.role?` <small class="mute">→ placé en ${pr0}</small>`:""}</b><button class="btn sm ghost" id="tClose">Fermer</button></div>
     <div class="mute" style="font-size:12.5px;margin-bottom:6px">Budget restant : <b>${left}</b> pts · il faut garder au moins ${minN} pts pour compléter l'équipe.</div>
-    ${ids.map(id=>{ const p=BY_ID[id], t=cardTier(p), pr=priceOf(id), taken=id===otherPick, tooMuch=left-pr<minN;
+    ${ids.slice().sort((a,b)=>(pr0||s.role)!=="COACH"?strOf(b)*fit(BY_ID[b],pr0||s.role)-strOf(a)*fit(BY_ID[a],pr0||s.role)||byStr()(a,b):byStr()(a,b)).map(id=>{ const p=BY_ID[id], t=cardTier(p), pr=priceOf(id), taken=id===otherPick, tooMuch=left-pr<minN;
       return `<div class="tline${taken?" used":""}"><span class="tmini" data-cv="${id}">${cardHTML(id,{w:40,mini:true,role:s.role==="COACH"?null:(pr0||s.role)})}</span><span class="tname">${esc(p.name)}<small><span class="rar r-${t}">${TIER_NAME[t]}</span> note ${p.ovr} · ${esc(p.pos.join("/"))}${s.role!=="COACH"?" "+hpTxt(p,pr0||s.role):""}${s.role==="COACH"&&COACH_SKILL[id]?` · 🧠 ${esc(COACH_SKILL[id].n)} : ${esc(COACH_SKILL[id].d)}`:""}${taken?` · <b style="color:#ff9aa8">pris par ${esc(NAMES[o])}</b>`:""}</small></span><button class="btn sm" data-bp="${id}" ${taken||tooMuch?"disabled":""}>${pr} pts</button></div>`; }).join("")}</div>`;
   $("#tClose").onclick=()=>T.classList.remove("open");
   T.querySelectorAll("[data-cv]").forEach(x=>x.onclick=()=>showCard(x.dataset.cv,null));
@@ -4105,7 +4109,7 @@ function settleAuctions(){
 const fmtLeft=ms=>{ if(ms<=0) return "terminée"; const s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor(s%3600/60); return h>=48?`${Math.floor(h/24)} j ${h%24} h`:h?`${h} h ${m} min`:m?`${m} min ${s%60}s`:`${s}s`; };
 function renderAuctions(){
   const el=$("#cAuct"); if(!el||!me) return; const c=W(); const now=Date.now();
-  const open=Object.entries(auctions).filter(([i,a])=>a.ends>now&&BY_ID[a.pid]).sort((x,y)=>x[1].ends-y[1].ends);
+  const open=Object.entries(auctions).filter(([i,a])=>a.ends>now&&BY_ID[a.pid]).sort((x,y)=>byStr()(x[1].pid,y[1].pid)||x[1].ends-y[1].ends);
   const done=Object.entries(auctions).filter(([i,a])=>a.ends<=now&&(a.seller===me||a.bidder===me)).sort((x,y)=>y[1].ends-x[1].ends).slice(0,4);
   const row=(id,a)=>{ const p=BY_ID[a.pid], t=cardTier(p), mineS=a.seller===me, top=a.bidder===me, nb=ABUMP(a);
     return `<div class="mk"><span class="tmini" data-zoom="${a.pid}">${cardHTML(a.pid,{w:40,mini:true})}</span><span class="tname">${esc(p.name)}<small><span class="rar r-${t}">${TIER_NAME[t]}</span> ${mineS?"ta vente":"par "+esc(NAMES[a.seller]||"?")} · ⏱ <span data-left="${a.ends}">${fmtLeft(a.ends-now)}</span>${a.bidder?` · meilleure : ${esc(NAMES[a.bidder]||"?")}`:" · aucune offre"}</small></span>
@@ -4511,7 +4515,7 @@ function clubPageHTML(id){ const c=C(id), r=recOf(id), own=ownedOf(id), xr=xiRat
   const myColl=W().coll||{}, his=c.coll||{};
   const CF=[["all","Tous"],["myth","Mythiques"],["icon","Légendaires"],["gold","Épiques"],["silver","Rares"],["bronze","Communes"],["coach","Entraîneurs"],...(mine?[]:[["new","🆕 Que je n'ai pas"],["dup","🔄 Ses doublons"]])];
   const list=own.filter(p=>{ const t=cardTier(p); if(socColF==="new") return !myColl[p.id]; if(socColF==="dup") return (his[p.id]||0)>1; if(socColF==="coach") return p.pos[0]==="COACH"; return socColF==="all"||t===socColF; })
-    .sort((a,b)=>({myth:4,icon:3,gold:2,silver:1,bronze:0}[cardTier(b)]-{myth:4,icon:3,gold:2,silver:1,bronze:0}[cardTier(a)])||(b.ovr-a.ovr));
+    .sort(byStr(id));
   const heroes=(c.heroes||[]).slice(-6).reverse();
   return `<div class="clubh"><span class="cav big">${esc((NAMES[id]||"?").slice(0,1).toUpperCase())}</span><div class="cinf"><h2>${esc(NAMES[id]||"?")}${isFriend(id)?" ⭐":""}</h2><small>${agoTxt(c.updated)}${c.birth?` · 🎂 ${bdayTxt(c.birth)}`:mine?` · <a href="#" id="bdSet" style="color:#ffd970">🎂 ajouter mon anniversaire</a>`:""}</small>${isBday(id)?`<div style="color:#ffd970;font-weight:800;font-size:13px;margin-top:2px">🎉 C'est son anniversaire aujourd'hui !</div>`:""}</div><div class="cnote big" style="color:${xr==null?"var(--mute)":socCol(xr)}">${xr??"—"}<small>note du 11</small></div></div>
     ${mine?"":`<div class="socacts" style="margin:0 0 10px">${frBtnHTML(id)}</div>${socActsHTML(id)}`}
@@ -5115,7 +5119,7 @@ let defiSw=null;
 function pickDefi(i,role){
   const D=defiState(), df=defiOf(D.day); const used=new Set(Object.values(D.slots)); const cur=D.slots[i];
   const left=df.budget?df.budget-bCost(Object.entries(D.slots).filter(([k])=>+k!==i).map(([,v])=>v)):null;
-  const L=PLAYERS.filter(p=>df.f(p)&&(!used.has(p.id)||p.id===cur)).map(p=>({p,f:fit(p,role)})).sort((a,b)=>b.f-a.f||b.p.ovr-a.p.ovr);
+  const L=PLAYERS.filter(p=>df.f(p)&&(!used.has(p.id)||p.id===cur)).map(p=>({p,f:fit(p,role)})).sort((a,b)=>b.p.ovr*b.f-a.p.ovr*a.f||b.p.ovr-a.p.ovr);
   const M=$("#cardModal");
   M.innerHTML=`<div class="cm-box panel" style="max-height:85vh;overflow:auto"><h3 style="margin:0 0 6px">${ROLE_LABEL[role]||role}</h3>${left!=null?`<div class="mute" style="font-size:12px">Budget restant : ${left}</div>`:""}
    <div class="plist">${L.map(({p,f})=>{ const cost=BPRICE[cardTier(p)]; const no=left!=null&&cost>left; return `<button class="prow ${cardTier(p)}" data-dp="${p.id}" ${no?"disabled":""}><b>${Math.round(p.ovr*f)}</b><span>${esc(p.name)}<small>${p.pos.join("/")} · ${p.year}${f<1?" · hors poste":""}</small></span>${left!=null?`<i>${cost}</i>`:""}</button>`; }).join("")}</div>
@@ -5425,7 +5429,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-24m"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-24n"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
