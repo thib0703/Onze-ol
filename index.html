@@ -4691,7 +4691,8 @@ function trophyCheck(quiet){ if(!me||!C(me)) return; const c=W(); const T=c.trop
   const has=id=>T.some(x=>x.id===id); const put=(id,k,n,extra)=>{ if(has(id)) return; const x={id,k,n,at:Date.now(),...(extra||{})}; T.push(x); add.push(x); };
   // coupes du week-end : trophée dédié
   T.forEach(x=>{ if(x.k==="cup"&&String(x.id).startsWith("wk-")) x.k="wk"; });
-  const D=c.div; if(D){ if((D.best??10)<10){ const up=T.find(x=>x.id==="div-up"); const nm=`Montée : ${DIV_NAME(D.best)}`; if(up){ if(up.n!==nm){ up.n=nm; up.at=Date.now(); add.push(up); } } else put("div-up","up",nm); }
+  const D=c.div; if(D){ { const i0=T.findIndex(x=>x.id==="div-up"); if(i0>=0) T.splice(i0,1); // ancien bouclier unique → un bouclier par montée
+      for(let d=9;d>=(D.best??10);d--) put("div-up-"+d,"up",`Montée en ${DIV_NAME(d)}`); }
     if(D.d===0&&D.p>=DIV_UP) put("ldc-"+D.w,"ldc","Titre en Ligue des Champions"); }
   const K=c.career; if(K&&(K.best||0)>=CAREER.length) put("car","car","Carrière terminée");
   const P=c.pass; if(P&&P.lv>=PASS_N) put("pass-"+P.s,"pass",`Pass ${(()=>{ const [y,m]=String(P.s).split("-").map(Number); return y&&m?new Date(y,m-1,1).toLocaleDateString("fr-FR",{month:"long",year:"numeric"}):PASS_NAME(); })()}`);
@@ -5429,7 +5430,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-24n"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-24o"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
