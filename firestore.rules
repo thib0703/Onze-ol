@@ -120,8 +120,16 @@ service cloud.firestore {
       allow read, write: if estAdmin();
     }
     // Match en direct + historique : n'importe quel joueur connecté
+    // Données partagées (match en direct, historique, classement, pronos, réactions, chat) :
+    // chacun peut ajouter, personne (sauf l'admin) ne peut effacer ou vider
     match /onzeol_meta/{doc} {
-      allow read, write: if joueurConnecte();
+      allow read, create: if joueurConnecte();
+      allow delete: if estAdmin();
+      allow update: if estAdmin() || (joueurConnecte()
+        && request.resource.data.keys().hasAll(resource.data.keys())
+        && (doc != 'main' || !('matches' in resource.data) || request.resource.data.matches.size() >= resource.data.matches.size())
+        && (doc != 'rank' || !('months' in resource.data) || request.resource.data.months.keys().hasAll(resource.data.months.keys()))
+        && (doc != 'preds' || true));
     }
   }
 }
