@@ -785,6 +785,44 @@ header{padding:10px 16px 4px;min-height:44px}header h1{font-size:19px;margin:0;l
 .fcard.v-ul .fc-glow{opacity:.15}
 .fcard.v-ul .fc-tag{display:none!important}
 .fcard.v-ul .fc-name{background:linear-gradient(90deg,transparent,#e8c45a33 20%,#e8c45a33 80%,transparent)!important}
+/* 🏆 tableau de coupe */
+.brk{display:flex;gap:12px;overflow-x:auto;padding:6px 2px 10px;margin:6px -4px 4px;scrollbar-width:thin}
+.brk-c{display:flex;flex-direction:column;min-width:86px;flex:1}
+.brk-h{font-size:10px;font-weight:900;letter-spacing:1.2px;text-transform:uppercase;color:#ffd970;text-align:center;margin-bottom:6px}
+.brk-ts{flex:1;display:flex;flex-direction:column;justify-content:space-around;gap:10px}
+.brk-t{position:relative;background:linear-gradient(160deg,#16295c,#0e1c42);border:1px solid #2b3c6e;border-radius:9px;overflow:visible;box-shadow:0 3px 8px #0006}
+.brk-c:not(.brk-w):not(:nth-last-child(2)) .brk-t::after{content:"";position:absolute;right:-15px;top:50%;width:14px;border-top:2px solid #3a4f8a}
+.brk-c:nth-last-child(2) .brk-t::after{content:"";position:absolute;right:-15px;top:50%;width:14px;border-top:2px solid #c9a24a}
+.brk-p{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:5px 8px;font-size:12px;font-weight:700}
+.brk-p+.brk-p{border-top:1px solid #ffffff12}
+.brk-p span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.brk-p b{font-weight:900;min-width:14px;text-align:right}
+.brk-p.w{background:linear-gradient(90deg,#c9a24a44,transparent);color:#ffe9a8}.brk-p.w b{color:#ffd970}.brk-p.l{opacity:.45}
+.brk-p.me span{text-decoration:underline;text-decoration-color:#e3002b;text-underline-offset:2px}
+.brk-t.live{border-color:#e3002b;box-shadow:0 0 10px #e3002b66}
+.brk-tab{position:absolute;left:0;right:0;bottom:-14px;text-align:center;font-size:9px;color:var(--mute)}
+.tbd{font-style:normal;color:#ffffff55;font-weight:600}
+.brk-w{min-width:92px}
+.brk-cup{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border-radius:12px;border:1px dashed #c9a24a66;text-align:center}
+.brk-cup span{font-size:34px;filter:grayscale(1) opacity(.5)}.brk-cup b{font-size:12px;color:var(--mute)}
+.brk-cup.on{border:1px solid #ffd970;background:radial-gradient(circle at 50% 30%,#ffd97044,transparent 70%);box-shadow:0 0 18px #ffd97055}
+.brk-cup.on span{filter:drop-shadow(0 0 10px #ffd970);animation:bkCup 2.4s ease-in-out infinite}@keyframes bkCup{50%{transform:translateY(-4px) scale(1.06)}}.brk-cup.on b{color:#ffd970;font-size:13px}
+.brk-d summary{cursor:pointer;font-size:12.5px;font-weight:800;color:#c3cdea;padding:6px 0}
+/* 🏆 armoire à trophées */
+.troph{background:linear-gradient(160deg,#1a1408,#0e1530 60%);border:1px solid #c9a24a44}
+.trg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.trc{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;text-align:center;gap:2px;padding:12px 6px 8px;border-radius:12px;
+  background:linear-gradient(170deg,#3a2c0a,#1a1406);border:1px solid #c9a24a88;box-shadow:inset 0 1px 0 #ffffff22,0 4px 10px #0007}
+.trc.silver{background:linear-gradient(170deg,#3a414d,#1b1f27);border-color:#aeb6c188}.trc.bronze{background:linear-gradient(170deg,#4a2c14,#1f1208);border-color:#c9874f88}
+.tri{font-size:40px;line-height:1;filter:drop-shadow(0 4px 8px #000a) drop-shadow(0 0 10px #ffd97066)}
+.trc b{font-size:11.5px;color:#ffe9a8;line-height:1.2;margin-top:4px}.trc.silver b{color:#e9edf2}
+.trc small{font-size:9.5px;color:#c9b98a}.trc .trvs{color:#9aa6c8}.trc em{font-style:normal;font-size:9px;color:#ffffff66;margin-top:2px}
+.trshine{position:absolute;inset:0;background:linear-gradient(105deg,transparent 40%,#ffffff33 50%,transparent 60%);animation:fxSweep 5s ease-in-out infinite;pointer-events:none}
+.fcard.v-lm{--art:url(img/fonds/legendaire.webp)}
+/* ⭐ Légende moderne (provisoire en attendant un fond dédié) : nacre + liseré bleu-rouge OL */
+.fcard.v-lm{--ink:#14204a;--acc:#1d4ed8}
+.fcard.v-lm .fc-fx::after{inset:0;background:linear-gradient(115deg,#1d4ed800,#1d4ed833 25%,#ffffff55 45%,#e3002b33 65%,#e3002b00 85%);background-size:300% 100%;animation:fxHolo 5s linear infinite;mix-blend-mode:soft-light}
+.fcard.v-lm .fc-fx::before{inset:0;box-shadow:inset 0 0 0 calc(var(--w)*.018) #1d4ed8aa,inset 0 0 calc(var(--w)*.06) #e3002b55}
+.fcard.v-lm .fc-name{background:linear-gradient(90deg,transparent,#1d4ed822 20%,#e3002b22 80%,transparent)!important}
 </style>
 </head>
 <body>
@@ -886,6 +924,7 @@ header{padding:10px 16px 4px;min-height:44px}header h1{font-size:19px;margin:0;l
   <div class="section" id="cMarket"></div>
   <div class="section" id="cAuct"></div>
   <div class="section" id="cTrades"></div>
+  <div id="cTroph"></div>
   <div class="section" id="cAlbum"></div>
 </div>
 <div id="viewJeux" class="wrap" style="display:none">
@@ -1835,7 +1874,7 @@ function palmScore(p){
   if(p.pos[0]!=="COACH") sc+=Math.max(0,(p.ovr-75)/2)+(p.m||0)/80; else sc+=Math.max(0,(p.ovr-75)/3);
   return _rcache[p.id]=sc;
 }
-function rarity(p){ if(p.v) return p.v==="ml"||p.v==="xm"||p.v==="gf"||p.v==="ul"?"myth":p.v==="fs"?"icon":(p.ovr>=85?"icon":"gold"); const s=palmScore(p); return s>=24?"myth":s>=12?"icon":s>=6?"gold":s>=2.5?"silver":"bronze"; }
+function rarity(p){ if(p.v) return p.v==="ml"||p.v==="xm"||p.v==="gf"||p.v==="ul"||p.v==="lm"?"myth":p.v==="fs"?"icon":(p.ovr>=85?"icon":"gold"); const s=palmScore(p); return s>=24?"myth":s>=12?"icon":s>=6?"gold":s>=2.5?"silver":"bronze"; }
 function palmText(p){
   const t=olTitles(p), M=MAJ[p.id]||{}; const L=[];
   if(t.l1) L.push(`${t.l1}× Champion de France`); if(t.cdf) L.push(`${t.cdf}× Coupe de France`); if(t.cdl) L.push(`${t.cdl}× Coupe de la Ligue`); if(t.tdc) L.push(`${t.tdc}× Trophée des champions`);
@@ -2614,7 +2653,7 @@ const PACKS={
 PACKS.starter={name:"Pack de départ",price:0,n:12,w:{bronze:100},color:"#7ec8ff"};
 const SELL={bronze:4,silver:12,gold:32,icon:100,myth:300};
 // ---------- ✨ Cartes spéciales (variantes plus fortes de certains joueurs) ----------
-const VAR_INFO={fs:{l:"PÉPITE",n:"Pépite",ic:"🌟"},tf:{l:"EN FORME",n:"Forme du moment",ic:"🔥"},ml:{l:"MOMENT",n:"Moment de légende",ic:"🏆"},xm:{l:"NOËL",n:"Édition Noël",ic:"🎄"},gf:{l:"GRANDE FORME",n:"Grande Forme",ic:"💥"},ul:{l:"LÉGENDE ULTIME",n:"Légende Ultime",ic:"👑"}};
+const VAR_INFO={fs:{l:"PÉPITE",n:"Pépite",ic:"🌟"},tf:{l:"EN FORME",n:"Forme du moment",ic:"🔥"},ml:{l:"MOMENT",n:"Moment de légende",ic:"🏆"},xm:{l:"NOËL",n:"Édition Noël",ic:"🎄"},gf:{l:"GRANDE FORME",n:"Grande Forme",ic:"💥"},ul:{l:"LÉGENDE ULTIME",n:"Légende Ultime",ic:"👑"},lm:{l:"LÉGENDE MODERNE",n:"Légende moderne",ic:"⭐"}};
 const FS_LIST=[["kail-boudache",84],["khalis-merah",82],["noah-nartey",82],["julien-duranville",81],["zachary-athekame",80],["remi-himbert",80]];
 const ML_LIST=[["juninho",97,"Roi du coup franc"],["karim-benzema",94,"Meilleur joueur de Ligue 1 en 2008"],["hugo-lloris",93,"Le mur de Gerland"],["michael-essien",92,"Le Bison"],["sonny-anderson",92,"Le buteur du premier titre"],
   ["alexandre-lacazette",92,"Meilleur buteur de Ligue 1 en 2015"],["cris",91,"Le Policier"],["nabil-fekir",91,"Capitaine courage"],["bafetimbi-gomis",90,"Quadruplé à Zagreb (2011)"],["sidney-govou",89,"Héros du Septuplé"]];
@@ -2657,9 +2696,9 @@ const UL_OLD=[
  ["remi-garde","Rémi Garde","MDC",1984,93,162,23,"FR","Le capitaine des années 80"],
 ];
 UL_OLD.forEach(([id,n,pos,y,o,mm,g,nat,t])=>{ if(BY_ID[id]) return; const p={id,base:id,name:n,pos:[pos],year:y,ovr:o,m:mm,g,v:"ul",title:t,old:true}; VARIANTS.push(p); BY_ID[id]=p; NAT[id]=nat; PORTRAITS.add(id); });
-// Légendes déjà dans le jeu, en version Ultime : [id, note, "exploit"]
+// ⭐ LÉGENDES MODERNES (catégorie à part) : les géants de l'ère Aulas, version monstrueuse : [id, note, "exploit"]
 [["juninho",99,"Le Roi du coup franc · 100 buts"],["alexandre-lacazette",97,"201 buts · 2e buteur de l'histoire du club"],["gregory-coupet",97,"Le mur des 7 titres"],
- ["sidney-govou",95,"412 matchs sous le maillot lyonnais"],["karim-benzema",97,"Formé à l'OL, 4 titres de champion"],["anthony-lopes",95,"Formé au club, plus de 470 matchs"]].forEach(([id,o,t])=>mkVar(id,"ul",o,t));
+ ["sidney-govou",95,"412 matchs sous le maillot lyonnais"],["karim-benzema",97,"Formé à l'OL, 4 titres de champion"],["anthony-lopes",95,"Formé au club, plus de 470 matchs"]].forEach(([id,o,t])=>mkVar(id,"lm",o,t));
 GF_LIST.forEach(([pid,key,o,t])=>{ const b=BY_ID[pid]; if(!b) return; const id=pid+"--gf-"+key; const p=Object.assign({},b,{id,base:pid,v:"gf",ovr:Math.min(99,o),title:t}); VARIANTS.push(p); BY_ID[id]=p; for(const T of [NAT,SPANS,MAJ,STYLE_OF]) if(T[pid]!=null) T[id]=T[pid]; });
 [...CURRENT].forEach(id=>{ const b=BY_ID[id], fs=BY_ID[id+"--fs"]; if(b) mkVar(id,"tf",Math.min(92,Math.max(b.ovr+7,fs?fs.ovr+2:0)),"Forme du moment"); });
 const baseOf=id=>(BY_ID[id]&&BY_ID[id].base)||id;
@@ -2672,11 +2711,11 @@ function tfActive(){ const now=Date.now();
   return Object.entries((LIVE&&LIVE.players)||{}).filter(([id,x])=>x&&x.st==="up"&&BY_ID[id+"--tf"]).map(([id])=>id+"--tf"); }
 const tfWhy=id=>{ const p=BY_ID[id]; if(p&&p.tfNote!=null) return `${p.tfNote}/10${p.tfWhy?" · "+p.tfWhy:""}`; return (((LIVE&&LIVE.players)||{})[baseOf(id)]||{}).note||""; };
 function tfWeek(){ return tfActive(); }
-const VORD={fs:0,tf:1,gf:2,ml:3,ul:4,xm:5};
+const VORD={fs:0,tf:1,gf:2,ml:3,lm:4,ul:5,xm:6};
 const ALL_CARDS=[...PLAYERS.slice().sort((a,b)=>a.year-b.year||a.name.localeCompare(b.name,"fr")),...COACHES,...VARIANTS.slice().sort((a,b)=>VORD[a.v]-VORD[b.v]||a.name.localeCompare(b.name,"fr"))];
 const CARD_NO=Object.fromEntries(ALL_CARDS.map((p,i)=>[p.id,i+1]));
 const poolTier=p=>cardTier(p);
-const POOL={bronze:[],silver:[],gold:[],icon:[],myth:[]}; for(const p of ALL_CARDS) if(p.v!=="tf"&&p.v!=="xm"&&p.v!=="gf"&&p.v!=="ul") POOL[poolTier(p)].push(p.id);
+const POOL={bronze:[],silver:[],gold:[],icon:[],myth:[]}; for(const p of ALL_CARDS) if(p.v!=="tf"&&p.v!=="xm"&&p.v!=="gf"&&p.v!=="ul"&&p.v!=="lm") POOL[poolTier(p)].push(p.id);
 const W=()=>C(me);
 function addCoins(n,why){ const c=W(); c.coins=(c.coins||0)+n; save(); renderCoins(); if(why) toast(`${n>0?"+":""}${n} 🪙 ${why}`); }
 function renderCoins(){ const el=$("#coins"); if(!el) return; if(!me){el.style.display="none";return;} el.style.display=""; el.textContent=`🪙 ${(W().coins||0).toLocaleString("fr-FR")}`; }
@@ -2730,10 +2769,10 @@ function openPack(pack,free){
   c.opened=(c.opened||0)+1;
   c.packLog=[...(c.packLog||[]),{p:pack,ids,at:Date.now(),paid:free||pack==="jour"?0:P.price}].slice(-10); // historique pour l'admin
   save(); renderCoins(); track("pack");
-  try{ const UL=VARIANTS.filter(p=>p.v==="ul").map(p=>p.id); if(!gold&&pack==="legende"&&UL.length&&Math.random()<.015){ let lo=0; ids.forEach((id,i)=>{ if(rank[cardTier(BY_ID[id])]<rank[cardTier(BY_ID[ids[lo]])]) lo=i; }); ids[lo]=UL[Math.floor(Math.random()*UL.length)]; } }catch(e){}
+  try{ const r_=Math.random(), UL=VARIANTS.filter(p=>p.v===(r_<.01?"ul":"lm")).map(p=>p.id); if(!gold&&pack==="legende"&&UL.length&&r_<.025){ let lo=0; ids.forEach((id,i)=>{ if(rank[cardTier(BY_ID[id])]<rank[cardTier(BY_ID[ids[lo]])]) lo=i; }); ids[lo]=UL[Math.floor(Math.random()*UL.length)]; } }catch(e){}
   try{ const GF=VARIANTS.filter(p=>p.v==="gf").map(p=>p.id); if(!gold&&pack==="legende"&&GF.length&&Math.random()<.03){ let lo=0; ids.forEach((id,i)=>{ if(rank[cardTier(BY_ID[id])]<rank[cardTier(BY_ID[ids[lo]])]) lo=i; }); ids[lo]=GF[Math.floor(Math.random()*GF.length)]; } }catch(e){}
   if(gold) post(`✨ ${NAMES[me]} a ouvert un GOLD PACK !!!`);
-  for(const id of ids){ const t=cardTier(BY_ID[id]); if(BY_ID[id].v==="ul") post(`👑 ${NAMES[me]} a tiré la LÉGENDE ULTIME ${BY_ID[id].name} (${BY_ID[id].ovr}) !!!`); else if(BY_ID[id].v==="gf") post(`💥 ${NAMES[me]} a tiré la GRANDE FORME de ${BY_ID[id].name} (${BY_ID[id].title}) !`); else if(t==="myth"||t==="icon") post(`${t==="myth"?"🌈":"🌟"} ${NAMES[me]} a tiré ${BY_ID[id].name} (${TIER_NAME[t]}) !`); }
+  for(const id of ids){ const t=cardTier(BY_ID[id]); if(BY_ID[id].v==="ul") post(`👑 ${NAMES[me]} a tiré la LÉGENDE ULTIME ${BY_ID[id].name} (${BY_ID[id].ovr}) !!!`); else if(BY_ID[id].v==="lm") post(`⭐ ${NAMES[me]} a tiré la LÉGENDE MODERNE ${BY_ID[id].name} (${BY_ID[id].ovr}) !!`); else if(BY_ID[id].v==="gf") post(`💥 ${NAMES[me]} a tiré la GRANDE FORME de ${BY_ID[id].name} (${BY_ID[id].title}) !`); else if(t==="myth"||t==="icon") post(`${t==="myth"?"🌈":"🌟"} ${NAMES[me]} a tiré ${BY_ID[id].name} (${TIER_NAME[t]}) !`); }
   if(pack==="starter") placeStarter(c,ids);
   packFx(pack,ids,isNew,gold);
 }
@@ -2782,6 +2821,7 @@ function packFx(pack,ids,isNew,gold){
 let colFilter="all";
 function renderCollec(){
   if(!me) return; renderTrades(); renderMarket(); const c=W(); const coll=c.coll||{};
+  try{ $("#cTroph").innerHTML=trophiesHTML(me); }catch(e){}
   try{ const AE=$("#cAdvent"); AE.innerHTML=adventHTML(); AE.querySelectorAll("[data-adv]").forEach(b=>b.onclick=()=>openAdvent(+b.dataset.adv)); }catch(e){}
   const owned=ALL_CARDS.filter(p=>coll[p.id]).length;
   const dupes=Object.entries(coll).reduce((s,[id,n])=>s+(n>1?(n-1)*SELL[cardTier(BY_ID[id])]:0),0);
@@ -3814,7 +3854,7 @@ function claimLeague(){
     if(L.status!=="done"||c.lgDone.includes(id)||!(L.members||[]).includes(me)) continue;
     c.lgDone.push(id); changed=true;
     const S=standings(L); const i=S.findIndex(r=>r.id===me);
-    if(S.length>=2&&i>=0&&i<3){ grant(LEAGUE_R[i],`Championnat « ${L.name} » : ${i+1}${i?"e":"er"}`); if(i===0) post(`🏆 ${NAMES[me]} remporte le championnat « ${L.name} » !`); changed=false; }
+    if(S.length>=2&&i>=0&&i<3){ c.trophies=c.trophies||[]; if(!c.trophies.some(x=>x.id===id)) c.trophies.push({id,k:["lg","lg2","lg3"][i],n:L.name,at:Date.now(),size:S.length}); grant(LEAGUE_R[i],`Championnat « ${L.name} » : ${i+1}${i?"e":"er"}`); if(i===0) post(`🏆 ${NAMES[me]} remporte le championnat « ${L.name} » !`); changed=false; }
   }
   c.lgDone=c.lgDone.slice(-60); if(changed) save();
 }
@@ -4164,6 +4204,7 @@ function clubPageHTML(id){ const c=C(id), r=recOf(id), own=ownedOf(id), xr=xiRat
       ${list.length?`<div class="album">${list.slice(0,socColAll?9999:30).map(p=>{ const n=his[p.id]||0, ev=evoOf(id,p.id); return `<div class="slotc" data-cv="${p.id}"><span class="no">#${String(CARD_NO[p.id]).padStart(3,"0")}${ev?` <b style="color:#7ee2a0">+${ev}</b>`:""}${!mine&&!myColl[p.id]?` <b style="color:#ffd970">🆕</b>`:""}</span>${cardHTML(p.id,{w:100,ovr:p.ovr+ev})}${n>1?`<span class="cnt">×${n}</span>`:""}<div class="an">${esc(short(p.name))}</div></div>`; }).join("")}</div>${list.length>30&&!socColAll?`<button class="btn ghost big" id="socMore" style="margin-top:8px">Voir les ${list.length} cartes</button>`:""}`:`<div class="mute" style="font-size:13px">Aucune carte dans cette catégorie.</div>`}
       ${!mine&&dupesOf(id).length?`<button class="btn big" data-sg="trade:${id}" style="margin-top:10px">🔄 Lui proposer un échange</button>`:""}</div>
     ${heroes.length?`<div class="section"><h3>⭐ Ses derniers héros du match</h3><div class="album">${heroes.map(hh=>`<div class="slotc" data-cv="${hh.pid}"><span class="no">${new Date(hh.at).toLocaleDateString("fr-FR",{day:"numeric",month:"short"})} · ${hh.note}/10</span>${cardHTML(hh.pid,{w:100,ovr:heroOvr(hh),cls:"hero"})}</div>`).join("")}</div></div>`:""}
+    ${trophiesHTML(id,mine?"Mon armoire à trophées":"Son armoire à trophées")}
     <div class="section">${badgesHTML(id)}</div>`; }
 function bindClub(id){ const R=$("#soc"); const bs=$("#bdSet"); if(bs) bs.onclick=e=>{ e.preventDefault(); birthdayPicker(); };
   const sm=$("#socMore"); if(sm) sm.onclick=()=>{ socColAll=true; const y=window.scrollY; renderSocial(); window.scrollTo(0,y); };
@@ -4310,6 +4351,22 @@ function adventHTML(){ if(!me||!adventOn()) return ""; const A=adventState(), td
         :st==="td"?`${LAU.replace('class="lau"','class="lau l"')}${LAU.replace('class="lau"','class="lau r"')}<span class="num">${d}</span><span class="rib">AUJOURD'HUI</span>`
         :`<span class="tx"></span>${LAU.replace('class="lau"','class="lau l"')}${LAU.replace('class="lau"','class="lau r"')}<span class="num">${nn(d)}</span><span class="lock">${st==="ko"?"RATÉE":"🔒"}</span>`;
       return `<button class="advc ${st}${op&&d===advLastOpen?" justop":""}" data-adv="${d}" style="--i:${i};${op?`--gift:url(img/gift-${i%2?"b":"r"}.jpg)`:""}">${inner}</button>`; }).join("")}</div></div>`; }
+
+// ======================================================================
+// 🏆 TABLEAU DE COUPE + ARMOIRE À TROPHÉES
+// ======================================================================
+const TROPHY={cup:{ic:"🏆",t:"Coupe",c:"gold"},cup2:{ic:"🥈",t:"Finaliste",c:"silver"},lg:{ic:"👑",t:"Champion",c:"gold"},lg2:{ic:"🥈",t:"Vice-champion",c:"silver"},lg3:{ic:"🥉",t:"3e du championnat",c:"bronze"}};
+function trophiesHTML(id,title){ const T=((C(id)||{}).trophies||[]).slice().sort((a,b)=>(b.k==="cup"||b.k==="lg")-(a.k==="cup"||a.k==="lg")||b.at-a.at); const big=T.filter(x=>x.k==="cup"||x.k==="lg").length;
+  return `<div class="section troph"><h3>🏆 ${title||"Armoire à trophées"} <small>${big} titre${big>1?"s":""}</small></h3>${T.length?`<div class="trg">${T.map(x=>{ const D=TROPHY[x.k]||TROPHY.cup; return `<div class="trc ${D.c}"><div class="trshine"></div><span class="tri">${D.ic}</span><b>${esc(x.n)}</b><small>${D.t}${x.size?` · ${x.size} joueurs`:""}</small>${x.vs&&NAMES[x.vs]?`<small class="trvs">${x.k==="cup"?"face à":"battu par"} ${esc(NAMES[x.vs])}</small>`:""}<em>${new Date(x.at).toLocaleDateString("fr-FR",{month:"short",year:"numeric"})}</em></div>`; }).join("")}</div>`:`<div class="mute" style="font-size:13px">Aucun trophée pour l'instant : gagne une coupe ou un championnat pour remplir l'armoire !</div>`}</div>`; }
+function bracketHTML(K){ const nR=Math.round(Math.log2(K.size||4)); const N=x=>x?esc((NAMES[x]||"?").slice(0,11)):`<i class="tbd">à venir</i>`;
+  const cols=[]; for(let r=0;r<nR;r++){ const n=(K.size||4)/Math.pow(2,r+1), R=K.rounds[r];
+    const ties=Array.from({length:n},(_,i)=>{ const T=R&&R.ties[i]; if(!T) return `<div class="brk-t"><div class="brk-p"><span>${N(null)}</span></div><div class="brk-p"><span>${N(null)}</span></div></div>`;
+      const ag=T.legs.length?[T.legs.reduce((s,l)=>s+l.s[0],0),T.legs.reduce((s,l)=>s+l.s[1],0)]:null; const live=!T.w&&T.legs.length;
+      const row=(u,g,w)=>`<div class="brk-p${T.w?(w?" w":" l"):""}${u===me?" me":""}"><span>${N(u)}</span><b>${g==null?"":g}</b></div>`;
+      return `<div class="brk-t${live?" live":""}">${row(T.a,ag?ag[0]:null,T.w===T.a)}${row(T.b,ag?ag[1]:null,T.w===T.b)}${T.tab?`<small class="brk-tab">t.a.b ${T.tab[1]}-${T.tab[0]}</small>`:""}</div>`; }).join("");
+    cols.push(`<div class="brk-c"><div class="brk-h">${RNAME(n)}</div><div class="brk-ts">${ties}</div></div>`); }
+  cols.push(`<div class="brk-c brk-w"><div class="brk-h">Vainqueur</div><div class="brk-ts"><div class="brk-cup${K.winner?" on":""}"><span>🏆</span><b>${K.winner?esc(NAMES[K.winner]||"?"):"?"}</b></div></div></div>`);
+  return `<div class="brk">${cols.join("")}</div>`; }
 
 // ======================================================================
 // 🎮 JEUX : carrière, coupe, défi du jour, quiz, canapé, stats, réactions
@@ -4551,11 +4608,14 @@ async function autoTie(id,ri,ti,k){
   post(`🏆 ${K.name} (${RNAME(K.rounds[ri].ties.length)}, ${k?"retour":"aller"}) : ${NAMES[h]} ${sc[0]}-${sc[1]} ${NAMES[v]}${ff?" (forfait)":""}`);
 }
 function claimCups(){ const c=W(); c.cupDone=c.cupDone||[]; let ch=false;
+  // rattrapage : coupes déjà gagnées avant l'armoire à trophées
+  c.trophies=c.trophies||[]; for(const [id,K] of Object.entries(cups)) if(K.status==="done"&&(K.winner===me||K.finalist===me)&&c.cupDone.includes(id)&&!c.trophies.some(x=>x.id===id)){ c.trophies.push({id,k:K.winner===me?"cup":"cup2",n:K.name,at:K.created||Date.now(),size:K.size,vs:K.winner===me?K.finalist:K.winner}); ch=true; }
   for(const [id,K] of Object.entries(cups)){ if(K.status!=="done"||c.cupDone.includes(id)) continue; if(K.winner!==me&&K.finalist!==me) continue;
     c.cupDone.push(id); ch=true;
     c.pend=c.pend||[]; const t=Date.now()+endDelay({len:95});
-    if(K.winner===me){ c.pend.push({t,r:{pack:"legende",coins:300},why:`🏆 Vainqueur de la coupe « ${K.name} »`,trophy:K.name}); post(`🏆 ${NAMES[me]} remporte la coupe « ${K.name} » !`); }
-    else c.pend.push({t,r:{pack:"or"},why:`🥈 Finaliste de la coupe « ${K.name} »`}); }
+    c.trophies=c.trophies||[];
+    if(K.winner===me){ c.pend.push({t,r:{pack:"legende",coins:300},why:`🏆 Vainqueur de la coupe « ${K.name} »`,trophy:K.name}); post(`🏆 ${NAMES[me]} remporte la coupe « ${K.name} » !`); if(!c.trophies.some(x=>x.id===id)) c.trophies.push({id,k:"cup",n:K.name,at:Date.now(),size:K.size,vs:K.finalist||null}); }
+    else { c.pend.push({t,r:{pack:"or"},why:`🥈 Finaliste de la coupe « ${K.name} »`}); if(!c.trophies.some(x=>x.id===id)) c.trophies.push({id,k:"cup2",n:K.name,at:Date.now(),size:K.size,vs:K.winner||null}); } }
   if(ch){ c.cupDone=c.cupDone.slice(-40); save(); } }
 function trophyFx(name){ const el=document.createElement("div"); el.className="trophy"; el.innerHTML=`<div><span>🏆</span><b>CHAMPION !</b><small>${esc(name)}</small></div>`; document.body.appendChild(el); el.onclick=()=>el.remove(); setTimeout(()=>el.remove(),6000); }
 const RNAME=n=>n===1?"Finale":n===2?"Demi-finales":"Quarts de finale";
@@ -4569,7 +4629,7 @@ function cupHTML(){
   <button class="btn big" id="jCupNew">➕ Créer une coupe</button>
   ${L.map(([id,K])=>`<div class="lg${(K.members||[]).includes(me)?" mine":""}"><div class="lgh"><b>${esc(K.name)}</b><small>${K.status==="open"?`Inscriptions ${K.members.length}/${K.size}`:K.status==="running"?"En cours":`Terminée · 🏆 ${esc(NAMES[K.winner]||"?")}`} · créée par ${esc(NAMES[K.owner]||"?")}</small></div>
     ${K.status==="open"?`${invitedMe(K)?`<div class="invst me">📨 <b>${esc(NAMES[K.owner]||"?")}</b> t'invite dans cette coupe !</div>`:""}<div class="mute" style="font-size:12px">${K.members.map(x=>esc(NAMES[x]||"?")).join(", ")}${Object.keys(invOf(K)).filter(u=>!K.members.includes(u)).length?` · 📨 invités : ${Object.keys(invOf(K)).filter(u=>!K.members.includes(u)).map(u=>esc(NAMES[u]||"?")).join(", ")}`:""}</div><div class="lgb">${K.owner===me&&K.members.length<K.size?`<button class="btn sm ghost" data-ci="${id}">📨 Inviter</button>`:""}${K.members.includes(me)?(K.owner===me?"":`<button class="btn sm ghost" data-cq="${id}">Se désinscrire</button>`):K.members.length<K.size?`<button class="btn sm" data-cj="${id}">S'inscrire</button>`:""}${K.owner===me&&K.members.length===K.size?`<button class="btn sm" data-cs="${id}">🎲 Lancer le tirage</button>`:""}${K.owner===me?`<button class="btn sm ghost" data-cd="${id}">Supprimer</button>`:""}</div>`
-    :K.rounds.map((R,ri)=>`<h4>${RNAME(R.ties.length)}</h4>${R.ties.map((T,ti)=>tieH(id,K,ri,ti,T)).join("")}`).join("")}</div>`).join("")||`<div class="mute" style="font-size:13px">Aucune coupe pour l'instant.</div>`}`;
+    :`${bracketHTML(K)}<details class="brk-d"><summary>📋 Détail des matchs et résumés ▶️</summary>${K.rounds.map((R,ri)=>`<h4>${RNAME(R.ties.length)}</h4>${R.ties.map((T,ti)=>tieH(id,K,ri,ti,T)).join("")}`).join("")}</details>`}</div>`).join("")||`<div class="mute" style="font-size:13px">Aucune coupe pour l'instant.</div>`}`;
 }
 
 // ---------- 🎯 Défi du jour ----------
@@ -4904,7 +4964,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-23t"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-23u"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
