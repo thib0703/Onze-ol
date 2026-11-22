@@ -1099,6 +1099,8 @@ body[data-mode="match"] #mBoard .sboard{padding:8px 0 2px}body[data-mode="match"
 .cm-where{margin:6px 0 2px;padding:8px 10px;border-radius:10px;background:#ffffff0d;font-size:12px;line-height:1.45;text-align:left}.cm-where b{display:block;font-size:12.5px;margin-bottom:2px}
 body.lowfx .fc-fx,body.lowfx .fc-shine,body.lowfx .px-holo,body.lowfx .px-shine,body.lowfx .vsh,body.lowfx .px-beams,body.lowfx .px-crowd,body.lowfx .px-fog,body.lowfx .hypePop{display:none!important}
 body.lowfx .tile,body.lowfx .vt img,body.lowfx .hype,body.lowfx .pkbtn,body.lowfx .fcard{animation:none!important}
+.bnav .navi{width:30px;height:30px;object-fit:contain;display:block;margin:0 auto;filter:saturate(.6) brightness(.85);opacity:.85;transition:transform .2s,filter .2s}
+.bnav button.on .navi{filter:drop-shadow(0 0 8px #ffd97088) saturate(1.1);opacity:1;transform:translateY(-2px) scale(1.12)}
 </style>
 </head>
 <body>
@@ -1123,7 +1125,7 @@ body.lowfx .tile,body.lowfx .vt img,body.lowfx .hype,body.lowfx .pkbtn,body.lowf
   <div class="sync" id="sync">Connexion…</div><div id="appV" style="text-align:center;font-size:10px;opacity:.45;margin-top:2px"></div>
 </header>
 <div class="backbar" id="backbar" style="display:none"></div>
-<nav class="bnav" id="bnav"><button id="nCompo" class="on"><i>⚽</i>Mon 11</button><button id="nOnline"><i>🌐</i>En ligne</button><button id="nSolo"><i>🎮</i>Solo</button><button id="nCollec"><i>🎴</i>Collec</button><button id="nOL"><i>📰</i>OL</button></nav>
+<nav class="bnav" id="bnav"><button id="nCompo" class="on"><i><img class="navi" src="img/nav/11.webp" alt=""></i>Mon 11</button><button id="nOnline"><i><img class="navi" src="img/nav/enligne.webp" alt=""></i>En ligne</button><button id="nSolo"><i><img class="navi" src="img/nav/solo.webp" alt=""></i>Solo</button><button id="nCollec"><i><img class="navi" src="img/nav/collec.webp" alt=""></i>Collec</button><button id="nOL"><i><img class="navi" src="img/nav/ol.webp" alt=""></i>OL</button></nav>
 <div class="modes" style="display:none"><button id="mCompo" class="on">11 type</button><button id="mDraft">⚡ Draft</button><button id="mMatch">🏟️ Match</button><button id="mCollec">🎴 Collec</button><button id="mLigue">🏆 Ligue</button><button id="mJeux">🎮 Jeux</button></div>
 <div class="hype" id="hype"></div>
 <div id="viewCompo">
@@ -5692,7 +5694,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-25n"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-25o"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
