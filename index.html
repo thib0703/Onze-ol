@@ -1407,7 +1407,7 @@ $("#aSignup").onclick=async()=>{
   $("#aSignup").disabled=false; };
 $("#shareBtn").onclick=async()=>{ const url=location.origin+location.pathname; try{ if(navigator.share){ await navigator.share({title:"Les Gones Legends",text:"Crée ton compte, fais ton 11 type de l'OL et viens me défier !",url}); return; } }catch(e){ return; } try{ await navigator.clipboard.writeText(url); toast("Lien copié !"); }catch(e){ toast(url); } };
 $("#admBtn").onclick=()=>adminPanel();
-$("#who").onclick=()=>openModal(`Connecté en tant que ${NAMES[me]||"?"}`,null,[[notifState()==="granted"?"🔔 Notifications activées":"🔔 Activer les notifications",()=>{ enableNotifs(); }],...(notifState()==="granted"?[["🧪 Tester les notifications",()=>{ testNotif(); }]]:[]),["🎂 Mon anniversaire",()=>{ setTimeout(birthdayPicker,150); }],["📲 Installer l'appli",()=>{ setTimeout(()=>installGuide(true),200); }],["💡 Revoir les explications",()=>{ resetTips(); }],...(me===ADMIN?[["🛠️ Panneau admin",()=>{ setTimeout(adminPanel,150); }]]:[]),["Se déconnecter",()=>{ firebase.auth().signOut(); }],["Inviter quelqu'un",()=>$("#shareBtn").click(),true],["Fermer",null,true]]);
+$("#who").onclick=()=>openModal(`Connecté en tant que ${NAMES[me]||"?"}`,null,[[notifState()==="granted"?"🔔 Notifications activées":"🔔 Activer les notifications",()=>{ enableNotifs(); }],...(notifState()==="granted"?[["🧪 Tester les notifications",()=>{ testNotif(); }]]:[]),["🎂 Mon anniversaire",()=>{ setTimeout(birthdayPicker,150); }],[SFX.on?"🔊 Son activé (couper)":"🔇 Son coupé (activer)",()=>{ SFX.set(!SFX.on); toast(SFX.on?"🔊 Son activé":"🔇 Son coupé"); if(SFX.on) SFX.chime("gold"); }],["📲 Installer l'appli",()=>{ setTimeout(()=>installGuide(true),200); }],["💡 Revoir les explications",()=>{ resetTips(); }],...(me===ADMIN?[["🛠️ Panneau admin",()=>{ setTimeout(adminPanel,150); }]]:[]),["Se déconnecter",()=>{ firebase.auth().signOut(); }],["Inviter quelqu'un",()=>$("#shareBtn").click(),true],["Fermer",null,true]]);
 
 // ---------- Rendu ----------
 // Note moyenne du 11 (cartes possédées, évolutions et forme réelle comprises)
@@ -2132,7 +2132,7 @@ function nextFx(){
   const role=pid=>{for(const tm of m.teams) for(const l of (tm.played||tm.lineup)) if(l.pid===pid) return l.role; return null;};
   let html="",dur=1500;
   if(e.k==="goal"){
-    dur=2600;
+    dur=2600; try{ SFX.goal(); }catch(_){}
     const conf=Array.from({length:26},(_,i)=>`<i style="left:${(i*37)%100}%;background:${i%3?col:"#fff"};animation-delay:${(i%7)*.08}s;--dx:${((i*53)%60)-30}px"></i>`).join("");
     html=`<div class="fx-bg" style="--c:${col}"></div><div class="confetti">${conf}</div>
       <div class="fx-label goal" style="--c:${col}">${e.gt==="csc"?"CONTRE SON CAMP !":e.gt==="lucky"||e.gt==="deflect"?"BUT CHANCEUX ! 🍀":e.gt==="pen"?"PENALTY… BUT !":e.gt==="fk"||e.fk?"COUP FRANC… BUT !":e.gt==="head"?"DE LA TÊTE !":"BUUUT !"}</div>
@@ -2938,6 +2938,36 @@ function openPack(pack,free){
   if(pack==="starter") placeStarter(c,ids);
   packFx(pack,ids,isNew,gold);
 }
+
+// ======================================================================
+// 🔊 SONS (synthétisés avec Web Audio, aucun fichier) — coupables dans le menu du compte
+// ======================================================================
+const SFX=(()=>{ let ctx=null, master=null, on=true; try{ on=localStorage.getItem("gl_sound")!=="0"; }catch(_){}
+  const ac=()=>{ if(!on) return null; try{ if(!ctx){ const A=window.AudioContext||window.webkitAudioContext; if(!A) return null; ctx=new A(); master=ctx.createGain(); master.gain.value=.55; const comp=ctx.createDynamicsCompressor(); master.connect(comp); comp.connect(ctx.destination); } if(ctx.state==="suspended") ctx.resume(); return ctx; }catch(e){ return null; } };
+  const unlock=()=>{ if(on) ac(); }; ["touchstart","pointerdown","keydown"].forEach(ev=>document.addEventListener(ev,unlock,{passive:true}));
+  let nbuf=null; const noise=c=>{ if(nbuf) return nbuf; nbuf=c.createBuffer(1,c.sampleRate*2,c.sampleRate); const d=nbuf.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1; return nbuf; };
+  const env=(c,g,t,a,peak,dec,end)=>{ g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(peak,t+a); g.gain.exponentialRampToValueAtTime(0.0001,t+a+dec); };
+  const tone=(f,dur,{type="sine",vol=.3,at=0,f2=null,a=.01}={})=>{ const c=ac(); if(!c) return; const t=c.currentTime+at, o=c.createOscillator(), g=c.createGain(); o.type=type; o.frequency.setValueAtTime(f,t); if(f2) o.frequency.exponentialRampToValueAtTime(f2,t+dur); env(c,g,t,a,vol,dur); o.connect(g); g.connect(master); o.start(t); o.stop(t+a+dur+.05); };
+  const hiss=(dur,{vol=.3,at=0,type="bandpass",f=1200,f2=null,q=1,a=.02}={})=>{ const c=ac(); if(!c) return; const t=c.currentTime+at, src=c.createBufferSource(), fl=c.createBiquadFilter(), g=c.createGain(); src.buffer=noise(c); src.loop=true; fl.type=type; fl.frequency.setValueAtTime(f,t); if(f2) fl.frequency.exponentialRampToValueAtTime(f2,t+dur); fl.Q.value=q; env(c,g,t,a,vol,dur); src.connect(fl); fl.connect(g); g.connect(master); src.start(t); src.stop(t+a+dur+.05); };
+  const chord=(fs,dur,o)=>fs.forEach((f,i)=>tone(f,dur,Object.assign({type:"triangle",vol:.12},o,{at:((o&&o.at)||0)+i*((o&&o.step)||0)})));
+  const S={
+    whoosh(){ hiss(.6,{vol:.25,f:400,f2:2400,q:.8}); },
+    charge(d=1.5){ hiss(d,{vol:.18,f:300,f2:5000,q:2,a:d*.8}); tone(80,d,{type:"sawtooth",vol:.06,f2:320,a:d*.8}); },
+    boom(big){ hiss(big?1.4:.9,{vol:big?.7:.5,type:"lowpass",f:2500,f2:120,q:.5,a:.005}); tone(110,big?1.2:.7,{vol:big?.6:.45,f2:35,a:.005}); if(big) hiss(1.8,{vol:.25,f:3000,f2:600,q:.6,at:.05}); },
+    flip(){ hiss(.12,{vol:.25,f:3000,q:2,a:.003}); tone(900,.06,{type:"square",vol:.04,a:.002}); },
+    chime(tier){ const R={bronze:[392,494],silver:[523,659],gold:[523,659,784],icon:[523,659,784,1047],myth:[523,659,784,1047,1319]}[tier]||[523,659]; chord(R,.9,{step:.07,vol:.11}); tone(R[R.length-1]*2,1.2,{vol:.05,at:R.length*.07}); },
+    thump(){ tone(70,.25,{vol:.7,f2:40,a:.004}); hiss(.08,{vol:.15,type:"lowpass",f:400,a:.002}); },
+    heartbeat(){ S.thump(); setTimeout(()=>S.thump(),180); },
+    crowd(d=3,vol=.22){ hiss(d,{vol,type:"bandpass",f:900,q:.4,a:d*.45}); hiss(d,{vol:vol*.6,type:"bandpass",f:2200,q:.6,a:d*.5}); },
+    cheer(){ S.crowd(2.4,.35); },
+    thunder(){ hiss(1.6,{vol:.8,type:"lowpass",f:900,f2:60,q:.3,a:.005}); hiss(.25,{vol:.5,f:5000,q:.5,a:.002}); },
+    coins(n=8){ for(let i=0;i<n;i++) tone(1800+Math.random()*1400,.12,{type:"triangle",vol:.05,at:i*.09+Math.random()*.05,a:.002}); },
+    fanfare(){ const N=[[392,523,659],[440,554,698],[523,659,784],[587,740,880],[659,830,988,1319]]; N.forEach((c,i)=>chord(c,i===N.length-1?1.6:.28,{type:"sawtooth",vol:.07,at:i*.2})); },
+    tick(){ tone(1200,.04,{type:"square",vol:.03,a:.002}); },
+    goal(){ S.cheer(); tone(392,.2,{type:"square",vol:.06}); tone(523,.35,{type:"square",vol:.06,at:.18}); },
+    whistle(){ tone(2600,.35,{type:"sine",vol:.12,a:.01}); tone(2650,.35,{type:"sine",vol:.08,a:.01}); },
+  };
+  return Object.assign(S,{ get on(){ return on; }, set(v){ on=!!v; try{ localStorage.setItem("gl_sound",on?"1":"0"); }catch(_){} if(on) ac(); } }); })();
 // ======================================================================
 // 🎴 OUVERTURE DE PACK PREMIUM : stade de nuit, pack qui annonce la couleur, déchirure, walkout, révélations 3D
 // ======================================================================
@@ -2960,15 +2990,15 @@ function packFx(pack,ids,isNew,gold){
       <div class="px-pack pk-${pack}" style="--pc:${P.color}"><div class="px-face"><div class="px-holo"></div><div class="px-logo">OL</div><div class="px-name">${esc(P.name)}</div><div class="px-n">${ids.length} CARTE${ids.length>1?"S":""}</div><div class="px-shine"></div></div><div class="px-cut"></div></div>
       <div class="px-tap">Touche le pack pour l'ouvrir</div></div>
 `;
-  const stage=F.querySelector(".px-stage"), pk=F.querySelector(".px-pack"); let opened=false, ready=!gold;
+  const stage=F.querySelector(".px-stage"), pk=F.querySelector(".px-pack"); let opened=false, ready=!gold; SFX.whoosh(); setTimeout(()=>SFX.crowd(2.2,.08),400);
   if(gold){ // ✨ GOLD PACK : blackout, battements de cœur, fissures dorées, toupie, foudre, explosion d'or
     const tap=F.querySelector(".px-tap"); tap.style.visibility="hidden"; const at=(ms,fn)=>setTimeout(fn,ms);
     const burst=(x,y,n,cols)=>{ const b=document.createElement("div"); b.className="px-fw"; b.style.cssText=`left:${x}%;top:${y}%`; b.innerHTML=pxSparks(n,cols,120+Math.random()*90); F.appendChild(b); setTimeout(()=>b.remove(),1600); };
     pk.insertAdjacentHTML("beforeend",`<svg class="px-cracks" viewBox="0 0 200 290" preserveAspectRatio="none"><path d="M100 0 L92 40 L108 70 L95 110 L112 150"/><path d="M0 120 L40 128 L62 112 L95 110"/><path d="M200 90 L160 104 L138 96 L108 70"/><path d="M112 150 L100 190 L120 230 L104 290"/><path d="M112 150 L150 170 L170 160 L200 190"/><path d="M95 110 L60 160 L30 170 L0 210"/></svg>`);
-    at(1200,()=>{ F.classList.add("blackout"); pxVib(40); });
-    [1700,2350,2900].forEach((t,i)=>at(t,()=>{ pk.classList.remove("hb"); void pk.offsetWidth; pk.classList.add("hb"); pk.style.setProperty("--crk",(i+1)/3); pxVib([90,110,140]); }));
-    at(3400,()=>{ pk.classList.add("gspin"); F.classList.add("shake"); pxVib([30,30,30,30,30,30,30,30,30,30,200]); });
-    at(4500,()=>{ F.insertAdjacentHTML("beforeend",`<svg class="px-bolt" viewBox="0 0 100 100" preserveAspectRatio="none"><polyline points="18,0 26,22 20,26 34,52 28,55 46,78"/><polyline points="86,0 76,18 82,22 66,44 72,48 56,74"/><polyline points="50,0 54,14 47,20 55,36"/></svg>`); });
+    at(1200,()=>{ F.classList.add("blackout"); pxVib(40); SFX.thump(); });
+    [1700,2350,2900].forEach((t,i)=>at(t,()=>{ pk.classList.remove("hb"); void pk.offsetWidth; pk.classList.add("hb"); pk.style.setProperty("--crk",(i+1)/3); pxVib([90,110,140]); SFX.heartbeat(); }));
+    at(3400,()=>{ pk.classList.add("gspin"); F.classList.add("shake"); SFX.charge(1.3); pxVib([30,30,30,30,30,30,30,30,30,30,200]); });
+    at(4500,()=>{ SFX.thunder(); F.insertAdjacentHTML("beforeend",`<svg class="px-bolt" viewBox="0 0 100 100" preserveAspectRatio="none"><polyline points="18,0 26,22 20,26 34,52 28,55 46,78"/><polyline points="86,0 76,18 82,22 66,44 72,48 56,74"/><polyline points="50,0 54,14 47,20 55,36"/></svg>`); });
     at(4750,()=>{ F.classList.remove("blackout","shake"); F.classList.add("goldmode","bigshake");
       pk.className="px-pack pk-goldp goldp gborn"; pk.style.setProperty("--pc","#ffd970"); pk.querySelector(".px-name").textContent="✨ GOLD PACK ✨";
       F.querySelector(".px-fog").insertAdjacentHTML("afterend",`<div class="px-grays"></div>`);
@@ -2976,16 +3006,16 @@ function packFx(pack,ids,isNew,gold){
         <div class="px-gcoins">${Array.from({length:30},()=>`<i style="left:${(Math.random()*96).toFixed(0)}%;animation-duration:${(1.4+Math.random()*1.6).toFixed(2)}s;animation-delay:${(Math.random()*2.5).toFixed(2)}s"></i>`).join("")}</div>
         <div class="px-goldtxt"><span class="px-inc">INCROYABLE !</span><b>${"GOLD PACK".split("").map((ch,i)=>`<em style="animation-delay:${(.25+i*.07).toFixed(2)}s">${ch===" "?"&nbsp;":ch}</em>`).join("")}</b><small>1 chance sur ${Math.round(1/GOLD_RATE)} · Épique + Légendaire + Mythique</small></div>`);
       const A=F.querySelector(".px-aura"); A.classList.add("hot"); A.style.cssText="--c1:#fff6c8;--c2:#ffb020";
-      pxVib([300,80,300,80,500]);
+      pxVib([300,80,300,80,500]); SFX.boom(true); setTimeout(()=>{ SFX.fanfare(); SFX.cheer(); SFX.coins(16); },250);
       const G=["#ffd970","#fff6c8","#ffb020","#ffffff"]; [[20,25],[80,22],[50,12],[12,60],[88,58],[35,78],[68,80],[50,40]].forEach(([x,y],i)=>at(4900+i*260-4750,()=>burst(x,y,26,G)));
       setTimeout(()=>F.classList.remove("bigshake"),700);
       setTimeout(()=>{ tap.style.visibility=""; ready=true; },1500); });
   }
   const go=()=>{ if(opened||!ready) return; opened=true; F.querySelector(".px-tap").remove(); F.querySelectorAll(".px-goldtxt").forEach(e=>e.classList.add("gone"));
     pk.classList.add("charge"); F.classList.add("charging"); if(hype) setTimeout(()=>F.querySelector(".px-aura").classList.add("hot"),400);
-    pxVib([20,60,30,60,40,60,60,80,120]);
+    pxVib([20,60,30,60,40,60,60,80,120]); SFX.charge(1.5);
     setTimeout(()=>{ pk.classList.add("burst"); stage.insertAdjacentHTML("beforeend",`<div class="px-flash"></div><div class="px-ring" style="--c:${BC[0]}"></div><div class="px-ring r2" style="--c:${BC[1]}"></div><div class="px-sparks">${pxSparks(hype?70:40,hype?[BC[0],BC[1],"#fff"]:["#fff","#bcd6ff","#ffd970"],hype?280:200)}</div>`);
-      pxVib(hype?[200]:[90]); setTimeout(()=>{ stage.remove(); F.querySelectorAll(".px-goldtxt").forEach(e=>e.remove()); show(0); },700); },1500); };
+      pxVib(hype?[200]:[90]); SFX.boom(hype); setTimeout(()=>{ stage.remove(); F.querySelectorAll(".px-goldtxt").forEach(e=>e.remove()); show(0); },700); },1500); };
   pk.onclick=go;
   const clear=()=>F.querySelectorAll(".px-card,.px-walk").forEach(e=>e.remove());
   const show=k=>{ if(k>=order.length) return summary(); const i=order[k], id=ids[i];
@@ -2998,7 +3028,7 @@ function packFx(pack,ids,isNew,gold){
       <div class="px-tag ${isNew[i]?"new":"dup"}">${isNew[i]?"✨ NOUVEAU":"Doublon"}</div>
       <div class="px-prog">${order.map((_,j)=>`<i class="${j<k?"done":j===k?"on":""}"></i>`).join("")}</div>
       <div class="px-hint">${k<order.length-1?"Touche pour la carte suivante":"Touche pour voir tout le pack"}</div>`;
-    F.appendChild(d); if(big) pxVib([60,40,120]);
+    F.appendChild(d); if(big) pxVib([60,40,120]); if(fromWalk){ SFX.boom(true); SFX.chime(cardTier(p)); SFX.cheer(); } else { setTimeout(()=>{ SFX.flip(); SFX.chime(cardTier(p)); },380); }
     if(fromWalk) d.classList.add("flipped"); else setTimeout(()=>d.classList.add("flipped"),350);
     let done=false; setTimeout(()=>{ d.onclick=()=>{ if(done) return; done=true; d.classList.add("out"); setTimeout(()=>show(k+1),260); }; },fromWalk?700:900); };
   const walkout=(id,done)=>{ clear(); const p=BY_ID[id], key=pxKey(id), C=PX_COL[key]||PX_COL.gold;
@@ -3008,13 +3038,13 @@ function packFx(pack,ids,isNew,gold){
     if(p.v) steps.unshift([`<b class="pxw-v">${VAR_INFO[p.v].ic}</b>`,VAR_INFO[p.v].n]);
     const w=document.createElement("div"); w.className="px-walk"+(special?" special":"")+(cardTier(p)==="myth"&&!p.v?" rainbow":""); w.style.cssText=`--c1:${C[0]};--c2:${C[1]}`;
     w.innerHTML=`<div class="pxw-tunnel"></div><div class="pxw-beam"></div><div class="pxw-beam b2"></div><div class="pxw-floor"></div><div class="pxw-stage"></div><div class="pxw-ovr">${p.ovr}</div><div class="px-hint pxw-skip">Touche pour passer</div>`;
-    F.appendChild(w); const st=w.querySelector(".pxw-stage"); pxVib([40,80,40]);
+    F.appendChild(w); const st=w.querySelector(".pxw-stage"); pxVib([40,80,40]); SFX.crowd(5,.2);
     let k=0, fin=false; const end=()=>{ if(fin) return; fin=true; w.classList.add("boom"); pxVib([30,30,250]); setTimeout(()=>{ w.remove(); done(); },520); };
     w.onclick=end;
-    const next=()=>{ if(fin) return; if(k>=steps.length){ w.classList.add("ovr"); return setTimeout(end,special?1500:1100); }
-      const [bigH,small]=steps[k++]; st.innerHTML=`<div class="pxw-item"><div class="pxw-big">${bigH}</div><div class="pxw-small">${esc(small)}</div></div>`; pxVib(25); setTimeout(next,1250); };
+    const next=()=>{ if(fin) return; if(k>=steps.length){ w.classList.add("ovr"); SFX.boom(); return setTimeout(end,special?1500:1100); }
+      const [bigH,small]=steps[k++]; st.innerHTML=`<div class="pxw-item"><div class="pxw-big">${bigH}</div><div class="pxw-small">${esc(small)}</div></div>`; pxVib(25); SFX.thump(); setTimeout(next,1250); };
     setTimeout(next,900); };
-  const summary=()=>{ clear(); const s=document.createElement("div"); s.className="px-sum";
+  const summary=()=>{ clear(); SFX.coins(6); const s=document.createElement("div"); s.className="px-sum";
     const srt=ids.map((id,i)=>i).sort((x,y)=>pxScore(ids[y])-pxScore(ids[x]));
     s.innerHTML=`<h3>${gold?"✨ GOLD PACK ✨":esc(P.name)}</h3><div class="px-row">${srt.map((i,j)=>`<div class="px-mini${j===0?" top":""}" style="animation-delay:${j*90}ms">${cardHTML(ids[i],{w:ids.length>4?92:110})}${isNew[i]?`<i>NEW</i>`:""}</div>`).join("")}</div>
       <div class="px-sumtxt">${isNew.filter(Boolean).length} nouvelle${isNew.filter(Boolean).length>1?"s":""} carte${isNew.filter(Boolean).length>1?"s":""} · meilleure : <b>${esc(BY_ID[best].name)} ${BY_ID[best].ovr}</b></div>
@@ -4536,7 +4566,7 @@ function openAdvent(d){ if(adventPre()){ toast("🎄 Le calendrier ouvre le 1er 
     <div class="ax-conf">${conf}</div><div class="ax-emb">${embers}</div><div class="ax-coins">${coinRain}</div>
     <div class="ax-skip">Touche pour passer</div></div>`;
   M.classList.add("open"); const R=$("#axRoot");
-  try{ if(navigator.vibrate) navigator.vibrate([30,90,30,90,40,120,220]); }catch(_){}
+  try{ if(navigator.vibrate) navigator.vibrate([30,90,30,90,40,120,220]); }catch(_){} SFX.charge(1.8); setTimeout(()=>{ SFX.boom(); SFX.chime(tone==="leg"?"myth":tone==="epi"?"icon":"gold"); if(r.coins&&!r.pack) SFX.coins(12); },1900);
   let revealed=false; const reveal=()=>{ if(revealed) return; revealed=true; R.classList.add("go");
     const el=$("#axCount"); if(el){ const tgt=r.coins, t0=performance.now(), dur=900; const step=t=>{ const k=Math.min(1,(t-t0)/dur), e=1-Math.pow(1-k,3); el.textContent=Math.round(tgt*e).toLocaleString("fr-FR"); if(k<1) requestAnimationFrame(step); }; setTimeout(()=>requestAnimationFrame(step),250); } };
   const T=setTimeout(reveal,1900); R.onclick=e=>{ if(e.target.closest("#advOk")) return; if(!revealed){ clearTimeout(T); R.classList.add("fast"); reveal(); } };
@@ -5167,7 +5197,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-23z"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-24a"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
