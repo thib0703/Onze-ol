@@ -2408,7 +2408,7 @@ function hypeList(){
   const LP=Object.entries((LIVE&&LIVE.players)||{}).filter(([id])=>BY_ID[id]);
   const hot=LP.filter(([,x])=>x.st==="up").sort((a,b)=>b[1].mod-a[1].mod)[0]; if(hot) add(6,`📈 ${P(hot[0])} est en forme dans la vraie vie`,`${esc(hot[1].note)} · bonus +${hot[1].mod} sur sa carte`);
   const inj=LP.filter(([,x])=>x.st==="inj"); if(inj.length) add(5,`🚑 Infirmerie de l'OL : ${inj.map(([id])=>P(id)).join(", ")}`,"Leurs cartes sont affaiblies",{cold:1});
-  try{ const tf=tfWeek(); if(tf.length) add(4,`🔥 Forme du moment : ${tf.map(P).join(", ")}`,`${tf.length===1&&tfWhy(tf[0])?tfWhy(tf[0])+" · ":""}carte dispo quelques jours seulement · 8 % dans le Pack Légende`); }catch(e){}
+  try{ const tf=tfWeek(); if(tf.length) add(4,`🔥 Forme du moment : ${tf.map(id=>P(id)+(BY_ID[id].tfNote!=null?` ${BY_ID[id].tfNote}/10`:"")).join(", ")}`,`Cartes dispo cette semaine seulement · 8 % dans le Pack Légende`); }catch(e){}
   try{ const ev=curEvent(); if(ev&&ev.name) add(3,`🎉 Événement : ${esc(ev.name)}`,esc(ev.desc||"")); }catch(e){}
   const seen=new Set(); return out.filter(x=>!seen.has(x.t)&&seen.add(x.t)).sort((a,b)=>b.p-a.p).slice(0,25);
 }
@@ -2566,17 +2566,25 @@ mkVar("juninho","xm",98,"Édition Noël — 24/24 au calendrier de l'Avent");
 const GF_LIST=[
 // ⬇ ajouter les nouvelles cartes ici
 ];
+// 🔥 FORME DU MOMENT : chaque lundi, les 4 joueurs les mieux notés du/des match(s) de la semaine écoulée.
+// La carte est plus ou moins forte selon la note réelle (9/10 → +9, 7/10 → +3). Dispo 7 jours, gardée à vie si obtenue.
+// [id du joueur, lundi de la semaine où la carte est dispo AAAA-MM-JJ, note du match /10, "raison"]
+const TF_LIST=[
+// ⬇ ajouter les 4 cartes de la semaine ici
+];
+const tfBonus=n=>n>=9.5?11:n>=9?9:n>=8.5?7:n>=8?6:n>=7.5?4:n>=7?3:2;
+TF_LIST.forEach(([pid,mon,note,t])=>{ const b=BY_ID[pid]; if(!b) return; const id=pid+"--tf-"+mon; const p=Object.assign({},b,{id,base:pid,v:"tf",ovr:Math.min(96,b.ovr+tfBonus(note)),title:`Forme du moment · ${note}/10${t?" · "+t:""}`,tfMon:mon,tfNote:note,tfWhy:t}); VARIANTS.push(p); BY_ID[id]=p; for(const T of [NAT,SPANS,MAJ,STYLE_OF]) if(T[pid]!=null) T[id]=T[pid]; });
 GF_LIST.forEach(([pid,key,o,t])=>{ const b=BY_ID[pid]; if(!b) return; const id=pid+"--gf-"+key; const p=Object.assign({},b,{id,base:pid,v:"gf",ovr:Math.min(99,o),title:t}); VARIANTS.push(p); BY_ID[id]=p; for(const T of [NAT,SPANS,MAJ,STYLE_OF]) if(T[pid]!=null) T[id]=T[pid]; });
 [...CURRENT].forEach(id=>{ const b=BY_ID[id], fs=BY_ID[id+"--fs"]; if(b) mkVar(id,"tf",Math.min(92,Math.max(b.ovr+7,fs?fs.ovr+2:0)),"Forme du moment"); });
 const baseOf=id=>(BY_ID[id]&&BY_ID[id].base)||id;
 const TF_IDS=VARIANTS.filter(p=>p.v==="tf").map(p=>p.id);
 // 🔥 Forme du moment = la VRAIE forme : joueurs listés dans live.json → "forms" (gros match réel, dispo ~7 jours),
 // sinon les joueurs « en forme » (st:"up") de live.json. Passé le délai, la carte n'est plus dans les packs : seuls ceux qui l'ont gardent.
-function tfActive(){ const d=new Date(), t=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
-  const F=((LIVE&&LIVE.forms)||[]).filter(f=>f&&f.id&&(!f.to||f.to>=t)&&(!f.from||f.from<=t)).map(f=>f.id+"--tf").filter(id=>BY_ID[id]);
-  if(F.length) return [...new Set(F)];
+function tfActive(){ const now=Date.now();
+  const F=VARIANTS.filter(p=>p.tfMon&&now>=new Date(p.tfMon+"T00:00:00").getTime()&&now<new Date(p.tfMon+"T00:00:00").getTime()+7*86400000).map(p=>p.id);
+  if(F.length) return F;
   return Object.entries((LIVE&&LIVE.players)||{}).filter(([id,x])=>x&&x.st==="up"&&BY_ID[id+"--tf"]).map(([id])=>id+"--tf"); }
-const tfWhy=id=>{ const b=baseOf(id); const f=((LIVE&&LIVE.forms)||[]).filter(x=>x&&x.id===b).slice(-1)[0]; return (f&&f.why)||(((LIVE&&LIVE.players)||{})[b]||{}).note||""; };
+const tfWhy=id=>{ const p=BY_ID[id]; if(p&&p.tfNote!=null) return `${p.tfNote}/10${p.tfWhy?" · "+p.tfWhy:""}`; return (((LIVE&&LIVE.players)||{})[baseOf(id)]||{}).note||""; };
 function tfWeek(){ return tfActive(); }
 const VORD={fs:0,tf:1,gf:2,ml:3,xm:4};
 const ALL_CARDS=[...PLAYERS.slice().sort((a,b)=>a.year-b.year||a.name.localeCompare(b.name,"fr")),...COACHES,...VARIANTS.slice().sort((a,b)=>VORD[a.v]-VORD[b.v]||a.name.localeCompare(b.name,"fr"))];
@@ -4809,7 +4817,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-23n"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-23o"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
