@@ -592,13 +592,63 @@ header{padding:10px 16px 4px;min-height:44px}header h1{font-size:19px;margin:0;l
 .objmini .omh{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;font-size:14px}.objmini .omh span{color:var(--mute);font-size:12px}.objmini .num{font-style:normal;background:#ffd970;color:#111;border-radius:999px;padding:1px 8px;font-size:11px;font-weight:900}
 .omr{display:grid;grid-template-columns:1fr auto;gap:2px 8px;font-size:12.5px;padding:4px 0}.omr small{color:var(--mute)}.omr .track{grid-column:1/3;height:4px}.omr.done{opacity:.55}
 :root{color-scheme:dark only}
-.adv{background:linear-gradient(160deg,#0d3b1e,#0b1530 60%);border:1px solid #2f7a45}
-.advg{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
-.advc{aspect-ratio:1;border-radius:10px;border:1px solid #ffffff22;background:#0f1d40;color:#fff;font:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer;padding:0}
-.advc b{font-size:14px;font-weight:900}.advc span{font-size:15px;line-height:1}
-.advc.td{background:linear-gradient(135deg,#c8102e,#7a0018);border-color:#ffd970;box-shadow:0 0 14px #ffd97088;animation:bdg 1.6s ease-in-out infinite}
-.advc.op{background:#14532d;border-color:#2f7a45}.advc.ko{opacity:.35}.advc.lk{opacity:.7}
-.advpop .advbig{font-size:54px;font-weight:900;color:#ffd970;text-shadow:0 0 20px #c8102e}
+.adv{position:relative;overflow:hidden;background:radial-gradient(120% 80% at 50% 0%,#17306b 0%,#0a1433 55%,#070d22 100%);border:1px solid #e3002b55;box-shadow:0 0 0 1px #1d4ed844 inset,0 10px 30px #0008}
+.adv-snow,.ao-snow{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+.adv-snow i,.ao-snow i{position:absolute;top:-14px;color:#fff;font-style:normal;animation:advSnow linear infinite}
+@keyframes advSnow{0%{transform:translateY(-10px) translateX(0) rotate(0)}50%{transform:translateY(220px) translateX(12px) rotate(180deg)}100%{transform:translateY(460px) translateX(-6px) rotate(360deg)}}
+.adv>*:not(.adv-snow){position:relative;z-index:1}
+.adv-head{position:relative;margin:-4px -4px 0}.parc{display:block;width:100%;height:auto}
+.adv-title{position:absolute;left:0;right:0;top:4px;display:flex;justify-content:space-between;align-items:center;padding:0 4px}
+.adv-title h3{margin:0;font-size:17px;text-shadow:0 2px 8px #000}.adv-title span{font-size:11.5px;font-weight:800;background:#0009;border:1px solid #ffd97066;color:#ffd970;border-radius:999px;padding:3px 9px}
+.pk-lights circle{fill:#fff6c8;animation:pkTw 1.5s ease-in-out infinite}@keyframes pkTw{50%{opacity:.25}}
+.pk-beams{animation:pkBeam 3.5s ease-in-out infinite;transform-origin:50% 10%}@keyframes pkBeam{50%{opacity:.45}}
+.pk-proj{fill:#fffbe0;filter:drop-shadow(0 0 4px #fffbe0)}
+.pk-star{animation:pkStar 1.2s ease-in-out infinite;transform-origin:180px 61px}@keyframes pkStar{50%{opacity:.5;transform:scale(.8)}}
+.adv-track{height:7px;margin:4px 0 6px}.adv-track i{background:linear-gradient(90deg,#e3002b,#ffd970,#1d4ed8)}
+.adv-sub{font-size:12px;color:#c3cdea;margin:0 0 10px}
+.advg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.advc{position:relative;aspect-ratio:.82;border:0;border-radius:10px;font:inherit;color:#fff;cursor:pointer;padding:6px 2px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;
+  background:linear-gradient(160deg,#1d4ed8,#0b2a7a);box-shadow:0 3px 0 #061a4d,0 6px 12px #0007;
+  -webkit-mask:radial-gradient(circle 5px at 0 55%,#0000 98%,#000) left/51% 100% no-repeat,radial-gradient(circle 5px at 100% 55%,#0000 98%,#000) right/51% 100% no-repeat;
+          mask:radial-gradient(circle 5px at 0 55%,#0000 98%,#000) left/51% 100% no-repeat,radial-gradient(circle 5px at 100% 55%,#0000 98%,#000) right/51% 100% no-repeat;transition:transform .15s}
+.advc:nth-child(even){background:linear-gradient(160deg,#e3002b,#7a0018);box-shadow:0 3px 0 #4a0010,0 6px 12px #0007}
+.advc:active{transform:scale(.95)}
+.advc::after{content:"";position:absolute;left:8%;right:8%;top:55%;border-top:1.5px dashed #ffffff55}
+.advc b{font-size:24px;font-weight:900;line-height:1;text-shadow:0 2px 6px #0008;margin-top:2px}
+.tk-top{font-size:8.5px;font-weight:900;letter-spacing:1.5px;opacity:.8}.tk-bot{font-size:9.5px;font-weight:900;letter-spacing:.3px;white-space:nowrap}
+.advc.lk{filter:saturate(.35) brightness(.6)}
+.advc.ko{filter:grayscale(1) brightness(.45)}.advc.ko b{text-decoration:line-through}
+.advc.op{filter:saturate(.75) brightness(.8)}
+.tk-stamp{position:absolute;top:4px;right:3px;transform:rotate(12deg);font-style:normal;font-size:7.5px;font-weight:900;color:#7ee2a0;border:2px solid #7ee2a0;border-radius:5px;padding:1px 4px;background:#0a1433cc;letter-spacing:1px}
+.advc.td{background:linear-gradient(160deg,#fff1b8,#e8c45a 45%,#b8901f);color:#2a1a00;box-shadow:0 3px 0 #6b520e,0 0 22px #ffd970cc;animation:tdPulse 1.4s ease-in-out infinite;z-index:2}
+.advc.td b{text-shadow:none}.advc.td::after{border-color:#6b520e66}
+@keyframes tdPulse{0%,100%{transform:scale(1) rotate(0)}25%{transform:scale(1.06) rotate(-2deg)}50%{transform:scale(1.08) rotate(0)}75%{transform:scale(1.06) rotate(2deg)}}
+.advc.d24:not(.op):not(.ko){background:linear-gradient(160deg,#ffffff,#ffd970 40%,#e3002b);color:#2a0008}
+/* ouverture */
+.advopen{position:relative;width:min(92vw,360px);min-height:420px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border-radius:20px;overflow:hidden;
+  background:radial-gradient(100% 70% at 50% 30%,#1d3a80,#0a1433 70%);border:1px solid #ffd97066;box-shadow:0 0 40px #ffd97044;padding:24px 16px}
+.advopen>*:not(.ao-snow){position:relative;z-index:1}
+.ao-flash{position:absolute!important;inset:0;background:radial-gradient(circle at 50% 40%,#fffbe0,transparent 60%);opacity:0;animation:aoFlash 1.2s .85s ease-out forwards;pointer-events:none}
+@keyframes aoFlash{20%{opacity:1}100%{opacity:0}}
+.ao-tkt{display:flex;width:240px;height:130px;margin-top:20px;animation:aoShake .8s ease-in-out}
+@keyframes aoShake{0%,100%{transform:rotate(0)}15%{transform:rotate(-5deg) scale(1.03)}30%{transform:rotate(5deg) scale(1.06)}45%{transform:rotate(-4deg) scale(1.08)}60%{transform:rotate(4deg) scale(1.1)}80%{transform:rotate(-2deg) scale(1.12)}}
+.ao-half{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:linear-gradient(160deg,#fff1b8,#e8c45a 50%,#b8901f);color:#2a1a00;box-shadow:0 8px 20px #0009}
+.ao-half b{font-size:46px;font-weight:900;line-height:1}.ao-half small{font-size:9px;font-weight:900;letter-spacing:1px}
+.ao-half.l{flex:2.2;border-radius:12px 0 0 12px;border-right:2px dashed #6b520e;animation:aoTearL .7s .8s cubic-bezier(.5,0,.8,.4) forwards}
+.ao-half.r{flex:1;border-radius:0 12px 12px 0;background:linear-gradient(160deg,#e3002b,#7a0018);color:#fff;animation:aoTearR .7s .8s cubic-bezier(.5,0,.8,.4) forwards}
+.ao-half.r b{font-size:30px}
+@keyframes aoTearL{to{transform:translate(-160px,140px) rotate(-40deg);opacity:0}}
+@keyframes aoTearR{to{transform:translate(160px,160px) rotate(50deg);opacity:0}}
+.ao-prize{position:absolute!important;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:20px;opacity:0;transform:scale(.6);animation:aoPrize .6s 1.25s cubic-bezier(.2,1.4,.4,1) forwards}
+@keyframes aoPrize{to{opacity:1;transform:scale(1)}}
+.ao-prize h3{margin:0;font-size:22px;color:#ffd970;text-shadow:0 0 18px #e3002b}
+.ao-ic{font-size:64px;line-height:1;filter:drop-shadow(0 0 18px #ffd970);animation:aoBob 1.6s 1.9s ease-in-out infinite}@keyframes aoBob{50%{transform:translateY(-6px) scale(1.05)}}
+.ao-bonus{margin-top:6px;font-weight:900;color:#ffd970}
+.advopen.big .ao-ic{font-size:76px}
+.ao-conf{position:absolute!important;left:50%;top:40%;width:0;height:0;z-index:2!important}
+.ao-conf i{position:absolute;width:7px;height:11px;border-radius:2px;opacity:0;animation:aoConf 1.6s ease-out forwards}
+@keyframes aoConf{0%{opacity:1;transform:translate(0,0) rotate(0)}100%{opacity:0;transform:translate(var(--x),calc(var(--y) + 160px)) rotate(var(--r))}}
+.advopen .btn{margin-top:12px}
 </style>
 </head>
 <body>
@@ -4004,15 +4054,46 @@ function adventState(){ const c=W(), y=nowD().getFullYear(); if(!c.advent||c.adv
 const adventOn=()=>{ const t=nowD(); return t.getMonth()===11&&t.getDate()<=26; };
 const adventToday=()=>{ const t=nowD(); return t.getMonth()===11&&t.getDate()<=24?t.getDate():0; };
 const adventTodo=()=>{ const d=adventToday(); return d&&!adventState().o[d]; };
-function openAdvent(d){ if(d!==adventToday()){ toast(d<adventToday()?"Cette case est passée : elle reste vide 😢":"Patience, cette case s'ouvre le "+d+" décembre 🎄",true); return; }
+const ADV_LBL=r=>r.pack==="legende"?"🌟 LÉGENDE":r.pack==="or"?"💛 ÉPIQUE":r.pack==="rare3"?"💙 RARE":r.pack?"🎴 PACK":r.coins+" 🪙";
+// 🏟️ décor : le Parc OL de nuit, sous la neige, avec un sapin sur la pelouse
+function parcSVG(){ return `<svg class="parc" viewBox="0 0 360 150" aria-hidden="true">
+  <defs><radialGradient id="pkGlow" cx="50%" cy="60%" r="60%"><stop offset="0" stop-color="#fff6c8" stop-opacity=".55"/><stop offset="1" stop-color="#fff6c8" stop-opacity="0"/></radialGradient>
+  <linearGradient id="pkBeam" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffbe0" stop-opacity=".55"/><stop offset="1" stop-color="#fffbe0" stop-opacity="0"/></linearGradient>
+  <linearGradient id="pkPitch" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2f9e55"/><stop offset="1" stop-color="#1b6e36"/></linearGradient></defs>
+  <g class="pk-beams"><polygon points="40,20 52,20 150,118 110,118" fill="url(#pkBeam)"/><polygon points="308,20 320,20 250,118 210,118" fill="url(#pkBeam)"/></g>
+  <ellipse cx="180" cy="108" rx="168" ry="42" fill="url(#pkGlow)"/>
+  <ellipse cx="180" cy="112" rx="156" ry="34" fill="#0a1433"/>
+  <ellipse cx="180" cy="104" rx="156" ry="34" fill="#16264f"/>
+  <ellipse cx="180" cy="100" rx="150" ry="30" fill="none" stroke="#1d4ed8" stroke-width="7"/>
+  <ellipse cx="180" cy="100" rx="150" ry="30" fill="none" stroke="#e3002b" stroke-width="7" stroke-dasharray="22 18"/>
+  <ellipse cx="180" cy="104" rx="126" ry="23" fill="#22356b"/>
+  <ellipse cx="180" cy="106" rx="104" ry="16" fill="url(#pkPitch)"/>
+  <ellipse cx="180" cy="106" rx="104" ry="16" fill="none" stroke="#ffffff55" stroke-width=".8"/><line x1="180" y1="90" x2="180" y2="122" stroke="#ffffff55" stroke-width=".8"/><ellipse cx="180" cy="106" rx="14" ry="3.5" fill="none" stroke="#ffffff55" stroke-width=".8"/>
+  <g class="pk-tree"><polygon points="180,70 168,92 192,92" fill="#0f7a3a"/><polygon points="180,62 171,80 189,80" fill="#13914a"/><rect x="178" y="92" width="4" height="6" fill="#6b3d1f"/>
+   <circle cx="174" cy="86" r="1.6" fill="#e3002b"/><circle cx="185" cy="84" r="1.6" fill="#ffd970"/><circle cx="179" cy="76" r="1.5" fill="#7fb2ff"/><circle cx="183" cy="90" r="1.5" fill="#e3002b"/>
+   <text class="pk-star" x="180" y="64" text-anchor="middle" font-size="10">⭐</text></g>
+  <g class="pk-lights">${Array.from({length:18},(_,i)=>{ const a=Math.PI*(i/17); const x=180-150*Math.cos(a), y=100-30*Math.sin(a)-4; return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="1.7" style="animation-delay:${(i%6)*.25}s"/>`; }).join("")}</g>
+  <g fill="#c9d4f2"><rect x="44" y="20" width="3" height="78"/><rect x="313" y="20" width="3" height="78"/><rect x="36" y="14" width="19" height="8" rx="2" class="pk-proj"/><rect x="305" y="14" width="19" height="8" rx="2" class="pk-proj"/></g>
+  <text x="180" y="140" text-anchor="middle" font-size="9" font-weight="900" fill="#ffffffaa" letter-spacing="4">PARC OL</text></svg>`; }
+const snowHTML=n=>Array.from({length:n},()=>`<i style="left:${(Math.random()*100).toFixed(1)}%;animation-duration:${(5+Math.random()*6).toFixed(1)}s;animation-delay:-${(Math.random()*10).toFixed(1)}s;font-size:${(6+Math.random()*7).toFixed(0)}px;opacity:${(.4+Math.random()*.6).toFixed(2)}">❄</i>`).join("");
+function openAdvent(d){ if(d!==adventToday()){ toast(d<adventToday()?"Ce match est passé : la case reste vide 😢":"Patience, la porte "+d+" ouvre le "+d+" décembre 🎄",true); return; }
   const A=adventState(); if(A.o[d]) return; A.o[d]=1; const r=ADVENT[d-1]; grant(r,`🎄 Calendrier de l'Avent, case ${d}`);
   let bonus=false; if(d===24&&Array.from({length:24},(_,i)=>A.o[i+1]).every(Boolean)){ const c=W(); c.coll=c.coll||{}; c.coll[ADV_CARD]=(c.coll[ADV_CARD]||0)+1; bonus=true; post(`🎄 ${NAMES[me]} a ouvert les 24 cases du calendrier de l'Avent et gagne la carte exclusive ${BY_ID[ADV_CARD].name} Édition Noël !`); }
-  save(); renderCollec(); const M=$("#cardModal");
-  M.innerHTML=`<div class="cm-box panel advpop"><div class="advbig">${d}</div><h3 style="margin:6px 0">${ADV_IC(r)} ${rTxt(r)}</h3><div class="mute" style="font-size:12.5px">${r.pack?"Ton pack t'attend dans la Boutique, juste en dessous.":"Ajouté à tes pièces."}</div>${bonus?`<div style="margin:12px 0 4px;font-weight:900;color:#ffd970">🏆 24/24 ! Carte exclusive débloquée :</div><div class="cm-card">${cardHTML(ADV_CARD,{w:170,cls:"flip-in glow"})}</div>`:""}<div class="mbtns"><button class="btn" id="advOk">Super 🎄</button></div></div>`;
-  M.classList.add("open"); $("#advOk").onclick=()=>M.classList.remove("open"); }
+  save(); const M=$("#cardModal"); const big=r.pack==="legende"||r.pack==="or"||bonus;
+  const conf=Array.from({length:46},()=>{ const a=Math.random()*Math.PI*2, dist=90+Math.random()*150; return `<i style="--x:${(Math.cos(a)*dist).toFixed(0)}px;--y:${(Math.sin(a)*dist-40).toFixed(0)}px;--r:${(Math.random()*720-360).toFixed(0)}deg;background:${["#e3002b","#1d4ed8","#ffd970","#ffffff","#2f9e55"][Math.floor(Math.random()*5)]};animation-delay:${(.9+Math.random()*.25).toFixed(2)}s"></i>`; }).join("");
+  M.innerHTML=`<div class="advopen${big?" big":""}"><div class="ao-snow">${snowHTML(26)}</div><div class="ao-flash"></div><div class="ao-conf">${conf}</div>
+    <div class="ao-tkt"><div class="ao-half l"><small>PARC OL · TRIBUNE NOËL</small><b>${d}</b><small>DÉCEMBRE</small></div><div class="ao-half r"><small>PORTE</small><b>${d}</b><small>🎄</small></div></div>
+    <div class="ao-prize"><div class="ao-ic">${ADV_IC(r)}</div><h3>${rTxt(r)}</h3><div class="mute" style="font-size:12.5px">${r.pack?"Ton pack t'attend dans la Boutique 🎴":"Ajouté à tes pièces"}</div>
+    ${bonus?`<div class="ao-bonus">🏆 24/24 ! Carte exclusive débloquée</div><div class="cm-card">${cardHTML(ADV_CARD,{w:160,cls:"flip-in glow"})}</div>`:""}
+    <button class="btn big" id="advOk">Joyeux Noël ! 🎄</button></div></div>`;
+  M.classList.add("open"); $("#advOk").onclick=()=>{ M.classList.remove("open"); renderCollec(); }; }
 function adventHTML(){ if(!me||!adventOn()) return ""; const A=adventState(), td=adventToday(), n=Object.keys(A.o).length; const miss=Array.from({length:Math.max(0,(td||25)-1)},(_,i)=>i+1).filter(i=>!A.o[i]).length;
-  return `<div class="section adv"><h3>🎄 Calendrier de l'Avent <small>${n}/24</small></h3><div class="mute" style="font-size:12px;margin:-4px 0 8px">Une case par jour, à ouvrir le jour même (case ratée = vide). ${miss?"Case ratée : le 24/24 n'est plus possible cette année":`Ouvre les 24 pour gagner la carte exclusive <b>${esc(BY_ID[ADV_CARD].name)} Édition Noël</b> 🏆`}.</div>
-    <div class="advg">${Array.from({length:24},(_,i)=>{ const d=i+1, op=A.o[d], r=ADVENT[i]; const st=op?"op":d===td?"td":d<td||!td?"ko":"lk"; return `<button class="advc ${st}" data-adv="${d}"><b>${d}</b><span>${op?ADV_IC(r):st==="td"?"🎁":st==="ko"?"✕":"🔒"}</span></button>`; }).join("")}</div></div>`; }
+  return `<div class="section adv"><div class="adv-snow">${snowHTML(22)}</div>
+    <div class="adv-head">${parcSVG()}<div class="adv-title"><h3>🎄 L'Avent au Parc OL</h3><span>${n}/24 portes ouvertes</span></div></div>
+    <div class="track adv-track"><i style="width:${n/24*100}%"></i></div>
+    <div class="adv-sub">${miss?"Une porte a été ratée : le 24/24 n'est plus possible cette année.":`Une porte par jour, à ouvrir le jour même. Les 24 ouvertes = carte exclusive <b>${esc(BY_ID[ADV_CARD].name)} Édition Noël</b> 🏆`}</div>
+    <div class="advg">${Array.from({length:24},(_,i)=>{ const d=i+1, op=A.o[d], r=ADVENT[i]; const st=op?"op":d===td?"td":d<td||!td?"ko":"lk";
+      return `<button class="advc ${st}${d===24?" d24":""}" data-adv="${d}"><span class="tk-top">PORTE</span><b>${d}</b><span class="tk-bot">${op?ADV_LBL(r):st==="td"?"🎁 OUVRIR":st==="ko"?"RATÉE":d===24?"🌟 🔒":"🔒"}</span>${op?`<em class="tk-stamp">VALIDÉ</em>`:""}</button>`; }).join("")}</div></div>`; }
 
 // ======================================================================
 // 🎮 JEUX : carrière, coupe, défi du jour, quiz, canapé, stats, réactions
@@ -4607,7 +4688,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-23h"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-23i"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
