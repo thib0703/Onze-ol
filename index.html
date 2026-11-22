@@ -423,6 +423,7 @@ html:has(.modal.open),body:has(.modal.open){overflow:hidden}
 .fc-vmini{position:absolute;right:4%;top:3%;font-size:calc(var(--w)/4);line-height:1;z-index:3}
 .evban.tfban{background:linear-gradient(120deg,#5a0d06,#b3200e,#ff7a1a);margin-top:8px}
 .fc-ovr{position:relative}.fc-live{position:absolute;left:100%;top:0;font-style:normal;font-size:.42em;margin-left:2px}
+.duol{display:flex;flex-direction:column;gap:4px}.duor{display:grid;grid-template-columns:40px 1fr auto;align-items:center;gap:6px;text-align:left;background:#1d2b55;border:0;border-radius:8px;padding:6px 8px;color:inherit;font:inherit;font-size:13px;cursor:pointer}.duor small{display:block;color:var(--mute);font-size:11px}.duor em{font-style:normal;font-weight:700}
 .otherlive{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 10px;padding:8px 10px;border-radius:10px;background:#1d2b55;font-size:13px}
 .livel{margin:6px 0;padding:6px 8px;border-radius:8px;background:rgba(31,138,76,.22);font-size:13px}.livel.neg{background:rgba(180,67,43,.25)}
 .nws{display:flex;flex-direction:column;gap:8px;margin-top:8px}.nw{display:block;background:#16244a;border:1px solid #2b3c6e;border-radius:12px;padding:10px 12px;color:var(--txt);text-decoration:none}.nw b{display:block;font-size:14px;line-height:1.3}.nw p{margin:4px 0 0;font-size:12.5px;color:#c8d6ff;line-height:1.4}.nw small{display:block;margin-top:5px;font-size:11px;color:var(--mute)}.nw.new{border-color:#ffd970}.nwf{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.nwf button{background:#1d2b55;border:0;color:var(--mute);border-radius:999px;padding:4px 10px;font-size:12px;cursor:pointer}.nwf button.on{background:var(--rouge);color:#fff}
@@ -1089,8 +1090,8 @@ function draftOffer(kind,i,role){
   dWrite({[`offers.${me}.${key}`]:ids});
   return ids;
 }
-function openSheet(kind,i,role,mode){
-  editing={kind,i,role,mode:mode||"compo"}; $("#q").style.display="";
+function openSheet(kind,i,role,mode,partner){
+  editing={kind,i,role,mode:mode||"compo",partner:partner||null}; $("#q").style.display="";
   $("#clearSlot").style.display=editing.mode==="draft"?"none":"";
   $("#shTitle").textContent= kind==="coach"?"Entraîneur" : kind==="bench"?`Remplaçant n°${i+1}` : `${ROLE_LABEL[role]||role} (${role})`;
   $("#q").value=""; chip = kind==="xi" ? "poste" : "tous";
@@ -1107,8 +1108,9 @@ function renderChips(){
   const opts=(editing.kind==="xi"?["poste"]:[]).concat(["tous"],POS_CHIPS);
   for(const o of opts){ const b=document.createElement("button"); b.className="chip"+(chip===o?" on":""); b.textContent=o==="poste"?"Poste conseillé":o==="tous"?"Tous":o; b.onclick=()=>{chip=o;renderChips();renderList();}; el.appendChild(b); }
 }
+const duoCur=()=>{ const d=duoSaved(me,editing.partner)||duoAuto(me,editing.partner); return {slots:d.slots||{},bench:{},coach:d.coach}; };
 function usedIds(){
-  const c=compos[me]; const s=new Set();
+  const c=editing&&editing.mode==="duo"?duoCur():compos[me]; const s=new Set();
   Object.entries(c.slots).forEach(([k,v])=>{ if(v && !(editing.kind==="xi"&&+k===editing.i)){ s.add(v); s.add(baseOf(v)); } });
   Object.entries(c.bench).forEach(([k,v])=>{ if(v && !(editing.kind==="bench"&&+k===editing.i)){ s.add(v); s.add(baseOf(v)); } });
   return s;
@@ -1127,14 +1129,15 @@ function renderList(){
   if(q) ps=ps.filter(p=>p.id.replace(/^coach-/,"").includes(q));
   const clubPick=editing.mode!=="draft";
   if(editing.mode==="draft"&&editing.offer){ ps=editing.offer.map(id=>BY_ID[id]).filter(Boolean); }
-  if(clubPick){ const own=C(me).coll||{}; ps=ps.filter(p=>own[p.id]); }
+  const isDuo=editing.mode==="duo";
+  if(clubPick){ const own=isDuo?duoOwn(me,editing.partner):(id=>!!(C(me).coll||{})[id]); ps=ps.filter(p=>own(p.id)); }
   if(clubPick) ps.sort((a,b)=>a.year-b.year||a.name.localeCompare(b.name,"fr"));
   const takenMap = editing.mode==="draft" ? dTaken(draft) : null;
   const used = takenMap ? new Set(Object.keys(takenMap)) : (isCoach?new Set():usedIds());
   const L=$("#list"); L.innerHTML="";
   if(!clubPick) L.insertAdjacentHTML("beforeend",`<div class="mute" style="font-size:12px;padding:6px 10px">🎲 5 joueurs tirés au sort pour ce poste, de raretés différentes. Choisis-en un !</div>`);
-  if(clubPick) L.insertAdjacentHTML("beforeend",`<div class="mute" style="font-size:12px;padding:6px 10px">🔒 Mode Club : seules tes cartes apparaissent. Le Draft, lui, propose tous les joueurs.</div>`);
-  if(clubPick){ const cc=compos[me]||{}; const curId=editing.kind==="xi"?(cc.slots||{})[editing.i]:editing.kind==="bench"?(cc.bench||{})[editing.i]:cc.coach;
+  if(clubPick) L.insertAdjacentHTML("beforeend",`<div class="mute" style="font-size:12px;padding:6px 10px">${isDuo?`👥 Duo : tes cartes + celles de ${esc(NAMES[editing.partner]||"ton coéquipier")}.`:"🔒 Mode Club : seules tes cartes apparaissent. Le Draft, lui, propose tous les joueurs."}</div>`);
+  if(clubPick){ const cc=isDuo?duoCur():(compos[me]||{}); const curId=editing.kind==="xi"?(cc.slots||{})[editing.i]:editing.kind==="bench"?(cc.bench||{})[editing.i]:cc.coach;
     ps=ps.filter(p=>p.id!==curId&&!(used.has(p.id)||used.has(baseOf(p.id)))); } // ni le joueur déjà en place, ni ceux déjà alignés
   if(!ps.length){L.insertAdjacentHTML("beforeend",`<div style="padding:18px 16px;text-align:center;color:var(--mute)">${clubPick?(q?"Aucune de tes cartes ne correspond à ta recherche.":`<b style="color:#fff">Aucun joueur dispo à ce poste</b><br>Ouvre des packs dans 🎴 Collec pour en débloquer, ou touche « Tous » pour voir tes autres cartes.`):"Personne trouvé."}</div>`);return;}
   for(const p of ps){
@@ -1148,6 +1151,7 @@ function renderList(){
 }
 function setPick(pid){
   if(editing && editing.mode==="draft"){ const e=editing; closeSheet(); if(pid) dPick(e.kind,e.i,pid); return; }
+  if(editing && editing.mode==="duo"){ const e=editing; const d=duoEdit(e.partner); if(e.kind==="coach") d.coach=pid||null; else if(pid) d.slots[e.i]=pid; else delete d.slots[e.i]; d.at=Date.now(); closeSheet(); save(); renderJeux(); return; }
   const c=compos[me];
   if(editing.kind==="xi"){ if(pid) c.slots[editing.i]=pid; else delete c.slots[editing.i]; }
   else if(editing.kind==="bench"){ if(pid) c.bench[editing.i]=pid; else delete c.bench[editing.i]; }
@@ -2608,23 +2612,45 @@ async function openBudgetSlot(k){
 // =================== EXTRAS (suite) ===================
 
 // =================== 👥 Duo : 2 contre 2 ===================
-function duoTeam(u1,u2){ const pool=new Map();
-  for(const u of [u1,u2]){ const c=C(u)||{}, own=c.coll||{}; for(const id of [...Object.values(c.slots||{}),...Object.values(c.bench||{})]) if(id&&own[id]&&BY_ID[id]){ const v=BY_ID[id].ovr+evoOf(u,id)+liveMod(id); if(!pool.has(id)||pool.get(id).v<v) pool.set(id,{v,u}); } }
-  const form=(C(u1)||{}).formation||"4-3-3"; const roles=F[form]||F["4-3-3"]; const pairs=[];
+const duoOwn=(u1,u2)=>{ const a=(C(u1)||{}).coll||{}, b=(C(u2)||{}).coll||{}; return id=>!!(a[id]||b[id]); };
+const duoWho=(u1,u2,id)=>{ const a=((C(u1)||{}).coll||{})[id], b=((C(u2)||{}).coll||{})[id]; return a&&b?"vous 2":a?(NAMES[u1]||"?"):b?(NAMES[u2]||"?"):"🔒"; };
+// 11 composé à la main par l'un des deux (le plus récent des deux gagne)
+function duoSaved(u1,u2){ const L=[((C(u1)||{}).duo||{})[u2],((C(u2)||{}).duo||{})[u1]].filter(z=>z&&z.slots); return L.sort((x,y)=>(y.at||0)-(x.at||0))[0]||null; }
+function duoPool(u1,u2){ const pool=new Map();
+  for(const u of [u1,u2]){ const own=(C(u)||{}).coll||{}; for(const id of Object.keys(own)) if(own[id]&&BY_ID[id]&&BY_ID[id].pos[0]!=="COACH"){ const v=BY_ID[id].ovr+evoOf(u,id)+liveMod(id); if(!pool.has(id)||pool.get(id).v<v) pool.set(id,{v,u}); } }
+  return pool; }
+function duoAuto(u1,u2,form){ const pool=duoPool(u1,u2);
+  form=F[form]?form:((C(u1)||{}).formation||"4-3-3"); const roles=F[form]||F["4-3-3"]; const pairs=[];
   roles.forEach(([r],i)=>pool.forEach((x,id)=>{ const p=BY_ID[id]; if(fitsRole(p,r)) pairs.push([x.v+(ROLE_OK[r].includes(p.pos[0])?.5:0),id,i]); }));
   pairs.sort((a,b)=>b[0]-a[0]); const slots={}, bases=new Set(); for(const [,id,i] of pairs){ if(slots[i]||bases.has(baseOf(id))) continue; slots[i]=id; bases.add(baseOf(id)); }
-  const bench={}; [...pool.entries()].filter(([id])=>!bases.has(baseOf(id))).sort((a,b)=>b[1].v-a[1].v).slice(0,BENCH_N).forEach(([id],k)=>{ bench[k]=id; bases.add(baseOf(id)); });
-  const co=[u1,u2].map(u=>{ const c=C(u)||{}; return c.coach&&(c.coll||{})[c.coach]?BY_ID[c.coach]:null; }).filter(Boolean).sort((a,b)=>b.ovr-a.ovr)[0];
-  return {formation:form,slots,bench,coach:co?co.id:null}; }
+  const own=duoOwn(u1,u2); const co=COACHES.filter(c=>own(c.id)).sort((a,b)=>b.ovr-a.ovr)[0];
+  return {formation:form,slots,coach:co?co.id:null}; }
+function duoTeam(u1,u2){ const s=duoSaved(u1,u2)||duoAuto(u1,u2); const own=duoOwn(u1,u2); const form=F[s.formation]?s.formation:"4-3-3";
+  const slots={}, bases=new Set(); for(const [k,id] of Object.entries(s.slots||{})) if(id&&BY_ID[id]&&own(id)&&!bases.has(baseOf(id))&&+k<F[form].length){ slots[k]=id; bases.add(baseOf(id)); }
+  const pool=duoPool(u1,u2); const bench={}; [...pool.entries()].filter(([id])=>!bases.has(baseOf(id))).sort((a,b)=>b[1].v-a[1].v).forEach(([id])=>{ if(Object.keys(bench).length>=BENCH_N||bases.has(baseOf(id))) return; bench[Object.keys(bench).length]=id; bases.add(baseOf(id)); });
+  return {formation:form,slots,bench,coach:s.coach&&own(s.coach)?s.coach:null,hand:!!duoSaved(u1,u2)}; }
+// ✏️ mon brouillon de 11 duo avec ce coéquipier (part du 11 actuel, auto ou fait par lui)
+function duoEdit(a){ const c=W(); c.duo=c.duo||{}; const t=duoTeam(me,a); c.duo[a]={formation:t.formation,slots:{...t.slots},coach:t.coach||null,at:Date.now(),by:me}; return c.duo[a]; }
 let duoSel={a:null,b:null,c:null};
 function duoHTML(){ const us=Object.keys(NAMES).filter(u=>u!==me&&u!==CPU&&compos[u]); const opt=(k,lab)=>`<select data-du="${k}"><option value="">${lab}</option>${us.map(u=>`<option value="${u}"${duoSel[k]===u?" selected":""}>${esc(NAMES[u])}</option>`).join("")}</select>`;
   const ok=duoSel.a&&duoSel.b&&duoSel.c&&new Set([me,duoSel.a,duoSel.b,duoSel.c]).size===4;
   let pre=""; if(ok){ const A=strength(duoTeam(me,duoSel.a),null,false), B=strength(duoTeam(duoSel.b,duoSel.c),null,false); pre=`<div class="vsavg"><div><small>${esc(NAMES[me])} & ${esc(NAMES[duoSel.a])}</small><b>${A.global}</b></div><span>VS</span><div><small>${esc(NAMES[duoSel.b])} & ${esc(NAMES[duoSel.c])}</small><b>${B.global}</b></div></div>`; }
-  return `<h3>👥 Duo · 2 contre 2</h3><div class="rules" style="font-size:12px;margin-top:0">Choisis ton coéquipier et vos 2 adversaires : chaque duo aligne <b>le meilleur 11 possible en mélangeant les 11 types et bancs des deux joueurs</b> (meilleur entraîneur des deux). Le match se joue en direct chez les 4.</div>
+  const pa=duoSel.a&&duoSel.a!==me?duoSel.a:null; let ed="";
+  if(pa){ const T=duoTeam(me,pa), sv=duoSaved(me,pa), roles=F[T.formation];
+    const row=(k,role,pid)=>{ const p=BY_ID[pid]; const hp=p&&role!=="COA"?hpPen(p,role):0; return `<button class="duor" data-dslot="${k}" data-drole="${role}"><b>${role}</b><span>${p?esc(p.name):`<i class="mute">+ Choisir</i>`}${p?`<small>${esc(duoWho(me,pa,pid))}</small>`:""}</span><em>${p?(role==="COA"?p.ovr:(effR(pid)||p.ovr))+(hp?` ⚠️−${hp}%`:""):""}</em></button>`; };
+    ed=`<h4 style="margin:12px 0 4px">🧩 Notre 11 · ${esc(NAMES[me])} & ${esc(NAMES[pa])}</h4>
+    <div class="mute" style="font-size:12px;margin-bottom:6px">${sv?`Composé à la main par ${esc(NAMES[sv.by]||"?")} · ${fmtWhen(sv.at)}`:"11 automatique (meilleures cartes de vos 2 collections)"} · touche un poste pour choisir parmi vos 2 collections. Le banc se remplit tout seul avec les meilleurs restants.</div>
+    <div class="arow"><select id="duoForm">${Object.keys(F).map(f=>`<option ${f===T.formation?"selected":""}>${f}</option>`).join("")}</select><button class="btn sm ghost" id="duoAutoB">✨ Meilleur 11 auto</button></div>
+    <div class="duol">${roles.map(([r],i)=>row(i,r,T.slots[i])).join("")}${row("coach","COA",T.coach)}</div>`; }
+  return `<h3>👥 Duo · 2 contre 2</h3><div class="rules" style="font-size:12px;margin-top:0">Choisis ton coéquipier et vos 2 adversaires. Chaque duo <b>compose son 11 en piochant dans les collections des deux joueurs</b> (sinon, le meilleur 11 possible est fait automatiquement). Le match se joue en direct chez les 4.</div>
    <div class="duog"><div><small>Ton coéquipier</small>${opt("a","Choisir…")}</div><div><small>Adversaire 1</small>${opt("b","Choisir…")}</div><div><small>Adversaire 2</small>${opt("c","Choisir…")}</div></div>
-   ${us.length<3?`<div class="mute" style="font-size:12.5px">Il faut au moins 4 joueurs inscrits pour jouer en duo.</div>`:""}${pre}
+   ${us.length<3?`<div class="mute" style="font-size:12.5px">Il faut au moins 4 joueurs inscrits pour jouer en duo.</div>`:""}${ed}${pre}${ok?`<div class="mute" style="font-size:12px;text-align:center">11 adverse : ${duoSaved(duoSel.b,duoSel.c)?"composé à la main par eux":"automatique"}</div>`:""}
    <button class="btn big" id="duoGo" ${ok?"":"disabled"}>▶️ Lancer le match en duo</button>`; }
-function bindDuo(){ document.querySelectorAll("[data-du]").forEach(x=>x.onchange=()=>{ duoSel[x.dataset.du]=x.value||null; renderJeux(); }); const g=$("#duoGo"); if(g) g.onclick=duoPlay; }
+function bindDuo(){ document.querySelectorAll("[data-du]").forEach(x=>x.onchange=()=>{ duoSel[x.dataset.du]=x.value||null; renderJeux(); }); const g=$("#duoGo"); if(g) g.onclick=duoPlay;
+  const pa=duoSel.a; if(!pa) return;
+  document.querySelectorAll("[data-dslot]").forEach(b=>b.onclick=()=>{ const k=b.dataset.dslot; if(k==="coach") openSheet("coach",0,"COACH","duo",pa); else openSheet("xi",+k,b.dataset.drole,"duo",pa); });
+  const f=$("#duoForm"); if(f) f.onchange=()=>{ const d=duoEdit(pa); d.formation=f.value; save(); renderJeux(); };
+  const au=$("#duoAutoB"); if(au) au.onclick=()=>{ const A=duoAuto(me,pa,(duoSaved(me,pa)||{}).formation); const c=W(); c.duo=c.duo||{}; c.duo[pa]={...A,at:Date.now(),by:me}; save(); renderJeux(); toast("✨ Meilleur 11 de vos 2 collections mis en place"); }; }
 async function duoPlay(){ const {a,b,c}=duoSel; if(!a||!b||!c||new Set([me,a,b,c]).size<4) return; if(sharedLive()){ toast("Un match est déjà en cours, attends la fin",true); return; }
   const tA=duoTeam(me,a), tB=duoTeam(b,c); const SA=strength(tA,null,false), SB=strength(tB,null,false);
   if(!enough(SA)||!enough(SB)){ toast("Un des duos n'a pas assez de joueurs (7 minimum)",true); return; }
@@ -3161,8 +3187,16 @@ function renderDraftHist(){
   el.querySelectorAll("[data-dht]").forEach(b=>b.onclick=()=>{ const h=draftHist.find(x=>x.mid===b.dataset.dht); if(!h) return; const M=$("#cardModal");
     const keys=h.mode==="sofa"?["p0","p1"]:h.players; const nm=(w,k)=>h.mode==="sofa"?h.names[k]:(NAMES[w]||"?");
     const team=(w,k)=>{ const t=h.teams[w]||{}; const F2=F[t.formation]||F["4-3-3"]; return `<div><h4>${esc(nm(w,k))} <small class="mute">${esc(t.formation||"")}</small></h4>${F2.map(([r],k)=>`<div class="nr"><span>${r} ${esc(BY_ID[(t.slots||{})[k]]?.name||"–")}</span></div>`).join("")}${t.coach?`<div class="nr"><span>COA ${esc(BY_ID[t.coach]?.name||"")}</span></div>`:""}</div>`; };
-    M.innerHTML=`<div class="cm-box panel" style="max-height:85vh;overflow:auto"><h3 style="margin-top:0">${h.mode==="budget"?"💰 Budget":h.mode==="sofa"?"🛋️ Canapé":"⚡ Draft"} · ${h.score.join(" - ")}</h3><div class="notes">${keys.map(team).join("")}</div><div class="mbtns"><button class="btn" id="dhRp">▶️ Revoir le match</button><button class="btn ghost" id="dhX">Fermer</button></div></div>`;
-    M.classList.add("open"); $("#dhX").onclick=()=>M.classList.remove("open"); $("#dhRp").onclick=()=>{ M.classList.remove("open"); openReplay(h.mid); }; });
+    M.innerHTML=`<div class="cm-box panel" style="max-height:85vh;overflow:auto"><h3 style="margin-top:0">${h.mode==="budget"?"💰 Budget":h.mode==="sofa"?"🛋️ Canapé":"⚡ Draft"} · ${h.score.join(" - ")}</h3><div class="notes">${keys.map(team).join("")}</div><div id="dhSimR" class="mute" style="font-size:12.5px;margin:8px 0">🔬 Pour vérifier que ce n'est pas truqué : rejoue ces 2 équipes 500 fois avec le même moteur.</div><div class="mbtns"><button class="btn" id="dhRp">▶️ Revoir le match</button><button class="btn ghost" id="dhSim">🔬 Rejouer 500×</button><button class="btn ghost" id="dhX">Fermer</button></div></div>`;
+    M.classList.add("open"); $("#dhX").onclick=()=>M.classList.remove("open");
+    $("#dhSim").onclick=()=>{ const b=$("#dhSim"); b.disabled=true; const R=$("#dhSimR");
+      const cs=keys.map(w=>{ const t=h.teams[w]||{}; return {formation:F[t.formation]?t.formation:"4-3-3",slots:t.slots||{},bench:t.bench||{},coach:t.coach||null}; });
+      const Ss=cs.map((c,k)=>strength(c,h.mode==="sofa"||!NAMES[keys[k]]?null:keys[k],false));
+      const mi=h.mode==="sofa"?0:Math.max(0,keys.indexOf(me)); const N=500; let n=0,w=0,d=0,gf=0,ga=0;
+      const step=()=>{ for(let k=0;k<50&&n<N;k++,n++){ const home=n%2; const r=home?simulate2(cs[1],Ss[1],cs[0],Ss[0]):simulate2(cs[0],Ss[0],cs[1],Ss[1]); const sc=home?[r.score[1],r.score[0]]:r.score; const a=sc[mi], o=sc[1-mi]; gf+=a; ga+=o; if(a>o) w++; else if(a===o) d++; }
+        R.textContent=`🔬 ${n}/${N}…`; if(n<N){ setTimeout(step,0); return; }
+        const pc=x=>Math.round(x/N*100); R.innerHTML=`🔬 Sur ${N} matchs (${esc(nm(keys[mi],mi))}) : <b style="color:#7ee2a0">${pc(w)} % victoires</b> · ${pc(d)} % nuls · <b style="color:#ff6b7d">${pc(N-w-d)} % défaites</b> · ${(gf/N).toFixed(1)} - ${(ga/N).toFixed(1)} buts en moyenne`; b.disabled=false; };
+      step(); }; $("#dhRp").onclick=()=>{ M.classList.remove("open"); openReplay(h.mid); }; });
 }
 
 // ---------- ⚙️ Matchs automatiques (championnats + coupes) & résumés à revoir ----------
@@ -3828,7 +3862,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-22c"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-22d"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
