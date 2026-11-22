@@ -1721,12 +1721,18 @@ function draftOffer(kind,i,role){
 const TRK={bronze:0,silver:1,gold:2,icon:3,myth:4};
 function strOf(id,w){ const p=BY_ID[id]; if(!p) return 0; const e=(((w!==undefined?C(w):(me&&C(me)))||{}).evo||{})[id]||0; return p.ovr+e; }
 function byStr(w){ return (a,b)=>{ const A=typeof a==="string"?a:a.id, B=typeof b==="string"?b:b.id; return strOf(B,w)-strOf(A,w)||TRK[cardTier(BY_ID[B])]-TRK[cardTier(BY_ID[A])]||BY_ID[A].name.localeCompare(BY_ID[B].name,"fr"); }; }
+// Toutes les cartes jouables en draft : joueurs de base + cartes spéciales (Légendes, Grande forme, TOTW…)
+// Un même joueur ne peut être pris qu'une fois, quelle que soit sa version
+const bOf=p=>p.base||p.id;
+function draftPool(taken){ const tb=new Set(Object.keys(taken).map(id=>BY_ID[id]?bOf(BY_ID[id]):id));
+  let V=[]; try{ V=VARIANTS.filter(p=>p.pos[0]!=="COACH"); }catch(_){}
+  return [...PLAYERS,...V].filter(p=>!tb.has(bOf(p))); }
 function genOffer(kind,role,taken){
-  const okR=kind==="xi"?(ROLE_OK[role]||[]):null;
-  let base=(kind==="coach"?COACHES:PLAYERS).filter(p=>!taken[p.id]&&(!okR||zoneOK(p,role)));
-  if(okR&&base.length<5) base=PLAYERS.filter(p=>!taken[p.id]&&p.pos.some(x=>okR.includes(x)));
+  const okR=kind==="xi"?(ROLE_OK[role]||[]):null; const pool=kind==="coach"?COACHES.filter(p=>!taken[p.id]):draftPool(taken);
+  let base=pool.filter(p=>!okR||zoneOK(p,role));
+  if(okR&&base.length<5) base=pool.filter(p=>p.pos.some(x=>okR.includes(x)));
   const used=new Set(), ids=[];
-  const pickT=tiers=>{ for(const t of tiers){ const L=base.filter(p=>cardTier(p)===t&&!used.has(p.id)); if(L.length) return L[Math.floor(Math.random()*L.length)]; } return null; };
+  const pickT=tiers=>{ for(const t of tiers){ const L=base.filter(p=>cardTier(p)===t&&!used.has(bOf(p))); if(L.length) return L[Math.floor(Math.random()*L.length)]; } return null; };
   for(const tiers of OFFER_TIERS){
     let p=null;
     if(tiers.length>1){ // dernières cases : tirage pondéré, chance de grosse carte
@@ -1734,9 +1740,9 @@ function genOffer(kind,role,taken){
       p=pickT(order);
     } else p=pickT(tiers);
     if(!p) p=pickT(["bronze","silver","gold","icon","myth"]);
-    if(p){ used.add(p.id); ids.push(p.id); }
+    if(p){ used.add(bOf(p)); ids.push(p.id); }
   }
-  if(kind==="xi") ensureRole(ids,role,PLAYERS.filter(p=>!taken[p.id]));
+  if(kind==="xi") ensureRole(ids,role,pool.filter(p=>!ids.some(id=>bOf(BY_ID[id])===bOf(p))));
   return ids;
 }
 function openSheet(kind,i,role,mode,partner){
@@ -1904,7 +1910,9 @@ function dNorm(x,a,b){
 }
 const dNeeded=d=>{const f=FORMATS[d.format];return 11+f.bench+(f.coach?1:0);};
 const dCount=t=>Object.values(t.slots).filter(Boolean).length+Object.values(t.bench).filter(Boolean).length+(t.coach?1:0);
-function dTaken(d){ const m={}; if(!d) return m; for(const w of d.players){ const t=d.teams[w]; [...Object.values(t.slots),...Object.values(t.bench),t.coach].forEach(x=>{if(x)m[x]=w;}); } return m; }
+function dTaken(d){ const m={}; if(!d) return m; for(const w of d.players){ const t=d.teams[w]; [...Object.values(t.slots),...Object.values(t.bench),t.coach].forEach(x=>{if(x)m[x]=w;}); }
+  // une version prise (base ou carte spéciale) bloque toutes les autres versions du même joueur
+  try{ for(const id of Object.keys(m)){ const p=BY_ID[id]; if(p&&p.base&&!m[p.base]) m[p.base]=m[id]; } for(const p of VARIANTS) if(!m[p.id]&&m[p.base]) m[p.id]=m[p.base]; }catch(_){} return m; }
 let dSwap=null;
 function dSwapTap(k,i,pid){
   if(!dSwap){ dSwap={k,i}; toast("Touche le joueur avec qui l'échanger"); renderDraft(); return; }
@@ -5820,7 +5828,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-26c"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-26d"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
