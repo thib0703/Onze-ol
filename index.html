@@ -3181,9 +3181,10 @@ function renderDraftHist(){
   const el=$("#dHist"); if(!el||!me) return;
   const IC={budget:"💰",sofa:"🛋️",classic:"⚡"};
   el.innerHTML=`<h3>📜 Historique de mes drafts <small>${draftHist.length}</small></h3>`+(draftHist.length?draftHist.slice(0,20).map(h=>{ const sofaH=h.mode==="sofa"; const i=sofaH?0:h.players.indexOf(me), o=h.players[1-i]; const a=h.score[i], b=h.score[1-i];
-    return `<div class="dh"><div><b>${IC[h.mode]||"⚡"} ${sofaH?esc(h.names[0])+" vs "+esc(h.names[1]):"vs "+esc(NAMES[o]||"?")}</b><small>${fmtWhen(h.at)}</small></div><b class="${a>b?"win":a<b?"lose":""}">${a} - ${b}</b><button class="btn sm ghost" data-dht="${h.mid}">👕</button><button class="btn sm ghost" data-rp="${h.mid}">▶️</button></div>`; }).join("")
+    return `<div class="dh"><div><b>${IC[h.mode]||"⚡"} ${sofaH?esc(h.names[0])+" vs "+esc(h.names[1]):"vs "+esc(NAMES[o]||"?")}</b><small>${fmtWhen(h.at)}</small></div><b class="${a>b?"win":a<b?"lose":""}">${a} - ${b}</b><button class="btn sm ghost" data-dht="${h.mid}">👕</button><button class="btn sm ghost" data-dsim="${h.mid}" title="Rejouer 500×">🔬</button><button class="btn sm ghost" data-rp="${h.mid}">▶️</button></div>`; }).join("")+(draftHist.length?`<div class="mute" style="font-size:11.5px;margin-top:6px">👕 équipes · 🔬 rejouer le match 500× pour voir qui était favori · ▶️ revoir</div>`:"")
     :`<div class="mute" style="font-size:13px">Tes drafts terminés (Draft, Budget, Canapé) apparaîtront ici, avec les équipes et le match à revoir.</div>`);
   el.querySelectorAll("[data-rp]").forEach(b=>b.onclick=()=>openReplay(b.dataset.rp));
+  el.querySelectorAll("[data-dsim]").forEach(b=>b.onclick=()=>{ const t=el.querySelector(`[data-dht="${b.dataset.dsim}"]`); if(!t) return; t.click(); const g=$("#dhSim"); if(g) g.click(); });
   el.querySelectorAll("[data-dht]").forEach(b=>b.onclick=()=>{ const h=draftHist.find(x=>x.mid===b.dataset.dht); if(!h) return; const M=$("#cardModal");
     const keys=h.mode==="sofa"?["p0","p1"]:h.players; const nm=(w,k)=>h.mode==="sofa"?h.names[k]:(NAMES[w]||"?");
     const team=(w,k)=>{ const t=h.teams[w]||{}; const F2=F[t.formation]||F["4-3-3"]; return `<div><h4>${esc(nm(w,k))} <small class="mute">${esc(t.formation||"")}</small></h4>${F2.map(([r],k)=>`<div class="nr"><span>${r} ${esc(BY_ID[(t.slots||{})[k]]?.name||"–")}</span></div>`).join("")}${t.coach?`<div class="nr"><span>COA ${esc(BY_ID[t.coach]?.name||"")}</span></div>`:""}</div>`; };
@@ -3862,7 +3863,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-22e"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-22f"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
