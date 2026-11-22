@@ -281,7 +281,7 @@ html:has(.modal.open),body:has(.modal.open){overflow:hidden}
 .pstats div{background:#0f1d40;border-radius:10px;padding:8px;text-align:center;font-size:11px;color:var(--mute)}
 .pstats b{display:block;font-size:16px;color:var(--txt)}
 .fcard.hero{background:linear-gradient(155deg,#0f3d2a,#16794a 40%,#0b2a1c 70%,#ffd970 100%);color:#fff3c4}
-.fcard.hero::after{content:"⭐ HÉROS";position:absolute;bottom:5%;width:100%;text-align:center;font-size:.55em;font-weight:900;letter-spacing:.15em;color:#ffd970}
+.fcard.hero::after{content:"—  HÉROS DU MATCH  —";position:absolute;bottom:8.2%;width:100%;text-align:center;font-size:.42em;font-weight:800;letter-spacing:.3em;color:#ffe9a8;text-shadow:0 1px 1px #0006;opacity:.9}
 .fcard.hero .fc-tag{display:none}
 .pitch.bp{margin-top:4px}
 .bcoach{display:flex;align-items:center;gap:12px;margin:10px 4px}
@@ -772,6 +772,12 @@ header{padding:10px 16px 4px;min-height:44px}header h1{font-size:19px;margin:0;l
 .fcard.v-xm .fc-fx i{display:block;width:3%;aspect-ratio:1;border-radius:50%;top:-4%!important;background:#fff;box-shadow:0 0 4px #fff;opacity:.9;animation-name:fxFall;animation-iteration-count:infinite;animation-timing-function:linear}
 .fcard.v-xm .fc-fx::before{inset:0;background:linear-gradient(105deg,transparent 40%,#ffffff66 50%,transparent 60%);animation:fxSweep 6s ease-in-out infinite;mix-blend-mode:overlay}
 @media (prefers-reduced-motion:reduce){.fc-fx,.fc-fx *{animation:none!important}.fc-fx i{display:none!important}}
+/* rareté gravée discrètement en bas de la carte (plus d'étiquette) */
+.fcard .fc-tag{display:flex!important;align-items:center;gap:.55em;background:none!important;box-shadow:none!important;padding:0!important;border-radius:0!important;color:var(--ink)!important;
+  font-size:.42em!important;font-weight:800!important;letter-spacing:.34em!important;bottom:8.2%!important;opacity:.85!important;text-shadow:0 1px 1px #0006}
+.fcard .fc-tag::before,.fcard .fc-tag::after{content:"";width:2.2em;height:1px;background:linear-gradient(90deg,transparent,currentColor)}
+.fcard .fc-tag::after{background:linear-gradient(90deg,currentColor,transparent);margin-left:-.34em}
+.fcard.sm .fc-tag{font-size:.36em!important;bottom:7%!important}
 </style>
 </head>
 <body>
@@ -1865,7 +1871,7 @@ function cardHTML(pid,opts={}){
    <div class="fc-face">${PORTRAITS.has(p.base||p.id)?`<img class="fc-img" src="img/cartes/${p.base||p.id}.webp?v=${IMGV}" alt="" loading="lazy">`:`<svg viewBox="0 0 100 100"><circle cx="50" cy="36" r="19" fill="currentColor" opacity=".28"/><path d="M12 100c2-24 18-36 38-36s36 12 38 36z" fill="currentColor" opacity=".28"/>${mini?"":`<text x="50" y="43" text-anchor="middle" font-size="18" font-weight="900" fill="currentColor" opacity=".55">${esc(initials(p.name))}</text>`}</svg>`}</div>
    ${mini?"":`<div class="fc-name">${esc(shortN)}</div>`}
    ${mini||!st?(!mini&&p.pos[0]==="COACH"?`<div class="fc-coach">${esc(p.name)}<small>Entraîneur de l'OL</small></div>`:""):`<div class="fc-stats">${[0,3,1,4,2,5].map(i=>`<span><b>${st.vals[i]}</b>${st.labels[i]}</span>`).join("")}</div>`}
-   ${mini?(p.v?`<div class="fc-vmini">${VAR_INFO[p.v].ic}</div>`:""):(opts.tag?`<div class="fc-tag">${p.v?VAR_INFO[p.v].ic+" "+VAR_INFO[p.v].l:(p.pos[0]==="COACH"?"🧠 COACH":TIER_TAG[t])}</div>`:"")}
+   ${mini?(p.v?`<div class="fc-vmini">${VAR_INFO[p.v].ic}</div>`:""):(opts.tag?`<div class="fc-tag">${p.v?VAR_INFO[p.v].l:(p.pos[0]==="COACH"?"COACH":TIER_TAG[t])}</div>`:"")}
   </div>`;
 }
 function cardBackInfo(pid,lv){
@@ -4871,7 +4877,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-23q"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-23r"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
