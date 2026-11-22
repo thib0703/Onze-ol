@@ -1070,6 +1070,17 @@ details.fold>summary{cursor:pointer;list-style:none;font-weight:800}details.fold
 .tui-box.home .todor{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #ffffff10}.tui-box.home .tdt{flex:1;font-size:13px}.tui-box.home .tdi{font-size:18px}
 details.fold#libSec>summary::after{float:right}
 .tile.timg{justify-content:flex-end;min-height:150px}.tile.timg .ti,.tile.timg .tw{display:none}.tile.timg b{text-shadow:0 2px 6px #000}.tile.timg small{text-shadow:0 1px 4px #000;opacity:.95}
+/* 🎴 sachets illustrés */
+.pkimg{display:block;object-fit:contain;filter:drop-shadow(0 6px 10px #000a);pointer-events:none}
+.pkbtn.pkbig{background:radial-gradient(circle at 50% 35%,color-mix(in srgb,var(--pc) 35%,transparent),#0f1d40 70%);color:#fff;padding:10px 4px 10px;border:1px solid #ffffff1a}
+.pkbtn.pkbig .pkimg{width:62%;aspect-ratio:428/724;margin-bottom:4px;transition:transform .2s}.pkbtn.pkbig:hover .pkimg,.pkbtn.pkbig:active .pkimg{transform:translateY(-4px) rotate(-3deg)}
+.pkbtn.pkbig em{color:#ffd970}
+.pkbtn.daily{align-items:center;gap:10px}.pkbtn.daily .pkimg{width:30px;height:51px;flex:0 0 auto}.pkbtn.daily b{flex:1;text-align:left}
+.px-pack .px-face,.px-pack.pk-legende .px-face,.px-pack.pk-goldp .px-face{background:var(--pimg) center/100% 100% no-repeat!important;box-shadow:none!important;border-radius:0!important;-webkit-mask:none!important;mask:none!important}.px-pack .px-face::after{display:none}.px-pack{z-index:2;width:176px!important;height:298px!important}.px-pack .px-face{transform:translateZ(40px)}.px-pack .px-cut{transform:translateZ(42px)}.px-pack .px-holo{opacity:.18}.px-pack .px-shine{opacity:.55}
+.px-face::before{display:none}.px-holo{-webkit-mask:var(--pimg) center/100% 100%;mask:var(--pimg) center/100% 100%}
+.px-shine{-webkit-mask:var(--pimg) center/100% 100%;mask:var(--pimg) center/100% 100%}
+.px-pack .px-face{color:#fff!important}.px-pack .px-logo,.px-pack.pk-legende .px-logo,.px-pack.pk-goldp .px-logo{background:none!important;color:#fff!important;-webkit-text-fill-color:#fff;text-shadow:0 2px 0 #0008,0 0 3px #000,0 6px 18px #000c!important;filter:none!important}.px-pack.pk-goldp .px-logo,.px-pack.pk-goldp .px-name{-webkit-text-fill-color:#3a2a05;color:#3a2a05!important;text-shadow:0 1px 0 #fff8dc,0 0 10px #fff3c4!important}.px-pack .px-name,.px-pack .px-n{text-shadow:0 1px 3px #000,0 0 10px #000a;opacity:1}
+.px-pack.goldp .px-face{--pimg:url(img/packs/legende.webp);box-shadow:0 0 60px #ffd970,0 0 120px #ffb020!important}
 </style>
 </head>
 <body>
@@ -2958,6 +2969,8 @@ const PACKS={
 };
 PACKS.starter={name:"Pack de départ",price:0,n:12,w:{bronze:100},color:"#7ec8ff"};
 const SELL={bronze:4,silver:12,gold:32,icon:100,myth:300};
+const PIMG=k=>`img/packs/${({jour:"jour",starter:"jour",reward:"jour",bronze:"classique",rare3:"classique",or:"epique",legende:"legende",event:"evenement",gold:"legende"})[k]||"classique"}.webp`;
+const PDARK=k=>["bronze","rare3","legende","gold"].includes(k); // texte foncé sur les sachets clairs
 // ---------- ✨ Cartes spéciales (variantes plus fortes de certains joueurs) ----------
 const VAR_INFO={fs:{l:"PÉPITE",n:"Pépite",ic:"🌟"},tf:{l:"EN FORME",n:"Forme du moment",ic:"🔥"},ml:{l:"MOMENT",n:"Moment de légende",ic:"🏆"},xm:{l:"NOËL",n:"Édition Noël",ic:"🎄"},gf:{l:"GRANDE FORME",n:"Grande Forme",ic:"💥"},ul:{l:"LÉGENDE ULTIME",n:"Légende Ultime",ic:"👑"},lm:{l:"LÉGENDE MODERNE",n:"Légende moderne",ic:"⭐"}};
 const FS_LIST=[["kail-boudache",84],["khalis-merah",82],["noah-nartey",82],["julien-duranville",81],["zachary-athekame",80],["remi-himbert",80]];
@@ -3132,7 +3145,7 @@ function packFx(pack,ids,isNew,gold){
   const lights=Array.from({length:14},(_,i)=>`<i style="left:${(i*7.5+2).toFixed(1)}%;animation-delay:-${(Math.random()*3).toFixed(2)}s"></i>`).join("");
   F.innerHTML=`<div class="px-bg"></div><div class="px-crowd">${lights}</div><div class="px-beams"><i></i><i></i><i></i></div><div class="px-fog"></div>
     <div class="px-stage"><div class="px-aura" style="--c1:${hype?BC[0]:"#7fb2ff"};--c2:${hype?BC[1]:"#1d4ed8"}"></div>
-      <div class="px-pack pk-${pack}" style="--pc:${P.color}"><div class="px-face"><div class="px-holo"></div><div class="px-logo">OL</div><div class="px-name">${esc(P.name)}</div><div class="px-n">${ids.length} CARTE${ids.length>1?"S":""}</div><div class="px-shine"></div></div><div class="px-cut"></div></div>
+      <div class="px-pack pk-${pack} pxw" style="--pc:${P.color};--pimg:url(${PIMG(pack)})"><div class="px-face"><div class="px-holo"></div><div class="px-logo">OL</div><div class="px-name">${esc(P.name)}</div><div class="px-n">${ids.length} CARTE${ids.length>1?"S":""}</div><div class="px-shine"></div></div><div class="px-cut"></div></div>
       <div class="px-tap">Touche le pack pour l'ouvrir</div></div>
 `;
   const stage=F.querySelector(".px-stage"), pk=F.querySelector(".px-pack"); let opened=false, ready=!gold; SFX.whoosh(); setTimeout(()=>SFX.crowd(2.2,.08),400);
@@ -3212,10 +3225,10 @@ function renderCollec(){
   const owned=ALL_CARDS.filter(p=>coll[p.id]).length;
   const dupes=Object.entries(coll).reduce((s,[id,n])=>s+(n>1?(n-1)*SELL[cardTier(BY_ID[id])]:0),0);
   $("#cShop").innerHTML=`<h3>🎴 Boutique <small>🪙 ${(c.coins||0).toLocaleString("fr-FR")}</small></h3>
-    ${c.daily!==today()?`<button class="pkbtn daily" data-pk="jour" style="--pc:#7ee2a0"><b>🎁 Pack du jour gratuit</b><span>2 cartes · 1 par jour</span><em>Ouvrir</em></button>`:`<div class="mute" style="font-size:12.5px;margin-bottom:8px">🎁 Pack du jour ouvert, le prochain demain.</div>`}
-    ${Object.entries(c.freePacks||{}).filter(([k,n])=>n>0&&PACKS[k]).map(([k,n])=>`<button class="pkbtn daily" data-free="${k}" style="--pc:${PACKS[k].color}"><b>🎁 ${PACKS[k].name} offert ×${n}</b><span>récompense</span><em>Ouvrir</em></button>`).join("")}
-    <button class="pkbtn daily" data-pk="event" style="--pc:#ff9a6a;animation:none"><b>${curEvent().name}</b><span>Pack Événement · 3 cartes du thème</span><em>🪙 600</em></button>
-    <div class="shop">${Object.entries(PACKS).filter(([k])=>!["jour","event","reward","starter","rare3"].includes(k)).map(([k,P])=>`<button class="pkbtn" data-pk="${k}" style="--pc:${P.color}"><b>${P.name}</b><span>${P.n} cartes${P.guarantee==="gold"?" · 1 Épique min.":P.guarantee==="icon"?" · 1 Légendaire min.":""}</span><em>🪙 ${P.price}</em></button>`).join("")}</div>
+    ${c.daily!==today()?`<button class="pkbtn daily" data-pk="jour" style="--pc:#7ee2a0"><img class="pkimg" src="${PIMG("jour")}" alt=""><b>🎁 Pack du jour gratuit</b><span>2 cartes · 1 par jour</span><em>Ouvrir</em></button>`:`<div class="mute" style="font-size:12.5px;margin-bottom:8px">🎁 Pack du jour ouvert, le prochain demain.</div>`}
+    ${Object.entries(c.freePacks||{}).filter(([k,n])=>n>0&&PACKS[k]).map(([k,n])=>`<button class="pkbtn daily" data-free="${k}" style="--pc:${PACKS[k].color}"><img class="pkimg" src="${PIMG(k)}" alt=""><b>🎁 ${PACKS[k].name} offert ×${n}</b><span>récompense</span><em>Ouvrir</em></button>`).join("")}
+    <button class="pkbtn daily" data-pk="event" style="--pc:#ff9a6a;animation:none"><img class="pkimg" src="${PIMG("event")}" alt=""><b>${curEvent().name}</b><span>Pack Événement · 3 cartes du thème</span><em>🪙 600</em></button>
+    <div class="shop">${Object.entries(PACKS).filter(([k])=>!["jour","event","reward","starter","rare3"].includes(k)).map(([k,P])=>`<button class="pkbtn pkbig" data-pk="${k}" style="--pc:${P.color}"><img class="pkimg" src="${PIMG(k)}" alt=""><b>${P.name}</b><span>${P.n} cartes${P.guarantee==="gold"?" · 1 Épique min.":P.guarantee==="icon"?" · 1 Légendaire min.":""}</span><em>🪙 ${P.price}</em></button>`).join("")}</div>
     <div class="rules" style="font-size:12.5px">Gagne des pièces en jouant : <b>victoire 100</b>, nul 50, défaite 25, <b>+10 par but</b> (tous les modes, sans limite de matchs par jour) et <b>1 pack gratuit par jour</b>. Doublons : revente 4 / 12 / 32 / 100 / 300 🪙 (Commune → Mythique), ou échange avec les autres pour plus de valeur.</div>
     ${dupes?`<button class="btn ghost big" id="sellBtn">Vendre mes doublons (+${dupes} 🪙)</button>`:""}`;
   document.querySelectorAll(".pkbtn[data-pk]").forEach(b=>b.onclick=()=>openPack(b.dataset.pk));
@@ -5549,7 +5562,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-25c"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-25e"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
