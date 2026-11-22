@@ -603,7 +603,7 @@ header{padding:10px 16px 4px;min-height:44px}header h1{font-size:19px;margin:0;l
 .adv-glow{position:absolute;left:4%;right:4%;top:44%;height:20%;background:radial-gradient(ellipse at 50% 50%,#ffd98a55,transparent 70%);animation:advGlow 3s ease-in-out infinite;mix-blend-mode:screen}
 @keyframes advGlow{50%{opacity:.4}}
 .adv-title{position:absolute;left:0;right:0;top:4px;text-align:center;z-index:2}
-.adv-title h3{margin:0;font-family:"Cinzel","Trajan Pro",Georgia,"Times New Roman",serif;font-weight:900;font-size:clamp(15px,5vw,23px);letter-spacing:.3px;line-height:1.05;
+.adv-title h3{margin:0;font-family:"Cinzel","Trajan Pro",Georgia,"Times New Roman",serif;font-weight:900;font-size:clamp(14px,4.6vw,22px);letter-spacing:.2px;padding:0 10px;line-height:1.05;
   background:linear-gradient(180deg,#fff8dc 0%,#f3d27a 40%,#b8862b 75%,#ffe9a8 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 2px 0 #3a2a08) drop-shadow(0 4px 10px #000c)}
 .adv-title .adv-sub2{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:3px;font-family:Georgia,serif;font-size:10.5px;letter-spacing:3.5px;color:#f3e4b5;text-shadow:0 1px 4px #000}
 .adv-title .adv-sub2::before,.adv-title .adv-sub2::after{content:"";width:34px;height:4px;background:linear-gradient(90deg,#e3002b 0 33%,#fff 33% 66%,#1d4ed8 66%)}
@@ -711,6 +711,13 @@ header{padding:10px 16px 4px;min-height:44px}header h1{font-size:19px;margin:0;l
 .ax.go .ax-skip{display:none}
 .ax.fast .ax-tkt{animation-duration:.01s}
 @media (prefers-reduced-motion:reduce){.ax *{animation-duration:.01s!important;animation-iteration-count:1!important}}
+.advg.pre{filter:grayscale(.85) brightness(.55)}
+.adv-pre{position:relative;z-index:3;margin:-2px 0 12px;padding:12px 10px;border-radius:14px;text-align:center;background:linear-gradient(160deg,#0b1530ee,#13234fee);border:1px solid #c9a24a99;box-shadow:0 0 24px #ffd97033}
+.adv-pre-t{font-family:Georgia,serif;font-weight:900;letter-spacing:3px;font-size:12px;color:#f3d27a;margin-bottom:8px}
+.cdw{display:flex;justify-content:center;gap:8px}
+.cdb{min-width:58px;padding:7px 4px 5px;border-radius:10px;background:linear-gradient(160deg,#fff3c4,#f3d27a 35%,#d4a13d 70%,#b8862b);box-shadow:0 0 0 1px #fff1b8,0 4px 10px #000a;color:#14204a}
+.cdb b{display:block;font-family:Georgia,serif;font-size:26px;font-weight:900;line-height:1}.cdb small{font-size:9px;font-weight:900;letter-spacing:1px;text-transform:uppercase}
+.adv-pre-s{font-size:11.5px;color:#d6def5;margin-top:9px}
 </style>
 </head>
 <body>
@@ -4113,7 +4120,11 @@ const ADVENT=[{coins:150},{pack:"bronze"},{coins:200},{pack:"rare3"},{coins:250}
 const ADV_IC=r=>r.pack==="legende"?"🌟":r.pack==="or"?"💛":r.pack==="rare3"?"💙":r.pack?"🎴":"🪙";
 const ADV_CARD="juninho--xm";
 function adventState(){ const c=W(), y=nowD().getFullYear(); if(!c.advent||c.advent.y!==y) c.advent={y,o:{}}; return c.advent; }
-const adventOn=()=>{ const t=nowD(); return t.getMonth()===11&&t.getDate()<=26; };
+const adventOn=()=>{ const t=nowD(); return (t.getMonth()===11&&t.getDate()<=26)||t.getMonth()===10; }; // novembre : aperçu grisé + décompte
+const adventPre=()=>nowD().getMonth()===10;
+const advTarget=()=>new Date(nowD().getFullYear(),11,1,0,0,0).getTime();
+function advCdHTML(){ let ms=Math.max(0,advTarget()-nowD().getTime()); const d=Math.floor(ms/86400000); ms-=d*86400000; const h=Math.floor(ms/3600000); ms-=h*3600000; const m=Math.floor(ms/60000), sec=Math.floor((ms-m*60000)/1000); const b=(v,l)=>`<div class="cdb"><b>${String(v).padStart(2,"0")}</b><small>${l}</small></div>`; return b(d,"jours")+b(h,"heures")+b(m,"min")+b(sec,"sec"); }
+setInterval(()=>{ const e=document.getElementById("advCd"); if(!e) return; if(adventPre()) e.innerHTML=advCdHTML(); else if(mode==="collec") renderCollec(); },1000);
 const adventToday=()=>{ const t=nowD(); return t.getMonth()===11&&t.getDate()<=24?t.getDate():0; };
 const adventTodo=()=>{ const d=adventToday(); return d&&!adventState().o[d]; };
 const ADV_LBL=r=>r.pack==="legende"?"🌟 LÉGENDE":r.pack==="or"?"💛 ÉPIQUE":r.pack==="rare3"?"💙 RARE":r.pack?"🎴 PACK":r.coins+" 🪙";
@@ -4140,7 +4151,7 @@ function parcSVG(){ return `<svg class="parc" viewBox="0 0 360 150" aria-hidden=
 const snowHTML=n=>Array.from({length:n},()=>`<i style="left:${(Math.random()*100).toFixed(1)}%;animation-duration:${(5+Math.random()*6).toFixed(1)}s;animation-delay:-${(Math.random()*10).toFixed(1)}s;font-size:${(6+Math.random()*7).toFixed(0)}px;opacity:${(.4+Math.random()*.6).toFixed(2)}">❄</i>`).join("");
 const ADV_TONE=r=>r.pack==="legende"?"leg":r.pack==="or"?"epi":r.pack==="rare3"?"rare":r.pack?"cla":"coin";
 let advLastOpen=null;
-function openAdvent(d){ if(d!==adventToday()){ toast(d<adventToday()?"Ce match est passé : la case reste vide 😢":"Patience, la porte "+d+" ouvre le "+d+" décembre 🎄",true); return; }
+function openAdvent(d){ if(adventPre()){ toast("🎄 Le calendrier ouvre le 1er décembre à minuit !"); return; } if(d!==adventToday()){ toast(d<adventToday()?"Ce match est passé : la case reste vide 😢":"Patience, la porte "+d+" ouvre le "+d+" décembre 🎄",true); return; }
   const A=adventState(); if(A.o[d]) return; A.o[d]=1; const r=ADVENT[d-1]; grant(r,`🎄 Calendrier de l'Avent, case ${d}`); advLastOpen=d;
   let bonus=false; if(d===24&&Array.from({length:24},(_,i)=>A.o[i+1]).every(Boolean)){ const c=W(); c.coll=c.coll||{}; c.coll[ADV_CARD]=(c.coll[ADV_CARD]||0)+1; bonus=true; post(`🎄 ${NAMES[me]} a ouvert les 24 cases du calendrier de l'Avent et gagne la carte exclusive ${BY_ID[ADV_CARD].name} Édition Noël !`); }
   save(); const M=$("#cardModal"); const tone=bonus?"leg":ADV_TONE(r);
@@ -4178,8 +4189,9 @@ function adventHTML(){ if(!me||!adventOn()) return ""; const A=adventState(), td
   return `<div class="section adv"><div class="adv-snow">${snowHTML(22)}</div>
     <div class="adv-top"><div class="adv-glow"></div><div class="adv-star"></div><div class="adv-title"><h3>CALENDRIER DE L'AVENT</h3><div class="adv-sub2">OLYMPIQUE LYONNAIS</div></div><div class="adv-count">🎁 ${n}/24</div></div>
     <div class="track adv-track"><i style="width:${n/24*100}%"></i></div>
-    <div class="adv-sub">${miss?"Une case a été ratée : le 24/24 n'est plus possible cette année.":`Une case par jour, à ouvrir le jour même. Les 24 = carte exclusive <b>${esc(BY_ID[ADV_CARD].name)} Édition Noël</b> 🏆`}</div>
-    <div class="advg">${Array.from({length:24},(_,i)=>{ const d=i+1, op=A.o[d], r=ADVENT[i]; const st=op?"op":d===td?"td":d<td||!td?"ko":"lk";
+    ${adventPre()?`<div class="adv-pre"><div class="adv-pre-t">⏳ OUVERTURE DANS</div><div class="cdw" id="advCd">${advCdHTML()}</div><div class="adv-pre-s">1 case par jour du 1er au 24 décembre · cadeaux, packs et une carte exclusive à gagner 🎁</div></div>`:""}
+    <div class="adv-sub">${adventPre()?"":miss?"Une case a été ratée : le 24/24 n'est plus possible cette année.":`Une case par jour, à ouvrir le jour même. Les 24 = carte exclusive <b>${esc(BY_ID[ADV_CARD].name)} Édition Noël</b> 🏆`}</div>
+    <div class="advg${adventPre()?" pre":""}">${Array.from({length:24},(_,i)=>{ const d=i+1, op=A.o[d], r=ADVENT[i]; const st=adventPre()?"lk":op?"op":d===td?"td":d<td||!td?"ko":"lk";
       const inner=op?`<span class="flap"></span><span class="num">${nn(d)}</span><span class="gain">${ADV_LBL(r)}</span>`
         :st==="td"?`${LAU.replace('class="lau"','class="lau l"')}${LAU.replace('class="lau"','class="lau r"')}<span class="num">${d}</span><span class="rib">AUJOURD'HUI</span>`
         :`<span class="tx"></span>${LAU.replace('class="lau"','class="lau l"')}${LAU.replace('class="lau"','class="lau r"')}<span class="num">${nn(d)}</span><span class="lock">${st==="ko"?"RATÉE":"🔒"}</span>`;
@@ -4778,7 +4790,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-23k"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-23l"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
