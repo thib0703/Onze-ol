@@ -1101,6 +1101,7 @@ body.lowfx .fc-fx,body.lowfx .fc-shine,body.lowfx .px-holo,body.lowfx .px-shine,
 body.lowfx .tile,body.lowfx .vt img,body.lowfx .hype,body.lowfx .pkbtn,body.lowfx .fcard{animation:none!important}
 .bnav .navi{width:30px;height:30px;object-fit:contain;display:block;margin:0 auto;filter:saturate(.6) brightness(.85);opacity:.85;transition:transform .2s,filter .2s}
 .bnav button.on .navi{filter:drop-shadow(0 0 8px #ffd97088) saturate(1.1);opacity:1;transform:translateY(-2px) scale(1.12)}
+.fc-ovr.cbup{color:#0d7a3a!important;text-shadow:0 0 6px #7ee2a0aa}.fcard.myth .fc-ovr.cbup,.fcard.v-ul .fc-ovr.cbup,.fcard.coach .fc-ovr.cbup{color:#7ee2a0!important}.fc-ovr.cbdn{color:#c0392b!important}
 </style>
 </head>
 <body>
@@ -2446,6 +2447,7 @@ function placeFor(slots,form,role,pid){ const R=F[form]||F["4-3-3"], E=R.map((_,
   return E.find(j=>R[j][0]===role)??E.find(j=>ZONE[R[j][0]]===ZONE[role])??E[0]; }
 function formBarHTML(form,id,note){ return `<div class="formbar"><span>Système</span><select id="${id}F">${Object.keys(F).map(x=>`<option ${x===form?"selected":""}>${x}</option>`).join("")}</select><button class="btn sm ghost" id="${id}A">🪄 Placement auto</button></div>${note?`<div class="mute" style="font-size:11.5px;margin:-2px 0 6px">${note}</div>`:""}`; }
 function annotate(b,role,pid,coId){ const p=pid&&BY_ID[pid]; if(!b||!p||p.pos[0]==="COACH") return; const v=coachBonus(coId,p,role), hp=hpPen(p,role); if(!v&&!hp) return;
+  if(v){ const o=b.querySelector(".fc-ovr"), tn_=o&&[...o.childNodes].find(n=>n.nodeType===3&&/\d/.test(n.nodeValue)); if(tn_){ const base=parseInt(tn_.nodeValue,10); if(!isNaN(base)){ tn_.nodeValue=String(Math.round(base+v)); o.classList.add(v>0?"cbup":"cbdn"); o.title=`${base} de base ${v>0?"+":""}${v} entraîneur`; } } }
   b.insertAdjacentHTML("beforeend",`<div class="ann">${v?`<i class="${v>0?"up":"dn"}">🧠${v>0?"+":""}${v}</i>`:""}${hp?`<i class="dn">⚠️−${hp}%</i>`:""}</div>`); }
 function sheetCtx(){ if(!editing) return null;
   if(editing.mode==="compo"&&compos[me]) return {c:compos[me],w:me,club:true,pure:false};
@@ -5694,7 +5696,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-25o"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-25p"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
