@@ -4698,7 +4698,7 @@ async function autoPlay(){
     for(const [id,K] of Object.entries(cups)){
       if(K.status!=="running"||!(K.members||[]).includes(me)) continue;
       const ri=K.rounds.length-1, R=K.rounds[ri];
-      for(let ti=0;ti<R.ties.length;ti++){ const T=R.ties[ti]; if(T.w) continue; const k=T.legs.length; if(cupLegTime(K,ri,k)>now) continue;
+      for(let ti=0;ti<R.ties.length;ti++){ const T=R.ties[ti]; if(T.w) continue; const k=T.legs.length; if(k>=legsOf(R)) continue; if(cupLegTime(K,ri,k)>now) continue;
         await autoTie(id,ri,ti,k); }
     }
   }catch(e){} autoBusy=false;
@@ -5476,19 +5476,21 @@ function startCup(id){ return cupTx(id,K=>{ if(K.owner!==me||K.status!=="open") 
   const P=K.members.slice().sort(()=>Math.random()-.5); const ties=[]; for(let i=0;i<P.length;i+=2) ties.push({a:P[i],b:P[i+1],legs:[],w:null});
   return {status:"running",rounds:[{ties}],start:Date.now()}; }).then(ok=>{ if(ok){ post(`🏆 Tirage de la coupe « ${cups[id]?.name||""} » effectué ! Les matchs se jouent automatiquement.`); toast("Tirage effectué ✓ : 1er match dans une minute"); } }); }
 const CUP_GAP=12*3600000;
+// finale sur un seul match (drapeau « one » posé au 1er match ; une finale déjà commencée en aller-retour le reste)
+const legsOf=R=>R&&R.ties&&(R.one||(R.ties.length===1&&!R.ties[0].legs.length))?1:2;
 const cupLegTime=(K,ri,k)=>(K.start||K.created)+60000+(2*ri+k)*CUP_GAP;
 function shootout(gA,gB){ const pA=.76-(gB-75)/250, pB=.76-(gA-75)/250; let a=0,b=0;
   for(let k=0;k<5;k++){ if(Math.random()<pA) a++; if(Math.random()<pB) b++; if(a>b+(4-k)||b>a+(4-k)) break; }
   let g=0; while(a===b&&g++<20){ const x=Math.random()<pA, y=Math.random()<pB; a+=x; b+=y; } if(a===b) a++; return [a,b]; }
 async function autoTie(id,ri,ti,k){
-  const K=cups[id]; const T=K.rounds[ri].ties[ti]; const [h,v]=k===0?[T.a,T.b]:[T.b,T.a];
-  const sd=autoSides(h,v,`🏆 ${K.name} · ${k?"retour":"aller"}`); const ff=forfeitScore(sd); let m=null, sc=ff;
+  const K=cups[id]; const T=K.rounds[ri].ties[ti]; const [h,v]=k===0?[T.a,T.b]:[T.b,T.a]; const fin=legsOf(K.rounds[ri])===1, lab=fin?"finale":k?"retour":"aller";
+  const sd=autoSides(h,v,`🏆 ${K.name} · ${lab}`); const ff=forfeitScore(sd); let m=null, sc=ff;
   if(!ff){ m=buildMatch(sd); sc=m.score; }
   const H=sd[0].S, V=sd[1].S;
-  const ok=await cupTx(id,X=>{ const R=X.rounds, t=R[ri]&&R[ri].ties[ti]; if(!t||t.legs.length!==k||t.w) throw new Error("skip");
+  const ok=await cupTx(id,X=>{ const R=X.rounds, t=R[ri]&&R[ri].ties[ti]; if(!t||t.legs.length!==k||t.w) throw new Error("skip"); if(k===0&&R[ri].ties.length===1) R[ri].one=1;
     const s2=k===0?[sc[0],sc[1]]:[sc[1],sc[0]]; t.legs.push({s:s2,mid:m?m.id:null});
-    if(t.legs.length===2){ const ga=t.legs[0].s[0]+t.legs[1].s[0], gb=t.legs[0].s[1]+t.legs[1].s[1];
-      if(ga!==gb) t.w=ga>gb?t.a:t.b; else { t.tab=shootout(H.gk,V.gk); t.w=t.tab[0]>t.tab[1]?t.b:t.a; } }
+    if(t.legs.length>=legsOf(R[ri])){ const ga=t.legs.reduce((x,l)=>x+l.s[0],0), gb=t.legs.reduce((x,l)=>x+l.s[1],0);
+      if(ga!==gb) t.w=ga>gb?t.a:t.b; else { const GA=k===0?H:V, GB=k===0?V:H; t.tab=shootout(GB.gk,GA.gk); t.w=t.tab[0]>t.tab[1]?t.b:t.a; } }
     const out={rounds:R};
     if(R[ri].ties.every(x=>x.w)){ const W2=R[ri].ties.map(x=>x.w);
       if(W2.length===1){ out.status="done"; out.winner=W2[0]; out.finalist=t.a===W2[0]?t.b:t.a; }
@@ -5496,7 +5498,7 @@ async function autoTie(id,ri,ti,k){
     return out; },true);
   if(!ok) return;
   if(m){ m.at=cupLegTime(K,ri,k); await saveReplay(m); await addHist(histOf(m,{cup:id})); }
-  post(`🏆 ${K.name} (${RNAME(K.rounds[ri].ties.length)}, ${k?"retour":"aller"}) : ${NAMES[h]} ${sc[0]}-${sc[1]} ${NAMES[v]}${ff?" (forfait)":""}`);
+  post(`🏆 ${K.name} (${fin?"Finale":`${RNAME(K.rounds[ri].ties.length)}, ${lab}`}) : ${NAMES[h]} ${sc[0]}-${sc[1]} ${NAMES[v]}${ff?" (forfait)":""}`);
 }
 function claimCups(){ const c=W(); c.cupDone=c.cupDone||[]; let ch=false;
   // rattrapage : coupes déjà gagnées avant l'armoire à trophées
@@ -5513,10 +5515,10 @@ const RNAME=n=>n===1?"Finale":n===2?"Demi-finales":"Quarts de finale";
 function cupHTML(){
   const L=Object.entries(cups).sort((x,y)=>(invitedMe(y[1])-invitedMe(x[1]))||y[1].created-x[1].created).filter(([,K])=>K.status!=="done"||Date.now()-K.created<21*86400000);
   const tieH=(id,K,ri,ti,T)=>{ const N=x=>esc(NAMES[x]||"?"); const ag=T.legs.length?[T.legs.reduce((s,l)=>s+l.s[0],0),T.legs.reduce((s,l)=>s+l.s[1],0)]:null;
-    const mine=T.a===me||T.b===me; const nxt=!T.w&&K.status==="running"&&ri===K.rounds.length-1?cupLegTime(K,ri,T.legs.length):null;
-    return `<div class="tie${T.w?" done":""}"><span class="${T.w===T.a?"win":""}">${N(T.a)}</span><b>${T.legs.map(l=>l.s.join("-")).join(" / ")||"–"}${ag&&T.legs.length===2?`<small>(${ag.join("-")}${T.tab?` · t.a.b ${T.tab[1]}-${T.tab[0]}`:""})</small>`:""}</b><span class="${T.w===T.b?"win":""}">${N(T.b)}</span>
-      <div class="tieb">${T.legs.map((l,k)=>l.mid?`<button class="btn sm ghost" data-rp="${l.mid}">▶️ ${k?"Retour":"Aller"}</button>`:"").join("")}${nxt?`<small class="mute">${T.legs.length?"Retour":"Aller"} : ${fmtWhen(nxt)}</small>`:""}</div></div>`; };
-  return `<h3>🏆 Coupes à élimination</h3><div class="rules" style="font-size:12px;margin-top:0">4 ou 8 joueurs, tirage au sort, matchs aller-retour avec vos 11 types (cartes possédées), <b>joués automatiquement toutes les 12 h</b> : revois les résumés avec ▶️. Égalité au total : tirs au but. Vainqueur : Pack Légende + 300 🪙, finaliste : Pack Épique.</div>
+    const mine=T.a===me||T.b===me; const fin=legsOf(K.rounds[ri])===1; const nxt=!T.w&&K.status==="running"&&ri===K.rounds.length-1?cupLegTime(K,ri,T.legs.length):null;
+    return `<div class="tie${T.w?" done":""}"><span class="${T.w===T.a?"win":""}">${N(T.a)}</span><b>${T.legs.map(l=>l.s.join("-")).join(" / ")||"–"}${ag&&T.legs.length===2?`<small>(${ag.join("-")}${T.tab?` · t.a.b ${T.tab[1]}-${T.tab[0]}`:""})</small>`:T.tab?`<small>(t.a.b ${T.tab[1]}-${T.tab[0]})</small>`:""}</b><span class="${T.w===T.b?"win":""}">${N(T.b)}</span>
+      <div class="tieb">${T.legs.map((l,k)=>l.mid?`<button class="btn sm ghost" data-rp="${l.mid}">▶️ ${fin?"Finale":k?"Retour":"Aller"}</button>`:"").join("")}${nxt?`<small class="mute">${fin?"Finale (match unique)":T.legs.length?"Retour":"Aller"} : ${fmtWhen(nxt)}</small>`:""}</div></div>`; };
+  return `<h3>🏆 Coupes à élimination</h3><div class="rules" style="font-size:12px;margin-top:0">4 ou 8 joueurs, tirage au sort, matchs aller-retour avec vos 11 types (cartes possédées), <b>finale sur un seul match</b>, <b>joués automatiquement toutes les 12 h</b> : revois les résumés avec ▶️. Égalité (au total, ou à la fin de la finale) : tirs au but. Vainqueur : Pack Légende + 300 🪙, finaliste : Pack Épique.</div>
   <button class="btn big" id="jCupNew">➕ Créer une coupe</button>
   ${L.map(([id,K])=>`<div class="lg${(K.members||[]).includes(me)?" mine":""}"><div class="lgh"><b>${esc(K.name)}</b><small>${K.status==="open"?`Inscriptions ${K.members.length}/${K.size}${K.weekend?" · 🗓️ tirage samedi 20 h (4 inscrits minimum)":""}`:K.status==="running"?"En cours":K.cancelled?"Annulée (pas assez d'inscrits)":`Terminée · 🏆 ${esc(NAMES[K.winner]||"?")}`} · ${K.weekend?"🤖 Coupe automatique du week-end":"créée par "+esc(NAMES[K.owner]||"?")}</small></div>
     ${K.status==="open"?`${invitedMe(K)?`<div class="invst me">📨 <b>${esc(NAMES[K.owner]||"?")}</b> t'invite dans cette coupe !</div>`:""}<div class="mute" style="font-size:12px">${K.members.map(x=>esc(NAMES[x]||"?")).join(", ")}${Object.keys(invOf(K)).filter(u=>!K.members.includes(u)).length?` · 📨 invités : ${Object.keys(invOf(K)).filter(u=>!K.members.includes(u)).map(u=>esc(NAMES[u]||"?")).join(", ")}`:""}</div><div class="lgb">${K.owner===me&&K.members.length<K.size?`<button class="btn sm ghost" data-ci="${id}">📨 Inviter</button>`:""}${K.members.includes(me)?(K.owner===me?"":`<button class="btn sm ghost" data-cq="${id}">Se désinscrire</button>`):K.members.length<K.size?`<button class="btn sm" data-cj="${id}">S'inscrire</button>`:""}${K.owner===me&&K.members.length===K.size?`<button class="btn sm" data-cs="${id}">🎲 Lancer le tirage</button>`:""}${K.owner===me?`<button class="btn sm ghost" data-cd="${id}">Supprimer</button>`:""}</div>`
@@ -5769,7 +5771,7 @@ const TIPS={
   🧩 <b>Défis SBC</b> : donne des cartes en échange de récompenses.<br><br>Touche une carte pour voir ses stats et son palmarès.`},
  tab_ligue:{t:"🏆 Ligue",x:`🎯 <b>Objectifs</b> du jour et de la semaine à récupérer, et 🔥 bonus de connexion.<br>🏆 <b>Championnats</b> facultatifs : crée-en un ou rejoins celui d'un pote.<br>
   📰 <b>Fil d'actu</b> de tout ce qui se passe, et la liste des joueurs (touche un pseudo pour voir son profil).`},
- tab_jeux:{t:"🎮 Jeux",x:`D'autres façons de jouer :<br><br>🧗 <b>Carrière</b> solo contre des clubs de plus en plus forts.<br>🏆 <b>Coupes</b> à élimination en aller-retour.<br>
+ tab_jeux:{t:"🎮 Jeux",x:`D'autres façons de jouer :<br><br>🧗 <b>Carrière</b> solo contre des clubs de plus en plus forts.<br>🏆 <b>Coupes</b> à élimination en aller-retour, finale sur un match.<br>
   🎯 <b>Défi du jour</b> avec une contrainte, même adversaire pour tous.<br>🧠 <b>Quiz OL</b> pour gagner des pièces.<br>🛋️ <b>Canapé</b> : à deux sur un même téléphone.<br>📊 Tes <b>stats</b> de saison.`},
  tab_online:{t:"🌐 En ligne",x:`Tout ce qui se joue contre tes potes : ⚡ <b>Draft</b>, 💰 <b>Draft Budget</b>, 👥 <b>2 contre 2</b>, 🏆 <b>Championnats</b>, 🏟️ <b>Coupes</b> et ⚔️ <b>Match amical</b>.<br><br>Un badge sur une tuile = quelque chose t'attend (ton tour, une invitation…).`},
  tab_solo:{t:"🎮 Solo",x:`🧗 <b>Carrière</b> contre des clubs de plus en plus forts, 🎯 <b>Défi du jour</b>, 🧠 <b>Quiz OL</b>, 🛋️ <b>Canapé</b> à deux sur ce téléphone et 🤖 <b>match contre l'ordi</b>.`},
@@ -5790,7 +5792,7 @@ const TIPS={
  sbc:{t:"🧩 Défis SBC",x:`Donne un groupe de cartes qui respecte les conditions du défi, et reçois une récompense en échange. Les cartes données disparaissent de ta collection.`},
  league:{t:"🏆 Créer un championnat",x:`Choisis un nom et une durée. Les autres le rejoignent s'ils veulent, puis tu le <b>lances</b> : un calendrier est tiré au sort et <b>tous les matchs se jouent automatiquement</b> avec vos 11 types, répartis sur la durée. Tu peux revoir chaque match avec ▶️.<br><br>À la fin : 1er Pack Légende, 2e Pack Épique, 3e Pack Classique.`},
  career:{t:"🧗 Carrière",x:`Ton 11 type (cartes possédées) affronte 15 clubs, de Lorient jusqu'au Real Madrid. Gagne pour passer au suivant : un nul ou une défaite, et tu rejoues.<br><br>Des pièces à chaque première victoire, un pack à la fin de chaque compétition.`},
- cup:{t:"🏆 Coupes",x:`Crée une coupe à 4 ou 8 joueurs. Quand tout le monde est inscrit, le créateur lance le tirage. Les matchs aller-retour <b>se jouent automatiquement toutes les 12 h</b> avec vos 11 types, et tu peux revoir chaque match avec ▶️. Égalité : tirs au but.`},
+ cup:{t:"🏆 Coupes",x:`Crée une coupe à 4 ou 8 joueurs. Quand tout le monde est inscrit, le créateur lance le tirage. Les matchs aller-retour (finale sur un seul match) <b>se jouent automatiquement toutes les 12 h</b> avec vos 11 types, et tu peux revoir chaque match avec ▶️. Égalité : tirs au but.`},
  defi:{t:"🎯 Défi du jour",x:`Compose une équipe qui respecte la contrainte du jour, avec tous les joueurs du jeu. Tout le monde affronte le même adversaire et tu n'as <b>qu'un seul essai</b>.<br><br>Le meilleur écart de buts du jour gagne un Pack Épique le lendemain.`},
  quiz:{t:"🧠 Quiz OL",x:`5 questions sur les joueurs de l'OL. 10 🪙 par bonne réponse, +30 pour un sans-faute, et 3 quiz récompensés par jour.`},
  sofa:{t:"🛋️ Canapé",x:`Pour jouer à deux sur le même téléphone. À chaque poste, 5 joueurs sont proposés : le premier en choisit un, l'autre prend parmi les 4 restants, et on alterne qui commence.<br><br>Ensuite le match se joue directement ici (sans gains).`},
@@ -5856,7 +5858,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-26g"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-26h"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
