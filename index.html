@@ -2345,7 +2345,7 @@ document.addEventListener("click",ev=>{
 document.addEventListener("click",e=>{ const z=e.target.closest&&e.target.closest("[data-zoom]"); if(!z) return; e.preventDefault(); e.stopPropagation(); showCard(z.dataset.zoom); },true);
 // 🔎 Où obtenir une carte qu'on n'a pas
 function whereHTML(p){ const L=[]; const t=cardTier(p);
-  const V={tf:"🔥 Pack Événement et Pack Légende, pendant 7 jours après le match",gf:"💥 Pack Légende (≈3 %)",ul:"👑 Pack Légende (≈1 %)",lm:"⭐ Pack Légende (≈1,5 %)",xm:"🎄 Calendrier de l'Avent"};
+  const V={tf:"🔥 Pack Événement et Pack Légende, pendant 7 jours après le match",gf:"💥 Pack Légende (≈3 %)",ul:"👑 Pack Légende (≈0,2 % : 1 sur 500)",lm:"⭐ Pack Légende (≈0,6 % : 1 sur 160)",xm:"🎄 Calendrier de l'Avent"};
   if(V[p.v]) L.push(V[p.v]);
   else { const pk=["bronze","or","legende","jour"].map(k=>[k,PACKS[k]]).filter(([k,P])=>P&&P.w&&P.w[t]>0).sort((a,b)=>b[1].w[t]-a[1].w[t]).map(([k,P])=>`${P.name.replace("Pack ","")} ${(P.w[t]>=1?Math.round(P.w[t]):P.w[t]).toLocaleString("fr-FR")} %`); if(pk.length) L.push(`🎴 Chance d'une carte ${TIER_NAME[t]} par carte tirée : ${pk.join(" · ")}`);
     const sb={silver:"Recyclage",gold:"Montée en gamme",icon:"Élite"}[t]; if(sb) L.push(`🧩 Défi d'équipe « ${sb} » (carte ${TIER_NAME[t]} garantie, au hasard)`); }
@@ -3271,6 +3271,8 @@ function drawCard(pack,force){
   let arr=POOL[tier]; if(!arr.length) arr=POOL.icon; return arr[Math.floor(Math.random()*arr.length)];
 }
 const GOLD_RATE=0.001;
+// 👑 Légende Ultime : 1 Pack Légende sur 500 · ⭐ Légende Moderne : 1 sur 160 (avant : 1 sur 100 et 1 sur 67)
+const UL_RATE=0.002, LM_RATE=0.00625;
 function openPack(pack,free){
   const P=PACKS[pack]; const c=W();
   if(free){ c.freePacks=c.freePacks||{}; if(!(c.freePacks[pack]>0)){ toast("Plus de pack offert",true); return; } c.freePacks[pack]--; }
@@ -3288,7 +3290,7 @@ function openPack(pack,free){
     if(P.guarantee&&!ids.some(id=>rank[cardTier(BY_ID[id])]>=rank[P.guarantee])) ids[ids.length-1]=drawCard(pack,P.guarantee); }
   if(!gold&&((pack==="event"&&Math.random()<.2)||(pack==="legende"&&Math.random()<.08))){ const L=tfWeek(); if(L.length){ let lo=0; ids.forEach((id,i)=>{ if(rank[cardTier(BY_ID[id])]<rank[cardTier(BY_ID[ids[lo]])]) lo=i; }); ids[lo]=L[Math.floor(Math.random()*L.length)]; } } // remplace la carte la plus faible (jamais la Légendaire garantie)
   // 👑⭐💥 Légendes Ultimes / Modernes / Grande Forme : tirées AVANT l'ajout à la collection (sinon la carte n'y arrivait jamais)
-  try{ const r_=Math.random(), UL=VARIANTS.filter(p=>p.v===(r_<.01?"ul":"lm")).map(p=>p.id); if(!gold&&pack==="legende"&&UL.length&&r_<.025){ let lo=0; ids.forEach((id,i)=>{ if(rank[cardTier(BY_ID[id])]<rank[cardTier(BY_ID[ids[lo]])]) lo=i; }); ids[lo]=UL[Math.floor(Math.random()*UL.length)]; } }catch(e){}
+  try{ const r_=Math.random(), UL=VARIANTS.filter(p=>p.v===(r_<UL_RATE?"ul":"lm")).map(p=>p.id); if(!gold&&pack==="legende"&&UL.length&&r_<UL_RATE+LM_RATE){ let lo=0; ids.forEach((id,i)=>{ if(rank[cardTier(BY_ID[id])]<rank[cardTier(BY_ID[ids[lo]])]) lo=i; }); ids[lo]=UL[Math.floor(Math.random()*UL.length)]; } }catch(e){}
   try{ const GF=VARIANTS.filter(p=>p.v==="gf").map(p=>p.id); if(!gold&&pack==="legende"&&GF.length&&Math.random()<.03){ let lo=0; ids.forEach((id,i)=>{ if(rank[cardTier(BY_ID[id])]<rank[cardTier(BY_ID[ids[lo]])]) lo=i; }); ids[lo]=GF[Math.floor(Math.random()*GF.length)]; } }catch(e){}
   if(pack!=="starter") ids.sort((a,b)=>rank[cardTier(BY_ID[a])]-rank[cardTier(BY_ID[b])]||BY_ID[a].ovr-BY_ID[b].ovr);
   c.coll=c.coll||{}; const isNew=ids.map(id=>!c.coll[id]);
@@ -5850,7 +5852,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-26f"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-26g"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
