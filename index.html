@@ -6147,6 +6147,10 @@ const tcgLvOf=(u,id)=>(((C(u)||{}).tcg||{}).lv||{})[id]||0;
 function tcgUpgrade(id){ const T=tcgW(), lv=T.lv[id]||0; if(lv>=TCG_MAXL){ toast("Déjà au niveau maximum",true); return false; }
   const cost=TCG_COST[lv]; if((T.e||0)<cost){ toast(`Il te faut ${cost} 💠 Éclats (tu en as ${T.e||0})`,true); return false; }
   T.e-=cost; T.lv[id]=lv+1; save(); toast(`💠 ${BY_ID[id].name} : attaques niveau ${lv+1} (+${3*(lv+1)} dégâts)`); return true; }
+// 🪙 Pièces des jeux de cartes : limite par jour (300 en tout, dont 150 maximum contre l'ordi / en solo)
+const CG_COIN_DAY=300, CG_COIN_CPU=150;
+function cgCoinsLeft(){ const c=W(); c.cg=c.cg||{}; const d=today(); if(!c.cg.pc||c.cg.pc.d!==d) c.cg.pc={d,all:0,cpu:0}; const P=c.cg.pc; return {all:CG_COIN_DAY-P.all,cpu:Math.min(CG_COIN_CPU-P.cpu,CG_COIN_DAY-P.all)}; }
+function cgCoins(n,cpu){ const L=cgCoinsLeft(), P=W().cg.pc; n=Math.max(0,Math.min(n,cpu?L.cpu:L.all)); if(!n) return 0; P.all+=n; if(cpu) P.cpu+=n; const c=W(); c.coins=(c.coins||0)+n; try{ renderCoins(); }catch(e){} return n; }
 function eclatsGain(n,online){ if(!n) return 0; const T=tcgW(); if(!online){ const d=today(); if(!T.d||T.d.day!==d) T.d={day:d,n:0}; n=Math.max(0,Math.min(n,ECL_CPU_MAX-T.d.n)); T.d.n+=n; }
   if(n){ T.e=(T.e||0)+n; save(); } return n; }
 function showTcg(id){ const M=$("#cardModal"); const c=W(), own=(c.coll||{})[id], lv=(tcgW().lv||{})[id]||0;
@@ -6384,8 +6388,9 @@ function cgAfter(){ const G=cgCur; if(!G) return; const X=cgG(G), S=cgReplay(X);
 function cgFinish(X,S){ const c=W(); c.cg=c.cg||{}; c.cg.done=c.cg.done||[]; const key=X.id||("cpu-"+X.seed); if(c.cg.done.includes(key)) return; c.cg.done=[...c.cg.done,key].slice(-200);
   const side=X.cpu?0:X.players.indexOf(me); const w=S.end.w; const win=w===side, draw=w===-1; c.cg.st=c.cg.st||{}; const st=c.cg.st[X.g]=c.cg.st[X.g]||{w:0,n:0,d:0}; st[win?"w":draw?"d":"n"]++;
   let e=win?(X.cpu?1:3):draw?(X.cpu?0:1):0; if(X.g==="cbt") e*=2; const got=eclatsGain(e,!X.cpu);
+  const pc=cgCoins(X.cpu?(win?40:draw?20:10):(win?80:draw?40:20),X.cpu);
   try{ track("play"); if(win) track("win"); }catch(_){}
-  save(); setTimeout(()=>toast(`${win?"🏆 Victoire":draw?"🤝 Égalité":"😞 Défaite"} · ${CG_MODES[X.g].n}${got?` · +${got} 💠 Éclat${got>1?"s":""}`:(e&&X.cpu?" · limite d'Éclats du jour atteinte":"")}`),900); }
+  save(); setTimeout(()=>toast(`${win?"🏆 Victoire":draw?"🤝 Égalité":"😞 Défaite"} · ${CG_MODES[X.g].n}${pc?` · +${pc} 🪙`:" · limite de pièces du jour atteinte"}${got?` · +${got} 💠`:""}`),900); }
 function cgSettle(){ for(const x of Object.values(cgOnline)){ if(x.status!=="running") continue; const X=cgG(x), S=cgReplay(X); if(S.end){ cgFinish(X,S); if(x.status!=="done") cgRef(x.id).update({status:"done"}).catch(()=>{}); } } }
 
 // ======================================================================
@@ -6404,6 +6409,7 @@ function cardsHomeHTML(){ const L=cgMine(); const others_=others();
   const resume=cgCur&&cgCur.cpu&&!cgReplay(cgG(cgCur)).end?`<div class="cgrow resume"><span>${CG_MODES[cgCur.g].ic} Partie en cours contre l'ordi : <b>${CG_MODES[cgCur.g].n}</b></span><button class="btn sm" id="cgResume">Reprendre</button></div>`:"";
   return `<div class="hubh"><h2>🃏 Jeux de cartes</h2><small>Contre l'ordi ou en ligne · avec toutes les cartes du jeu ou ta collection</small></div>
     <div class="cgbar"><span>💠 <b>${T.e||0}</b> Éclats</span><small>Gagnés en jouant (le Combat rapporte double) · ils améliorent les attaques de tes cartes TCG</small></div>
+    <div class="cgbar"><span>🪙 <b>${Math.max(0,cgCoinsLeft().all)}</b> pièces encore à gagner aujourd'hui</span><small>Victoire en ligne 80 · contre l'ordi 40 (max 150/jour) · nul ou défaite : un peu aussi · limite 300/jour</small></div>
     ${resume}${list}<div class="hub cghub">${tiles}</div>`; }
 function cardsSetupHTML(g){ const m=CG_MODES[g]; const ops=others(); const pA=cgPool(cgSrc,me); const ok=cgPoolOk(g,pA);
   if(!m.on) cgOpp="cpu"; if(cgOpp!=="cpu"&&!NAMES[cgOpp]) cgOpp="cpu";
@@ -6636,7 +6642,7 @@ function pomGuess(up){ const g=pomG; if(!g||g.over) return; const a=BY_ID[g.seq[
   const ok=b===a||(up?b>a:b<a); g.last={a,b,ok,eq:b===a}; g.guess=up; g.fx=1; if(ok){ if(b!==a) g.streak++; } else { g.over=1; pomEnd(); } renderCards(); }
 function pomEnd(){ const g=pomG; const c=W(); c.cg=c.cg||{}; const P=c.cg.pom=c.cg.pom||{best:0};
   if(g.src==="all"){ if(g.streak>(P.best||0)){ P.best=g.streak; setTimeout(()=>toast(`🏆 Nouveau record : ${g.streak} !`),500); } if(P.d!==today()){ P.d=today(); P.db=0; } P.db=Math.max(P.db||0,g.streak); }
-  try{ track("play"); }catch(_){} const e=g.streak>=10?2:g.streak>=5?1:0; const got=eclatsGain(e,false); if(got) setTimeout(()=>toast(`+${got} 💠 Éclat${got>1?"s":""} pour ta série de ${g.streak}`),1200); save(); }
+  try{ track("play"); }catch(_){} const e=g.streak>=10?2:g.streak>=5?1:0; const got=eclatsGain(e,false); const pc=cgCoins(Math.min(50,g.streak*3),true); if(got||pc) setTimeout(()=>toast(`Série de ${g.streak} :${pc?` +${pc} 🪙`:""}${got?` +${got} 💠`:""}`),1200); save(); }
 function pomHTML(){ const g=pomG; const cur=g.seq[g.i%g.seq.length];
   if(g.fx){ g.fx=0; return `<div class="cgtop"><span>↕️ <b>Plus ou moins</b></span></div>`+cgStageWrap(pomFx(g)); }
   if(g.i===0&&!g.dealt){ g.dealt=1; cgDealFx=true; cgSnd("flip"); }
@@ -6712,7 +6718,7 @@ function cgBind(V){ const on=(q,f)=>V.querySelectorAll(q).forEach(b=>b.onclick=e
   V.querySelectorAll("[data-tcg]").forEach(el=>{ if(el.closest("[data-cgt],[data-cgsw],[data-cgi],.cgstage,.cgc,[data-tb],[data-th],[data-tsel],.tdeck")) return; el.onclick=e=>{ e.stopPropagation(); showTcg(el.dataset.tcg); }; }); }
 function openCards(from){ cgBack=from==="online"?"online":"solo"; NAV_OF.cards=cgBack==="online"?"nOnline":"nSolo"; if(!(cgCur&&cgSel==="game")) cgSel=null; setMode("cards"); }
 
-const APP_V="2026-11-27e"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-27f"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
