@@ -1,5 +1,5 @@
 {
-  "updated": "22/11/2026",
+  "updated": "23/11/2026",
   "matches": "Brest 2-0 OL (08/11), Lille 0-1 OL (21/11) — notes Maxifoot",
   "rules": "Blessé -3 à -6 selon la durée, suspendu -2 ; moyenne des 2 derniers matchs : >=7.5 +3, >=7 +2, >=6.5 +1, <=4 -2, <=5 -1",
   "players": {
@@ -21,7 +21,7 @@
     "clinton-mata": {
       "st": "inj",
       "mod": -3,
-      "note": "Gêne musculaire, forfait à Lille, incertain pour Lillestrøm"
+      "note": "Gêne musculaire, forfait à Lille, incertain pour Lillestrøm (26/11)"
     },
     "mads-bidstrup": {
       "st": "up",
@@ -89,7 +89,7 @@
     },
     {
       "id": "2026-12-06-troyes-ol",
-      "date": "2026-12-06T17:00:00+01:00",
+      "date": "2026-12-06T15:00:00+01:00",
       "home": "Troyes",
       "away": "OL",
       "comp": "Ligue 1 · J13",
@@ -105,15 +105,47 @@
     },
     {
       "id": "2026-12-13-ol-marseille",
-      "date": "2026-12-13T17:00:00+01:00",
+      "date": "2026-12-13T20:45:00+01:00",
       "home": "OL",
       "away": "Marseille",
       "comp": "Ligue 1 · J14",
       "score": null
     }
   ],
-  "newsUpdated": "22/11/2026",
+  "newsUpdated": "23/11/2026",
   "news": [
+    {
+      "d": "2026-11-23T07:30",
+      "tag": "joueurs",
+      "t": "Abner recentré, pressing très haut : les premières touches de Vicens",
+      "s": "À Lille, le nouveau coach a déjà modifié quelques réglages, avec un Abner qui rentre dans l'axe près de Tessmann et un bloc qui presse très haut. D'autres changements viendront par petites touches.",
+      "src": "Olympique-et-Lyonnais",
+      "url": "https://www.olympique-et-lyonnais.com/abner-plus-axial-pressing-tres-haut-vicens-a-deja-accentue-certains-points-a-lol,414434.html"
+    },
+    {
+      "d": "2026-11-23T07:00",
+      "tag": "match",
+      "t": "Ligue 1 : l'OL remonte au 4e rang",
+      "s": "Avec 20 points après onze journées, Lyon pointe à une longueur de Lille, troisième, avant de recevoir Monaco dimanche.",
+      "src": "LyonFoot",
+      "url": "https://www.lyonfoot.com/article/14941/ligue-1-l-ol-4e-apres-son-succes-a-lille-a-un-point-du-podium"
+    },
+    {
+      "d": "2026-11-22T17:22",
+      "tag": "feminines",
+      "t": "OL Lyonnes : 5-2 contre Strasbourg, dix sur dix",
+      "s": "Les Lyonnaises enchaînent un dixième succès de rang en championnat et gardent cinq points d'avance sur le PSG avant la trêve internationale.",
+      "src": "LyonFoot",
+      "url": "https://www.lyonfoot.com/article/14918/ol-lyonnes-strasbourg-cinq-buts-et-une-dixieme-victoire-consecutive-les-lyonnaises-poursuivent-leur-sans-faute"
+    },
+    {
+      "d": "2026-11-22T11:00",
+      "tag": "club",
+      "t": "Vicens assume le risque de son pressing haut",
+      "s": "Le technicien reconnaît que son plan aurait pu se retourner contre lui en cas d'égalisation lilloise, mais estime que cette manière de jouer donne plus de chances de gagner.",
+      "src": "Olympique-et-Lyonnais",
+      "url": "https://www.olympique-et-lyonnais.com/vicens-ol-aujourdhui-je-vais-etre-le-meilleur-coach-du-monde,414412.html"
+    },
     {
       "d": "2026-11-22T09:30",
       "tag": "joueurs",
@@ -313,35 +345,11 @@
       "s": "Les fans de l'OL n'ont pas pu se rendre au stade Pierre-Mauroy.",
       "src": "Foot Mercato",
       "url": "https://www.footmercato.net/a4272267414343191560-les-supporters-de-lol-interdits-de-deplacement-a-lille"
-    },
-    {
-      "d": "2026-11-13T12:15",
-      "tag": "mercato",
-      "t": "L'OL pourrait encore devoir vendre en janvier",
-      "s": "D'après L'Équipe, un ou deux départs seraient nécessaires cet hiver pour les finances du club ; Šulc et Nuamah sont cités.",
-      "src": "Ferveur Lyonnaise",
-      "url": "https://www.ferveurlyonnaise.fr/pour-rester-dans-les-clous-lol-va-encore-devoir-vendre-au-mercato-hivernal/"
-    },
-    {
-      "d": "2026-11-13T12:00",
-      "tag": "mercato",
-      "t": "La DNCG met encore la pression sur l'OL",
-      "s": "Le gendarme financier surveille toujours les comptes, et des ventes pourraient être nécessaires en janvier.",
-      "src": "Foot Mercato",
-      "url": "https://www.footmercato.net/a8350431975298201164-la-dncg-fait-encore-trembler-lol"
-    },
-    {
-      "d": "2026-11-12T12:00",
-      "tag": "mercato",
-      "t": "L'AC Milan veut récupérer Athekame",
-      "s": "Le club italien pousse pour faire revenir le latéral prêté à Lyon.",
-      "src": "Foot Mercato",
-      "url": "https://www.footmercato.net/a7682850729047141655-ol-lac-milan-force-pour-le-retour-de-zachary-athekame"
     }
   ],
   "table": {
-    "updated": "22/11/2026",
-    "round": "J11 (en cours)",
+    "updated": "23/11/2026",
+    "round": "J11",
     "rows": [
       {
         "t": "Paris SG",
@@ -354,6 +362,16 @@
         "bc": 12
       },
       {
+        "t": "Paris FC",
+        "pts": 23,
+        "j": 11,
+        "g": 7,
+        "n": 2,
+        "p": 2,
+        "bp": 21,
+        "bc": 10
+      },
+      {
         "t": "Lille",
         "pts": 21,
         "j": 11,
@@ -362,16 +380,6 @@
         "p": 2,
         "bp": 14,
         "bc": 8
-      },
-      {
-        "t": "Paris FC",
-        "pts": 20,
-        "j": 10,
-        "g": 6,
-        "n": 2,
-        "p": 2,
-        "bp": 17,
-        "bc": 10
       },
       {
         "t": "Lyon",
@@ -386,12 +394,12 @@
       {
         "t": "Marseille",
         "pts": 18,
-        "j": 10,
+        "j": 11,
         "g": 6,
         "n": 0,
-        "p": 4,
-        "bp": 22,
-        "bc": 14
+        "p": 5,
+        "bp": 24,
+        "bc": 17
       },
       {
         "t": "Brest",
@@ -401,16 +409,6 @@
         "n": 3,
         "p": 3,
         "bp": 19,
-        "bc": 12
-      },
-      {
-        "t": "Monaco",
-        "pts": 17,
-        "j": 11,
-        "g": 4,
-        "n": 5,
-        "p": 2,
-        "bp": 14,
         "bc": 12
       },
       {
@@ -424,24 +422,34 @@
         "bc": 15
       },
       {
+        "t": "Monaco",
+        "pts": 17,
+        "j": 11,
+        "g": 4,
+        "n": 5,
+        "p": 2,
+        "bp": 14,
+        "bc": 12
+      },
+      {
         "t": "Rennes",
-        "pts": 16,
-        "j": 10,
+        "pts": 17,
+        "j": 11,
         "g": 5,
-        "n": 1,
+        "n": 2,
         "p": 4,
-        "bp": 21,
-        "bc": 21
+        "bp": 22,
+        "bc": 22
       },
       {
         "t": "Lorient",
-        "pts": 15,
-        "j": 10,
+        "pts": 16,
+        "j": 11,
         "g": 4,
-        "n": 3,
+        "n": 4,
         "p": 3,
-        "bp": 9,
-        "bc": 8
+        "bp": 10,
+        "bc": 9
       },
       {
         "t": "Lens",
@@ -464,14 +472,14 @@
         "bc": 15
       },
       {
-        "t": "Auxerre",
+        "t": "Le Mans",
         "pts": 11,
         "j": 11,
-        "g": 3,
-        "n": 2,
-        "p": 6,
-        "bp": 14,
-        "bc": 25
+        "g": 2,
+        "n": 5,
+        "p": 4,
+        "bp": 15,
+        "bc": 21
       },
       {
         "t": "Troyes",
@@ -482,6 +490,16 @@
         "p": 6,
         "bp": 10,
         "bc": 18
+      },
+      {
+        "t": "Auxerre",
+        "pts": 11,
+        "j": 11,
+        "g": 3,
+        "n": 2,
+        "p": 6,
+        "bp": 14,
+        "bc": 25
       },
       {
         "t": "Strasbourg",
@@ -496,22 +514,12 @@
       {
         "t": "Angers",
         "pts": 8,
-        "j": 10,
+        "j": 11,
         "g": 2,
         "n": 2,
-        "p": 6,
+        "p": 7,
         "bp": 9,
-        "bc": 19
-      },
-      {
-        "t": "Le Mans",
-        "pts": 8,
-        "j": 10,
-        "g": 1,
-        "n": 5,
-        "p": 4,
-        "bp": 12,
-        "bc": 19
+        "bc": 23
       },
       {
         "t": "Le Havre",
