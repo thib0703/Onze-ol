@@ -2107,7 +2107,7 @@ function renderHubs(){ if(!me) return;
       ${hubTile("quiz","🧠","Quiz OL",qz,"linear-gradient(135deg,#9333ea,#3b0764)",quizTodo?"Dispo":null)}
       ${hubTile("sofa","🛋️","Canapé",sofa?"⏳ Partie en cours":"2 joueurs, 1 téléphone","linear-gradient(135deg,#15803d,#052e16)",null)}
       ${(()=>{ try{ const D=divState(); return hubTile("div",DIV_IC(D.d),"Divisions",`${DIV_NAME(D.d)} · ${divLeft()}/${DIV_MAX} matchs aujourd'hui`,"linear-gradient(135deg,#e3002b,#1d4ed8)",divLeft()>0?"Jouer":null,true); }catch(e){ return ""; } })()}
-      ${hubTile("cpu","🤖","Contre l'ordi",(()=>{ try{ const n=cpuLeft(); return n>0?`Ton 11 type contre l'ordinateur · ${n}/${CPU_MAX} matchs récompensés aujourd'hui`:"⏳ Limite du jour atteinte · entraînement seulement"; }catch(e){ return "Ton 11 type contre l'ordinateur"; } })(),"linear-gradient(135deg,#475569,#0f172a)",null,true)}
+      ${hubTile("cpu","🤖","Contre l'ordi",(()=>{ try{ const n=cpuLeft(); return `Ton 11 type contre l'ordinateur · ${rwNext(mdayN())}`; }catch(e){ return "Ton 11 type contre l'ordinateur"; } })(),"linear-gradient(135deg,#475569,#0f172a)",null,true)}
       </div>`;
     if(setHub(H,html)){ H.querySelectorAll("[data-tile]").forEach(b=>b.onclick=()=>openTile(b.dataset.tile)); bindObjMini(H); } } }
 function openTile(k){ hubCache={};
@@ -3007,7 +3007,7 @@ function matchSetupHTML(){ const ops=others().filter(u=>u!==CPU&&compos[u]); pA=
     <div class="field"><span>${cpu?"Niveau":"Son équipe"}</span><select id="mSelB">${oB.map(o=>`<option value="${esc(o.key)}" ${o.key===selB?"selected":""}>${esc(o.label)}</option>`).join("")}</select></div>
     ${rA&&rB?`<div class="vsavg"><div><small>Ton équipe</small><b>${rA.global??"–"}</b></div><span>VS</span><div><small>${cpu?"🤖 Ordi":esc(NAMES[pB]||"?")}</small><b>${rB.global??"–"}</b></div></div>`:""}
     <button class="btn big" id="mGo">▶️ Lancer le match</button>
-    <div class="mute" style="font-size:12px;text-align:center;margin-top:6px">${cpu?(cpuLeft()>0?`Joué sur ton téléphone seulement · gains divisés par 2 · <b>${cpuLeft()}/${CPU_MAX} match${cpuLeft()>1?"s":""} récompensé${cpuLeft()>1?"s":""}</b> encore aujourd'hui.`:`⏳ Tes ${CPU_MAX} matchs récompensés contre l'ordi sont joués : celui-ci sera un <b>entraînement</b> (ni pièces ni objectifs). Reviens demain !`):"Match amical : pour le plaisir, sans pièces ni objectifs · il se joue en direct chez vous deux · seules les cartes possédées jouent."}</div>`; }
+    <div class="mute" style="font-size:12px;text-align:center;margin-top:6px">${cpu?`Joué sur ton téléphone seulement · gains divisés par 2 · <b>${rwNext(mdayN())}</b> (5 matchs à 100 %, 5 à 75 %, 5 à 50 %, 5 à 25 %, puis 10 %).`:"Match amical : pour le plaisir, sans pièces ni objectifs · il se joue en direct chez vous deux · seules les cartes possédées jouent."}</div>`; }
 function bindMatchSetup(){ const g=$("#mGo"); if(!g) return;
   $("#mSelA").onchange=e=>{ selA=e.target.value; renderMatch(); };
   $("#mOpp").onchange=e=>{ pB=e.target.value; mPreset=pB===CPU?"cpu":"friend"; selB=null; renderMatch(); };
@@ -3246,10 +3246,14 @@ function renderCoins(){ const el=$("#coins"); if(!el) return; if(!me){el.style.d
 // matchs de Draft / Budget / 2 contre 2 : longs à préparer (même gain que les autres modes)
 const isDraftH=h=>!!(h&&(h.draft==="budget"||h.draft==="classic"||h.duo));
 function rewardFor(h,i){ const [a,b]=i===0?h.score:[h.score[1],h.score[0]]; const base=a>b?100:a===b?50:25, x=1; /* même gain pour tous les modes */ return {coins:(base+10*a)*x,res:(a>b?"victoire":a===b?"nul":"défaite")+(x>1?(h.duo?" 2c2":h.draft==="budget"?" Budget":" Draft")+" ×2":""),a,b}; }
-// 🤖 Matchs libres contre l'ordi : récompensés seulement CPU_MAX fois par jour (ensuite : entraînement sans pièces ni objectifs)
+// 🎚️ Matchs sans limite : par jour, 5 matchs à 100 %, 5 à 75 %, 5 à 50 %, 5 à 25 %, puis 10 % (drafts toujours à 100 %)
+const rwDecay=n=>n<5?1:n<10?.75:n<15?.5:n<20?.25:.1;
+const rwPct=n=>Math.round(rwDecay(n)*100);
+const rwNext=n=>n<20?`${5-n%5} match${5-n%5>1?"s":""} encore à ${rwPct(n)} %`:"gains à 10 %";
 const CPU_MAX=5;
 const isFreeCpuH=h=>isCpuH(h)&&(!h.mode||h.mode==="cpu");
 function cpuLeft(){ const c=W(); return c.cpud&&c.cpud.d===today()?Math.max(0,CPU_MAX-c.cpud.n):CPU_MAX; }
+const mdayN=()=>{ const c=W(); return c.mday&&c.mday.d===today()?c.mday.n:0; };
 let trFirst=true;
 function claimRewards(){
   if(!me||!C(me)) return; try{ trophyCheck(trFirst); if(trFirst) setTimeout(()=>{ const c=W(); if((c.tuto||{}).fin&&mode!=="match"&&!document.querySelector(".modal.open,#cardModal.open,.trz,#packfx.open")) showHome(); },1500); trFirst=false; }catch(e){} const c=W(); c.claimed=c.claimed||[]; let got=0, lines=[];
@@ -3261,10 +3265,10 @@ function claimRewards(){
     if(h.owners[0]===h.owners[1]||h.nr){ c.claimed.push(h.id); continue; }
     const r=rewardFor(h,i); if(isCpuH(h)){ r.coins=Math.round(r.coins/2); r.res+=" vs ordi"; } try{ if(isDerbyDay(h.at)){ r.coins*=2; r.res+=" · derby ×2"; } }catch(e){} const day=new Date(h.at).toLocaleDateString("fr-CA");
     if(!c.mday||c.mday.d!==day) c.mday={d:day,n:0}; if(!isDraftH(h)) c.mday.n++;
-    let train=false; if(isFreeCpuH(h)){ if(!c.cpud||c.cpud.d!==day) c.cpud={d:day,n:0}; if(c.cpud.n>=CPU_MAX){ train=true; r.coins=0; r.res+=" (entraînement : limite du jour atteinte)"; } else c.cpud.n++; }
+    let train=false; if(isFreeCpuH(h)){ if(!c.cpud||c.cpud.d!==day) c.cpud={d:day,n:0}; c.cpud.n++; }
     if(!train){ track("play"); if(r.a>r.b) track("win"); if(r.a) track("goals",r.a); }
     if(h.motm&&h.owners[h.motm.t]===me&&BY_ID[h.motm.pid]){ c.heroes=c.heroes||[]; c.heroes.push({id:h.id,pid:h.motm.pid,note:h.motm.note,at:h.at}); c.heroes=c.heroes.slice(-60); setTimeout(()=>toast(`⭐ Carte Héros du match : ${BY_ID[h.motm.pid].name} (${h.motm.note}/10)`),2500); }
-    const k=1; /* plus de gains réduits : même récompense quel que soit le nombre de matchs */ got+=Math.round(r.coins*k); lines.push(`${r.res} ${r.a}-${r.b}${k<1?" (gains réduits après 5 matchs/jour)":""}`); c.claimed.push(h.id); }
+    const k=isDraftH(h)?1:rwDecay(c.mday.n-1); got+=Math.round(r.coins*k); lines.push(`${r.res} ${r.a}-${r.b}${k<1?` (gains à ${Math.round(k*100)} %, ${c.mday.n}e match du jour)`:""}`); c.claimed.push(h.id); }
   if(got){ c.claimed=c.claimed.slice(-300); addCoins(got,`match : ${lines.join(", ")}`); }
   claimLeague();
 }
@@ -3441,7 +3445,7 @@ function renderCollec(){
     ${Object.entries(c.freePacks||{}).filter(([k,n])=>n>0&&PACKS[k]).map(([k,n])=>`<button class="pkbtn daily" data-free="${k}" style="--pc:${PACKS[k].color}"><img class="pkimg" src="${PIMG(k)}" alt=""><b>🎁 ${PACKS[k].name} offert ×${n}</b><span>récompense</span><em>Ouvrir</em></button>`).join("")}
     <button class="pkbtn daily" data-pk="event" style="--pc:#ff9a6a;animation:none"><img class="pkimg" src="${PIMG("event")}" alt=""><b>${curEvent().name}</b><span>Pack Événement · 3 cartes du thème</span><em>🪙 600</em></button>
     <div class="shop">${Object.entries(PACKS).filter(([k])=>!["jour","event","reward","starter","rare3"].includes(k)).map(([k,P])=>`<button class="pkbtn pkbig" data-pk="${k}" style="--pc:${P.color}"><img class="pkimg" src="${PIMG(k)}" alt=""><b>${P.name}</b><span>${P.n} cartes${P.guarantee==="gold"?" · 1 Épique min.":P.guarantee==="icon"?" · 1 Légendaire min.":""}</span><em>🪙 ${P.price}</em></button>`).join("")}</div>
-    <div class="rules" style="font-size:12.5px">Gagne des pièces en jouant : <b>victoire 100</b>, nul 50, défaite 25, <b>+10 par but</b> (tous les modes, sans limite de matchs par jour) et <b>1 pack gratuit par jour</b>. Doublons : revente 4 / 12 / 32 / 100 / 300 🪙 (Commune → Mythique), ou échange avec les autres pour plus de valeur.</div>
+    <div class="rules" style="font-size:12.5px">Gagne des pièces en jouant : <b>victoire 100</b>, nul 50, défaite 25, <b>+10 par but</b> (sans limite de matchs : 5 matchs à 100 % par jour puis gains dégressifs ; carrière, quiz et divisions gardent leur limite du jour) et <b>1 pack gratuit par jour</b>. Doublons : revente 4 / 12 / 32 / 100 / 300 🪙 (Commune → Mythique), ou échange avec les autres pour plus de valeur.</div>
     ${dupes?`<button class="btn ghost big" id="sellBtn">Vendre mes doublons (+${dupes} 🪙)</button>`:""}`;
   document.querySelectorAll(".pkbtn[data-pk]").forEach(b=>b.onclick=()=>openPack(b.dataset.pk));
   document.querySelectorAll(".pkbtn[data-free]").forEach(b=>b.onclick=()=>openPack(b.dataset.free,true));
@@ -5765,7 +5769,7 @@ const TIPS={
   Une fois les équipes finies, chacun se met « prêt » et le match se lance en direct.`},
  tab_match:{t:"🏟️ Match",x:`C'est ici que les matchs s'affichent <b>en direct en ~1 minute</b> : buts, cartons, penalties, VAR…<br><br>
   Ils se lancent depuis 🌐 En ligne (Draft, Championnats, Coupes…) et 🎮 Solo (Carrière, Défi…). En bas, tes derniers matchs se revoient avec ▶️.<br><br>
-  🪙 Victoire 100, nul 50, défaite 25, +10 par but, dans tous les modes et sans limite de matchs par jour.`},
+  🪙 Victoire 100, nul 50, défaite 25, +10 par but, sans limite de matchs : 5 matchs à 100 % par jour, puis 75 %, 50 %, 25 % et 10 %. La carrière (5/jour), le quiz (3/jour) et les divisions (10/jour) gardent leur limite.`},
  tab_collec:{t:"🎴 Collection",x:`Ici tu gères tes cartes :<br><br>🎁 <b>Pack du jour</b> gratuit, et d'autres packs à acheter avec tes pièces.<br>
   📒 <b>Album</b> façon Panini, avec des récompenses par collection complète.<br>🔄 <b>Échanges</b>, 🏪 <b>marché</b> et 🔨 <b>enchères</b> de doublons entre joueurs.<br>
   🧩 <b>Défis SBC</b> : donne des cartes en échange de récompenses.<br><br>Touche une carte pour voir ses stats et son palmarès.`},
@@ -5858,7 +5862,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-26h"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-26i"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
