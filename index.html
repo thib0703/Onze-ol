@@ -1366,6 +1366,26 @@ body.lowfx .cgstage *{animation-duration:.01s!important;animation-delay:0s!impor
 .tdiv{gap:4px}.tdiv .trk{display:block;height:7px;background:#0007;border-radius:5px;overflow:hidden}.tdiv .trk i{display:block;height:100%;background:linear-gradient(90deg,#ffd970,#e3002b)}
 .tcap{display:flex;gap:8px;align-items:flex-start;font-size:12px;margin:8px 2px;color:#dfe7ff}.tcap input{margin-top:2px}
 .cgstats{display:block!important}.cgstats summary{display:block;cursor:pointer;list-style:none;margin-bottom:4px}.cgstats .cgrk{display:flex;width:100%}.cgstats .cgrk b{text-align:right;white-space:nowrap}.cgstats summary::-webkit-details-marker{display:none}
+
+/* cartes non-joueurs */
+.tcgx{--w:150px;position:relative;width:var(--w);height:calc(var(--w)*1.5);display:inline-block;flex:none;font-size:calc(var(--w)*.058);color:#fff}
+.tcgx .tx-face{position:absolute;z-index:1;overflow:hidden;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 40%,#ffffff33,transparent 60%),linear-gradient(160deg,#1d4aa0,#e3002b)}
+.tcgx .tx-face img{width:100%;height:100%;object-fit:cover;object-position:center 25%}.tcgx .tx-face span{font-size:3.4em;filter:drop-shadow(0 3px 6px #000a)}
+.tcgx .tx-ic{position:absolute;z-index:3;display:flex;align-items:center;justify-content:center;font-size:2.2em}
+.tcgx .tx-nm{position:absolute;z-index:3;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1.05em;text-align:center;line-height:1.05;overflow:hidden;padding:0 3%}
+.tcgx .tx-ty{position:absolute;z-index:3;display:flex;align-items:center;justify-content:center;font-size:.72em;font-weight:700;letter-spacing:.5px;text-transform:uppercase}
+.tcgx .tx-d{position:absolute;z-index:3;display:flex;align-items:center;justify-content:center;text-align:center;font-size:.85em;line-height:1.25;padding:2% 4%;color:#2a1a05}
+.x-epoque .tx-face{left:10%;right:9.7%;top:31%;height:28.5%}.x-epoque .tx-ic{left:39%;width:22%;top:6.5%;height:14.5%}.x-epoque .tx-nm{left:12%;right:12%;top:21%;height:7.5%;color:#3a1a05}.x-epoque .tx-ty{left:21%;right:21%;top:61%;height:4.7%;color:#3a1a05}.x-epoque .tx-d{left:11%;right:11%;top:67.5%;height:23%}
+.x-coach .tx-face{left:8.8%;right:8.7%;top:29.6%;height:30.9%}.x-coach .tx-ic{left:37.5%;width:25%;top:2.5%;height:17%}.x-coach .tx-nm{left:8%;right:8%;top:18.5%;height:9.5%;color:#ffd970}.x-coach .tx-ty{left:9%;right:9%;top:62.3%;height:4.6%;color:#ffd970}.x-coach .tx-d{left:6%;right:6%;top:68.8%;height:23%}
+.x-stade .tx-face{left:10.3%;right:10.2%;top:26.7%;height:29.9%}.x-stade .tx-ic{left:39%;width:22%;top:4.6%;height:14.5%}.x-stade .tx-nm{left:15%;right:14%;top:18.8%;height:6.8%;color:#ffd970}.x-stade .tx-ty{left:21%;right:21%;top:57.2%;height:4.2%;color:#ffd970}.x-stade .tx-d{left:8%;right:8%;top:62.8%;height:21.6%}
+.x-action .tx-face{left:7.9%;right:7.8%;top:29.7%;height:29.8%}.x-action .tx-ic{left:39%;width:22%;top:3.6%;height:13%}.x-action .tx-nm{left:14%;right:14%;top:21.6%;height:6.6%;color:#123}.x-action .tx-ty{left:21%;right:21%;top:61.6%;height:4.4%;color:#123}.x-action .tx-d{left:7.5%;right:7.5%;top:67.6%;height:22.5%}
+.tcgx.mini .tx-d,.tcgx.mini .tx-ty{display:none}.tcgx.mini .tx-nm{font-size:1.25em}
+.tcgx.off{filter:grayscale(1) brightness(.5)}
+.txrow{display:flex;gap:6px;overflow-x:auto;padding:6px 2px 10px;-webkit-overflow-scrolling:touch}
+.txpick{flex:none;position:relative;cursor:pointer;border-radius:10px;transition:transform .15s}.txpick.on{transform:translateY(-6px);filter:drop-shadow(0 0 10px #ffd970)}.txpick.on::after{content:"✓";position:absolute;top:-4px;right:-2px;background:#1f8a4c;border:2px solid #ffd970;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px}
+.tsyn div{margin-top:3px}
+.tacts{display:flex;gap:5px;align-items:center;overflow-x:auto;padding:2px}.tacts small{font-size:10px;color:var(--mute);flex:none;max-width:80px;line-height:1.2}
+.tuse{flex:none;opacity:.55}.tuse.can{opacity:1;cursor:pointer;filter:drop-shadow(0 0 6px #7ee2a0)}
 </style>
 </head>
 <body>
@@ -6177,7 +6197,7 @@ function eclatsGain(n,online){ if(!n) return 0; const T=tcgW(); if(!online){ con
   if(n){ T.e=(T.e||0)+n; save(); } return n; }
 function showTcg(id){ const M=$("#cardModal"); const c=W(), own=(c.coll||{})[id], lv=(tcgW().lv||{})[id]||0;
   M.innerHTML=`<div class="cm-box"><div class="cm-card" style="display:flex;justify-content:center">${tcgHTML(id,{w:250,evo:evoOf(me,id),lvl:lv})}</div>
-    <div class="cm-note" style="text-align:left;font-size:12px;line-height:1.5">${cgTypeLine(id)}${tcgSkills(id).map(k=>`<br>🏅 <b>${esc(k.n)}</b> : ${esc(k.d)}`).join("")}${tcgDuosOf(id).filter(d=>BY_ID[d.w]).map(d=>`<br>🤝 <b>${esc(d.n)}</b> avec ${esc(BY_ID[d.w].name)} : +15 dégâts s'ils sont ensemble`).join("")}<br>👥 Coéquipiers de la même époque en jeu : +5 dégâts chacun · 🌍 compatriotes étrangers : −5 dégâts subis<br>⚽ Attaque 1 = 1 Ballon, Attaque 2 = 3 Ballons (+1 par tour)<br>💠 Tu as <b>${tcgW().e||0} Éclats</b>${own?` · niveau ${lv}/${TCG_MAXL}`:""}</div><div class="mbtns" id="tcgBtns"></div></div>`;
+    <div class="cm-note" style="text-align:left;font-size:12px;line-height:1.5">${cgTypeLine(id)}${tcgSkills(id).map(k=>`<br>🏅 <b>${esc(k.n)}</b> : ${esc(k.d)}`).join("")}${tcgDuosOf(id).filter(d=>BY_ID[d.w]).map(d=>`<br>🤝 <b>${esc(d.n)}</b> avec ${esc(BY_ID[d.w].name)} : +10 dégâts s'ils sont ensemble`).join("")}<br>👥 Coéquipiers de la même époque en jeu : +3 dégâts chacun · 🌍 compatriotes étrangers : −5 dégâts subis<br>⚽ Attaque 1 = 1 Ballon, Attaque 2 = 3 Ballons (+1 par tour)<br>💠 Tu as <b>${tcgW().e||0} Éclats</b>${own?` · niveau ${lv}/${TCG_MAXL}`:""}</div><div class="mbtns" id="tcgBtns"></div></div>`;
   const B=$("#tcgBtns"); const mk=(t,fn,gh,dis)=>{ const b=document.createElement("button"); b.className="btn"+(gh?" ghost":""); b.textContent=t; b.disabled=!!dis; b.onclick=fn; B.appendChild(b); };
   if(own&&lv<TCG_MAXL) mk(`💠 Améliorer les attaques (${TCG_COST[lv]} Éclats)`,()=>{ if(tcgUpgrade(id)) showTcg(id); },false,(tcgW().e||0)<TCG_COST[lv]);
   mk("Voir la carte classique",()=>{ M.classList.remove("open"); showCard(id); },true); mk("Fermer",()=>M.classList.remove("open"),true); M.classList.add("open"); }
@@ -6255,7 +6275,7 @@ function tcgSkills(id){ const p=BY_ID[id]; if(!p) return []; const b=p.base||p.i
   if((M.wc||[]).length) L.push({k:"wc",n:"Champion du monde",d:"+10 dégâts"});
   if(M.ucl) L.push({k:"ucl",n:"Nuits européennes",d:"−10 dégâts subis"});
   if((M.euro||[]).length) L.push({k:"eu",n:"Champion d'Europe",d:"+10 PV"});
-  if(t.l1>=5) L.push({k:"sept",n:"Septuplé",d:"+20 PV"}); else if(t.l1>=1) L.push({k:"l1",n:"Champion de France",d:"+10 PV"});
+  if(t.l1>=5) L.push({k:"sept",n:"Septuplé",d:"+10 PV"}); else if(t.l1>=1) L.push({k:"l1",n:"Champion de France",d:"+5 PV"});
   const m=(BY_ID[b]||p).m||0, g=(BY_ID[b]||p).g||0;
   if(m>=300) L.push({k:"fid",n:"Fidèle",d:"+10 PV"});
   if(g>=100) L.push({k:"but",n:"Buteur historique",d:"Attaque 1 : +10 dégâts"});
@@ -6275,37 +6295,38 @@ function tcgLinks(sideCards,id){ const o=sideCards.filter(x=>x&&tcgBase(x)!==tcg
   for(const x of o){ const d=tcgDuo(id,x); if(d&&!out.duo) out.duo=d; if(tcgMates(id,x)) out.mates++; if(tcgNat(id)&&tcgNat(id)!=="FR"&&tcgNat(id)===tcgNat(x)) out.comp++; }
   out.mates=Math.min(3,out.mates); out.comp=Math.min(2,out.comp); return out; }
 // --- carte en jeu ---
-function tcgMax(id,G,s){ const T=tcgOf(id,G.evo[s][id]||0,(G.tl[s]||{})[id]||0); let hp=T.hp; if(tcgHas(id,"fid")) hp+=10; if(tcgHas(id,"sept")) hp+=20; else if(tcgHas(id,"l1")) hp+=10; if(tcgHas(id,"eu")) hp+=10; return hp; }
+function tcgMax(id,G,s){ const T=tcgOf(id,G.evo[s][id]||0,(G.tl[s]||{})[id]||0); let hp=T.hp; if(tcgHas(id,"fid")) hp+=10; if(tcgHas(id,"sept")) hp+=10; else if(tcgHas(id,"l1")) hp+=5; if(tcgHas(id,"eu")) hp+=10; return hp; }
 function tcgCost(id,ai){ const c=ai===1?3:1; return ai===1&&tcgHas(id,"bo")?c-1:c; }
 const tcgRetreat=id=>0;
 function tcgNew(id,G,s){ const T=tcgOf(id,G.evo[s][id]||0); const mx=tcgMax(id,G,s); const c={id,hp:mx,mx,e:0}; if(T.ab.e0) c.e+=T.ab.e0; return c; }
 function tcgDmg(S,G,s,ai){ const a=S.act[s], d=S.act[1-s]; const T=tcgOf(a.id,G.evo[s][a.id]||0,(G.tl[s]||{})[a.id]||0), D=tcgOf(d.id,G.evo[1-s][d.id]||0);
   const mine=[a.id,...S.bench[s].map(c=>c.id)], his=[d.id,...S.bench[1-s].map(c=>c.id)], L=tcgLinks(mine,a.id), LD=tcgLinks(his,d.id);
-  let x=T.a[ai].d; const parts=[];
+  const base=T.a[ai].d; let x=base; const parts=[];
   if(ai===0&&tcgHas(a.id,"but")){ x+=10; parts.push("Buteur historique +10"); }
   if(tcgHas(a.id,"wc")){ x+=10; parts.push("Champion du monde +10"); }
-  if(L.mates){ x+=5*L.mates; parts.push(`Coéquipiers +${5*L.mates}`); }
-  if(L.duo){ x+=15; parts.push(`${L.duo} +15`); }
+  if(L.mates){ x+=3*L.mates; parts.push(`Coéquipiers +${3*L.mates}`); }
+  if(L.duo){ x+=10; parts.push(`${L.duo} +10`); }
   const Ms=(S.mod||[])[s], Md=(S.mod||[])[1-s];
-  if(a.co){ x+=10; parts.push(`${esc(short(BY_ID[Ms.co].name))} +10`); }
+  if(a.co){ x+=5; parts.push(`${esc(short(BY_ID[Ms.co].name))} +5`); }
   if(Ms&&Ms.dmg){ x+=Ms.dmg; parts.push(`Collectif +${Ms.dmg}`); }
   if(S.boost&&S.boost[s]){ x+=S.boost[s]; parts.push(`Action +${S.boost[s]}`); }
+  if(x-base>TCG_BONUS_MAX){ x=base+TCG_BONUS_MAX; parts.push(`(bonus plafonnés à +${TCG_BONUS_MAX})`); }
   x*=(T.ab.dmg||1); const sup=CG_BEATS[T.g]===D.g; if(sup) x*=1.25;
-  let red=(Md&&Md.red)||0; if(S.shield&&S.shield[1-s]) red+=S.shield[1-s]; if(tcgHas(d.id,"ucl")) red+=10; if(tcgHas(d.id,"mur")) red+=10; if(LD.comp) red+=5*LD.comp; x=x*(D.ab.def||1)-red;
+  let red=(Md&&Md.red)||0; const TCG_RED_MAX=25; if(S.shield&&S.shield[1-s]) red+=S.shield[1-s]; if(tcgHas(d.id,"ucl")) red+=10; if(tcgHas(d.id,"mur")) red+=10; if(LD.comp) red+=5*LD.comp; red=Math.min(red,TCG_RED_MAX); x=x*(D.ab.def||1)-red;
   return {dmg:Math.max(10,Math.round(x)),sup,parts,red}; }
 
 // 🃏 CARTES ACTION ET STRATÉGIE DE CLUB
 // Avant le match : 1 Entraîneur (passif), 1 Stade (passif) et 3 cartes Action (1 fois chacune, 1 par tour, ne termine pas le tour).
 // Collectifs automatiques : 3 joueurs d'une même grande époque de l'OL = bonus d'équipe.
 const TCG_ACT={
-  soin:{n:"Soigneur",ic:"🧴",d:"Ton titulaire récupère 30 PV"},
+  soin:{n:"Soigneur",ic:"🧴",d:"Ton titulaire récupère 25 PV"},
   cf:{n:"Coup franc",ic:"🎯",d:"+1 ⚽ pour ton titulaire"},
   jaune:{n:"Carton jaune",ic:"🟨",d:"Le titulaire adverse perd 1 ⚽"},
   mur:{n:"Mur défensif",ic:"🧱",d:"−20 dégâts sur la prochaine attaque reçue"},
   mt:{n:"Mi-temps",ic:"⏱️",d:"Tous tes joueurs du banc récupèrent 20 PV"},
   remo:{n:"Remontada",ic:"🔥",d:"Si tu es mené au score : +25 dégâts sur ta prochaine attaque"},
   kop:{n:"Virage Nord",ic:"📣",d:"Ta prochaine attaque : +10 dégâts"}};
-const TCG_ACT_N=3;
+const TCG_ACT_N=3, TCG_BONUS_MAX=20; // les bonus fixes (carrière, liens, entraîneur, collectifs, actions) sont plafonnés : une équipe bien construite est forte sans casser le jeu
 const TCG_STAD={gerland:{n:"Stade de Gerland",ic:"🏟️",d:"Joueurs arrivés avant 2016 : +10 PV",f:p=>(p.year||0)<2016},
   groupama:{n:"Groupama Stadium",ic:"🏟️",d:"Joueurs arrivés depuis 2016 : +10 PV",f:p=>(p.year||0)>=2016}};
 // grandes époques du club (3 joueurs de l'époque dans ton équipe → bonus)
@@ -6314,18 +6335,18 @@ const TCG_ERAS=[
   {k:"aul",n:"L'ère Lacazette-Fekir",ic:"⚡",y:[2013,2017],d:"+10 dégâts pour toute l'équipe"},
   {k:"pion",n:"Les Pionniers",ic:"📜",old:1,d:"+20 PV pour toute l'équipe"},
   {k:"new",n:"La nouvelle vague",ic:"🌱",y:[2023,2027],d:"Chaque joueur entre avec 1 ⚽"},
-  {k:"y2k",n:"Les premiers titres",ic:"🥇",y:[1999,2003],d:"−10 dégâts subis pour toute l'équipe"}];
+  {k:"y2k",n:"Les premiers titres",ic:"🥇",y:[1999,2003],d:"−5 dégâts subis pour toute l'équipe"}];
 function tcgInEra(id,E){ const p=BY_ID[tcgBase(id)]||BY_ID[id]; if(!p) return false; if(E.old) return !!(BY_ID[id].old||p.old); return spansOf(p).some(([a,b])=>Math.min(b,E.y[1])-Math.max(a,E.y[0])>=1); }
 function tcgEras(ids){ return TCG_ERAS.filter(E=>ids.filter(id=>tcgInEra(id,E)).length>=3); }
 const tcgCoachOk=(co,id)=>!!co&&tcgMates(co,id);
 const tcgCoaches=(src,u)=>COACHES.filter(c=>src!=="coll"||(((C(u)||{}).coll||{})[c.id]>0)).map(c=>c.id);
 // bonus d'équipe, calculés une fois au coup d'envoi
 function tcgTeamMods(ids,co,st){ const E=tcgEras(ids).map(e=>e.k), m={eras:E,co,st,dmg:0,hp:0,red:0,e0:0};
-  if(E.includes("sept")) m.dmg+=10; if(E.includes("aul")) m.dmg+=10; if(E.includes("pion")) m.hp+=20; if(E.includes("new")) m.e0+=1; if(E.includes("y2k")) m.red+=10; return m; }
+  if(E.includes("sept")) m.dmg+=10; if(E.includes("aul")) m.dmg+=10; if(E.includes("pion")) m.hp+=20; if(E.includes("new")) m.e0+=1; if(E.includes("y2k")) m.red+=5; return m; }
 function tcgSetupMods(S,G,s,co,st){ const ids=[S.act[s].id,...S.bench[s].map(c=>c.id)]; const M=S.mod[s]=tcgTeamMods(ids,co,st);
   for(const c of [S.act[s],...S.bench[s]]){ let add=M.hp; const p=BY_ID[c.id]; if(st&&TCG_STAD[st]&&TCG_STAD[st].f(BY_ID[tcgBase(c.id)]||p)) add+=10; c.mx=(c.mx||c.hp)+add; c.hp+=add; c.e+=M.e0; if(co&&tcgCoachOk(co,c.id)) c.co=1; } }
 function tcgUseAct(S,G,s,k,ev){ if(S.acted) return false; const L=S.acts[s]; if(!L.includes(k)||S.used[s].includes(k)) return false; const a=S.act[s], d=S.act[1-s]; if(!a) return false;
-  if(k==="soin"){ if(a.hp>=a.mx) return false; a.hp=Math.min(a.mx,a.hp+30); }
+  if(k==="soin"){ if(a.hp>=a.mx) return false; a.hp=Math.min(a.mx,a.hp+25); }
   else if(k==="cf"){ if(a.e>=5) return false; a.e++; }
   else if(k==="jaune"){ if(!d||!d.e) return false; d.e--; }
   else if(k==="mur"){ S.shield[s]=20; }
@@ -6343,8 +6364,11 @@ function tcgAct(S,G,s,A,ev){ const k=A[0];
   if(k==="p"){ if(S.act[s]!==null) return false; const i=+A[1]; const c=S.bench[s][i]; if(!c) return false; S.bench[s].splice(i,1); S.act[s]=c; ev.push({t:"p",s,id:c.id}); tcgEnter(S,G,s,c,ev); return true; }
   if(k==="r"){ const i=+A[1]; const b=S.bench[s][i], a=S.act[s]; if(!b) return false; S.bench[s][i]=a; S.act[s]=b; ev.push({t:"r",s,id:b.id,out:a.id}); tcgEnter(S,G,s,b,ev); S.done=1; return true; }
   if(k==="a"){ const ai=+A[1]; const a=S.act[s], d=S.act[1-s]; if(!a||!d) return false; if(S.first===s&&S.n===0) return false; if(a.e<tcgCost(a.id,ai)) return false;
-    const R=tcgDmg(S,G,s,ai); const T=tcgOf(a.id,G.evo[s][a.id]||0,(G.tl[s]||{})[a.id]||0); const hp0=d.hp; d.hp=Math.max(0,d.hp-R.dmg); a.e-=tcgCost(a.id,ai);
-    const e={t:"a",s,id:a.id,tg:d.id,ai,at:T.a[ai].n,dmg:R.dmg,sup:R.sup,parts:R.parts,hp0,hp1:d.hp}; if(S.boost) S.boost[s]=0; if(S.shield) S.shield[1-s]=0;
+    const R=tcgDmg(S,G,s,ai); const T=tcgOf(a.id,G.evo[s][a.id]||0,(G.tl[s]||{})[a.id]||0);
+    // part de chance (rejouable : graine de la partie) : ±12 % et 8 % de frappe parfaite (×1,4)
+    const rr=cgRng(cgSeed(G.seed,"dmg"+S.n+"_"+s+"_"+ai)); const crit=rr()<.08; R.dmg=Math.max(10,Math.round(R.dmg*(.88+rr()*.24)*(crit?1.4:1)));
+    const hp0=d.hp; d.hp=Math.max(0,d.hp-R.dmg); a.e-=tcgCost(a.id,ai);
+    const e={t:"a",s,id:a.id,tg:d.id,ai,at:T.a[ai].n,dmg:R.dmg,sup:R.sup,crit,parts:R.parts,hp0,hp1:d.hp}; if(S.boost) S.boost[s]=0; if(S.shield) S.shield[1-s]=0;
     if(ai===1&&T.ab.heal2){ a.hp=Math.min(a.mx||tcgMax(a.id,G,s),a.hp+T.ab.heal2); e.heal=T.ab.heal2; }
     ev.push(e);
     if(d.hp<=0){ S.act[1-s]=null; S.sc[s]++; ev.push({t:"ko",s:1-s,id:d.id});
@@ -6686,17 +6710,44 @@ const tcgBallHTML=(w,cls)=>`<div class="tcg tball${cls?" "+cls:""}" style="--w:$
 function tcgPlayHTML(c,G,s,w,cls,extra){ if(!c) return `<div class="tcg-empty" style="--w:${w}px">—</div>`; const hpm=tcgMax(c.id,G,s);
   return `<span class="tpc${cls?" "+cls:""}"${extra||""}>${tcgHTML(c.id,{w,evo:G.evo[s][c.id]||0,lvl:(G.tl[s]||{})[c.id]||0,hp:c.hp,hpm,cls:w<80?"mini":""})}${c.e?`<i class="tballs">${"⚽".repeat(Math.min(c.e,5))}${c.e>5?"+"+(c.e-5):""}</i>`:""}</span>`; }
 function tcgHandHTML(id,G,s,i,can){ return `<span class="thc${can?" can":""}" data-th="${i}">${isBall(id)?tcgBallHTML(84):tcgHTML(id,{w:84,evo:G.evo[s][id]||0,lvl:(G.tl[s]||{})[id]||0,hpm:tcgMax(id,G,s),cls:"mini"})}</span>`; }
-function tcgChips(T,G,s,c){ if(!c) return ""; const mine=[c.id,...T.bench[s].map(x=>x.id)], L=tcgLinks(mine,c.id); const ch=[];
+function tcgChips(T,G,s,c){ if(!c) return ""; const mine=[c.id,...T.bench[s].map(x=>x.id)], L=tcgLinks(mine,c.id); const ch=[]; const M=(T.mod||[])[s];
+  if(M){ for(const k of M.eras){ const E=TCG_ERAS.find(e=>e.k===k); if(E) ch.push(`${E.ic} ${esc(E.n)}`); } if(c.co&&M.co) ch.push(`📋 ${esc(short(BY_ID[M.co].name))}`); if(M.st) ch.push(`🏟️ ${esc(TCG_STAD[M.st].n)}`); }
+  if(T.boost&&T.boost[s]) ch.push(`🔥 +${T.boost[s]} prochaine attaque`); if(T.shield&&T.shield[s]) ch.push(`🧱 −${T.shield[s]} prochain coup`);
   if(L.duo) ch.push(`🤝 ${esc(L.duo)}`); if(L.mates) ch.push(`👥 Coéquipiers ×${L.mates}`); if(L.comp) ch.push(`🌍 Compatriotes ×${L.comp}`);
   for(const k of tcgSkills(c.id)) ch.push(`🏅 ${esc(k.n)}`); return ch.length?`<div class="tchips">${ch.map(x=>`<span>${x}</span>`).join("")}</div>`:""; }
+
+// 🎴 cartes non-joueurs : Action, Stade, Entraîneur, Époque (cadre propre à chaque type, zones mesurées sur chaque image)
+const TCG_XART=new Set([]); // illustrations prêtes dans img/tcg/x/<clé>.webp
+const TCGX={action:{t:"Action de match"},stade:{t:"Stade"},coach:{t:"Entraîneur"},epoque:{t:"Collectif d'époque"}};
+function tcgXHTML(kind,o){ const w=o.w||150; const art=o.img?`<img src="${o.img}" alt="" loading="lazy">`:`<span>${o.ic||"🃏"}</span>`;
+  return `<div class="tcgx x-${kind}${o.cls?" "+o.cls:""}${o.off?" off":""}" style="--w:${w}px"${o.attr||""}>
+    <div class="tx-face">${art}</div><img class="tcg-fr" src="img/tcg/cadre-${kind}.webp" alt="">
+    <div class="tx-ic">${o.ic||""}</div><div class="tx-nm">${esc(o.n||"")}</div><div class="tx-ty">${TCGX[kind].t}</div><div class="tx-d">${o.d||""}</div>${o.tag?`<i class="tnum">${o.tag}</i>`:""}</div>`; }
+const tcgActCard=(k,o={})=>tcgXHTML("action",Object.assign({ic:TCG_ACT[k].ic,n:TCG_ACT[k].n,d:esc(TCG_ACT[k].d),img:TCG_XART.has("act-"+k)?`img/tcg/x/act-${k}.webp`:null},o));
+const tcgStadCard=(k,o={})=>tcgXHTML("stade",Object.assign({ic:"🏟️",n:TCG_STAD[k].n,d:esc(TCG_STAD[k].d),img:TCG_XART.has("stade-"+k)?`img/tcg/x/stade-${k}.webp`:null},o));
+function tcgCoachCard(id,o={}){ const p=BY_ID[id]; const sp=(COACH_SPANS[id]||[[0,0]])[0]; const img=TCG_XART.has(id)?`img/tcg/x/${id}.webp`:PORTRAITS.has(id)?`img/cartes/${id}.webp?v=${IMGV}`:null;
+  return tcgXHTML("coach",Object.assign({ic:"📋",n:p.name,d:`À l'OL ${sp[0]}${sp[1]>sp[0]?"-"+sp[1]:""}<br><b>+5 dégâts</b> pour ses joueurs (même époque)`,img},o)); }
+function tcgEraCard(k,o={}){ const E=TCG_ERAS.find(e=>e.k===k); return tcgXHTML("epoque",Object.assign({ic:E.ic,n:E.n,d:`${E.y?E.y[0]+"-"+Math.min(E.y[1],2026):"Avant 2000"} · 3 joueurs de l'époque<br><b>${esc(E.d)}</b>`,img:TCG_XART.has("era-"+k)?`img/tcg/x/era-${k}.webp`:null},o)); }
+
+
+function tcgPrepHTML(G,side,ids){ const cos=tcgCoaches(G.src,G.players[side]); const eras=tcgEras(ids);
+  const coN=cgTB.co?ids.filter(id=>tcgCoachOk(cgTB.co,id)).length:0, stN=cgTB.st?ids.filter(id=>TCG_STAD[cgTB.st].f(BY_ID[tcgBase(id)]||BY_ID[id])).length:0;
+  const syn=[...eras.map(e=>`${e.ic} <b>${esc(e.n)}</b> : ${esc(e.d)}`), cgTB.co?`📋 <b>${esc(BY_ID[cgTB.co].name)}</b> : +5 dégâts pour ${coN} joueur${coN>1?"s":""}`:"", cgTB.st?`🏟️ <b>${esc(TCG_STAD[cgTB.st].n)}</b> : +10 PV pour ${stN} joueur${stN>1?"s":""}`:""].filter(Boolean);
+  const nextEra=TCG_ERAS.map(E=>({E,n:ids.filter(id=>tcgInEra(id,E)).length})).filter(x=>x.n===2)[0];
+  return `<h4 class="tdh">📋 Entraîneur <small>${cos.length?"(bonus pour les joueurs de son époque)":G.src==="coll"?"(aucun dans ta collection)":""}</small></h4>
+    <div class="txrow">${cos.map(id=>{ const n=ids.filter(x=>tcgCoachOk(id,x)).length; return `<span class="txpick${cgTB.co===id?" on":""}" data-tco="${id}">${tcgCoachCard(id,{w:96,tag:ids.length?`${n} joueur${n>1?"s":""}`:""})}</span>`; }).join("")||`<div class="mute" style="font-size:12px">Pas d'entraîneur : obtiens-en dans les packs.</div>`}</div>
+    <h4 class="tdh">🏟️ Stade</h4><div class="txrow">${Object.keys(TCG_STAD).map(k=>`<span class="txpick${cgTB.st===k?" on":""}" data-tst="${k}">${tcgStadCard(k,{w:96})}</span>`).join("")}</div>
+    <h4 class="tdh">🃏 Cartes Action <small>(${cgTB.ac.length}/${TCG_ACT_N} · 1 fois chacune, 1 par tour)</small></h4><div class="txrow">${Object.keys(TCG_ACT).map(k=>`<span class="txpick${cgTB.ac.includes(k)?" on":""}" data-tac="${k}">${tcgActCard(k,{w:96})}</span>`).join("")}</div>
+    <div class="cgrules tsyn">✨ <b>Synergies de ton équipe</b>${syn.length?syn.map(x=>`<div>${x}</div>`).join(""):`<div class="mute">Aucune pour l'instant.</div>`}${nextEra?`<div class="mute">💡 Encore 1 joueur de l'époque « ${esc(nextEra.E.n)} » pour activer : ${esc(nextEra.E.d)}</div>`:""}</div>`; }
 CG_VIEW.cbt=(G,S,side,need)=>{ const o=1-side; const key=(G.id||G.seed)+"_"+(S.i||0);
-  if(cgTB.key!==key) cgTB={key,acts:[],tgt:null,sel:[]};
+  if(cgTB.key!==key) cgTB={key,acts:[],tgt:null,sel:[],co:null,st:null,ac:[]};
   if(S.phase==="setup"){ if(!need) return `<div class="cgmsg">✅ Équipe choisie. En attente de ${cgNm(G.players[o])}…</div>`;
     const H=S.hand[side], sel=cgTB.sel;
     return `<div class="cgmsg sm">Choisis <b>5 joueurs</b> : le 1er touché est ton <b>titulaire</b>, les 4 suivants vont sur le <b>banc</b>. (${sel.length}/5)</div>
       <div class="thand big">${H.map((id,i)=>{ const k=sel.indexOf(i); return `<span class="thc can${k>=0?" on":""}" data-tsel="${i}">${tcgHTML(id,{w:100,evo:G.evo[side][id]||0,lvl:(G.tl[side]||{})[id]||0,hpm:tcgMax(id,G,side),cls:"mini"})}${k>=0?`<i class="tnum">${k===0?"TITULAIRE":"Banc "+k}</i>`:""}</span>`; }).join("")}</div>
       ${G.cap?`<div class="mute" style="font-size:12px;text-align:center">⚖️ Note totale : <b style="color:${tcgTeamOvr(sel.map(i=>H[i]),G,side)>TCG_CAP?"#ff7a7a":"#7ee2a0"}">${tcgTeamOvr(sel.map(i=>H[i]),G,side)}</b> / ${TCG_CAP}</div>`:""}
-      <button class="btn big" id="tcgSetup" ${(sel.length===5||sel.length===H.length)&&!(G.cap&&tcgTeamOvr(sel.map(i=>H[i]),G,side)>TCG_CAP)?"":"disabled"}>✅ Lancer le match</button>`; }
+      ${tcgPrepHTML(G,side,sel.map(i=>H[i]))}
+      <button class="btn big" id="tcgSetup" ${(sel.length===5||sel.length===H.length)&&cgTB.ac.length===TCG_ACT_N&&!(G.cap&&tcgTeamOvr(sel.map(i=>H[i]),G,side)>TCG_CAP)?"":"disabled"}>✅ Lancer le match</button>`; }
   const myTurn=need; const T=JSON.parse(JSON.stringify(S)); if(myTurn) for(const A of cgTB.acts) tcgAct(T,G,side,A,[]); const mustP=myTurn&&T.act[side]===null;
   const goals=s=>`<span class="tgoals">${[0,1,2].map(i=>`<i class="${i<T.sc[s]?"on":""}">⚽</i>`).join("")}</span>`;
   const pickB=myTurn&&(mustP||cgTB.tgt==="r");
@@ -6709,8 +6760,9 @@ CG_VIEW.cbt=(G,S,side,need)=>{ const o=1-side; const key=(G.id||G.seed)+"_"+(S.i
   else if(cgTB.tgt==="r") ctrl=`<div class="cgmsg sm tgt">🔄 Touche le joueur du banc qui entre (ça termine ton tour) <button class="btn sm ghost" id="tcgCancelT">Annuler</button></div>`;
   else { const a=T.act[side], d=T.act[o]; const firstT=T.first===side&&T.n===0;
     const atk=[0,1].map(ai=>{ const Tc=tcgOf(a.id,G.evo[side][a.id]||0,(G.tl[side]||{})[a.id]||0), cost=tcgCost(a.id,ai), ok=a.e>=cost&&!firstT&&d; const R=d?tcgDmg(T,G,side,ai):{dmg:0,parts:[]};
-      return `<button class="btn tatk${ok?"":" ghost"}" data-tatk="${ai}" ${ok?"":"disabled"}><span>${"⚽".repeat(cost)} ${esc(Tc.a[ai].n)}</span><b>${R.dmg}${R.sup?" 💥":""}</b>${R.parts.length?`<small>${esc(R.parts.join(" · "))}</small>`:""}</button>`; }).join("");
-    ctrl=`<div class="tatks">${atk}</div>${firstT?`<div class="mute" style="font-size:11px;text-align:center">Tu commences : pas d'attaque au 1er tour</div>`:a.e<1?"":""}
+      return `<button class="btn tatk${ok?"":" ghost"}" data-tatk="${ai}" ${ok?"":"disabled"}><span>${"⚽".repeat(cost)} ${esc(Tc.a[ai].n)}</span><b>~${R.dmg}${R.sup?" 💥":""}</b>${R.parts.length?`<small>${esc(R.parts.join(" · "))}</small>`:""}</button>`; }).join("");
+    const acts=(T.acts[side]||[]).map(k=>{ const used=T.used[side].includes(k), can=!used&&!T.acted; return `<span class="tuse${can?" can":""}" data-tuse="${k}">${tcgActCard(k,{w:62,cls:"mini",off:used})}</span>`; }).join("");
+    ctrl=`${acts?`<div class="tacts">${acts}<small>${T.acted?"✅ Action jouée ce tour":"🃏 Touche une action (1 par tour)"}</small></div>`:""}<div class="tatks">${atk}</div>${firstT?`<div class="mute" style="font-size:11px;text-align:center">Tu commences : pas d'attaque au 1er tour</div>`:a.e<1?"":""}
       <div class="tbtns"><button class="btn sm ghost" id="tcgRet" ${T.bench[side].length?"":"disabled"}>🔄 Changer de joueur</button><button class="btn sm ghost" id="tcgEnd">⏭️ Passer</button></div>`; }
   return `<div class="tboard">
     <div class="tzone opp"><div class="tbar">${goals(o)}<span>${cgNm(G.players[o])}</span></div><div class="tbench">${bench(o,false)}</div><div class="tact">${tcgPlayHTML(T.act[o],G,o,88,"act opp")}</div></div>
@@ -6719,7 +6771,7 @@ CG_VIEW.cbt=(G,S,side,need)=>{ const o=1-side; const key=(G.id||G.seed)+"_"+(S.i
     ${ctrl}</div>`; };
 function tcgEvText(ev,side){ const N=id=>esc(short(BY_ID[id].name)); return ev.map(e=>{ const w=e.s===side?"Tu":"Il";
   if(e.t==="b") return `📥 ${N(e.id)} sur le banc`; if(e.t==="e") return `⚽ Ballon pour ${N(e.id)}`; if(e.t==="r") return `🔄 ${N(e.id)} remplace ${N(e.out)}`; if(e.t==="p") return `➡️ ${N(e.id)} entre en jeu`;
-  if(e.t==="a") return `${e.s===side?"⚔️":"💥"} ${N(e.id)} : <b>${esc(e.at)}</b> → ${e.dmg}${e.sup?" (super efficace)":""}`; if(e.t==="ko") return `💀 ${N(e.id)} K.O. !`; if(e.t==="draw") return `🃏 pioche ${e.n}`; return ""; }).filter(Boolean).join(" · "); }
+  if(e.t==="a") return `${e.s===side?"⚔️":"💥"} ${N(e.id)} : <b>${esc(e.at)}</b> → ${e.dmg}${e.sup?" (super efficace)":""}`; if(e.t==="ko") return `💀 ${N(e.id)} K.O. !`; if(e.t==="draw") return `🃏 pioche ${e.n}`; if(e.t==="c"&&TCG_ACT[e.k]) return `${TCG_ACT[e.k].ic} ${e.s===side?"Tu joues":"Il joue"} <b>${TCG_ACT[e.k].n}</b>`; return ""; }).filter(Boolean).join(" · "); }
 // 🎬 scène d'un tour : actions puis attaque (effets selon le type) puis K.O.
 CG_FX.cbt=(G,S,side,prev)=>{ const o=1-side; const last=S.log[S.log.length-1]; const ev=last.ev||[];
   if(last.start){ cgAt(0,()=>cgSnd("whistle")); cgAt(500,()=>cgSnd("flip")); cgAt(900,()=>cgSnd("boom"));
@@ -6731,7 +6783,7 @@ CG_FX.cbt=(G,S,side,prev)=>{ const o=1-side; const last=S.log[S.log.length-1]; c
   if(!at) return {d:Math.round(t*1000)+700,html:`<div class="cgstage cgcbt"><div class="stg-t">${cgNm(G.players[last.s])} joue</div><div style="height:120px"></div><div class="fxl">${pops}</div></div>`};
   const sA=at.s, sD=1-sA, Y={[o]:24,[side]:72}; const Tg=tcgOf(at.id), g=Tg?Tg.g:"att", sp=at.ai===1;
   if(sp){ ov+=`<div class="spb t-${g}" style="animation-delay:${t.toFixed(2)}s"><small>${CG_GRP[g].e} Attaque spéciale</small>${esc(at.at)}</div>`; t+=.55; }
-  const A=cgAttackFx(g,sp,50,Y[sA],50,Y[sD],t); ov+=A.h; cgAttackSnd(g,sp,t,A.ti,at.sup); if(at.sup||sp) shakes.push(A.ti);
+  const A=cgAttackFx(g,sp,50,Y[sA],50,Y[sD],t); ov+=A.h; cgAttackSnd(g,sp,t,A.ti,at.sup); if(at.sup||sp||at.crit) shakes.push(A.ti);
   const ko=ev.find(e=>e.t==="ko"); let tko=A.ti+.6;
   if(ko){ ov+=cgRing(50,Y[sD],"#ffffff",tko,true)+cgSparks(50,Y[sD],40,["#ffffff","#ff5a5a","#ffd970"],tko,170,1.5)+cgFlash("#ffffff",tko,.7); shakes.push(tko); cgAt(tko*1000,()=>{ cgSnd("thunder"); cgSnd("boom",true); pxVib([80,40,120]); }); }
   if(at.heal) ov+=`<b class="cgheal" style="top:${Y[sA]}%;animation-delay:${(A.ti+.3).toFixed(2)}s">+${at.heal} PV</b>`+cgSparks(50,Y[sA],14,CG_COL.mil,A.ti+.3,70);
@@ -6739,7 +6791,7 @@ CG_FX.cbt=(G,S,side,prev)=>{ const o=1-side; const last=S.log[S.log.length-1]; c
     let h=tcgHTML(id,{w:s===side?150:140,evo:G.evo[s][id]||0,lvl:(G.tl[s]||{})[id]||0,hp:hp0,hpm,cls:"act"+(ko&&!isAtk?" kofx":"")});
     if(!isAtk) h=h.replace('<i style="width:',`<i data-hpa="1" style="--to:${pc}%;--hd:${A.ti.toFixed(2)}s;width:`).replace(/<b>\d+ \/ (\d+) PV<\/b>/,`<b>${Math.round(hp1)} / $1 PV</b>`);
     return h+(isAtk?`<style>.cgcbt .s${s} .act{animation:${sp?"cgcharge .5s "+(t-.55).toFixed(2)+"s both,":""}cglunge${s===side?"U":"D"} .4s ${t.toFixed(2)}s both}</style>`:
-      `<b class="cgdmg${at.sup?" sup":""}${sp?" big":""}" style="animation-delay:${(A.ti+.05).toFixed(2)}s">-${at.dmg}${at.sup?"<small>super efficace !</small>":""}</b><style>.cgcbt .s${s} .act{animation:cghit .55s ${A.ti.toFixed(2)}s both}</style>`+(ko?`<b class="kostamp" style="animation-delay:${tko.toFixed(2)}s">K.O. !</b><style>.cgcbt .s${s} .kofx{--kd:${tko.toFixed(2)}s}</style>`:"")); };
+      `<b class="cgdmg${at.sup||at.crit?" sup":""}${sp||at.crit?" big":""}" style="animation-delay:${(A.ti+.05).toFixed(2)}s">-${at.dmg}${at.crit?"<small>⭐ frappe parfaite !</small>":at.sup?"<small>super efficace !</small>":""}</b><style>.cgcbt .s${s} .act{animation:cghit .55s ${A.ti.toFixed(2)}s both}</style>`+(ko?`<b class="kostamp" style="animation-delay:${tko.toFixed(2)}s">K.O. !</b><style>.cgcbt .s${s} .kofx{--kd:${tko.toFixed(2)}s}</style>`:"")); };
   const atkHp=(()=>{ return null; })();
   const pA=prev&&prev.act[sA]&&prev.act[sA].id===at.id?prev.act[sA].hp:tcgMax(at.id,G,sA);
   const parts=at.parts&&at.parts.length?`<div class="stg-k" style="animation-delay:${(A.ti+.2).toFixed(2)}s">${esc(at.parts.join(" · "))}</div>`:"";
@@ -6830,11 +6882,15 @@ function cgBind(V){ const on=(q,f)=>V.querySelectorAll(q).forEach(b=>b.onclick=e
   on("#cgTeam",()=>{ if((cgPick||[]).length===3){ const t=cgPick; cgPick=null; cgPlay({t}); } });
   on("[data-cga]",b=>cgPlay({a:+b.dataset.cga}));
   on("[data-tsel]",b=>{ const i=+b.dataset.tsel, L=cgTB.sel; const k=L.indexOf(i); if(k>=0) L.splice(k,1); else if(L.length<1+TCG_BENCH) L.push(i); cgSnd("flip"); renderCards(); });
-  on("#tcgSetup",()=>{ const S=cgReplay(cgG(cgCur)), side=cgCur.cpu?0:cgCur.players.indexOf(me), H=S.hand[side]; const L=cgTB.sel; if(!L.length) return; cgTB.sel=[]; cgPlay({a:H[L[0]],b:L.slice(1).map(i=>H[i])}); });
+  on("#tcgSetup",()=>{ const S=cgReplay(cgG(cgCur)), side=cgCur.cpu?0:cgCur.players.indexOf(me), H=S.hand[side]; const L=cgTB.sel; if(!L.length) return; const pk={a:H[L[0]],b:L.slice(1).map(i=>H[i]),co:cgTB.co,st:cgTB.st,ac:cgTB.ac.slice()}; cgTB.sel=[]; cgPlay(pk); });
   const tPrev=()=>{ const X=cgG(cgCur), S=cgReplay(X), side=cgCur.cpu?0:cgCur.players.indexOf(me); const T=JSON.parse(JSON.stringify(S)); for(const A of cgTB.acts) tcgAct(T,X,side,A,[]); return {X,T,side}; };
   const tPush=A=>{ const {X,T,side}=tPrev(); if(tcgAct(T,X,side,A,[])){ cgTB.acts.push(A); cgSnd(A[0]==="e"?"tick":"flip"); } else { toast("Action impossible",true); } cgTB.tgt=null; renderCards(); };
   on("[data-th]",b=>{ if(!b.classList.contains("can")) return; const {T,side}=tPrev(); const id=T.hand[side][+b.dataset.th]; if(isBall(id)){ cgTB.tgt="e"; renderCards(); } else tPush(["b",id]); });
   on("[data-tb]",b=>{ const i=+b.dataset.tb; const {T,side}=tPrev(); if(T.act[side]===null) tPush(["p",i]); else if(cgTB.tgt==="r"&&i>=0){ cgTB.tgt=null; const x=[...cgTB.acts,["r",i]]; cgTB.acts=[]; cgPlay({x}); } });
+  on("[data-tco]",b=>{ cgTB.co=cgTB.co===b.dataset.tco?null:b.dataset.tco; cgSnd("flip"); renderCards(); });
+  on("[data-tst]",b=>{ cgTB.st=cgTB.st===b.dataset.tst?null:b.dataset.tst; cgSnd("flip"); renderCards(); });
+  on("[data-tac]",b=>{ const k=b.dataset.tac, L=cgTB.ac; const i=L.indexOf(k); if(i>=0) L.splice(i,1); else if(L.length<TCG_ACT_N) L.push(k); cgSnd("flip"); renderCards(); });
+  on("[data-tuse]",b=>{ if(!b.classList.contains("can")) return; tPush(["c",b.dataset.tuse]); });
   on("#tcgRet",()=>{ cgTB.tgt="r"; renderCards(); }); on("#tcgCancelT",()=>{ cgTB.tgt=null; renderCards(); });
   on("#tcgUndo",()=>{ cgTB.acts.pop(); cgTB.tgt=null; renderCards(); });
   on("#tcgEnd",()=>{ const x=[...cgTB.acts,["x"]]; cgTB.acts=[]; cgPlay({x}); });
@@ -6844,7 +6900,7 @@ function cgBind(V){ const on=(q,f)=>V.querySelectorAll(q).forEach(b=>b.onclick=e
   V.querySelectorAll("[data-tcg]").forEach(el=>{ if(el.closest("[data-cgt],[data-cgsw],[data-cgi],.cgstage,.cgc,[data-tb],[data-th],[data-tsel],.tdeck")) return; el.onclick=e=>{ e.stopPropagation(); showTcg(el.dataset.tcg); }; }); }
 function openCards(from){ cgBack=from==="online"?"online":"solo"; NAV_OF.cards=cgBack==="online"?"nOnline":"nSolo"; if(!(cgCur&&cgSel==="game")) cgSel=null; setMode("cards"); }
 
-const APP_V="2026-11-27k"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-27l"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
