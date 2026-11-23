@@ -6717,7 +6717,7 @@ function tcgChips(T,G,s,c){ if(!c) return ""; const mine=[c.id,...T.bench[s].map
   for(const k of tcgSkills(c.id)) ch.push(`🏅 ${esc(k.n)}`); return ch.length?`<div class="tchips">${ch.map(x=>`<span>${x}</span>`).join("")}</div>`:""; }
 
 // 🎴 cartes non-joueurs : Action, Stade, Entraîneur, Époque (cadre propre à chaque type, zones mesurées sur chaque image)
-const TCG_XART=new Set(["stade-gerland","stade-groupama"]); // illustrations prêtes dans img/tcg/x/<clé>.webp
+const TCG_XART=new Set(["stade-gerland","stade-groupama","act-cf","act-jaune","act-mt","act-mur","act-soin"]); // illustrations prêtes dans img/tcg/x/<clé>.webp
 const TCGX={action:{t:"Action de match"},stade:{t:"Stade"},coach:{t:"Entraîneur"},epoque:{t:"Collectif d'époque"}};
 function tcgXHTML(kind,o){ const w=o.w||150; const art=o.img?`<img src="${o.img}" alt="" loading="lazy">`:`<span>${o.ic||"🃏"}</span>`;
   return `<div class="tcgx x-${kind}${o.cls?" "+o.cls:""}${o.off?" off":""}" style="--w:${w}px"${o.attr||""}>
