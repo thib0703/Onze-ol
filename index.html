@@ -1191,7 +1191,7 @@ body.lowfx .tile,body.lowfx .vt img,body.lowfx .hype,body.lowfx .pkbtn,body.lowf
 .tcg.t-icon .tcg-face{background:radial-gradient(circle at 50% 35%,#fff8,transparent 60%),linear-gradient(160deg,#c9a24a,#13306b)}
 .tcg.t-myth .tcg-face{background:radial-gradient(circle at 50% 35%,#fff8,transparent 60%),linear-gradient(160deg,#ff6ad5,#6ad5ff 50%,#ffe76a)}
 .tcg.t-ul .tcg-face{background:radial-gradient(circle at 50% 35%,#ffd97088,transparent 60%),linear-gradient(160deg,#2a2208,#000)}
-.tcg-face img{width:100%;height:100%;object-fit:cover;object-position:top}.tcg-face span{font-size:3em;font-weight:900;opacity:.6;align-self:center}
+.tcg-face img{width:100%;height:100%;object-fit:cover;object-position:top}.tcg-face.art img{object-position:center}.tcg-face span{font-size:3em;font-weight:900;opacity:.6;align-self:center}
 .tcg-ovr{position:absolute;z-index:3;left:4.2%;top:6.6%;width:18.5%;height:12.4%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:2em;text-shadow:0 2px 4px #000}
 .tcg-nm{position:absolute;z-index:3;left:27%;right:23%;top:9.5%;height:5.6%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.05em;white-space:nowrap;overflow:hidden;text-shadow:0 1px 3px #000}
 .tcg-nm i{font-style:normal;color:#7ee2a0;margin-left:3px}
@@ -5984,12 +5984,14 @@ function tcgOf(id,evo,lvl){ const p=BY_ID[id]; if(!p) return null; const g=cgGrp
   const A=TCG_ATK[g]; const sig=TCG_SIG[p.base||p.id];
   const d1=Math.round(14+(st[A[0][1]]-60)*.45)+3*lv, d2=Math.round(34+(st[A[1][1]]-60)*.8)+3*lv;
   return {id,g,ovr,hp:Math.round(ovr*1.3)+(g==="def"?10:g==="gk"?15:0),vit:st[0],a:[{n:A[0][0],c:1,d:Math.max(8,d1)},{n:sig||A[1][0],c:3,d:Math.max(20,d2)}],ab:tcgAbil(p),lv}; }
+// 🎨 Illustrations cartoon des cartes TCG (img/tcg/art/<id>.webp, format 3:2) : ajouter l'id ici quand l'image est prête, sinon le portrait classique est utilisé
+const TCG_ART=new Set([]);
 const tcgFrame=p=>p.v==="ul"?"ul":cardTier(p);
 function tcgHTML(id,o={}){ const p=BY_ID[id]; if(!p) return ""; const T=tcgOf(id,o.evo,o.lvl); const w=o.w||180;
   const hp=o.hp!=null?o.hp:T.hp, hpm=T.hp, pct=Math.max(0,Math.min(100,hp/hpm*100));
   const nm=p.name.length>15&&p.name.split(" ").length>1?p.name.split(" ").slice(1).join(" "):p.name;
   return `<div class="tcg t-${tcgFrame(p)}${o.ko?" ko":""}${o.cls?" "+o.cls:""}" style="--w:${w}px" data-tcg="${id}">
-    <div class="tcg-face">${PORTRAITS.has(p.base||p.id)?`<img src="img/cartes/${p.base||p.id}.webp?v=${IMGV}" alt="" loading="lazy">`:`<span>${esc(initials(p.name))}</span>`}</div>
+    <div class="tcg-face${TCG_ART.has(p.base||p.id)?" art":""}">${TCG_ART.has(p.base||p.id)?`<img src="img/tcg/art/${p.base||p.id}.webp?v=${IMGV}" alt="" loading="lazy">`:PORTRAITS.has(p.base||p.id)?`<img src="img/cartes/${p.base||p.id}.webp?v=${IMGV}" alt="" loading="lazy">`:`<span>${esc(initials(p.name))}</span>`}</div>
     <img class="tcg-fr" src="img/tcg/cadre-${tcgFrame(p)}.webp" alt="">
     <div class="tcg-ovr">${T.ovr}</div><div class="tcg-nm">${esc(nm)}${T.lv?` <i>+${T.lv}</i>`:""}</div><img class="tcg-ic" src="${CG_GRP[T.g].ic}" alt="${CG_GRP[T.g].n}">
     <div class="tcg-hp"><i style="width:${pct}%" class="${pct<30?"lo":pct<60?"mid":""}"></i><b>${Math.max(0,Math.round(hp))} / ${hpm} PV</b></div>
