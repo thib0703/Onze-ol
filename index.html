@@ -1029,7 +1029,8 @@ header{padding:10px 16px 4px;min-height:72px}header h1{font-size:19px;margin:0;l
 .sync:not(.err){display:none}#appV{display:none}
 .hype{margin:6px 16px 0;padding:6px 10px;font-size:12.5px;border-radius:10px}.hype small{font-size:10.5px}
 body:not([data-mode="compo"]):not([data-mode="ol"]) #hype{display:none!important}
-.topstrip{display:flex;gap:8px;margin:0 0 10px}.topstrip button{flex:1;display:flex;align-items:center;gap:8px;border:1px solid #ffffff1a;background:#12224a;color:#fff;border-radius:12px;padding:8px 10px;font:inherit;cursor:pointer;text-align:left;min-width:0}
+.topstrip{display:flex;gap:8px;margin:0 0 10px;flex-wrap:wrap}.topstrip .cgcdb{flex:1 1 100%;justify-content:center;background:linear-gradient(135deg,#7c3aed,#13306b);border-color:#b794ff66;font-size:13px}.topstrip .cgcdb b[data-cgcd]{font-variant-numeric:tabular-nums;color:#ffd970}
+.cgcd.big{font-size:34px;font-weight:900;color:#ffd970;font-variant-numeric:tabular-nums;margin:6px 0;letter-spacing:1px}.topstrip button{flex:1;display:flex;align-items:center;gap:8px;border:1px solid #ffffff1a;background:#12224a;color:#fff;border-radius:12px;padding:8px 10px;font:inherit;cursor:pointer;text-align:left;min-width:0}
 .topstrip b{font-size:12.5px;display:block}.topstrip small{font-size:11px;color:var(--mute);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.topstrip .tsi{font-size:20px}.topstrip .num{margin-left:auto}
 .topstrip .trk{display:block;height:4px;border-radius:3px;background:#ffffff1a;margin-top:4px;overflow:hidden}.topstrip .trk i{display:block;height:100%;background:#ffd970}
 #colSegs{position:sticky;top:0;z-index:5;margin-bottom:10px}#colSegs button{font-size:11.5px;padding:8px 5px}
@@ -2273,8 +2274,9 @@ function renderBack(){ const B=$("#backbar"); if(!B) return; let t=null, go=null
 // 🎯 Objectifs du jour, en résumé en haut des pages En ligne et Solo
 function topStripHTML(){ let a="",b=""; try{ const o=objState(), oc=objClaimable(); const n=DAILY.length, d=DAILY.filter(x=>o.day.done.includes(x.k)||(o.day.p[x.k]||0)>=x.n).length;
     a=`<button data-objmini="1"><span class="tsi">🎯</span><span style="min-width:0;flex:1"><b>Objectifs du jour</b><small>${d}/${n} réussis</small><i class="trk"><i style="width:${d/n*100}%"></i></i></span>${oc?`<i class="num">${oc}</i>`:""}</button>`; }catch(e){}
-  try{ const P=passState(), cur=P.xp-P.lv*PASS_XP; b=`<button data-passmini="1"><span class="tsi">🎟️</span><span style="min-width:0;flex:1"><b>Pass · palier ${P.lv}</b><small>${P.lv>=PASS_N?"Terminé 🏆":`${cur}/${PASS_XP} XP`}</small><i class="trk"><i style="width:${P.lv>=PASS_N?100:cur/PASS_XP*100}%"></i></i></span></button>`; }catch(e){}
-  return a+b; }
+  try{ const P=passState(), cur=P.xp-P.lv*PASS_XP_(); b=`<button data-passmini="1"><span class="tsi">🎟️</span><span style="min-width:0;flex:1"><b>Pass · palier ${P.lv}</b><small>${P.lv>=PASS_N?"Terminé 🏆":`${cur}/${PASS_XP_()} XP`}</small><i class="trk"><i style="width:${P.lv>=PASS_N?100:cur/PASS_XP_()*100}%"></i></i></span></button>`; }catch(e){}
+  let c=""; if(!cgLive()){ cgCdTick(); c=`<button class="cgcdb" data-cgtz="1">🃏 <b>Nouveaux jeux de cartes</b> dans <b data-cgcd>${cgCountTxt()}</b></button>`; }
+  return a+b+c; }
 // ☀️ Résumé du jour : affiché à la 1re ouverture de la journée (et depuis le menu compte)
 function homeHTML(){ const c=W(); const L=todoList(); TODO_CUR=[]; const PG={online:"🌐",solo:"🎮",collec:"🎴",social:"👥",ol:"📰"};
   let last=""; try{ const h=(matches||[]).find(h=>h&&(h.owners||[]).includes(me)&&h.score); if(h){ const i=h.owners.indexOf(me), a=h.score[i], b=h.score[1-i], o=(h.names||[])[1-i]||"?";
@@ -2289,10 +2291,10 @@ function homeHTML(){ const c=W(); const L=todoList(); TODO_CUR=[]; const PG={onl
 function showHome(force){ if(!me||!C(me)) return; try{ if(!force&&localStorage.getItem("gl_home")===DAYK()) return; localStorage.setItem("gl_home",DAYK()); }catch(e){}
   const T=$("#tradeUI"); if(!T||T.classList.contains("open")) return; T.innerHTML=homeHTML(); T.classList.add("open");
   const close=()=>T.classList.remove("open"); $("#homeX").onclick=close; $("#homeGo").onclick=close; T.onclick=e=>{ if(e.target===T) close(); };
-  bindObjMini(T); T.querySelectorAll("[data-objmini],[data-passmini]").forEach(b=>b.addEventListener("click",close));
+  bindObjMini(T); T.querySelectorAll("[data-objmini],[data-passmini]").forEach(b=>b.addEventListener("click",close)); T.querySelectorAll("[data-cgtz]").forEach(b=>b.onclick=()=>{ close(); cgTeaser(); });
   T.querySelectorAll("[data-todo]").forEach(b=>b.onclick=()=>{ const x=TODO_CUR[+b.dataset.todo]; close(); if(x) x.go(); });
   T.querySelectorAll("[data-home]").forEach(b=>b.onclick=()=>{ close(); olSel="prono"; setMode("ol"); }); }
-function renderTopStrip(){ const el=$("#topStrip"); if(!el||!me) return; el.innerHTML=topStripHTML(); bindObjMini(el); }
+function renderTopStrip(){ const el=$("#topStrip"); if(!el||!me) return; el.innerHTML=topStripHTML(); bindObjMini(el); el.querySelectorAll("[data-cgtz]").forEach(b=>b.onclick=cgTeaser); }
 function objMiniHTML(){ try{ const o=objState(), oc=objClaimable();
   return `<button class="objmini" data-objmini="1"><div class="omh"><b>🎯 Objectifs du jour</b><span>${oc?`<i class="num">${oc} à récupérer</i>`:"Tout voir ›"}</span></div>${DAILY.map(x=>{ const v=Math.min(x.n,o.day.p[x.k]||0), done=o.day.done.includes(x.k); return `<div class="omr${done?" done":""}"><span>${done?"✅":v>=x.n?"🎁":"▫️"} ${x.t}</span><small>${done?"fait":`${v}/${x.n}`}</small><div class="track"><i style="width:${v/x.n*100}%"></i></div></div>`; }).join("")}</button>`; }catch(e){ return ""; } }
 function bindObjMini(root){ root.querySelectorAll("[data-objmini]").forEach(b=>b.onclick=()=>{ olSel="obj"; setMode("ol"); }); root.querySelectorAll("[data-passmini]").forEach(b=>b.onclick=()=>{ olSel="pass"; setMode("ol"); }); }
@@ -2348,7 +2350,7 @@ function renderHubs(){ if(!me) return;
     const html=`<div class="hubh"><h2>🌐 En ligne</h2><small>Affronte tes potes : drafts, championnats, coupes…</small></div>
       ${live?hubTile("live","🔴","Match en direct","Touche pour regarder","linear-gradient(135deg,#e3002b,#7a0018)","LIVE",true):""}
       <div class="hub">
-      ${(()=>{ try{ const n=cgTodo(); return hubTile("cards","🃏","Jeux de cartes",n?`⚡ ${n} partie${n>1?"s":""} t'attend${n>1?"ent":""}`:"Bataille, Duel, Tirs au but, Combat TCG, Plus ou moins, Pyramide","linear-gradient(135deg,#7c3aed,#13306b)",n?"À toi !":"Nouveau",true); }catch(e){ return ""; } })()}
+      ${(()=>{ try{ const n=cgTodo(); if(!cgLive()){ cgCdTick(); return hubTile("cards","🃏","Jeux de cartes",`🔒 Ouverture dans <b data-cgcd>${cgCountTxt()}</b>`,"linear-gradient(135deg,#7c3aed,#13306b)","Bientôt",true); } return hubTile("cards","🃏","Jeux de cartes",n?`⚡ ${n} partie${n>1?"s":""} t'attend${n>1?"ent":""}`:"Bataille, Duel, Tirs au but, Combat TCG, Plus ou moins, Pyramide","linear-gradient(135deg,#7c3aed,#13306b)",n?"À toi !":"Nouveau",true); }catch(e){ return ""; } })()}
       ${hubTile("draft","⚡","Draft",dr[0]||"5 joueurs proposés par poste, chacun son tour","linear-gradient(135deg,#1d4ed8,#0b1f5c)",dr[1])}
       ${hubTile("budget","💰","Draft Budget",bu[0]||"Même budget, mêmes propositions","linear-gradient(135deg,#b7791f,#5a3a07)",bu[1])}
       ${hubTile("duo","👥","2 contre 2",duoS[0]||"En duo avec un pote, à 4 en direct","linear-gradient(135deg,#7c3aed,#2e1065)",duoS[1])}
@@ -2363,7 +2365,7 @@ function renderHubs(){ if(!me) return;
     try{ const n=c.quiz&&c.quiz.d===today()?c.quiz.n:0; qz=`${n}/${QUIZ_MAX} quiz récompensés aujourd'hui`; }catch(e){}
     const defiTodo=!(c.dch&&c.dch.day===today()&&c.dch.done), quizTodo=!(c.quiz&&c.quiz.d===today()&&c.quiz.n>=QUIZ_MAX);
     const html=`<div class="hubh"><h2>🎮 Solo</h2><small>Joue seul, ou à deux sur ce téléphone</small></div><div class="hub">
-      ${(()=>{ try{ const n=cgTodo(); return hubTile("cards","🃏","Jeux de cartes",n?`⚡ ${n} partie${n>1?"s":""} t'attend${n>1?"ent":""}`:"Bataille, Duel, Tirs au but, Combat TCG, Plus ou moins, Pyramide","linear-gradient(135deg,#7c3aed,#13306b)",n?"À toi !":"Nouveau",true); }catch(e){ return ""; } })()}
+      ${(()=>{ try{ const n=cgTodo(); if(!cgLive()){ cgCdTick(); return hubTile("cards","🃏","Jeux de cartes",`🔒 Ouverture dans <b data-cgcd>${cgCountTxt()}</b>`,"linear-gradient(135deg,#7c3aed,#13306b)","Bientôt",true); } return hubTile("cards","🃏","Jeux de cartes",n?`⚡ ${n} partie${n>1?"s":""} t'attend${n>1?"ent":""}`:"Bataille, Duel, Tirs au but, Combat TCG, Plus ou moins, Pyramide","linear-gradient(135deg,#7c3aed,#13306b)",n?"À toi !":"Nouveau",true); }catch(e){ return ""; } })()}
       ${hubTile("career","🧗","Carrière",car,"linear-gradient(135deg,#0369a1,#082f49)",null)}
       ${hubTile("defi","🎯","Défi du jour",df,"linear-gradient(135deg,#ea580c,#7c2d12)",defiTodo?"À jouer":null)}
       ${hubTile("quiz","🧠","Quiz OL",qz,"linear-gradient(135deg,#9333ea,#3b0764)",quizTodo?"Dispo":null)}
@@ -2627,7 +2629,7 @@ function showCard(pid,act,lv){
   if(act&&act.evo){ mk(act.evo.label,act.evo.fn); if(act.evo.dis) B.lastChild.disabled=true; }
   if(act&&act.sell) mk(act.sell.label,act.sell.fn);
   if(act&&act.remove) mk("Retirer",act.remove,true);
-  try{ if(tcgOk(pid)) mk("🔥 Voir la carte TCG",()=>showTcg(pid),true); }catch(e){}
+  try{ if(cgLive()&&tcgOk(pid)) mk("🔥 Voir la carte TCG",()=>showTcg(pid),true); }catch(e){}
   if(!(act&&act.noShare)) mk("📤 Partager la carte",()=>shareCard(pid,lv),true);
   mk("Fermer",null,true);
   M.classList.add("open");
@@ -3459,6 +3461,10 @@ const GF_LIST=[
 // gardée à vie si obtenue. Le même joueur peut avoir une nouvelle carte à chaque match.
 // [id du joueur, id du match (live.json → fixtures, commence par AAAA-MM-JJ), note du match /10, "raison courte"]
 const TF_LIST=[
+["mads-bidstrup","2026-11-21-lille-ol",7,"Buteur et homme du match à Lille"],
+["tanner-tessmann","2026-11-21-lille-ol",7,"Patron du milieu à Lille"],
+["dominik-greif","2026-11-21-lille-ol",6.5,"5 arrêts, clean sheet à Lille"],
+["zachary-athekame","2026-11-21-lille-ol",6.5,"Centre à l'origine du but à Lille"],
 // ⬇ ajouter les 4 cartes de chaque match ici
 ];
 const tfBonus=n=>n>=9.5?11:n>=9?9:n>=8.5?7:n>=8?6:n>=7.5?4:n>=7?3:2;
@@ -3526,7 +3532,7 @@ function claimRewards(){
     const r=rewardFor(h,i); if(isCpuH(h)){ r.coins=Math.round(r.coins/2); r.res+=" vs ordi"; } try{ if(isDerbyDay(h.at)){ r.coins*=2; r.res+=" · derby ×2"; } }catch(e){} const day=new Date(h.at).toLocaleDateString("fr-CA");
     if(!c.mday||c.mday.d!==day) c.mday={d:day,n:0}; if(!isDraftH(h)) c.mday.n++;
     let train=false; if(isFreeCpuH(h)){ if(!c.cpud||c.cpud.d!==day) c.cpud={d:day,n:0}; c.cpud.n++; }
-    if(!train){ track("play"); if(r.a>r.b) track("win"); if(r.a) track("goals",r.a); }
+    if(!train){ const kx=isDraftH(h)?1:rwDecay(c.mday.n-1); track("play",1,kx); if(r.a>r.b) track("win",1,kx); if(r.a) track("goals",r.a,kx); }
     if(h.motm&&h.owners[h.motm.t]===me&&BY_ID[h.motm.pid]){ c.heroes=c.heroes||[]; c.heroes.push({id:h.id,pid:h.motm.pid,note:h.motm.note,at:h.at}); c.heroes=c.heroes.slice(-60); setTimeout(()=>toast(`⭐ Carte Héros du match : ${BY_ID[h.motm.pid].name} (${h.motm.note}/10)`),2500); }
     const k=isDraftH(h)?1:rwDecay(c.mday.n-1); got+=Math.round(r.coins*k); lines.push(`${r.res} ${r.a}-${r.b}${k<1?` (gains à ${Math.round(k*100)} %, ${c.mday.n}e match du jour)`:""}`); c.claimed.push(h.id); }
   if(got){ c.claimed=c.claimed.slice(-300); addCoins(got,`match : ${lines.join(", ")}`); }
@@ -4611,7 +4617,7 @@ function objState(){
   if(!c.obj.week||c.obj.week.w!==WEEKN()) c.obj.week={w:WEEKN(),p:{},done:[]};
   return c.obj;
 }
-function track(k,n=1){ if(!me) return; const o=objState(); for(const s of [o.day,o.week]) s.p[k]=(s.p[k]||0)+n; try{ passXP({play:100,win:60,goals:15,pack:40,deal:50,sbc:80}[k]*n||0); }catch(e){} save(); badgeLigue(); }
+function track(k,n=1,kx=1){ if(!me) return; const o=objState(); for(const s of [o.day,o.week]) s.p[k]=(s.p[k]||0)+n; try{ passXP(Math.round((passNew()?{play:70,win:40,goals:10,pack:25,deal:30,sbc:60}:{play:100,win:60,goals:15,pack:40,deal:50,sbc:80})[k]*n*(passNew()?kx:1)||0)); }catch(e){} save(); badgeLigue(); }
 function objClaimable(){ const o=objState(); return DAILY.filter(x=>(o.day.p[x.k]||0)>=x.n&&!o.day.done.includes(x.k)).length+WEEKLY.filter(x=>(o.week.p[x.k]||0)>=x.n&&!o.week.done.includes(x.k)).length; }
 function claimObj(scope,k){ const o=objState(); const s=o[scope]; const L=scope==="day"?DAILY:WEEKLY; const x=L.find(y=>y.k===k); if(!x||s.done.includes(k)||(s.p[k]||0)<x.n) return; s.done.push(k); grant(x.r,`Objectif « ${x.t} »`); renderLigue(); }
 
@@ -4962,7 +4968,7 @@ async function autoPlay(){
     for(const [id,K] of Object.entries(cups)){
       if(K.status!=="running"||!(K.members||[]).includes(me)) continue;
       const ri=K.rounds.length-1, R=K.rounds[ri];
-      for(let ti=0;ti<R.ties.length;ti++){ const T=R.ties[ti]; if(T.w) continue; const k=T.legs.length; if(cupLegTime(K,ri,k)>now) continue;
+      for(let ti=0;ti<R.ties.length;ti++){ const T=R.ties[ti]; if(T.w) continue; const k=T.legs.length; if(k>=legsOf(R)) continue; if(cupLegTime(K,ri,k)>now) continue;
         await autoTie(id,ri,ti,k); }
     }
   }catch(e){} autoBusy=false;
@@ -5493,18 +5499,21 @@ setInterval(()=>{ try{ tutoCheck(); if(mode==="compo") renderTuto(); }catch(e){}
 // ======================================================================
 // 🎟️ PASS DE SAISON : 1 saison = 1 mois, 30 paliers, de l'XP à chaque match, pack, échange, défi…
 // ======================================================================
-const PASS_XP=500, PASS_N=30;
+const PASS_N=30;
+// nouveau rythme à partir du pass de décembre 2026 : 700 XP par palier, XP réduite et dégressive après 5 matchs/jour (~1 mois)
+const passNew=()=>passSeason()>="2026-12";
+const PASS_XP_=()=>passNew()?700:500;
 const PASS_R=i=>{ const L=i+1; if(L===30) return {pack:"legende",n:2,coins:2000}; if(L===20) return {pack:"legende"}; if(L%10===0||L===25||L===15) return {pack:"or"}; if(L%5===0) return {pack:"or"}; if(L%3===0) return {pack:"bronze"}; return {coins:100+L*10}; };
 const passSeason=()=>{ const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"); };
 const PASS_NAME=()=>new Date().toLocaleDateString("fr-FR",{month:"long",year:"numeric"});
 function passState(){ const c=W(); const s=passSeason(); if(!c.pass||c.pass.s!==s) c.pass={s,xp:0,lv:0}; return c.pass; }
 function passXP(x){ if(!x||!me||!compos[me]) return; const P=passState(); P.xp+=x; let up=0;
-  while(P.lv<PASS_N&&P.xp>=(P.lv+1)*PASS_XP){ const r=PASS_R(P.lv); P.lv++; up++; grant(r,`🎟️ Pass de saison : palier ${P.lv}`); }
+  while(P.lv<PASS_N&&P.xp>=(P.lv+1)*PASS_XP_()){ const r=PASS_R(P.lv); P.lv++; up++; grant(r,`🎟️ Pass de saison : palier ${P.lv}`); }
   if(up){ toast(`🎟️ Palier ${P.lv} du pass de saison atteint !`); try{ SFX.chime("gold"); }catch(_){} if(P.lv===PASS_N) post(`🎟️ ${NAMES[me]} a terminé le pass de saison de ${PASS_NAME()} !`); } }
-function passHTML(){ const P=passState(), cur=P.xp-P.lv*PASS_XP, d=new Date(), end=new Date(d.getFullYear(),d.getMonth()+1,1), left=Math.ceil((end-d)/86400000);
+function passHTML(){ const P=passState(), cur=P.xp-P.lv*PASS_XP_(), d=new Date(), end=new Date(d.getFullYear(),d.getMonth()+1,1), left=Math.ceil((end-d)/86400000);
   return `<h3>🎟️ Pass de saison <small>${PASS_NAME()} · encore ${left} j</small></h3>
-    <div class="passh"><div class="passlv"><b>${P.lv}</b><small>palier</small></div><div style="flex:1"><div class="track" style="height:10px"><i style="width:${P.lv>=PASS_N?100:cur/PASS_XP*100}%"></i></div><small class="mute">${P.lv>=PASS_N?"Pass terminé, bravo ! 🏆":`${cur}/${PASS_XP} XP pour le palier ${P.lv+1}`}</small></div></div>
-    <div class="rules" style="font-size:12px">De l'XP à chaque action : match joué 100, victoire +60, but +15, pack ouvert 40, échange/vente 50, défi d'équipe 80. Les récompenses arrivent toutes seules à chaque palier. Nouvelle saison chaque mois !</div>
+    <div class="passh"><div class="passlv"><b>${P.lv}</b><small>palier</small></div><div style="flex:1"><div class="track" style="height:10px"><i style="width:${P.lv>=PASS_N?100:cur/PASS_XP_()*100}%"></i></div><small class="mute">${P.lv>=PASS_N?"Pass terminé, bravo ! 🏆":`${cur}/${PASS_XP_()} XP pour le palier ${P.lv+1}`}</small></div></div>
+    <div class="rules" style="font-size:12px">${passNew()?"De l'XP à chaque action : match joué 70, victoire +40, but +10, pack ouvert 25, échange/vente 30, défi d'équipe 60 (après 5 matchs dans la journée, l'XP des matchs baisse comme les pièces).":"De l'XP à chaque action : match joué 100, victoire +60, but +15, pack ouvert 40, échange/vente 50, défi d'équipe 80."} Les récompenses arrivent toutes seules à chaque palier. Nouvelle saison chaque mois !</div>
     <div class="passg">${Array.from({length:PASS_N},(_,i)=>{ const r=PASS_R(i), ok=i<P.lv, nx=i===P.lv; return `<div class="passc${ok?" ok":""}${nx?" nx":""}${(i+1)%10===0?" big":""}"><small>${i+1}</small><span>${r.pack==="legende"?"🌟":r.pack==="or"?"💛":r.pack?"🎴":"🪙"}</span><em>${r.pack?(PACKS[r.pack].name.replace("Pack ","")+(r.n>1?" ×"+r.n:"")):r.coins}</em></div>`; }).join("")}</div>`; }
 
 // 🏟️ Matchs lancés par d'autres avec/contre moi : en direct → « Regarder », terminés → « Revoir » (le résumé est gardé)
@@ -5519,8 +5528,8 @@ function missedMatches(){ if(!me) return []; const S=seenM(), now=Date.now(), L=
       :{ic:h.duo?"👥":"🏟️",txt:`Match ${h.duo?"en duo ":""}lancé par <b>${by}</b> : ${esc((h.names||[]).join(" vs "))} <b>${sc}</b>`,btn:"▶️ Revoir",go:()=>{ markSeenM(h.id); openReplay(h.id); }}); }
   return L.slice(0,4); }
 // 🎟️ mini pass de saison, en haut des pages En ligne et Solo
-function passMiniHTML(){ try{ const P=passState(), cur=P.xp-P.lv*PASS_XP, nx=P.lv<PASS_N?PASS_R(P.lv):null;
-  return `<button class="passmini" data-passmini="1"><span class="pmlv"><b>${P.lv}</b></span><span class="pmt"><b>🎟️ Pass de saison</b><small>${P.lv>=PASS_N?"Terminé ce mois-ci 🏆":`${cur}/${PASS_XP} XP · prochain : ${nx.pack?PACKS[nx.pack].name:nx.coins+" 🪙"}`}</small><i class="track"><i style="width:${P.lv>=PASS_N?100:cur/PASS_XP*100}%"></i></i></span><span class="pmgo">›</span></button>`; }catch(e){ return ""; } }
+function passMiniHTML(){ try{ const P=passState(), cur=P.xp-P.lv*PASS_XP_(), nx=P.lv<PASS_N?PASS_R(P.lv):null;
+  return `<button class="passmini" data-passmini="1"><span class="pmlv"><b>${P.lv}</b></span><span class="pmt"><b>🎟️ Pass de saison</b><small>${P.lv>=PASS_N?"Terminé ce mois-ci 🏆":`${cur}/${PASS_XP_()} XP · prochain : ${nx.pack?PACKS[nx.pack].name:nx.coins+" 🪙"}`}</small><i class="track"><i style="width:${P.lv>=PASS_N?100:cur/PASS_XP_()*100}%"></i></i></span><span class="pmgo">›</span></button>`; }catch(e){ return ""; } }
 
 // ======================================================================
 // 🎮 JEUX : carrière, coupe, défi du jour, quiz, canapé, stats, réactions
@@ -5740,19 +5749,21 @@ function startCup(id){ return cupTx(id,K=>{ if(K.owner!==me||K.status!=="open") 
   const P=K.members.slice().sort(()=>Math.random()-.5); const ties=[]; for(let i=0;i<P.length;i+=2) ties.push({a:P[i],b:P[i+1],legs:[],w:null});
   return {status:"running",rounds:[{ties}],start:Date.now()}; }).then(ok=>{ if(ok){ post(`🏆 Tirage de la coupe « ${cups[id]?.name||""} » effectué ! Les matchs se jouent automatiquement.`); toast("Tirage effectué ✓ : 1er match dans une minute"); } }); }
 const CUP_GAP=12*3600000;
+// finale sur un seul match (drapeau « one » posé au 1er match ; une finale déjà commencée en aller-retour le reste)
+const legsOf=R=>R&&R.ties&&(R.one||(R.ties.length===1&&!R.ties[0].legs.length))?1:2;
 const cupLegTime=(K,ri,k)=>(K.start||K.created)+60000+(2*ri+k)*CUP_GAP;
 function shootout(gA,gB){ const pA=.76-(gB-75)/250, pB=.76-(gA-75)/250; let a=0,b=0;
   for(let k=0;k<5;k++){ if(Math.random()<pA) a++; if(Math.random()<pB) b++; if(a>b+(4-k)||b>a+(4-k)) break; }
   let g=0; while(a===b&&g++<20){ const x=Math.random()<pA, y=Math.random()<pB; a+=x; b+=y; } if(a===b) a++; return [a,b]; }
 async function autoTie(id,ri,ti,k){
-  const K=cups[id]; const T=K.rounds[ri].ties[ti]; const [h,v]=k===0?[T.a,T.b]:[T.b,T.a];
-  const sd=autoSides(h,v,`🏆 ${K.name} · ${k?"retour":"aller"}`); const ff=forfeitScore(sd); let m=null, sc=ff;
+  const K=cups[id]; const T=K.rounds[ri].ties[ti]; const [h,v]=k===0?[T.a,T.b]:[T.b,T.a]; const fin=legsOf(K.rounds[ri])===1, lab=fin?"finale":k?"retour":"aller";
+  const sd=autoSides(h,v,`🏆 ${K.name} · ${lab}`); const ff=forfeitScore(sd); let m=null, sc=ff;
   if(!ff){ m=buildMatch(sd); sc=m.score; }
   const H=sd[0].S, V=sd[1].S;
-  const ok=await cupTx(id,X=>{ const R=X.rounds, t=R[ri]&&R[ri].ties[ti]; if(!t||t.legs.length!==k||t.w) throw new Error("skip");
+  const ok=await cupTx(id,X=>{ const R=X.rounds, t=R[ri]&&R[ri].ties[ti]; if(!t||t.legs.length!==k||t.w) throw new Error("skip"); if(k===0&&R[ri].ties.length===1) R[ri].one=1;
     const s2=k===0?[sc[0],sc[1]]:[sc[1],sc[0]]; t.legs.push({s:s2,mid:m?m.id:null});
-    if(t.legs.length===2){ const ga=t.legs[0].s[0]+t.legs[1].s[0], gb=t.legs[0].s[1]+t.legs[1].s[1];
-      if(ga!==gb) t.w=ga>gb?t.a:t.b; else { t.tab=shootout(H.gk,V.gk); t.w=t.tab[0]>t.tab[1]?t.b:t.a; } }
+    if(t.legs.length>=legsOf(R[ri])){ const ga=t.legs.reduce((x,l)=>x+l.s[0],0), gb=t.legs.reduce((x,l)=>x+l.s[1],0);
+      if(ga!==gb) t.w=ga>gb?t.a:t.b; else { const GA=k===0?H:V, GB=k===0?V:H; t.tab=shootout(GB.gk,GA.gk); t.w=t.tab[0]>t.tab[1]?t.b:t.a; } }
     const out={rounds:R};
     if(R[ri].ties.every(x=>x.w)){ const W2=R[ri].ties.map(x=>x.w);
       if(W2.length===1){ out.status="done"; out.winner=W2[0]; out.finalist=t.a===W2[0]?t.b:t.a; }
@@ -5760,7 +5771,7 @@ async function autoTie(id,ri,ti,k){
     return out; },true);
   if(!ok) return;
   if(m){ m.at=cupLegTime(K,ri,k); await saveReplay(m); await addHist(histOf(m,{cup:id})); }
-  post(`🏆 ${K.name} (${RNAME(K.rounds[ri].ties.length)}, ${k?"retour":"aller"}) : ${NAMES[h]} ${sc[0]}-${sc[1]} ${NAMES[v]}${ff?" (forfait)":""}`);
+  post(`🏆 ${K.name} (${fin?"Finale":`${RNAME(K.rounds[ri].ties.length)}, ${lab}`}) : ${NAMES[h]} ${sc[0]}-${sc[1]} ${NAMES[v]}${ff?" (forfait)":""}`);
 }
 function claimCups(){ const c=W(); c.cupDone=c.cupDone||[]; let ch=false;
   // rattrapage : coupes déjà gagnées avant l'armoire à trophées
@@ -5777,10 +5788,10 @@ const RNAME=n=>n===1?"Finale":n===2?"Demi-finales":"Quarts de finale";
 function cupHTML(){
   const L=Object.entries(cups).sort((x,y)=>(invitedMe(y[1])-invitedMe(x[1]))||y[1].created-x[1].created).filter(([,K])=>K.status!=="done"||Date.now()-K.created<21*86400000);
   const tieH=(id,K,ri,ti,T)=>{ const N=x=>esc(NAMES[x]||"?"); const ag=T.legs.length?[T.legs.reduce((s,l)=>s+l.s[0],0),T.legs.reduce((s,l)=>s+l.s[1],0)]:null;
-    const mine=T.a===me||T.b===me; const nxt=!T.w&&K.status==="running"&&ri===K.rounds.length-1?cupLegTime(K,ri,T.legs.length):null;
-    return `<div class="tie${T.w?" done":""}"><span class="${T.w===T.a?"win":""}">${N(T.a)}</span><b>${T.legs.map(l=>l.s.join("-")).join(" / ")||"–"}${ag&&T.legs.length===2?`<small>(${ag.join("-")}${T.tab?` · t.a.b ${T.tab[1]}-${T.tab[0]}`:""})</small>`:""}</b><span class="${T.w===T.b?"win":""}">${N(T.b)}</span>
-      <div class="tieb">${T.legs.map((l,k)=>l.mid?`<button class="btn sm ghost" data-rp="${l.mid}">▶️ ${k?"Retour":"Aller"}</button>`:"").join("")}${nxt?`<small class="mute">${T.legs.length?"Retour":"Aller"} : ${fmtWhen(nxt)}</small>`:""}</div></div>`; };
-  return `<h3>🏆 Coupes à élimination</h3><div class="rules" style="font-size:12px;margin-top:0">4 ou 8 joueurs, tirage au sort, matchs aller-retour avec vos 11 types (cartes possédées), <b>joués automatiquement toutes les 12 h</b> : revois les résumés avec ▶️. Égalité au total : tirs au but. Vainqueur : Pack Légende + 300 🪙, finaliste : Pack Épique.</div>
+    const mine=T.a===me||T.b===me; const fin=legsOf(K.rounds[ri])===1; const nxt=!T.w&&K.status==="running"&&ri===K.rounds.length-1?cupLegTime(K,ri,T.legs.length):null;
+    return `<div class="tie${T.w?" done":""}"><span class="${T.w===T.a?"win":""}">${N(T.a)}</span><b>${T.legs.map(l=>l.s.join("-")).join(" / ")||"–"}${ag&&T.legs.length===2?`<small>(${ag.join("-")}${T.tab?` · t.a.b ${T.tab[1]}-${T.tab[0]}`:""})</small>`:T.tab?`<small>(t.a.b ${T.tab[1]}-${T.tab[0]})</small>`:""}</b><span class="${T.w===T.b?"win":""}">${N(T.b)}</span>
+      <div class="tieb">${T.legs.map((l,k)=>l.mid?`<button class="btn sm ghost" data-rp="${l.mid}">▶️ ${fin?"Finale":k?"Retour":"Aller"}</button>`:"").join("")}${nxt?`<small class="mute">${fin?"Finale (match unique)":T.legs.length?"Retour":"Aller"} : ${fmtWhen(nxt)}</small>`:""}</div></div>`; };
+  return `<h3>🏆 Coupes à élimination</h3><div class="rules" style="font-size:12px;margin-top:0">4 ou 8 joueurs, tirage au sort, matchs aller-retour avec vos 11 types (cartes possédées), <b>finale sur un seul match</b>, <b>joués automatiquement toutes les 12 h</b> : revois les résumés avec ▶️. Égalité (au total, ou à la fin de la finale) : tirs au but. Vainqueur : Pack Légende + 300 🪙, finaliste : Pack Épique.</div>
   <button class="btn big" id="jCupNew">➕ Créer une coupe</button>
   ${L.map(([id,K])=>`<div class="lg${(K.members||[]).includes(me)?" mine":""}"><div class="lgh"><b>${esc(K.name)}</b><small>${K.status==="open"?`Inscriptions ${K.members.length}/${K.size}${K.weekend?" · 🗓️ tirage samedi 20 h (4 inscrits minimum)":""}`:K.status==="running"?"En cours":K.cancelled?"Annulée (pas assez d'inscrits)":`Terminée · 🏆 ${esc(NAMES[K.winner]||"?")}`} · ${K.weekend?"🤖 Coupe automatique du week-end":"créée par "+esc(NAMES[K.owner]||"?")}</small></div>
     ${K.status==="open"?`${invitedMe(K)?`<div class="invst me">📨 <b>${esc(NAMES[K.owner]||"?")}</b> t'invite dans cette coupe !</div>`:""}<div class="mute" style="font-size:12px">${K.members.map(x=>esc(NAMES[x]||"?")).join(", ")}${Object.keys(invOf(K)).filter(u=>!K.members.includes(u)).length?` · 📨 invités : ${Object.keys(invOf(K)).filter(u=>!K.members.includes(u)).map(u=>esc(NAMES[u]||"?")).join(", ")}`:""}</div><div class="lgb">${K.owner===me&&K.members.length<K.size?`<button class="btn sm ghost" data-ci="${id}">📨 Inviter</button>`:""}${K.members.includes(me)?(K.owner===me?"":`<button class="btn sm ghost" data-cq="${id}">Se désinscrire</button>`):K.members.length<K.size?`<button class="btn sm" data-cj="${id}">S'inscrire</button>`:""}${K.owner===me&&K.members.length===K.size?`<button class="btn sm" data-cs="${id}">🎲 Lancer le tirage</button>`:""}${K.owner===me?`<button class="btn sm ghost" data-cd="${id}">Supprimer</button>`:""}</div>`
@@ -6033,7 +6044,7 @@ const TIPS={
   🧩 <b>Défis SBC</b> : donne des cartes en échange de récompenses.<br><br>Touche une carte pour voir ses stats et son palmarès.`},
  tab_ligue:{t:"🏆 Ligue",x:`🎯 <b>Objectifs</b> du jour et de la semaine à récupérer, et 🔥 bonus de connexion.<br>🏆 <b>Championnats</b> facultatifs : crée-en un ou rejoins celui d'un pote.<br>
   📰 <b>Fil d'actu</b> de tout ce qui se passe, et la liste des joueurs (touche un pseudo pour voir son profil).`},
- tab_jeux:{t:"🎮 Jeux",x:`D'autres façons de jouer :<br><br>🧗 <b>Carrière</b> solo contre des clubs de plus en plus forts.<br>🏆 <b>Coupes</b> à élimination en aller-retour.<br>
+ tab_jeux:{t:"🎮 Jeux",x:`D'autres façons de jouer :<br><br>🧗 <b>Carrière</b> solo contre des clubs de plus en plus forts.<br>🏆 <b>Coupes</b> à élimination en aller-retour, finale sur un match.<br>
   🎯 <b>Défi du jour</b> avec une contrainte, même adversaire pour tous.<br>🧠 <b>Quiz OL</b> pour gagner des pièces.<br>🛋️ <b>Canapé</b> : à deux sur un même téléphone.<br>📊 Tes <b>stats</b> de saison.`},
  tab_online:{t:"🌐 En ligne",x:`Tout ce qui se joue contre tes potes : ⚡ <b>Draft</b>, 💰 <b>Draft Budget</b>, 👥 <b>2 contre 2</b>, 🏆 <b>Championnats</b>, 🏟️ <b>Coupes</b> et ⚔️ <b>Match amical</b>.<br><br>Un badge sur une tuile = quelque chose t'attend (ton tour, une invitation…).`},
  tab_solo:{t:"🎮 Solo",x:`🧗 <b>Carrière</b> contre des clubs de plus en plus forts, 🎯 <b>Défi du jour</b>, 🧠 <b>Quiz OL</b>, 🛋️ <b>Canapé</b> à deux sur ce téléphone et 🤖 <b>match contre l'ordi</b>.`},
@@ -6054,7 +6065,7 @@ const TIPS={
  sbc:{t:"🧩 Défis SBC",x:`Donne un groupe de cartes qui respecte les conditions du défi, et reçois une récompense en échange. Les cartes données disparaissent de ta collection.`},
  league:{t:"🏆 Créer un championnat",x:`Choisis un nom et une durée. Les autres le rejoignent s'ils veulent, puis tu le <b>lances</b> : un calendrier est tiré au sort et <b>tous les matchs se jouent automatiquement</b> avec vos 11 types, répartis sur la durée. Tu peux revoir chaque match avec ▶️.<br><br>À la fin : 1er Pack Légende, 2e Pack Épique, 3e Pack Classique.`},
  career:{t:"🧗 Carrière",x:`Ton 11 type (cartes possédées) affronte 15 clubs, de Lorient jusqu'au Real Madrid. Gagne pour passer au suivant : un nul ou une défaite, et tu rejoues.<br><br>Des pièces à chaque première victoire, un pack à la fin de chaque compétition.`},
- cup:{t:"🏆 Coupes",x:`Crée une coupe à 4 ou 8 joueurs. Quand tout le monde est inscrit, le créateur lance le tirage. Les matchs aller-retour <b>se jouent automatiquement toutes les 12 h</b> avec vos 11 types, et tu peux revoir chaque match avec ▶️. Égalité : tirs au but.`},
+ cup:{t:"🏆 Coupes",x:`Crée une coupe à 4 ou 8 joueurs. Quand tout le monde est inscrit, le créateur lance le tirage. Les matchs aller-retour (finale sur un seul match) <b>se jouent automatiquement toutes les 12 h</b> avec vos 11 types, et tu peux revoir chaque match avec ▶️. Égalité : tirs au but.`},
  defi:{t:"🎯 Défi du jour",x:`Compose une équipe qui respecte la contrainte du jour, avec tous les joueurs du jeu. Tout le monde affronte le même adversaire et tu n'as <b>qu'un seul essai</b>.<br><br>Le meilleur écart de buts du jour gagne un Pack Épique le lendemain.`},
  quiz:{t:"🧠 Quiz OL",x:`5 questions sur les joueurs de l'OL. 10 🪙 par bonne réponse, +30 pour un sans-faute, et 3 quiz récompensés par jour.`},
  sofa:{t:"🛋️ Canapé",x:`Pour jouer à deux sur le même téléphone. À chaque poste, 5 joueurs sont proposés : le premier en choisit un, l'autre prend parmi les 4 restants, et on alterne qui commence.<br><br>Ensuite le match se joue directement ici (sans gains).`},
@@ -6522,7 +6533,7 @@ function onCardData(all){ const prev=cgOnline; cgOnline={};
   if(mode==="cards"&&Date.now()>=cgBusyTill) renderCards(); try{ renderHubs(); }catch(e){} }
 const cgRef=id=>db.collection("onzeol_drafts").doc(id);
 function cgMine(){ return Object.values(cgOnline).filter(x=>x.status!=="cancelled"&&!(x.status==="done"&&x.at<Date.now()-3*86400000)).sort((a,b)=>b.at-a.at); }
-function cgTodo(){ let n=0; for(const x of cgMine()){ const side=x.players.indexOf(me); if(x.status==="lobby"&&x.by!==me) n++; else if(x.status==="running"){ const S=cgReplay(x); if(cgNeedMe(x,S,side)) n++; } } return n; }
+function cgTodo(){ if(!cgLive()) return 0; let n=0; for(const x of cgMine()){ const side=x.players.indexOf(me); if(x.status==="lobby"&&x.by!==me) n++; else if(x.status==="running"){ const S=cgReplay(x); if(cgNeedMe(x,S,side)) n++; } } return n; }
 function cgNewGame(g,src,opp){ const seed=(Math.random()*2**31)>>>0;
   const pA=cgPool(src,me); if(!cgPoolOk(g,pA)){ toast(cgPoolMsg(g)+(src==="coll"?" dans ta collection : essaie « Toutes les cartes »":""),true); return null; }
   let pB; if(opp==="cpu") pB=src==="coll"?cgCpuPool(g==="cbt"?tcgCollOffer(pA).slice(0,5):pA,g==="cbt"?-2:0):cgAll(); else { pB=cgPool(src,opp); if(!cgPoolOk(g,pB)){ toast(`${NAMES[opp]} n'a pas assez de cartes dans sa collection pour ce jeu (${cgPoolMsg(g).toLowerCase()})`,true); return null; } }
@@ -6911,9 +6922,18 @@ function cgBind(V){ const on=(q,f)=>V.querySelectorAll(q).forEach(b=>b.onclick=e
 
   on("[data-cgsw]",b=>{ if(!b.classList.contains("can")) return; cgPlay({s:+b.dataset.cgsw}); });
   V.querySelectorAll("[data-tcg]").forEach(el=>{ if(el.closest("[data-cgt],[data-cgsw],[data-cgi],.cgstage,.cgc,[data-tb],[data-th],[data-tsel],.tdeck")) return; el.onclick=e=>{ e.stopPropagation(); showTcg(el.dataset.tcg); }; }); }
-function openCards(from){ cgBack=from==="online"?"online":"solo"; NAV_OF.cards=cgBack==="online"?"nOnline":"nSolo"; if(!(cgCur&&cgSel==="game")) cgSel=null; setMode("cards"); }
+// 🚀 Lancement des jeux de cartes : mardi 24 novembre 2026 à 18h30 (heure de Paris). Avant : décompte, jeux fermés.
+const CG_LAUNCH=Date.parse("2026-11-24T18:30:00+01:00");
+const cgLive=()=>Date.now()>=CG_LAUNCH;
+function cgCountTxt(){ let t=Math.max(0,Math.floor((CG_LAUNCH-Date.now())/1000)); const d=Math.floor(t/86400); t%=86400; const h=Math.floor(t/3600), m=Math.floor(t%3600/60), sec=t%60; const p=n=>String(n).padStart(2,"0"); return (d?d+" j ":"")+p(h)+":"+p(m)+":"+p(sec); }
+let cgCdT=null; function cgCdTick(){ if(cgCdT) return; cgCdT=setInterval(()=>{ const L=document.querySelectorAll("[data-cgcd]"); if(cgLive()){ clearInterval(cgCdT); cgCdT=null; try{ renderHubs(); renderTopStrip(); }catch(e){} toast("🃏 Les jeux de cartes sont ouverts !"); try{ SFX.chime("gold"); }catch(e){} return; } L.forEach(e=>e.textContent=cgCountTxt()); },1000); }
+function cgTeaser(){ const M=$("#cardModal"); M.innerHTML=`<div class="cm-box" style="text-align:center"><div style="font-size:44px">🃏</div><h3 style="margin:4px 0">Les jeux de cartes arrivent !</h3>
+  <div class="cgcd big" data-cgcd>${cgCountTxt()}</div><div class="cm-note">Ouverture <b>mardi 24 novembre à 18h30</b></div>
+  <div class="cm-note" style="text-align:left;line-height:1.55">🔥 <b>Combat TCG</b> : tes cartes deviennent des cartes de combat, avec entraîneurs, stades et cartes Action<br>📊 <b>Bataille de stats</b> · ⚔️ <b>Duel 5 cartes</b> · 🥅 <b>Tirs au but</b><br>🔺 <b>Pyramide</b> · ↕️ <b>Plus ou moins</b><br>En ligne contre tes amis ou contre l'ordi, avec ta collection ou toutes les cartes du jeu.</div>
+  <button class="btn" id="cgTzX" style="margin-top:10px">J'ai hâte !</button></div>`; M.classList.add("open"); $("#cgTzX").onclick=()=>M.classList.remove("open"); M.onclick=e=>{ if(e.target===M) M.classList.remove("open"); }; cgCdTick(); }
+function openCards(from){ if(!cgLive()){ cgTeaser(); return; } cgBack=from==="online"?"online":"solo"; NAV_OF.cards=cgBack==="online"?"nOnline":"nSolo"; if(!(cgCur&&cgSel==="game")) cgSel=null; setMode("cards"); }
 
-const APP_V="2026-11-27v"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-27w"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
