@@ -1284,6 +1284,40 @@ body.lowfx .tile,body.lowfx .vt img,body.lowfx .hype,body.lowfx .pkbtn,body.lowf
 @keyframes cgfall{to{transform:translate(var(--x),105vh) rotate(var(--r))}}
 .cgend.lose.boom{animation:cgshake .5s both}
 body.lowfx .cgstage *{animation-duration:.01s!important;animation-delay:0s!important}
+/* 💥 effets spectaculaires */
+.fxl{position:absolute;inset:0;pointer-events:none;z-index:20;overflow:visible}
+.spk{position:absolute;width:8px;height:8px;border-radius:50%;margin:-4px 0 0 -4px;opacity:0;animation:spk .75s ease-out both}
+@keyframes spk{0%{opacity:1;transform:translate(0,0) scale(var(--s))}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(0)}}
+.ring{position:absolute;width:30px;height:30px;margin:-15px 0 0 -15px;border-radius:50%;border:4px solid var(--c);box-shadow:0 0 20px var(--c),inset 0 0 14px var(--c);opacity:0;animation:ring .6s ease-out both}
+.ring.big{border-width:7px;animation-duration:.8s}
+@keyframes ring{0%{opacity:1;transform:scale(.2)}100%{opacity:0;transform:scale(7)}}
+.ring.big{animation-name:ringb}@keyframes ringb{0%{opacity:1;transform:scale(.2)}100%{opacity:0;transform:scale(11)}}
+.flash{position:fixed;inset:0;background:radial-gradient(circle at 50% 50%,var(--c),transparent 70%);opacity:0;z-index:30;animation:flash .45s both}
+@keyframes flash{0%{opacity:0}25%{opacity:var(--o)}100%{opacity:0}}
+.prj{position:absolute;left:var(--x0);top:var(--y0);width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;opacity:0;animation:prj .36s ease-in both}
+.prj.fire{background:radial-gradient(circle,#fff 0 18%,#ffd25a 30%,#ff6a00 55%,#ff2a0000 72%);box-shadow:0 0 26px #ff6a00,0 0 50px #ff2a00}
+.prj.fire.big{width:60px;height:60px;margin:-30px 0 0 -30px}
+.prj.ember{width:20px;height:20px;margin:-10px 0 0 -10px;background:radial-gradient(circle,#ffd25a,#ff6a0000 70%);transform:scale(var(--sc))}
+@keyframes prj{0%{opacity:1;left:var(--x0);top:var(--y0)}100%{opacity:1;left:var(--x1);top:var(--y1)}}
+.beam{position:absolute;width:26px;margin-left:-13px;border-radius:14px;background:linear-gradient(90deg,#4cff6b00,#c8ff8a,#fff,#c8ff8a,#4cff6b00);box-shadow:0 0 24px #4cff6b,0 0 60px #0fa34a;transform-origin:center var(--from);opacity:0;animation:beam .5s both}
+.beam.big{width:52px;margin-left:-26px}
+@keyframes beam{0%{opacity:1;transform:scaleY(0)}35%{opacity:1;transform:scaleY(1)}100%{opacity:0;transform:scaleY(1) scaleX(.2)}}
+.spike{position:absolute;width:16px;height:var(--h);margin-left:-8px;transform-origin:bottom center;background:linear-gradient(0deg,#2a7bff,#7fd3ff 60%,#fff);clip-path:polygon(50% 0,100% 100%,0 100%);filter:drop-shadow(0 0 6px #7fd3ff);opacity:0;animation:spike .6s cubic-bezier(.2,1.6,.4,1) both}
+@keyframes spike{0%{opacity:1;transform:translateY(-100%) rotate(var(--r)) scaleY(0)}40%{opacity:1;transform:translateY(-100%) rotate(var(--r)) scaleY(1)}100%{opacity:0;transform:translateY(-100%) rotate(var(--r)) scaleY(1)}}
+.bolt{position:absolute;width:44px;margin-left:-22px;opacity:0;filter:drop-shadow(0 0 10px #ffd000);animation:bolt .45s steps(1) both}
+.bolt.big{width:80px;margin-left:-40px}
+@keyframes bolt{0%{opacity:1}20%{opacity:.2}35%{opacity:1}55%{opacity:0}70%{opacity:1}100%{opacity:0}}
+.spb{position:absolute;left:4%;right:4%;top:44%;text-align:center;font-size:26px;font-weight:900;color:#fff;letter-spacing:.5px;text-shadow:0 0 12px #000,0 3px 0 #000;z-index:25;padding:8px 6px;border-radius:14px;opacity:0;animation:spb .9s both}
+.spb small{display:block;font-size:12px;letter-spacing:2px;text-transform:uppercase;opacity:.9}
+.spb.t-att{background:linear-gradient(90deg,#ff2a0000,#ff6a00ee,#ff2a0000)}.spb.t-mil{background:linear-gradient(90deg,#0fa34a00,#0fa34aee,#0fa34a00)}.spb.t-def{background:linear-gradient(90deg,#2a7bff00,#2a7bffee,#2a7bff00)}.spb.t-gk{background:linear-gradient(90deg,#ffb30000,#e09a00ee,#ffb30000)}
+@keyframes spb{0%{opacity:0;transform:scale(2.2)}18%{opacity:1;transform:scale(1)}75%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(.9) translateY(-20px)}}
+@keyframes cgcharge{0%{filter:none}50%{filter:brightness(1.8) drop-shadow(0 0 18px #ffd970);transform:scale(1.05)}100%{filter:brightness(1.2) drop-shadow(0 0 10px #ffd970)}}
+@keyframes stshake{0%,100%{transform:none}15%{transform:translate(-9px,4px)}30%{transform:translate(8px,-5px)}45%{transform:translate(-6px,-3px)}60%{transform:translate(5px,4px)}80%{transform:translate(-3px,1px)}}
+.cgdmg.big{font-size:56px}
+.cgheal{position:absolute;left:50%;transform:translateX(-50%);font-size:26px;font-weight:900;color:#7ee2a0;text-shadow:0 0 10px #0fa34a,0 3px 8px #000;z-index:26;opacity:0;animation:cgdmg 1.1s both}
+@keyframes cgko{0%{filter:none;transform:none}30%{filter:brightness(3);transform:scale(1.08)}100%{filter:grayscale(1) brightness(.5) blur(1px);transform:scale(.85) rotate(-6deg);opacity:.55}}
+.cgcbt{position:relative}
+.pen.pw .ball{filter:drop-shadow(0 0 8px #ff6a00) drop-shadow(0 0 18px #ff2a00)}.pen.pw .ball::after{content:"";position:absolute;inset:4px;border-radius:50%;box-shadow:0 18px 16px #ff6a00aa,0 34px 22px #ff2a0066}
 </style>
 </head>
 <body>
@@ -6017,14 +6051,14 @@ installGuide(false);
 // Contre l'ordi ou en ligne (docs "cards" dans onzeol_drafts). Cartes : toutes les cartes du jeu ou ta collection.
 // Une partie en ligne = donne (decks) + graine + coups. L'état est REJOUÉ à partir des coups (même résultat chez les 2 joueurs).
 // ======================================================================
-const CG_L=["VIT","TIR","PAS","DRI","DEF","PHY"], CG_N=["Vitesse","Tir","Passe","Dribble","Défense","Physique"];
+const CG_L=["NOTE","PV","ATQ 1","ATQ 2"], CG_N=["Note","Points de vie","Attaque 1","Attaque 2"], CG_NS=4;
 const CG_MODES={
   bat:{s:"La plus haute stat gagne",n:"Bataille de stats",ic:"⚔️",d:"Chacun sa carte : celui qui a la main choisit la stat, la plus haute gagne. 10 manches.",on:true},
   duel:{s:"5 manches, stat imposée",n:"Duel 5 cartes",ic:"🃏",d:"6 cartes en main, 5 manches avec une stat imposée par manche. Devine ce que l'autre va jouer !",on:true},
   tab:{s:"Tire, plonge, gagne",n:"Tirs au but",ic:"🥅",d:"5 tireurs et un gardien chacun. Choisis où tirer… et où plonger.",on:true},
   cbt:{s:"Cartes TCG · PV, attaques",n:"Combat de cartes",ic:"🔥",d:"Équipe de 3 cartes TCG (Épique et plus) : PV, énergie, 2 attaques, types et capacités.",on:true},
   pom:{s:"Fais la plus longue série",n:"Plus ou moins",ic:"↕️",d:"La prochaine carte a-t-elle une note plus haute ou plus basse ? Fais la plus longue série.",on:false},
-  pyr:{s:"De Commune à Mythique",n:"Pyramide de rareté",ic:"🔺",d:"Grimpe de Commune à Mythique : bats la carte de chaque étage sur une stat cachée. 3 vies.",on:true}
+  pyr:{s:"D'Épique à Légende Ultime",n:"Pyramide de rareté",ic:"🔺",d:"Grimpe d'Épique à Légende Ultime : bats la carte de chaque étage sur une stat cachée. 3 vies.",on:true}
 };
 // --- hasard reproductible ---
 function cgRng(seed){ let a=(seed>>>0)||1; return ()=>{ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
@@ -6032,11 +6066,15 @@ const cgSeed=(s,k)=>{ let h=(s>>>0)^0x9e3779b9; for(const ch of String(k)) h=Mat
 function cgShuffle(arr,r){ const a=arr.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(r()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 // --- stats communes (les gardiens ont leurs propres stats, ramenées sur les 6 mêmes) ---
 const _cgS={};
-function cgStats(id,lv){ const p=BY_ID[id]; if(!p) return [50,50,50,50,50,50]; const k=id+"|"+(lv||0); if(_cgS[k]) return _cgS[k];
+// stats « cachées » de la fiche (gardiens ramenés sur les 6 mêmes) : utilisées en interne (tirs au but, combat)
+function cgStats6(id,lv){ const p=BY_ID[id]; if(!p) return [50,50,50,50,50,50]; const k=id+"|"+(lv||0); if(_cgS[k]) return _cgS[k];
   const cs=cardStats(p); let v; if(!cs) v=[60,60,60,60,60,60];
   else if(p.pos[0]==="GB"){ const g=cs.vals; v=[g[4],Math.max(30,p.ovr-28),g[2],Math.max(30,p.ovr-22),Math.round((g[0]+g[3])/2),g[5]]; }
   else v=cs.vals.slice();
   return _cgS[k]=v.map(x=>Math.min(99,x+(lv||0))); }
+// stats comparées dans les jeux = ce qui est écrit sur la carte TCG : note, PV, attaque 1, attaque 2
+const _cgT={};
+function cgStats(id,lv){ const k=id+"|"+(lv||0); if(_cgT[k]) return _cgT[k]; const T=tcgOf(id,lv||0,0); if(!T) return [0,0,0,0]; return _cgT[k]=[T.ovr,T.hp,T.a[0].d,T.a[1].d]; }
 const cgGrp=p=>{ const x=p.pos[0]; return x==="GB"?"gk":["DC","DD","DG","PG","PD"].includes(x)?"def":["BU","AG","AD"].includes(x)?"att":"mil"; };
 const CG_GRP={gk:{n:"Gardien",ic:"img/tcg/ico-gk.webp",e:"🧤"},def:{n:"Défenseur",ic:"img/tcg/ico-def.webp",e:"🛡️"},mil:{n:"Milieu",ic:"img/tcg/ico-mil.webp",e:"⚽"},att:{n:"Attaquant",ic:"img/tcg/ico-att.webp",e:"🔥"}};
 // type fort contre : Attaquant → Gardien → Milieu → Défenseur → Attaquant (×1,25)
@@ -6056,7 +6094,7 @@ function tcgAbil(p){ const v=p.v, t=cardTier(p);
   if(t==="myth") return {k:"wc",n:"Classe mondiale",d:"+10 % de dégâts",dmg:1.1};
   if(t==="icon") return {k:"xp",n:"Sang-froid",d:"−10 % de dégâts subis",def:.9};
   return {k:"",n:"",d:"Pas de capacité spéciale"}; }
-function tcgOf(id,evo,lvl){ const p=BY_ID[id]; if(!p) return null; const g=cgGrp(p), st=cgStats(id,evo||0), lv=lvl||0, ovr=p.ovr+(evo||0);
+function tcgOf(id,evo,lvl){ const p=BY_ID[id]; if(!p) return null; const g=cgGrp(p), st=cgStats6(id,evo||0), lv=lvl||0, ovr=p.ovr+(evo||0);
   const A=TCG_ATK[g]; const sig=TCG_SIG[p.base||p.id];
   const d1=Math.round(14+(st[A[0][1]]-60)*.45)+3*lv, d2=Math.round(34+(st[A[1][1]]-60)*.8)+3*lv;
   return {id,g,ovr,hp:Math.round(ovr*1.3)+(g==="def"?10:g==="gk"?15:0),vit:st[0],a:[{n:A[0][0],c:1,d:Math.max(8,d1)},{n:sig||A[1][0],c:3,d:Math.max(20,d2)}],ab:tcgAbil(p),lv}; }
@@ -6095,20 +6133,20 @@ function cgTypeLine(id){ const g=cgGrp(BY_ID[id]); const strong=CG_BEATS[g], wea
   return `${CG_GRP[g].e} <b>${CG_GRP[g].n}</b> · fort contre les ${CG_GRP[strong].n.toLowerCase()}s, faible contre les ${CG_GRP[weak].n.toLowerCase()}s (×1,25)`; }
 
 // --- pioches : toutes les cartes ou ta collection ---
-const cgAll=()=>ALL_CARDS.filter(p=>p.pos[0]!=="COACH"&&p.v!=="xm"&&p.v!=="tf").map(p=>p.id);
-function cgPool(src,u){ if(src==="all") return cgAll(); const own=(C(u)||{}).coll||{}; return ALL_CARDS.filter(p=>p.pos[0]!=="COACH"&&own[p.id]>0).map(p=>p.id); }
+const cgAll=()=>ALL_CARDS.filter(p=>p.v!=="xm"&&p.v!=="tf"&&tcgOk(p.id)).map(p=>p.id);
+function cgPool(src,u){ if(src==="all") return cgAll(); const own=(C(u)||{}).coll||{}; return ALL_CARDS.filter(p=>own[p.id]>0&&tcgOk(p.id)).map(p=>p.id); }
 // cartes de l'ordi en mode collection : même niveau que la pioche du joueur
 function cgCpuPool(pool){ const avg=pool.reduce((s,id)=>s+BY_ID[id].ovr,0)/Math.max(1,pool.length); const all=cgAll();
   let L=all.filter(id=>Math.abs(BY_ID[id].ovr-avg)<=5); if(L.length<pool.length) L=all.slice().sort((a,b)=>Math.abs(BY_ID[a].ovr-avg)-Math.abs(BY_ID[b].ovr-avg)).slice(0,Math.max(pool.length,30)); return L; }
 const CG_MIN={bat:10,duel:6,tab:6,cbt:3,pom:8,pyr:6};
 function cgPoolOk(g,pool){ if(g==="cbt") return pool.filter(tcgOk).length>=3; if(g==="tab") return pool.filter(id=>BY_ID[id].pos[0]!=="GB").length>=5; return pool.length>=CG_MIN[g]; }
-function cgPoolMsg(g){ return g==="cbt"?"Il te faut au moins 3 cartes Épiques ou plus":g==="tab"?"Il te faut au moins 5 joueurs de champ":`Il te faut au moins ${CG_MIN[g]} cartes`; }
+function cgPoolMsg(g){ return g==="cbt"?"Il te faut au moins 3 cartes TCG (Épique ou plus)":g==="tab"?"Il te faut au moins 5 joueurs de champ en cartes TCG (Épique ou plus)":`Il te faut au moins ${CG_MIN[g]} cartes TCG (Épique ou plus)`; }
 // donne de départ (stockée dans la partie)
 function cgDeal(g,seed,poolA,poolB,src){ const r=cgRng(seed); const pick=(pool,n,f)=>cgShuffle(pool.filter(f||(()=>true)),r).slice(0,n);
   if(g==="bat") return [pick(poolA,10),pick(poolB,10)];
   if(g==="duel") return [pick(poolA,6),pick(poolB,6)];
-  if(g==="tab"){ const one=pool=>{ const sh=pick(pool,5,id=>BY_ID[id].pos[0]!=="GB").sort((a,b)=>cgStats(b)[1]-cgStats(a)[1]); let gk=pool.filter(id=>BY_ID[id].pos[0]==="GB").sort((a,b)=>BY_ID[b].ovr-BY_ID[a].ovr)[0];
-      if(!gk){ const L=cgAll().filter(id=>BY_ID[id].pos[0]==="GB"&&cardTier(BY_ID[id])==="bronze"); gk=L[Math.floor(r()*L.length)]; } return [...sh,gk]; }; return [one(poolA),one(poolB)]; }
+  if(g==="tab"){ const one=pool=>{ const sh=pick(pool,5,id=>BY_ID[id].pos[0]!=="GB").sort((a,b)=>cgStats6(b)[1]-cgStats6(a)[1]); let gk=pool.filter(id=>BY_ID[id].pos[0]==="GB").sort((a,b)=>BY_ID[b].ovr-BY_ID[a].ovr)[0];
+      if(!gk){ const L=cgAll().filter(id=>BY_ID[id].pos[0]==="GB"&&!BY_ID[id].v); gk=L[Math.floor(r()*L.length)]; } return [...sh,gk]; }; return [one(poolA),one(poolB)]; }
   if(g==="cbt"){ const one=pool=>{ const L=pool.filter(tcgOk); const n=src==="coll"?15:8; return (L.length<=n?L:pick(L,n)).sort((a,b)=>BY_ID[b].ovr-BY_ID[a].ovr); }; return [one(poolA),one(poolB)]; }
   if(g==="pyr") return [poolA.slice(),poolB.slice()];
   return [poolA.slice(),poolB.slice()]; }
@@ -6125,7 +6163,7 @@ CG_ENG.bat={ init(G){ return {r:0,h:cgRng(cgSeed(G.seed,"h"))()<.5?0:1,sc:[0,0],
     if(S.r>=10||S.sc[0]>5||S.sc[1]>5||(S.r>=G.deck[0].length)) S.end={w:S.sc[0]>S.sc[1]?0:S.sc[1]>S.sc[0]?1:-1}; },
   cpu(S,G,side){ if(S.h!==side) return {ok:1}; const id=G.deck[side][S.r]; const st=cgStats(id,G.evo[side][id]||0); const r=Math.random(); const ord=st.map((v,i)=>[v,i]).sort((x,y)=>y[0]-x[0]); return {k:(r<.75?ord[0]:r<.95?ord[1]:ord[2])[1]}; } };
 // 🃏 DUEL 5 CARTES
-CG_ENG.duel={ init(G){ const r=cgRng(cgSeed(G.seed,"st")); return {r:0,st:[0,1,2,3,4].map(()=>Math.floor(r()*6)),used:[[],[]],sc:[0,0],log:[]}; },
+CG_ENG.duel={ init(G){ const r=cgRng(cgSeed(G.seed,"st")); return {r:0,st:[0,1,2,3,4].map(()=>Math.floor(r()*CG_NS)),used:[[],[]],sc:[0,0],log:[]}; },
   need(S){ return S.end?[]:[0,1]; },
   step(S,M,G){ const k=S.st[S.r]; const ia=+M[0].i, ib=+M[1].i; const a=G.deck[0][ia], b=G.deck[1][ib];
     const va=cgStats(a,G.evo[0][a]||0)[k], vb=cgStats(b,G.evo[1][b]||0)[k]; const w=va>vb?0:vb>va?1:-1; if(w>=0) S.sc[w]++;
@@ -6139,7 +6177,7 @@ const TAB_D=["G","C","D"], TAB_DN={G:"à gauche",C:"au centre",D:"à droite"};
 CG_ENG.tab={ init(G){ return {k:0,sc:[0,0],n:[0,0],log:[]}; },
   need(S){ return S.end?[]:[0,1]; },
   step(S,M,G){ const sh=S.k%2, ke=1-sh; const idx=Math.floor(S.k/2)%5; const sid=G.deck[sh][idx], gid=G.deck[ke][5];
-    const tir=cgStats(sid,G.evo[sh][sid]||0)[1], gs=cardStats(BY_ID[gid]); const ref=gs&&BY_ID[gid].pos[0]==="GB"?Math.round((gs.vals[0]+gs.vals[3])/2):BY_ID[gid].ovr-15;
+    const tir=cgStats6(sid,G.evo[sh][sid]||0)[1], gs=cardStats(BY_ID[gid]); const ref=gs&&BY_ID[gid].pos[0]==="GB"?Math.round((gs.vals[0]+gs.vals[3])/2):BY_ID[gid].ovr-15;
     const d=M[sh].d, pw=+M[sh].p||0, gd=M[ke].d; const r=cgRng(cgSeed(G.seed,"t"+S.k))();
     let res; if(d===gd){ const save=(pw?.48:.72)+(ref-tir)*.012; res=r<save?"arrêt":"but"; }
     else { const miss=(pw?.16:.07)-(tir-70)*.004; res=r<Math.max(.02,miss)?(pw?"au-dessus":"poteau"):"but"; }
@@ -6181,9 +6219,10 @@ CG_ENG.cbt={ init(G){ return {r:0,pick:null,t:[[],[]],hp:[[],[]],act:[0,0],e:[0,
     if(CG_BEATS[ot.g]===t.g&&L.length&&Math.random()<.35){ const good=L.find(i=>CG_BEATS[cgGrp(BY_ID[S.t[side][i]])]===ot.g); if(good!=null) return {s:good}; }
     if(S.e[side]>=3&&(Math.random()<.8||S.hp[o][S.act[o]]>t.a[0].d)) return {a:1}; return {a:0}; } };
 // 🔺 PYRAMIDE (chacun sa propre ascension, même pyramide pour les 2 joueurs)
-const PYR_T=["bronze","silver","gold","icon","myth"];
-function pyrFloor(G,side,f,tr){ const r=cgRng(cgSeed(G.seed,"p"+f+"_"+tr)); const L=POOL[PYR_T[f]].filter(id=>BY_ID[id].pos[0]!=="COACH"); const opp=L[Math.floor(r()*L.length)];
-  const k=Math.floor(r()*6); const r2=cgRng(cgSeed(G.seed,"h"+side+"_"+f+"_"+tr)); const hand=cgShuffle(G.deck[side],r2).slice(0,3); return {opp,k,hand}; }
+const PYR_T=["gold","icon","myth","spec","ul"], PYR_N=["Épique","Légendaire","Mythique","Spéciale","Légende Ultime"];
+const pyrPool=f=>{ const t=PYR_T[f]; if(t==="ul") return VARIANTS.filter(p=>p.v==="ul").map(p=>p.id); if(t==="spec") return VARIANTS.filter(p=>["fs","gf","ml","lm"].includes(p.v)).map(p=>p.id); return ALL_CARDS.filter(p=>!p.v&&p.pos[0]!=="COACH"&&cardTier(p)===t).map(p=>p.id); };
+function pyrFloor(G,side,f,tr){ const r=cgRng(cgSeed(G.seed,"p"+f+"_"+tr)); const L=pyrPool(f); const opp=L[Math.floor(r()*L.length)];
+  const k=Math.floor(r()*CG_NS); const r2=cgRng(cgSeed(G.seed,"h"+side+"_"+f+"_"+tr)); const hand=cgShuffle(G.deck[side],r2).slice(0,3); return {opp,k,hand}; }
 CG_ENG.pyr={ solo:true, init(G){ return {p:[{f:0,tr:0,lives:3,log:[]},{f:0,tr:0,lives:3,log:[]}]}; },
   needS(S,s){ const P=S.p[s]; return !P.done; },
   stepS(S,s,m,G){ const P=S.p[s]; const F=pyrFloor(G,s,P.f,P.tr); const id=F.hand[+m.i]; const v=cgStats(id,G.evo[s][id]||0)[F.k], vo=cgStats(F.opp)[F.k];
@@ -6255,7 +6294,7 @@ function cgSettle(){ for(const x of Object.values(cgOnline)){ if(x.status!=="run
 // AFFICHAGE
 // ======================================================================
 const cgNm=u=>u===CPU?"🤖 L'ordi":esc(NAMES[u]||"?");
-const cgCard=(id,w,o={})=>`<span class="cardbtn cgc${o.cls?" "+o.cls:""}"${o.data?` ${o.data}`:""}>${cardHTML(id,{w:w||96,ovr:BY_ID[id].ovr+(o.evo||0)})}</span>`;
+const cgCard=(id,w,o={})=>`<span class="cardbtn cgc${o.cls?" "+o.cls:""}"${o.data?` ${o.data}`:""}>${tcgHTML(id,{w:w||96,evo:o.evo||0,cls:(w||96)<100?"mini":""})}</span>`;
 function cgStatBtns(id,evo,dis){ const s=cgStats(id,evo); return `<div class="cgstats">${CG_L.map((l,k)=>`<button class="cgsb" data-cgk="${k}" ${dis?"disabled":""}><small>${CG_N[k]}</small><b>${s[k]}</b></button>`).join("")}</div>`; }
 function cardsHomeHTML(){ const L=cgMine(); const others_=others();
   const tiles=Object.entries(CG_MODES).map(([k,m])=>`<button class="tile timg" data-cgm="${k}" style="background:linear-gradient(180deg,#0000 35%,#000d 100%),url(img/tuiles/cg-${k}.webp) center/cover no-repeat,#13306b"><span class="tw">${m.ic}</span><span class="ti">${m.ic}</span><span><b>${m.n}</b><small>${esc(m.s)}</small></span></button>`).join("");
@@ -6273,11 +6312,11 @@ function cardsSetupHTML(g){ const m=CG_MODES[g]; const ops=others(); const pA=cg
   return `<div class="cgsetup" style="--bg:url(img/jeux/fond-${g}.webp)"><div class="cgsh"><b>${m.ic} ${m.n}</b><small>${esc(m.d)}</small></div>
     ${m.on?`<div class="field"><span>👥 Adversaire</span><select id="cgOppSel"><option value="cpu"${cgOpp==="cpu"?" selected":""}>🤖 L'ordi</option>${ops.map(u=>`<option value="${u}"${cgOpp===u?" selected":""}>🌐 ${esc(NAMES[u])}${isFriend(u)?" ⭐":""}</option>`).join("")}</select></div>`:`<div class="mute" style="font-size:12px;margin:6px 0">🎮 Se joue seul · <b>classement des meilleures séries</b> avec les autres joueurs</div>`}
     <div class="cgseg"><button class="${cgSrc==="all"?"on":""}" data-cgsrc="all">🌍 Toutes les cartes</button><button class="${cgSrc==="coll"?"on":""}" data-cgsrc="coll">🎴 Ma collection</button></div>
-    <div class="mute" style="font-size:12px;margin:6px 2px">${cgSrc==="all"?"Cartes tirées au hasard parmi tout le jeu : tout le monde à égalité.":`Tes propres cartes${g==="cbt"?" Épiques et plus":""} (${g==="cbt"?pA.filter(tcgOk).length:pA.length}) avec leurs évolutions${g==="cbt"?" et améliorations 💠":""}.${ok?"":` <b style="color:#ff9a8a">${cgPoolMsg(g)}.</b>`}`}${cgOpp!=="cpu"&&cgSrc==="coll"?` ${esc(NAMES[cgOpp])} joue avec sa collection.`:""}</div>
+    <div class="mute" style="font-size:12px;margin:6px 2px">${cgSrc==="all"?"Cartes TCG (Épique et plus) tirées au hasard parmi tout le jeu : tout le monde à égalité.":`Tes cartes TCG (Épique et plus, ${pA.length}) avec leurs évolutions${g==="cbt"?" et améliorations 💠":""}.${ok?"":` <b style="color:#ff9a8a">${cgPoolMsg(g)}.</b>`}`}${cgOpp!=="cpu"&&cgSrc==="coll"?` ${esc(NAMES[cgOpp])} joue avec sa collection.`:""}</div>
     <button class="btn big" id="cgGo" ${ok?"":"disabled"}>${cgOpp==="cpu"||!m.on?"▶️ Jouer":"📨 Inviter "+esc(NAMES[cgOpp]||"")}</button>
     ${g==="pom"?pomBoardHTML():""}${g==="cbt"?`<div class="cgrules">🔥 <b>Règles</b> : choisis 3 cartes. À chaque tour, chacun choisit une attaque ou un changement de joueur, puis la carte la plus rapide (VIT) frappe en premier. ⚡ +1 énergie par tour (max ${CBT_EMAX}). Types : 🔥 Attaquant > 🧤 Gardien > ⚽ Milieu > 🛡️ Défenseur > 🔥 Attaquant (×1,25). Mets tous les adversaires K.O. !</div>`:""}
     ${g==="tab"?`<div class="cgrules">🥅 Le tireur choisit son côté et sa frappe (placée = précise, puissante = dure à arrêter mais peut s'envoler). Le gardien choisit où plonger. Le TIR du tireur et les réflexes du gardien comptent. Mort subite en cas d'égalité.</div>`:""}
-    ${g==="pyr"?`<div class="cgrules">🔺 5 étages : Commune, Rare, Épique, Légendaire, Mythique. À chaque étage, une carte adverse visible et une <b>stat cachée</b> : choisis parmi tes 3 cartes celle qui a le plus de chances de faire au moins aussi bien. 3 vies.${m.on?" En ligne : vous grimpez la même pyramide, le plus haut gagne.":""}</div>`:""}
+    ${g==="pyr"?`<div class="cgrules">🔺 5 étages : Épique, Légendaire, Mythique, Spéciale, Légende Ultime. À chaque étage, une carte adverse visible et une <b>stat cachée</b> : choisis parmi tes 3 cartes celle qui a le plus de chances de faire au moins aussi bien. 3 vies.${m.on?" En ligne : vous grimpez la même pyramide, le plus haut gagne.":""}</div>`:""}
   </div>`; }
 function pomBoardHTML(){ const L=Object.keys(NAMES).map(u=>({u,b:((C(u).cg||{}).pom||{}).best||0})).filter(x=>x.b>0).sort((a,b)=>b.b-a.b).slice(0,10);
   const my=((W().cg||{}).pom||{}); return `<div class="cgrules">🏆 <b>Meilleures séries</b> (toutes les cartes)${L.length?L.map((x,i)=>`<div class="cgrk${x.u===me?" me":""}"><span>${i+1}. ${esc(NAMES[x.u])}</span><b>${x.b}</b></div>`).join(""):`<div class="mute">Personne encore : à toi d'ouvrir le bal !</div>`}${my.best?`<div class="mute" style="margin-top:4px">Ton record : <b>${my.best}</b>${my.d===today()?` · aujourd'hui : ${my.db||0}`:""}</div>`:""}</div>`; }
@@ -6304,7 +6343,7 @@ function cgRevealStage(t,my,his,myEvo,hisEvo,k,myV,hisV,res,resTxt,hisVisible){
       <div class="rvc opp ${res>0?"l":res<0?"w":"d"}">${hisVisible?cgCard(his,124,{evo:hisEvo}):`<div class="flip3"><div class="fb">${tcgBackHTML(124)}</div><div class="ff">${cgCard(his,124,{evo:hisEvo})}</div></div>`}<b class="rvn">${hisV}</b></div>
     </div>
     <div class="stg-k">${k}</div>
-    <div class="stg-r ${cls}">${resTxt}</div></div>`; }
+    <div class="stg-r ${cls}">${resTxt}</div>${cgClashFx(res>0?my:res<0?his:null,res)}</div>`; }
 const CG_FX={};
 CG_FX.bat=(G,S,side)=>{ const L=S.log[S.log.length-1]; const o=1-side; const my=side===0?L.a:L.b, his=side===0?L.b:L.a, mv=side===0?L.va:L.vb, hv=side===0?L.vb:L.va; const r=L.w===side?1:L.w===-1?0:-1;
   cgAt(0,()=>cgSnd("whoosh")); cgAt(450,()=>cgSnd("flip")); cgAt(1050,()=>cgSnd("tick")); cgAt(1350,()=>r>0?cgSnd("chime","gold"):r<0?cgSnd("thump"):cgSnd("tick"));
@@ -6313,9 +6352,9 @@ CG_FX.duel=(G,S,side)=>{ const L=S.log[S.log.length-1]; const o=1-side; const my
   cgAt(0,()=>cgSnd("whoosh")); cgAt(450,()=>cgSnd("flip")); cgAt(1050,()=>cgSnd("tick")); cgAt(1350,()=>r>0?cgSnd("chime","gold"):r<0?cgSnd("thump"):cgSnd("tick"));
   return {d:2500,html:cgRevealStage(`Manche ${S.log.length}/5`,my,his,G.evo[side][my],G.evo[o][his],`📊 ${CG_N[L.k]}`,mv,hv,r,r>0?"✅ Manche gagnée !":r<0?"❌ Manche perdue":"🤝 Égalité")}; };
 CG_FX.pyr=(G,S,side)=>{ const P=S.p[side], L=P.log[P.log.length-1]; const r=L.win?1:-1;
-  cgAt(0,()=>cgSnd("whoosh")); cgAt(700,()=>cgSnd("tick")); cgAt(900,()=>cgSnd("tick")); cgAt(1350,()=>r>0?cgSnd("chime",PYR_T[L.f]):cgSnd("heartbeat"));
-  const st=PYR_T.map((t,i)=>`<div class="pyst${i<L.f?" ok":""}${i===L.f?(L.win?" climb":" fall"):""}" style="--i:${i}">${TIER_NAME[t]}</div>`).reverse().join("");
-  return {d:2600,html:cgRevealStage(`Étage ${TIER_NAME[PYR_T[L.f]]}`,L.id,L.opp,G.evo[side][L.id],0,`🎲 Stat cachée : <b class="slot">${CG_N[L.k]}</b>`,L.v,L.vo,r,L.win?(L.f>=4?"👑 Sommet atteint !":"⬆️ Tu montes !"):"💔 Une vie perdue",true)+`<div class="pyr sm">${st}</div>`}; };
+  cgAt(0,()=>cgSnd("whoosh")); cgAt(700,()=>cgSnd("tick")); cgAt(900,()=>cgSnd("tick")); cgAt(1350,()=>r>0?cgSnd("chime",["gold","icon","myth","myth","myth"][L.f]):cgSnd("heartbeat"));
+  const st=PYR_T.map((t,i)=>`<div class="pyst${i<L.f?" ok":""}${i===L.f?(L.win?" climb":" fall"):""}" style="--i:${i}">${PYR_N[i]}</div>`).reverse().join("");
+  return {d:2600,html:cgRevealStage(`Étage ${PYR_N[L.f]}`,L.id,L.opp,G.evo[side][L.id],0,`🎲 Stat cachée : <b class="slot">${CG_N[L.k]}</b>`,L.v,L.vo,r,L.win?(L.f>=4?"👑 Sommet atteint !":"⬆️ Tu montes !"):"💔 Une vie perdue",true)+`<div class="pyr sm">${st}</div>`}; };
 CG_FX.tab=(G,S,side)=>{ const L=S.log[S.log.length-1]; const mine=L.sh===side; const goal=L.res==="but"; const good=goal===mine;
   const cls=`d-${L.d} k-${L.gd} r-${goal?"g":L.res==="arrêt"?"s":"m"}${L.pw?" pw":""}`;
   cgAt(0,()=>cgSnd("whistle")); cgAt(650,()=>cgSnd("whoosh")); cgAt(1150,()=>goal?cgSnd("goal"):L.res==="arrêt"?(cgSnd("thump"),cgSnd("crowd",1.2,.15)):cgSnd("crowd",1.4,.12));
@@ -6323,27 +6362,62 @@ CG_FX.tab=(G,S,side)=>{ const L=S.log[S.log.length-1]; const mine=L.sh===side; c
   return {d:2600,html:`<div class="cgstage">
     <div class="stg-t">${mine?"⚽ Ton tir":"🧤 Ton arrêt"} · ${S.log.length<=10?`tir ${S.log.length}/10`:"mort subite"}</div>
     <div class="pen ${cls}"><div class="goal"><i class="net"></i></div>${cgAvatar(L.gid,"kp")}<span class="ball">⚽</span>${cgAvatar(L.sid,"sh")}
-      <div class="pres ${good?"w":"l"}">${goal?"BUT !":L.res==="arrêt"?"ARRÊT !":L.res==="poteau"?"POTEAU !":"AU-DESSUS !"}</div></div>
+      <div class="pres ${good?"w":"l"}">${goal?"BUT !":L.res==="arrêt"?"ARRÊT !":L.res==="poteau"?"POTEAU !":"AU-DESSUS !"}</div>
+      <div class="fxl">${goal?cgRing({G:24,C:50,D:76}[L.d],26,"#ffd970",1.2,true)+cgSparks({G:24,C:50,D:76}[L.d],26,34,CG_COL.gold,1.2,140,1.3)+cgFlash("#ffd970",1.2,.4):L.res==="arrêt"?cgRing({G:24,C:50,D:76}[L.gd],32,"#7fd3ff",1.15,true)+cgSparks({G:24,C:50,D:76}[L.gd],32,24,CG_COL.def,1.15,110):cgSparks(50,8,10,["#ffffff","#cccccc"],1.15,60)}</div></div>
     <div class="stg-k">${esc(short(BY_ID[L.sid].name))} tire ${TAB_DN[L.d]}${L.pw?" (puissant)":""} · ${esc(short(BY_ID[L.gid].name))} plonge ${TAB_DN[L.gd]}</div>
     <div class="stg-r ${good?"w":"l"}">Toi ${S.sc[side]} - ${S.sc[1-side]} ${cgNm(G.players[1-side])}</div></div>`}; };
+// 💥 Effets spectaculaires : chaque type a sa propre attaque (🔥 boule de feu, ⚽ rayon d'énergie, 🛡️ pics de glace, 🧤 foudre),
+// l'attaque 2 a sa bannière, son éclair d'écran et un impact géant ; super efficace = l'écran tremble ; K.O. = la carte vole en éclats
+const CG_COL={att:["#ffd25a","#ff6a00","#ff2a00"],mil:["#c8ff8a","#4cff6b","#0fa34a"],def:["#e6f8ff","#7fd3ff","#2a7bff"],gk:["#fffbd1","#fff06b","#ffb300"],gold:["#fff3b0","#ffd970","#e0a100"],red:["#ffd1d1","#ff5a5a","#c8102e"]};
+function cgSparks(x,y,n,cols,t,spread,size){ let h=""; for(let i=0;i<n;i++){ const a=Math.random()*Math.PI*2, d=(spread||90)*(.35+Math.random()*.75);
+  h+=`<i class="spk" style="left:${x}%;top:${y}%;--dx:${(Math.cos(a)*d).toFixed(0)}px;--dy:${(Math.sin(a)*d).toFixed(0)}px;--s:${((size||1)*(.6+Math.random()*.9)).toFixed(2)};background:${cols[i%cols.length]};box-shadow:0 0 8px ${cols[1]};animation-delay:${(t+Math.random()*.08).toFixed(2)}s"></i>`; } return h; }
+const cgRing=(x,y,col,t,big)=>`<i class="ring${big?" big":""}" style="left:${x}%;top:${y}%;--c:${col};animation-delay:${t.toFixed(2)}s"></i>`;
+const cgFlash=(col,t,o)=>`<i class="flash" style="--c:${col};--o:${o||.55};animation-delay:${t.toFixed(2)}s"></i>`;
+function cgAttackFx(g,sp,x0,y0,x1,y1,t){ const C=CG_COL[g]; let h=""; const ti=t+(g==="mil"?.18:g==="att"?.34:.2);
+  if(g==="att"){ h+=`<i class="prj fire${sp?" big":""}" style="--x0:${x0}%;--y0:${y0}%;--x1:${x1}%;--y1:${y1}%;animation-delay:${t.toFixed(2)}s"></i>`;
+    for(let k=1;k<=4;k++) h+=`<i class="prj ember" style="--x0:${x0}%;--y0:${y0}%;--x1:${x1}%;--y1:${y1}%;animation-delay:${(t+k*.035).toFixed(2)}s;--sc:${(1-k*.18).toFixed(2)}"></i>`; }
+  if(g==="mil"){ h+=`<i class="beam${sp?" big":""}" style="left:${x0}%;top:${Math.min(y0,y1)}%;height:${Math.abs(y1-y0)}%;--from:${y0>y1?"bottom":"top"};animation-delay:${t.toFixed(2)}s"></i>`; }
+  if(g==="def"){ for(let k=0;k<(sp?9:6);k++){ const dx=(k-(sp?4:2.5))*(sp?9:11); h+=`<i class="spike" style="left:calc(${x1}% + ${dx}px);top:${y1+8}%;--h:${(sp?70:48)+Math.random()*30}px;--r:${(dx*.6).toFixed(0)}deg;animation-delay:${(t+.05+k*.03).toFixed(2)}s"></i>`; } }
+  if(g==="gk"){ h+=`<svg class="bolt${sp?" big":""}" style="left:${x1}%;top:0;height:${y1}%;animation-delay:${t.toFixed(2)}s" viewBox="0 0 40 200" preserveAspectRatio="none"><path d="M22 0 L8 70 L24 74 L6 140 L28 120 L14 200" fill="none" stroke="#fff8c0" stroke-width="5" stroke-linejoin="bevel"/><path d="M22 0 L8 70 L24 74 L6 140 L28 120 L14 200" fill="none" stroke="#ffd000" stroke-width="12" opacity=".45"/></svg>`; }
+  h+=cgRing(x1,y1,C[1],ti,sp)+cgSparks(x1,y1,sp?36:20,C,ti,sp?150:95,sp?1.4:1);
+  if(sp) h+=cgFlash(C[1],ti,.6);
+  return {h,ti}; }
+function cgAttackSnd(g,sp,t,ti,sup){ const T=t*1000, I=ti*1000;
+  if(sp) cgAt(T-350,()=>cgSnd("charge",.45));
+  if(g==="att"){ cgAt(T,()=>cgSnd("whoosh")); cgAt(I,()=>cgSnd("boom",sp||sup)); }
+  if(g==="mil"){ cgAt(T,()=>{ cgSnd("charge",.25); }); cgAt(I,()=>{ cgSnd("boom",sp||sup); cgSnd("chime","icon"); }); }
+  if(g==="def"){ cgAt(T,()=>cgSnd("whoosh")); cgAt(I,()=>{ cgSnd("thump"); cgSnd("flip"); if(sp||sup) cgSnd("boom"); }); }
+  if(g==="gk"){ cgAt(I-60,()=>cgSnd("thunder")); }
+  if(sup) cgAt(I+120,()=>{ cgSnd("crowd",1.2,.18); pxVib([50,30,80]); }); }
 CG_FX.cbt=(G,S,side,prev)=>{ const o=1-side; const last=S.log[S.log.length-1];
-  if(last.start){ cgAt(0,()=>cgSnd("whistle")); [0,1,2].forEach(i=>cgAt(300+i*220,()=>cgSnd("flip")));
-    const team=s=>S.t[s].map((id,i)=>`<span class="dealc" style="animation-delay:${(.25+i*.22).toFixed(2)}s">${tcgHTML(id,{w:96,evo:G.evo[s][id]||0,lvl:G.tl[s][id]||0,cls:"mini"})}</span>`).join("");
-    return {d:2000,html:`<div class="cgstage"><div class="stg-t">🔥 Coup d'envoi !</div><div class="cgteam">${team(o)}</div><i class="cgvs big">VS</i><div class="cgteam">${team(side)}</div></div>`}; }
-  const ev=last.ev||[]; const cur=[prev.t[0][prev.act[0]],prev.t[1][prev.act[1]]], hp0={}, fx={0:[],1:[]}; let t=.35, ko=null;
+  if(last.start){ cgAt(0,()=>cgSnd("whistle")); [0,1,2].forEach(i=>cgAt(300+i*220,()=>cgSnd("flip"))); cgAt(1100,()=>cgSnd("boom"));
+    const team=s=>S.t[s].map((id,i)=>`<span class="dealc" style="animation-delay:${(.25+i*.22).toFixed(2)}s">${tcgHTML(id,{w:100,evo:G.evo[s][id]||0,lvl:G.tl[s][id]||0,cls:"mini"})}</span>`).join("");
+    return {d:2200,html:`<div class="cgstage cgcbt"><div class="stg-t">🔥 Coup d'envoi !</div><div class="cgteam">${team(o)}</div><i class="cgvs big">VS</i><div class="cgteam">${team(side)}</div><div class="fxl">${cgRing(50,50,"#ffd970",1.05,true)+cgSparks(50,50,30,CG_COL.gold,1.05,160,1.2)+cgFlash("#ffd970",1.05,.35)}</div></div>`}; }
+  const ev=last.ev||[]; const cur=[prev.t[0][prev.act[0]],prev.t[1][prev.act[1]]], hp0={}, fx={0:[],1:[]}; let t=.4, ko=null, ov="", shakes=[];
   const hpOf=(st,s,id)=>{ const i=st.t[s].indexOf(id); return i<0?0:st.hp[s][i]; };
-  for(const e of ev){ if(e.sw){ cur[e.s]=e.sw; fx[e.s].push(`<b class="cgpop sw" style="animation-delay:${t}s">🔄 Changement</b>`); cgAt(t*1000,()=>cgSnd("flip")); t+=.6; continue; }
-    if(e.fail){ fx[e.s].push(`<b class="cgpop" style="animation-delay:${t}s">⚡ Pas assez d'énergie</b>`); t+=.5; continue; }
-    if(e.in){ continue; }
-    if(e.ko){ ko={s:e.s,t}; cgAt(t*1000,()=>{ cgSnd("thunder"); pxVib([60,40,60]); }); t+=.5; continue; }
-    const tg=1-e.s; fx[e.s].push(`<style>.cgcbt .s${e.s} .act{animation:cglunge${e.s===side?"U":"D"} .45s ${t.toFixed(2)}s both}</style>`);
-    fx[tg].push(`<b class="cgdmg${e.sup?" sup":""}" style="animation-delay:${(t+.3).toFixed(2)}s">-${e.dmg}${e.sup?"<small>super efficace !</small>":""}</b><style>.cgcbt .s${tg} .act{animation:cghit .5s ${(t+.3).toFixed(2)}s both}</style>`);
-    cgAt(t*1000,()=>cgSnd("whoosh")); cgAt((t+.3)*1000,()=>{ cgSnd("boom",!!e.sup); });
-    const h=hp0[tg]||(hp0[tg]={from:hpOf(prev,tg,cur[tg]),to:null,at:t+.3}); t+=.9; }
+  const Y={[o]:26,[side]:72};
+  for(const e of ev){ if(e.sw){ cur[e.s]=e.sw; fx[e.s].push(`<b class="cgpop sw" style="animation-delay:${t}s">🔄 ${esc(short(BY_ID[e.sw].name))} entre !</b>`); ov+=cgSparks(50,Y[e.s],16,CG_COL.gold,t,90); cgAt(t*1000,()=>cgSnd("flip")); t+=.7; continue; }
+    if(e.fail){ fx[e.s].push(`<b class="cgpop" style="animation-delay:${t}s">⚡ Pas assez d'énergie</b>`); t+=.6; continue; }
+    if(e.in) continue;
+    if(e.ko){ ko={s:e.s,t}; ov+=cgRing(50,Y[e.s],"#ffffff",t,true)+cgSparks(50,Y[e.s],40,["#ffffff","#ff5a5a","#ffd970"],t,170,1.5)+cgFlash("#ffffff",t,.7); shakes.push(t);
+      cgAt(t*1000,()=>{ cgSnd("thunder"); cgSnd("boom",true); pxVib([80,40,120]); }); t+=.8; continue; }
+    const tg=1-e.s, T=tcgOf(e.id), g=T?T.g:"att", sp=!!(T&&e.at===T.a[1].n);
+    if(sp){ ov+=`<div class="spb t-${g}" style="animation-delay:${t.toFixed(2)}s"><small>${CG_GRP[g].e} Attaque spéciale</small>${esc(e.at)}</div>`; fx[e.s].push(`<style>.cgcbt .s${e.s} .act{animation:cgcharge .5s ${t.toFixed(2)}s both}</style>`); t+=.55; }
+    const A=cgAttackFx(g,sp,50,Y[e.s],50,Y[tg],t); ov+=A.h; cgAttackSnd(g,sp,t,A.ti,e.sup);
+    fx[e.s].push(`<style>.cgcbt .s${e.s} .act{animation:${sp?"cgcharge .5s "+(t-.55).toFixed(2)+"s both,":""}cglunge${e.s===side?"U":"D"} .4s ${t.toFixed(2)}s both}</style>`);
+    fx[tg].push(`<b class="cgdmg${e.sup?" sup":""}${sp?" big":""}" style="animation-delay:${(A.ti+.05).toFixed(2)}s">-${e.dmg}${e.sup?"<small>super efficace !</small>":""}</b><style>.cgcbt .s${tg} .act{animation:cghit .55s ${A.ti.toFixed(2)}s both}</style>`);
+    if(e.sup||sp) shakes.push(A.ti);
+    if(sp&&T.ab.heal2){ ov+=`<b class="cgheal" style="top:${Y[e.s]}%;animation-delay:${(A.ti+.3).toFixed(2)}s">+${T.ab.heal2} PV</b>`+cgSparks(50,Y[e.s],14,CG_COL.mil,A.ti+.3,70); }
+    hp0[tg]=hp0[tg]||{at:A.ti}; t=A.ti+(sp?.85:.7); }
   const card=(s,w)=>{ const id=cur[s]; const T=tcgOf(id,G.evo[s][id]||0,G.tl[s][id]||0); const from=hpOf(prev,s,id), to=hpOf(S,s,id);
     const html=tcgHTML(id,{w,evo:G.evo[s][id]||0,lvl:G.tl[s][id]||0,hp:from,cls:"act"+(ko&&ko.s===s?" kofx":"")});
     return html.replace('<i style="width:',`<i data-hpa="1" style="--to:${Math.max(0,to/T.hp*100).toFixed(1)}%;--hd:${hp0[s]?hp0[s].at:0}s;width:`).replace(/<b>\d+ \/ (\d+) PV<\/b>/,`<b>${Math.max(0,Math.round(to))} / $1 PV</b>`)+(ko&&ko.s===s?`<b class="kostamp" style="animation-delay:${ko.t}s">K.O. !</b><style>.cgcbt .s${s} .kofx{--kd:${ko.t}s}</style>`:""); };
-  return {d:Math.round(t*1000)+900,html:`<div class="cgstage cgcbt"><div class="cgside s${o} opp">${card(o,140)}${fx[o].join("")}</div><div class="cgside s${side} me">${card(side,150)}${fx[side].join("")}</div></div>`}; };
+  const sh=shakes.map(x=>`stshake .45s ${x.toFixed(2)}s`).join(",");
+  return {d:Math.round(t*1000)+1000,html:`<div class="cgstage cgcbt"${sh?` style="animation:${sh}"`:""}><div class="cgside s${o} opp">${card(o,140)}${fx[o].join("")}</div><div class="cgside s${side} me">${card(side,150)}${fx[side].join("")}</div><div class="fxl">${ov}</div></div>`}; };
+// révélations (Bataille, Duel, Pyramide) : choc des cartes au centre, explosion aux couleurs du type de la carte gagnante
+function cgClashFx(winId,res){ const g=winId&&tcgOf(winId)?tcgOf(winId).g:"att"; const C=res===0?CG_COL.gold:CG_COL[g];
+  cgAt(1000,()=>cgSnd(res===0?"thump":"boom")); return `<div class="fxl">${cgRing(50,42,C[1],1.0,true)+cgSparks(50,42,res===0?14:28,C,1.0,130,1.2)+(res!==0?cgFlash(C[1],1.0,.35):"")}</div>`; }
+
 // ↕️ Plus ou moins : la nouvelle carte se retourne à côté de l'ancienne
 function pomFx(g){ const L=g.last; const prevId=g.seq[(g.i-1)%g.seq.length], cur=g.seq[g.i%g.seq.length];
   cgAt(0,()=>cgSnd("whoosh")); cgAt(450,()=>cgSnd("flip")); cgAt(1000,()=>L.ok?cgSnd(L.eq?"tick":"chime","silver"):cgSnd("thump"));
@@ -6381,7 +6455,7 @@ CG_VIEW.bat=(G,S,side,need)=>{ const o=1-side; const L=S.log[S.log.length-1]; co
 CG_VIEW.duel=(G,S,side,need)=>{ const o=1-side; const L=S.log[S.log.length-1];
   const res=L?`<div class="cgres ${L.w===side?"win":L.w===-1?"draw":"lose"}">Manche ${S.log.length} · <b>${CG_N[L.k]}</b> : ${side===0?L.va:L.vb} contre ${side===0?L.vb:L.va} → ${L.w===side?"gagnée":L.w===-1?"égalité":"perdue"}</div>${cgCard(side===0?L.a:L.b,74)}<i class="cgvs">vs</i>${cgCard(side===0?L.b:L.a,74)}`:"";
   const stl=S.st.map((k,i)=>`<span class="${i===S.r&&!S.end?"on":i<S.r?"done":""}">${i+1}. ${CG_L[k]}</span>`).join("");
-  const hand=G.deck[side].map((id,i)=>S.used[side].includes(i)?"":`<span class="cardbtn cgc${need?" can":""}" data-cgi="${i}">${cardHTML(id,{w:92,ovr:BY_ID[id].ovr+(G.evo[side][id]||0)})}<em>${CG_L[S.st[Math.min(S.r,4)]]} ${cgStats(id,G.evo[side][id]||0)[S.st[Math.min(S.r,4)]]}</em></span>`).join("");
+  const hand=G.deck[side].map((id,i)=>S.used[side].includes(i)?"":`<span class="cardbtn cgc${need?" can":""}" data-cgi="${i}">${tcgHTML(id,{w:104,evo:G.evo[side][id]||0})}<em>${CG_L[S.st[Math.min(S.r,4)]]} ${cgStats(id,G.evo[side][id]||0)[S.st[Math.min(S.r,4)]]}</em></span>`).join("");
   return `<div class="cgscore"><span>Toi <b>${S.sc[side]}</b></span><small>Manche ${Math.min(S.r+1,5)}/5</small><span><b>${S.sc[o]}</b> ${cgNm(G.players[o])}</span></div>
     <div class="cgstl">${stl}</div>${L?`<div class="cgprev">${res}</div>`:""}
     ${S.end?"":`<div class="cgmsg sm">${need?`Stat de la manche : <b>${CG_N[S.st[S.r]]}</b> · choisis ta carte`:"Carte jouée, en attente…"}</div><div class="cghand">${hand}</div>`}
@@ -6391,7 +6465,7 @@ CG_VIEW.tab=(G,S,side,need)=>{ const o=1-side; const sh=S.k%2; const iSh=sh===si
   const L=S.log[S.log.length-1];
   const res=L?`<div class="cgres ${(L.res==="but")===(L.sh===side)?"win":"lose"}">${esc(BY_ID[L.sid].name)} tire ${TAB_DN[L.d]}${L.pw?" (puissant)":""}, ${esc(short(BY_ID[L.gid].name))} plonge ${TAB_DN[L.gd]} → <b>${L.res==="but"?"BUT !":L.res==="arrêt"?"ARRÊT !":"raté ("+L.res+")"}</b></div>`:"";
   const sid=G.deck[sh][idx], gid=G.deck[1-sh][5];
-  const ctrl=S.end?"":need?(iSh?`<div class="cgmsg sm">⚽ <b>${esc(BY_ID[sid].name)}</b> tire (TIR ${cgStats(sid,G.evo[sh][sid]||0)[1]}). Où et comment ?</div>
+  const ctrl=S.end?"":need?(iSh?`<div class="cgmsg sm">⚽ <b>${esc(BY_ID[sid].name)}</b> tire (TIR ${cgStats6(sid,G.evo[sh][sid]||0)[1]}). Où et comment ?</div>
       <div class="cgdirs">${TAB_D.map(d=>`<button class="btn" data-tabd="${d}">${d==="G"?"⬅️":d==="C"?"⬆️":"➡️"} ${d==="G"?"Gauche":d==="C"?"Centre":"Droite"}</button>`).join("")}</div>
       <div class="cgseg"><button class="on" data-tabp="0">🎯 Placée</button><button data-tabp="1">💥 Puissante</button></div>`:
       `<div class="cgmsg sm">🧤 Ton gardien <b>${esc(BY_ID[gid].name)}</b> face à ${esc(BY_ID[sid].name)}. Où plonger ?</div><div class="cgdirs">${TAB_D.map(d=>`<button class="btn" data-tabd="${d}">${d==="G"?"⬅️":d==="C"?"⏺️":"➡️"} ${d==="G"?"Gauche":d==="C"?"Rester":"Droite"}</button>`).join("")}</div>`):`<div class="cgmsg sm">Choix fait, en attente…</div>`;
@@ -6411,10 +6485,10 @@ CG_VIEW.cbt=(G,S,side,need)=>{ const o=1-side;
     ${evs?`<div class="cglog">${evs}</div>`:""}
     <div class="cgside me">${T(side,S.act[side]).html(170,"act")}<div class="cgbenchs">${bench(side)}</div><div class="cgen">⚡ ${S.e[side]}/${CBT_EMAX}</div></div></div>${ctrl}`; };
 CG_VIEW.pyr=(G,S,side,need)=>{ const P=S.p[side], O=S.p[1-side];
-  const steps=PYR_T.map((t,i)=>`<div class="pyst${i<P.f?" ok":i===P.f&&!P.done?" on":""}" style="--i:${i}">${TIER_NAME[t]}${i<P.f?" ✅":""}</div>`).reverse().join("");
-  const L=P.log[P.log.length-1]; const res=L?`<div class="cgres ${L.win?"win":"lose"}">Étage ${TIER_NAME[PYR_T[L.f]]} · stat cachée : <b>${CG_N[L.k]}</b> · ${L.v} contre ${L.vo} → ${L.win?"tu montes !":"une vie perdue"}</div>`:"";
-  let play=""; if(!P.done){ const F=pyrFloor(G,side,P.f,P.tr); play=`<div class="cgmsg sm">Étage <b>${TIER_NAME[PYR_T[P.f]]}</b> · bats cette carte sur une stat cachée</div><div class="cgduo">${cgCard(F.opp,118)}</div>
-      <div class="cghand">${F.hand.map((id,i)=>`<span class="cardbtn cgc can" data-cgi="${i}">${cardHTML(id,{w:96,ovr:BY_ID[id].ovr+(G.evo[side][id]||0)})}</span>`).join("")}</div>`; }
+  const steps=PYR_T.map((t,i)=>`<div class="pyst${i<P.f?" ok":i===P.f&&!P.done?" on":""}" style="--i:${i}">${PYR_N[i]}${i<P.f?" ✅":""}</div>`).reverse().join("");
+  const L=P.log[P.log.length-1]; const res=L?`<div class="cgres ${L.win?"win":"lose"}">Étage ${PYR_N[L.f]} · stat cachée : <b>${CG_N[L.k]}</b> · ${L.v} contre ${L.vo} → ${L.win?"tu montes !":"une vie perdue"}</div>`:"";
+  let play=""; if(!P.done){ const F=pyrFloor(G,side,P.f,P.tr); play=`<div class="cgmsg sm">Étage <b>${PYR_N[P.f]}</b> · bats cette carte sur une stat cachée</div><div class="cgduo">${cgCard(F.opp,118)}</div>
+      <div class="cghand">${F.hand.map((id,i)=>`<span class="cardbtn cgc can" data-cgi="${i}">${tcgHTML(id,{w:112,evo:G.evo[side][id]||0})}</span>`).join("")}</div>`; }
   const vs=`<div class="mute" style="font-size:12px;text-align:center;margin:6px">${cgNm(G.players[1-side])} : étage ${O.f}/5 · ${"❤️".repeat(O.lives)}${O.done?" (terminé)":""}</div>`;
   return `<div class="cgscore"><span>${"❤️".repeat(P.lives)||"💔"}</span><small>Étage ${Math.min(P.f+1,5)}/5</small><span>${P.f}/5 ✅</span></div><div class="pyr">${steps}</div>${res}${play}${P.done&&!S.end?`<div class="cgwait">Ton ascension est finie (${P.f}/5). En attente de ${cgNm(G.players[1-side])}…</div>`:""}${vs}`; };
 let cgPick=null;
@@ -6463,10 +6537,10 @@ function cgBind(V){ const on=(q,f)=>V.querySelectorAll(q).forEach(b=>b.onclick=e
   on("#cgTeam",()=>{ if((cgPick||[]).length===3){ const t=cgPick; cgPick=null; cgPlay({t}); } });
   on("[data-cga]",b=>cgPlay({a:+b.dataset.cga}));
   on("[data-cgsw]",b=>{ if(!b.classList.contains("can")) return; cgPlay({s:+b.dataset.cgsw}); });
-  V.querySelectorAll("[data-tcg]").forEach(el=>{ if(el.closest("[data-cgt],[data-cgsw]")) return; el.onclick=e=>{ e.stopPropagation(); showTcg(el.dataset.tcg); }; }); }
+  V.querySelectorAll("[data-tcg]").forEach(el=>{ if(el.closest("[data-cgt],[data-cgsw],[data-cgi],.cgstage,.cgc")) return; el.onclick=e=>{ e.stopPropagation(); showTcg(el.dataset.tcg); }; }); }
 function openCards(from){ cgBack=from==="online"?"online":"solo"; NAV_OF.cards=cgBack==="online"?"nOnline":"nSolo"; if(!(cgCur&&cgSel==="game")) cgSel=null; setMode("cards"); }
 
-const APP_V="2026-11-27b"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-27d"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
