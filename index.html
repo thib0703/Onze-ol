@@ -1362,7 +1362,7 @@ body.lowfx .cgstage *{animation-duration:.01s!important;animation-delay:0s!impor
 .ctb h3{margin:6px 0;font-size:20px}.ctb p{font-size:15px;line-height:1.5;color:#dfe7ff;min-height:66px}
 .ctb-dots{display:flex;gap:6px;justify-content:center}.ctb-dots i{width:8px;height:8px;border-radius:50%;background:#ffffff44}.ctb-dots i.on{background:#ffd970;width:20px;border-radius:4px}
 
-.tcg-bdg{position:absolute;z-index:4;left:11%;top:calc(var(--wt) + 2%);display:flex;gap:2px}.tcg-bdg i{font-style:normal;font-size:.85em;background:#000b;border:1px solid #ffd97099;border-radius:50%;width:1.6em;height:1.6em;display:flex;align-items:center;justify-content:center}
+.tcg-bdg{position:absolute;z-index:4;right:calc(var(--wx) + 1.5%);top:calc(var(--wt) + var(--wh) - 2.1em);display:flex;gap:2px;opacity:.92}.tcg-bdg i{font-style:normal;font-size:.85em;background:#000b;border:1px solid #ffd97099;border-radius:50%;width:1.6em;height:1.6em;display:flex;align-items:center;justify-content:center}
 .tdiv{gap:4px}.tdiv .trk{display:block;height:7px;background:#0007;border-radius:5px;overflow:hidden}.tdiv .trk i{display:block;height:100%;background:linear-gradient(90deg,#ffd970,#e3002b)}
 .tcap{display:flex;gap:8px;align-items:flex-start;font-size:12px;margin:8px 2px;color:#dfe7ff}.tcap input{margin-top:2px}
 .cgstats{display:block!important}.cgstats summary{display:block;cursor:pointer;list-style:none;margin-bottom:4px}.cgstats .cgrk{display:flex;width:100%}.cgstats .cgrk b{text-align:right;white-space:nowrap}.cgstats summary::-webkit-details-marker{display:none}
@@ -6278,7 +6278,7 @@ function tcgLinks(sideCards,id){ const o=sideCards.filter(x=>x&&tcgBase(x)!==tcg
 function tcgMax(id,G,s){ const T=tcgOf(id,G.evo[s][id]||0,(G.tl[s]||{})[id]||0); let hp=T.hp; if(tcgHas(id,"fid")) hp+=10; if(tcgHas(id,"sept")) hp+=20; else if(tcgHas(id,"l1")) hp+=10; if(tcgHas(id,"eu")) hp+=10; return hp; }
 function tcgCost(id,ai){ const c=ai===1?3:1; return ai===1&&tcgHas(id,"bo")?c-1:c; }
 const tcgRetreat=id=>0;
-function tcgNew(id,G,s){ const T=tcgOf(id,G.evo[s][id]||0); const c={id,hp:tcgMax(id,G,s),e:0}; if(T.ab.e0) c.e+=T.ab.e0; return c; }
+function tcgNew(id,G,s){ const T=tcgOf(id,G.evo[s][id]||0); const mx=tcgMax(id,G,s); const c={id,hp:mx,mx,e:0}; if(T.ab.e0) c.e+=T.ab.e0; return c; }
 function tcgDmg(S,G,s,ai){ const a=S.act[s], d=S.act[1-s]; const T=tcgOf(a.id,G.evo[s][a.id]||0,(G.tl[s]||{})[a.id]||0), D=tcgOf(d.id,G.evo[1-s][d.id]||0);
   const mine=[a.id,...S.bench[s].map(c=>c.id)], his=[d.id,...S.bench[1-s].map(c=>c.id)], L=tcgLinks(mine,a.id), LD=tcgLinks(his,d.id);
   let x=T.a[ai].d; const parts=[];
@@ -6286,11 +6286,57 @@ function tcgDmg(S,G,s,ai){ const a=S.act[s], d=S.act[1-s]; const T=tcgOf(a.id,G.
   if(tcgHas(a.id,"wc")){ x+=10; parts.push("Champion du monde +10"); }
   if(L.mates){ x+=5*L.mates; parts.push(`Coéquipiers +${5*L.mates}`); }
   if(L.duo){ x+=15; parts.push(`${L.duo} +15`); }
+  const Ms=(S.mod||[])[s], Md=(S.mod||[])[1-s];
+  if(a.co){ x+=10; parts.push(`${esc(short(BY_ID[Ms.co].name))} +10`); }
+  if(Ms&&Ms.dmg){ x+=Ms.dmg; parts.push(`Collectif +${Ms.dmg}`); }
+  if(S.boost&&S.boost[s]){ x+=S.boost[s]; parts.push(`Action +${S.boost[s]}`); }
   x*=(T.ab.dmg||1); const sup=CG_BEATS[T.g]===D.g; if(sup) x*=1.25;
-  let red=0; if(tcgHas(d.id,"ucl")) red+=10; if(tcgHas(d.id,"mur")) red+=10; if(LD.comp) red+=5*LD.comp; x=x*(D.ab.def||1)-red;
+  let red=(Md&&Md.red)||0; if(S.shield&&S.shield[1-s]) red+=S.shield[1-s]; if(tcgHas(d.id,"ucl")) red+=10; if(tcgHas(d.id,"mur")) red+=10; if(LD.comp) red+=5*LD.comp; x=x*(D.ab.def||1)-red;
   return {dmg:Math.max(10,Math.round(x)),sup,parts,red}; }
+
+// 🃏 CARTES ACTION ET STRATÉGIE DE CLUB
+// Avant le match : 1 Entraîneur (passif), 1 Stade (passif) et 3 cartes Action (1 fois chacune, 1 par tour, ne termine pas le tour).
+// Collectifs automatiques : 3 joueurs d'une même grande époque de l'OL = bonus d'équipe.
+const TCG_ACT={
+  soin:{n:"Soigneur",ic:"🧴",d:"Ton titulaire récupère 30 PV"},
+  cf:{n:"Coup franc",ic:"🎯",d:"+1 ⚽ pour ton titulaire"},
+  jaune:{n:"Carton jaune",ic:"🟨",d:"Le titulaire adverse perd 1 ⚽"},
+  mur:{n:"Mur défensif",ic:"🧱",d:"−20 dégâts sur la prochaine attaque reçue"},
+  mt:{n:"Mi-temps",ic:"⏱️",d:"Tous tes joueurs du banc récupèrent 20 PV"},
+  remo:{n:"Remontada",ic:"🔥",d:"Si tu es mené au score : +25 dégâts sur ta prochaine attaque"},
+  kop:{n:"Virage Nord",ic:"📣",d:"Ta prochaine attaque : +10 dégâts"}};
+const TCG_ACT_N=3;
+const TCG_STAD={gerland:{n:"Stade de Gerland",ic:"🏟️",d:"Joueurs arrivés avant 2016 : +10 PV",f:p=>(p.year||0)<2016},
+  groupama:{n:"Groupama Stadium",ic:"🏟️",d:"Joueurs arrivés depuis 2016 : +10 PV",f:p=>(p.year||0)>=2016}};
+// grandes époques du club (3 joueurs de l'époque dans ton équipe → bonus)
+const TCG_ERAS=[
+  {k:"sept",n:"Le Septuplé",ic:"🏆",y:[2002,2008],d:"+10 dégâts pour toute l'équipe"},
+  {k:"aul",n:"L'ère Lacazette-Fekir",ic:"⚡",y:[2013,2017],d:"+10 dégâts pour toute l'équipe"},
+  {k:"pion",n:"Les Pionniers",ic:"📜",old:1,d:"+20 PV pour toute l'équipe"},
+  {k:"new",n:"La nouvelle vague",ic:"🌱",y:[2023,2027],d:"Chaque joueur entre avec 1 ⚽"},
+  {k:"y2k",n:"Les premiers titres",ic:"🥇",y:[1999,2003],d:"−10 dégâts subis pour toute l'équipe"}];
+function tcgInEra(id,E){ const p=BY_ID[tcgBase(id)]||BY_ID[id]; if(!p) return false; if(E.old) return !!(BY_ID[id].old||p.old); return spansOf(p).some(([a,b])=>Math.min(b,E.y[1])-Math.max(a,E.y[0])>=1); }
+function tcgEras(ids){ return TCG_ERAS.filter(E=>ids.filter(id=>tcgInEra(id,E)).length>=3); }
+const tcgCoachOk=(co,id)=>!!co&&tcgMates(co,id);
+const tcgCoaches=(src,u)=>COACHES.filter(c=>src!=="coll"||(((C(u)||{}).coll||{})[c.id]>0)).map(c=>c.id);
+// bonus d'équipe, calculés une fois au coup d'envoi
+function tcgTeamMods(ids,co,st){ const E=tcgEras(ids).map(e=>e.k), m={eras:E,co,st,dmg:0,hp:0,red:0,e0:0};
+  if(E.includes("sept")) m.dmg+=10; if(E.includes("aul")) m.dmg+=10; if(E.includes("pion")) m.hp+=20; if(E.includes("new")) m.e0+=1; if(E.includes("y2k")) m.red+=10; return m; }
+function tcgSetupMods(S,G,s,co,st){ const ids=[S.act[s].id,...S.bench[s].map(c=>c.id)]; const M=S.mod[s]=tcgTeamMods(ids,co,st);
+  for(const c of [S.act[s],...S.bench[s]]){ let add=M.hp; const p=BY_ID[c.id]; if(st&&TCG_STAD[st]&&TCG_STAD[st].f(BY_ID[tcgBase(c.id)]||p)) add+=10; c.mx=(c.mx||c.hp)+add; c.hp+=add; c.e+=M.e0; if(co&&tcgCoachOk(co,c.id)) c.co=1; } }
+function tcgUseAct(S,G,s,k,ev){ if(S.acted) return false; const L=S.acts[s]; if(!L.includes(k)||S.used[s].includes(k)) return false; const a=S.act[s], d=S.act[1-s]; if(!a) return false;
+  if(k==="soin"){ if(a.hp>=a.mx) return false; a.hp=Math.min(a.mx,a.hp+30); }
+  else if(k==="cf"){ if(a.e>=5) return false; a.e++; }
+  else if(k==="jaune"){ if(!d||!d.e) return false; d.e--; }
+  else if(k==="mur"){ S.shield[s]=20; }
+  else if(k==="mt"){ if(!S.bench[s].some(c=>c.hp<c.mx)) return false; for(const c of S.bench[s]) c.hp=Math.min(c.mx,c.hp+20); }
+  else if(k==="remo"){ if(S.sc[s]>=S.sc[1-s]) return false; S.boost[s]+=25; }
+  else if(k==="kop"){ S.boost[s]+=10; }
+  else return false;
+  S.used[s].push(k); S.acted=1; ev.push({t:"c",s,k}); return true; }
+
 // --- moteur ---
-function tcgEnter(S,G,s,c,ev){ const T=tcgOf(c.id,G.evo[s][c.id]||0); const a=S.act[s]; if(T.ab.enter&&a) a.hp=Math.min(tcgMax(a.id,G,s),a.hp+T.ab.enter); }
+function tcgEnter(S,G,s,c,ev){ const T=tcgOf(c.id,G.evo[s][c.id]||0); const a=S.act[s]; if(T.ab.enter&&a) a.hp=Math.min(a.mx||tcgMax(a.id,G,s),a.hp+T.ab.enter); }
 // version simple : à ton tour, ton actif gagne 1 ⚽, puis tu choisis Attaque 1, Attaque 2 ou Changer de joueur
 function tcgAct(S,G,s,A,ev){ const k=A[0];
   if(S.act[s]===null&&k!=="p") return false;
@@ -6298,23 +6344,26 @@ function tcgAct(S,G,s,A,ev){ const k=A[0];
   if(k==="r"){ const i=+A[1]; const b=S.bench[s][i], a=S.act[s]; if(!b) return false; S.bench[s][i]=a; S.act[s]=b; ev.push({t:"r",s,id:b.id,out:a.id}); tcgEnter(S,G,s,b,ev); S.done=1; return true; }
   if(k==="a"){ const ai=+A[1]; const a=S.act[s], d=S.act[1-s]; if(!a||!d) return false; if(S.first===s&&S.n===0) return false; if(a.e<tcgCost(a.id,ai)) return false;
     const R=tcgDmg(S,G,s,ai); const T=tcgOf(a.id,G.evo[s][a.id]||0,(G.tl[s]||{})[a.id]||0); const hp0=d.hp; d.hp=Math.max(0,d.hp-R.dmg); a.e-=tcgCost(a.id,ai);
-    const e={t:"a",s,id:a.id,tg:d.id,ai,at:T.a[ai].n,dmg:R.dmg,sup:R.sup,parts:R.parts,hp0,hp1:d.hp};
-    if(ai===1&&T.ab.heal2){ a.hp=Math.min(tcgMax(a.id,G,s),a.hp+T.ab.heal2); e.heal=T.ab.heal2; }
+    const e={t:"a",s,id:a.id,tg:d.id,ai,at:T.a[ai].n,dmg:R.dmg,sup:R.sup,parts:R.parts,hp0,hp1:d.hp}; if(S.boost) S.boost[s]=0; if(S.shield) S.shield[1-s]=0;
+    if(ai===1&&T.ab.heal2){ a.hp=Math.min(a.mx||tcgMax(a.id,G,s),a.hp+T.ab.heal2); e.heal=T.ab.heal2; }
     ev.push(e);
     if(d.hp<=0){ S.act[1-s]=null; S.sc[s]++; ev.push({t:"ko",s:1-s,id:d.id});
       if(S.sc[s]>=TCG_GOALS) S.end={w:s,why:"buts"}; else if(!S.bench[1-s].length) S.end={w:s,why:"ko"}; }
     S.done=1; return true; }
+  if(k==="c") return tcgUseAct(S,G,s,A[1],ev);
   if(k==="x"){ S.done=1; return true; }
   return false; }
-function tcgStartTurn(S,s){ S.done=0; const a=S.act[s]; if(a) a.e=Math.min(5,a.e+1); }
+function tcgStartTurn(S,s){ S.done=0; S.acted=0; const a=S.act[s]; if(a) a.e=Math.min(5,a.e+1); }
 CG_ENG.cbt={
-  init(G){ return {phase:"setup",n:0,turn:0,first:cgRng(cgSeed(G.seed,"first"))()<.5?0:1,sc:[0,0],hand:[G.deck[0].slice(),G.deck[1].slice()],act:[null,null],bench:[[],[]],log:[],done:0}; },
+  init(G){ return {mod:[null,null],acts:[[],[]],used:[[],[]],boost:[0,0],shield:[0,0],acted:0,phase:"setup",n:0,turn:0,first:cgRng(cgSeed(G.seed,"first"))()<.5?0:1,sc:[0,0],hand:[G.deck[0].slice(),G.deck[1].slice()],act:[null,null],bench:[[],[]],log:[],done:0}; },
   need(S){ return S.end?[]:S.phase==="setup"?[0,1]:[S.turn]; },
   step(S,M,G){ const ev=[];
     if(S.phase==="setup"){ for(const s of [0,1]){ const m=M[s]||{}, H=S.hand[s]; let a=H.includes(m.a)?m.a:H[0]; S.act[s]=tcgNew(a,G,s);
         for(const b of (m.b||[])){ if(S.bench[s].length>=TCG_BENCH) break; if(H.includes(b)&&b!==a&&!S.bench[s].some(c=>c.id===b)) S.bench[s].push(tcgNew(b,G,s)); }
         for(const b of H){ if(S.bench[s].length>=TCG_BENCH) break; if(b!==a&&!S.bench[s].some(c=>c.id===b)) S.bench[s].push(tcgNew(b,G,s)); } S.hand[s]=[];
         if(G.cap){ const sorted=H.slice().sort((x,y)=>BY_ID[x].ovr-BY_ID[y].ovr); while(tcgTeamOvr([S.act[s].id,...S.bench[s].map(c=>c.id)],G,s)>TCG_CAP){ let hi=0; S.bench[s].forEach((c,i)=>{ if(BY_ID[c.id].ovr>BY_ID[S.bench[s][hi].id].ovr) hi=i; }); const lo=sorted.find(x=>x!==S.act[s].id&&!S.bench[s].some(c=>c.id===x)); if(!lo||BY_ID[lo].ovr>=BY_ID[S.bench[s][hi].id].ovr) break; S.bench[s][hi]=tcgNew(lo,G,s); } } }
+      for(const s of [0,1]){ const m=M[s]||{}; const okCo=tcgCoaches(G.src,G.players[s]); const co=okCo.includes(m.co)||(G.src!=="coll"&&BY_ID[m.co]&&BY_ID[m.co].pos[0]==="COACH")?m.co:null;
+        tcgSetupMods(S,G,s,co,TCG_STAD[m.st]?m.st:null); S.acts[s]=[...new Set((m.ac||[]).filter(k=>TCG_ACT[k]))].slice(0,TCG_ACT_N); }
       S.phase="play"; S.turn=S.first; S.log.push({start:1,ev}); tcgStartTurn(S,S.turn); return; }
     const s=S.turn; for(const A of ((M[s]||{}).x||[])){ if(S.end||S.done) break; tcgAct(S,G,s,A,ev); }
     if(!S.end&&S.act[s]===null){ if(S.bench[s].length) tcgAct(S,G,s,["p",0],ev); else S.end={w:1-s,why:"ko"}; }
@@ -6325,7 +6374,9 @@ CG_ENG.cbt={
     if(S.phase==="setup"){ let P=S.hand[side].slice().sort((a,b)=>tcgMax(b,G,side)-tcgMax(a,G,side));
       const gs=[...new Set(P.map(id=>tcgOf(id).g))]; const pick=[]; for(const g of gs){ const id=P.find(x=>tcgOf(x).g===g&&!pick.includes(x)); if(id) pick.push(id); } for(const id of P) if(pick.length<5&&!pick.includes(id)) pick.push(id);
       if(G.cap){ while(pick.length>1&&tcgTeamOvr(pick,G,side)>TCG_CAP){ const lo=P.slice().reverse().find(x=>!pick.includes(x)); const hi=pick.slice().sort((a,b)=>BY_ID[b].ovr-BY_ID[a].ovr)[0]; pick.splice(pick.indexOf(hi),1); if(lo&&tcgTeamOvr([...pick,lo],G,side)<=TCG_CAP) pick.push(lo); } }
-      return {a:pick[0],b:pick.slice(1,5)}; }
+      const cos=tcgCoaches(G.src,G.players[side]); let co=null,cv=0; for(const c of cos){ const v=pick.filter(id=>tcgCoachOk(c,id)).length; if(v>cv){ cv=v; co=c; } }
+      const g=pick.filter(id=>TCG_STAD.gerland.f(BY_ID[tcgBase(id)]||BY_ID[id])).length;
+      return {a:pick[0],b:pick.slice(1,5),co,st:g>=3?"gerland":"groupama",ac:G.dumb?["soin","cf","jaune"]:["cf","soin","mur"]}; }
     if(!G.dumb) return tcgCpuSmart(S,G,side);
     const T=JSON.parse(JSON.stringify(S)), x=[]; const go=A=>{ if(tcgAct(T,G,side,A,[])) x.push(A); };
     if(T.act[side]===null){ let bi=0; T.bench[side].forEach((c,i)=>{ if(c.hp+c.e*20>T.bench[side][bi].hp+T.bench[side][bi].e*20) bi=i; }); go(["p",bi]); if(T.act[side]&&T.act[side].e<1) T.act[side].e=0; }
@@ -6373,8 +6424,17 @@ function cgStatsHTML(){ const c=W(), st=(c.cg||{}).st||{}, H=(c.cg||{}).hist||[]
 function tcgThreat(T,G,s){ const o=1-s; const a=T.act[o], d=T.act[s]; if(!a||!d) return 0; const e=Math.min(5,a.e+1); let best=0;
   for(const ai of [0,1]) if(e>=tcgCost(a.id,ai)){ const R=tcgDmg(Object.assign({},T,{act:s===0?[d,a]:[a,d]}),G,o,ai); best=Math.max(best,R.dmg); } return best; }
 function tcgCpuSmart(S,G,side){ const T=JSON.parse(JSON.stringify(S)); const x=[]; const o=1-side;
+  const useAct=k=>{ if(tcgUseAct(T,G,side,k,[])){ x.push(["c",k]); return true; } return false; };
   if(T.act[side]===null){ const d=T.act[o]; let bi=0,bv=-1e9; T.bench[side].forEach((c,i)=>{ const tc=tcgOf(c.id); let v=c.hp+c.e*25; if(d){ if(CG_BEATS[tc.g]===tcgOf(d.id).g) v+=60; if(CG_BEATS[tcgOf(d.id).g]===tc.g) v-=50; } if(v>bv){ bv=v; bi=i; } }); tcgAct(T,G,side,["p",bi],[]); x.push(["p",bi]); }
   const a=T.act[side], d=T.act[o]; if(!a||!d) return {x:[...x,["x"]]};
+  if(!T.acted&&!(T.first===side&&T.n===0)){ const thr=tcgThreat(T,G,side);
+    if(a.e+1===tcgCost(a.id,1)||(a.e+1>=tcgCost(a.id,0)&&a.e<tcgCost(a.id,0))) useAct("cf");
+    if(!T.acted&&a.hp<a.mx*.4&&thr<a.hp+30) useAct("soin");
+    if(!T.acted&&thr>=a.hp) useAct("mur");
+    if(!T.acted&&d.e>=3) useAct("jaune");
+    if(!T.acted&&T.sc[side]<T.sc[o]) useAct("remo");
+    if(!T.acted&&T.bench[side].some(c=>c.hp<c.mx-25)) useAct("mt");
+    if(!T.acted&&a.e>=tcgCost(a.id,1)) useAct("kop"); }
   const firstT=T.first===side&&T.n===0; const can=firstT?[]:[1,0].filter(ai=>a.e>=tcgCost(a.id,ai));
   const dm=ai=>tcgDmg(T,G,side,ai).dmg;
   // 1) K.O. possible : on le prend
