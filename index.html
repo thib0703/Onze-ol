@@ -1185,24 +1185,26 @@ body.lowfx .tile,body.lowfx .vt img,body.lowfx .hype,body.lowfx .pkbtn,body.lowf
 .pyst{width:calc(46% + var(--i)*-6% + 30%);text-align:center;font-size:12px;font-weight:700;padding:5px;border-radius:8px;background:#000a;border:1px solid #ffffff22;color:#cfd9f5}
 .pyst.ok{background:linear-gradient(90deg,#1f8a4c,#2fb36a);color:#fff}.pyst.on{border-color:#ffd970;box-shadow:0 0 12px #ffd97088;color:#fff}
 /* carte TCG : cadre (image) + textes posés dans les zones */
-.tcg{--w:180px;position:relative;width:var(--w);height:calc(var(--w)*1.5);display:inline-block;flex:none;font-size:calc(var(--w)*.058);color:#fff;user-select:none;cursor:pointer}
+.tcg{--ox:3.7%;--oy:5.4%;--nx:25%;--nr:22.5%;--ny:8.3%;--nh:6.7%;--px:80%;--py:7.2%;--wt:20.6%;--wh:35.6%;--wx:10.3%;--hy:60.5%;--a1:67.2%;--a2:78.3%;--ah:9%;--ay:88.9%;--abh:4.7%;--w:180px;position:relative;}
+.tcg.t-ul{--ox:2.2%;--oy:7.6%;--nx:24.2%;--nr:21.7%;--ny:10.9%;--nh:5.8%;--px:80.8%;--py:10%;--wt:21.1%;--wh:33.3%;--wx:10.8%;--hy:57.8%;--a1:64.2%;--a2:74.8%;--ah:9.1%;--ay:85.6%;--abh:4.4%}
+.tcg{width:var(--w);height:calc(var(--w)*1.5);display:inline-block;flex:none;font-size:calc(var(--w)*.058);color:#fff;user-select:none;cursor:pointer}
 .tcg-fr{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none}
-.tcg-face{position:absolute;left:10.5%;right:10.5%;top:20.5%;height:36%;z-index:1;overflow:hidden;display:flex;align-items:flex-end;justify-content:center;background:radial-gradient(circle at 50% 35%,#ffffff40,transparent 60%),linear-gradient(160deg,#e3002b,#13306b)}
+.tcg-face{position:absolute;left:var(--wx);right:var(--wx);top:var(--wt);height:var(--wh);z-index:1;overflow:hidden;display:flex;align-items:flex-end;justify-content:center;background:radial-gradient(circle at 50% 35%,#ffffff40,transparent 60%),linear-gradient(160deg,#e3002b,#13306b)}
 .tcg.t-icon .tcg-face{background:radial-gradient(circle at 50% 35%,#fff8,transparent 60%),linear-gradient(160deg,#c9a24a,#13306b)}
 .tcg.t-myth .tcg-face{background:radial-gradient(circle at 50% 35%,#fff8,transparent 60%),linear-gradient(160deg,#ff6ad5,#6ad5ff 50%,#ffe76a)}
 .tcg.t-ul .tcg-face{background:radial-gradient(circle at 50% 35%,#ffd97088,transparent 60%),linear-gradient(160deg,#2a2208,#000)}
 .tcg-face img{width:100%;height:100%;object-fit:cover;object-position:top}.tcg-face.art img{object-position:center}.tcg-face span{font-size:3em;font-weight:900;opacity:.6;align-self:center}
-.tcg-ovr{position:absolute;z-index:3;left:4.2%;top:6.6%;width:18.5%;height:12.4%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:2em;text-shadow:0 2px 4px #000}
-.tcg-nm{position:absolute;z-index:3;left:27%;right:23%;top:9.5%;height:5.6%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.95em;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-shadow:0 1px 3px #000}
+.tcg-ovr{position:absolute;z-index:3;left:var(--ox);top:var(--oy);width:18.3%;height:12.2%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:2em;text-shadow:0 2px 4px #000}
+.tcg-nm{position:absolute;z-index:3;left:var(--nx);right:var(--nr);top:var(--ny);height:var(--nh);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.95em;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-shadow:0 1px 3px #000}
 .tcg-nm i{font-style:normal;color:#7ee2a0;margin-left:3px}
-.tcg-ic{position:absolute;z-index:3;left:79.5%;top:7.5%;width:14.5%;aspect-ratio:1;border-radius:50%}
-.tcg-hp{position:absolute;z-index:3;left:14%;right:14%;top:59.6%;height:3.8%;background:#0009;border-radius:99px;overflow:hidden}
+.tcg-ic{position:absolute;z-index:3;left:var(--px);top:var(--py);width:13.3%;aspect-ratio:1;border-radius:50%}
+.tcg-hp{position:absolute;z-index:3;left:14%;right:14%;top:var(--hy);height:3%;background:#0009;border-radius:99px;overflow:hidden}
 .tcg-hp i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#2fb36a,#7ee2a0);border-radius:99px;transition:width .5s}.tcg-hp i.mid{background:linear-gradient(90deg,#d9a21b,#ffd970)}.tcg-hp i.lo{background:linear-gradient(90deg,#b4232b,#ff6a6a)}
 .tcg-hp b{position:relative;display:flex;align-items:center;justify-content:center;height:100%;font-size:.85em;text-shadow:0 1px 2px #000}
-.tcg-a{position:absolute;z-index:3;left:6.5%;right:7.5%;height:8.6%;display:flex;align-items:center}.tcg-a.a1{top:67.9%}.tcg-a.a2{top:78.6%}
-.tcg-c{width:12.5%;flex:none;text-align:center;font-weight:900;font-size:.9em;margin-left:1%}
-.tcg-a b{flex:1;padding-left:4%;font-size:.95em;line-height:1.05;text-shadow:0 1px 3px #000}.tcg-a em{font-style:normal;font-weight:900;font-size:1.25em;padding-right:4%;color:#ffd970;text-shadow:0 1px 3px #000}
-.tcg-ab{position:absolute;z-index:3;left:9%;right:9%;top:89%;height:5%;display:flex;align-items:center;justify-content:center;font-size:.6em;text-align:center;line-height:1.05;overflow:hidden;text-shadow:0 1px 2px #000}
+.tcg-a{position:absolute;z-index:3;left:6.4%;right:6.7%;height:var(--ah);display:flex;align-items:center}.tcg-a.a1{top:var(--a1)}.tcg-a.a2{top:var(--a2)}
+.tcg-c{position:absolute;left:.8%;width:13.4%;top:0;bottom:0;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1.15em;line-height:1;text-shadow:0 1px 3px #000}.tcg-c i{font-style:normal;font-size:.62em;margin-left:1px}
+.tcg-a b{flex:1;padding-left:17%;font-size:.95em;line-height:1.05;text-shadow:0 1px 3px #000}.tcg-a em{font-style:normal;font-weight:900;font-size:1.25em;padding-right:4%;color:#ffd970;text-shadow:0 1px 3px #000}
+.tcg-ab{position:absolute;z-index:3;left:9%;right:9%;top:var(--ay);height:var(--abh);display:flex;align-items:center;justify-content:center;font-size:.6em;text-align:center;line-height:1.05;overflow:hidden;text-shadow:0 1px 2px #000}
 .tcg.t-icon .tcg-nm,.tcg.t-icon .tcg-a b,.tcg.t-icon .tcg-ab,.tcg.t-icon .tcg-c,.tcg.t-icon .tcg-ovr{color:#3a2a06;text-shadow:none}.tcg.t-icon .tcg-a em{color:#8a4b00;text-shadow:none}
 .tcg.mini .tcg-a,.tcg.mini .tcg-ab,.tcg.mini .tcg-nm{display:none}.tcg.mini .tcg-hp b{font-size:0}
 .tcg.ko{filter:grayscale(1) brightness(.6)}.tcg-kos{position:absolute;z-index:4;inset:30% 0 auto;text-align:center;font-weight:900;font-size:2.4em;color:#ff5a5a;transform:rotate(-12deg);text-shadow:0 2px 6px #000}
@@ -5995,7 +5997,7 @@ function tcgHTML(id,o={}){ const p=BY_ID[id]; if(!p) return ""; const T=tcgOf(id
     <img class="tcg-fr" src="img/tcg/cadre-${tcgFrame(p)}.webp" alt="">
     <div class="tcg-ovr">${T.ovr}</div><div class="tcg-nm">${esc(nm)}${T.lv?` <i>+${T.lv}</i>`:""}</div><img class="tcg-ic" src="${CG_GRP[T.g].ic}" alt="${CG_GRP[T.g].n}">
     <div class="tcg-hp"><i style="width:${pct}%" class="${pct<30?"lo":pct<60?"mid":""}"></i><b>${Math.max(0,Math.round(hp))} / ${hpm} PV</b></div>
-    ${T.a.map((a,i)=>`<div class="tcg-a a${i+1}"><span class="tcg-c">${a.c}⚡</span><b>${esc(a.n)}</b><em>${a.d}</em></div>`).join("")}
+    ${T.a.map((a,i)=>`<div class="tcg-a a${i+1}"><span class="tcg-c">${a.c}<i>⚡</i></span><b>${esc(a.n)}</b><em>${a.d}</em></div>`).join("")}
     <div class="tcg-ab">${T.ab.n?`<b>${esc(T.ab.n)}</b>&nbsp;·&nbsp;${esc(T.ab.d)}`:"—"}</div>
     ${o.ko?`<div class="tcg-kos">K.O.</div>`:""}</div>`; }
 const tcgBackHTML=(w,cls)=>`<div class="tcg tcg-back${cls?" "+cls:""}" style="--w:${w||120}px"><img class="tcg-fr" src="img/tcg/dos.webp" alt=""></div>`;
