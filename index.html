@@ -1213,6 +1213,77 @@ body.lowfx .tile,body.lowfx .vt img,body.lowfx .hype,body.lowfx .pkbtn,body.lowf
 .tcg.ko{filter:grayscale(1) brightness(.6)}.tcg-kos{position:absolute;z-index:4;inset:30% 0 auto;text-align:center;font-weight:900;font-size:2.4em;color:#ff5a5a;transform:rotate(-12deg);text-shadow:0 2px 6px #000}
 .tcg.act{filter:drop-shadow(0 0 12px #ffd97088)}
 .tcg-back{cursor:default}
+/* 🎬 animations des jeux de cartes */
+.cgstage{display:flex;flex-direction:column;align-items:center;gap:8px;padding:6px 0 14px;position:relative}
+.stg-t{font-weight:900;font-size:17px;text-shadow:0 2px 8px #000;animation:cgpop .35s both}
+.stg-k{font-size:14px;background:#000b;border-radius:12px;padding:6px 12px;animation:cgpop .35s .7s both}
+.stg-r{font-size:18px;font-weight:900;border-radius:14px;padding:8px 16px;background:#000c;border:2px solid #ffd970;animation:cgpopbig .45s 1.35s both}
+.stg-r.w{border-color:#43d17a;box-shadow:0 0 24px #43d17a88}.stg-r.l{border-color:#ff5a5a;box-shadow:0 0 24px #ff5a5a66}
+.rv{display:flex;align-items:center;justify-content:center;gap:6px}
+.rvc{display:flex;flex-direction:column;align-items:center;gap:4px;transition:none}
+.rvc.me{animation:cgslideL .45s both}.rvc.opp{animation:cgslideR .45s both}
+.rvn{font-size:30px;font-weight:900;color:#ffd970;text-shadow:0 2px 10px #000;animation:cgpopbig .4s 1s both}
+.rvc.w{animation:cgslideL .45s both,cgwin .6s 1.35s both}.rvc.opp.w{animation:cgslideR .45s both,cgwin .6s 1.35s both}
+.rvc.l{animation:cgslideL .45s both,cglose .6s 1.35s both}.rvc.opp.l{animation:cgslideR .45s both,cglose .6s 1.35s both}
+.cgvs.big{font-size:22px;animation:cgpulse 1s .2s 2;text-align:center;align-self:center;width:auto}
+.flip3{display:grid;perspective:700px}.flip3>div{grid-area:1/1;backface-visibility:hidden;-webkit-backface-visibility:hidden;display:flex;justify-content:center;align-items:center}
+.flip3 .fb{animation:cgflipA .5s .35s both}.flip3 .ff{animation:cgflipB .5s .35s both}
+.stg-k .slot{display:inline-block;animation:cgslot .7s .3s both}
+.pyr.sm .pyst{font-size:11px;padding:3px}.pyst.climb{animation:cgclimb .7s 1.5s both}.pyst.fall{animation:cgshake .5s 1.4s both}
+@keyframes cgslideL{from{transform:translateX(-60px) rotate(-8deg);opacity:0}to{transform:none;opacity:1}}
+@keyframes cgslideR{from{transform:translateX(60px) rotate(8deg);opacity:0}to{transform:none;opacity:1}}
+@keyframes cgflipA{from{transform:rotateY(0)}to{transform:rotateY(180deg)}}
+@keyframes cgflipB{from{transform:rotateY(-180deg)}to{transform:rotateY(0)}}
+@keyframes cgpopbig{0%{transform:scale(.3);opacity:0}70%{transform:scale(1.15);opacity:1}100%{transform:scale(1)}}
+@keyframes cgwin{0%{transform:scale(1)}50%{transform:scale(1.12)}100%{transform:scale(1.06);filter:drop-shadow(0 0 16px #ffd970)}}
+@keyframes cglose{to{transform:scale(.92);filter:grayscale(.85) brightness(.7)}}
+@keyframes cgpulse{50%{transform:scale(1.3)}}
+@keyframes cgslot{0%{filter:blur(4px);transform:translateY(-12px);opacity:0}100%{filter:none;transform:none;opacity:1}}
+@keyframes cgclimb{0%{transform:scale(1)}50%{transform:scale(1.15);background:#2fb36a;box-shadow:0 0 22px #7ee2a0}100%{transform:scale(1);background:linear-gradient(90deg,#1f8a4c,#2fb36a);color:#fff}}
+@keyframes cgshake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+/* tirs au but */
+.pen{position:relative;width:100%;max-width:340px;height:230px;border-radius:16px;overflow:hidden;background:radial-gradient(ellipse at 50% 120%,#2f8f3a,#14501d 60%,#0b2a12);box-shadow:inset 0 0 40px #000a}
+.pen .goal{position:absolute;left:12%;right:12%;top:18px;height:92px;border:5px solid #fff;border-bottom:0;border-radius:4px 4px 0 0;box-shadow:0 0 14px #fff8}
+.pen .net{position:absolute;inset:0;background:repeating-linear-gradient(90deg,#ffffff30 0 1px,transparent 1px 12px),repeating-linear-gradient(0deg,#ffffff30 0 1px,transparent 1px 12px)}
+.cgav{display:inline-flex;width:54px;height:54px;border-radius:50%;overflow:hidden;border:3px solid #ffd970;background:#13306b;align-items:center;justify-content:center;box-shadow:0 4px 12px #000a}
+.cgav img{width:100%;height:100%;object-fit:cover}.cgav b{font-size:16px}
+.pen .kp{position:absolute;left:calc(50% - 27px);top:52px;animation:none}
+.pen .sh{position:absolute;left:calc(50% - 27px);bottom:8px}
+.pen .ball{position:absolute;left:calc(50% - 13px);bottom:64px;font-size:26px;--bx:0px;--by:-120px}
+.pen.d-G .ball{--bx:-100px}.pen.d-D .ball{--bx:100px}.pen.r-m .ball{--by:-175px}.pen.r-m.d-C .ball{--bx:-12px}
+.pen.r-m:not(.pw) .ball{--bx:-128px;--by:-118px}.pen.r-m:not(.pw).d-D .ball{--bx:128px}
+.pen.r-s .ball{--by:-100px}
+.pen .ball{animation:cgshot .55s .65s cubic-bezier(.2,.7,.4,1) both}
+.pen.k-G .kp{animation:cgdiveG .5s .7s both}.pen.k-D .kp{animation:cgdiveD .5s .7s both}.pen.k-C .kp{animation:cgjump .5s .7s both}
+.pen.r-g .net{animation:cgnet .4s 1.15s both}
+.pres{position:absolute;left:0;right:0;top:118px;text-align:center;font-size:30px;font-weight:900;color:#ffd970;text-shadow:0 3px 10px #000,0 0 20px #ffd970;animation:cgpopbig .45s 1.2s both}.pres.l{color:#ff7a7a;text-shadow:0 3px 10px #000}
+@keyframes cgshot{from{transform:translate(0,0) scale(1)}to{transform:translate(var(--bx),var(--by)) scale(.62)}}
+@keyframes cgdiveG{to{transform:translate(-96px,8px) rotate(-70deg)}}@keyframes cgdiveD{to{transform:translate(96px,8px) rotate(70deg)}}@keyframes cgjump{50%{transform:translateY(-14px)}}
+@keyframes cgnet{50%{transform:scale(1.04,1.08)}}
+/* combat */
+.cgcbt{gap:4px}.cgcbt .cgside{position:relative}
+.cgteam{display:flex;gap:6px}.dealc{animation:cgdeal .5s both}
+.cgdmg{position:absolute;left:50%;top:40%;transform:translateX(-50%);font-size:40px;font-weight:900;color:#fff;text-shadow:0 0 6px #e3002b,0 3px 0 #a00,0 6px 14px #000;z-index:9;animation:cgdmg 1s both;pointer-events:none;white-space:nowrap;text-align:center}
+.cgdmg.sup{color:#ffd970}.cgdmg small{display:block;font-size:12px;color:#ffd970}
+.cgpop{position:absolute;left:50%;top:-6px;transform:translateX(-50%);background:#000c;border-radius:10px;padding:3px 9px;font-size:12px;z-index:9;animation:cgdmg 1.2s both;white-space:nowrap}
+.tcg-hp i[data-hpa]{animation:cghp .7s var(--hd,0s) forwards}
+.tcg.kofx{animation:cgko .8s var(--kd,0s) both}
+.kostamp{position:absolute;left:0;right:0;top:35%;text-align:center;font-size:44px;font-weight:900;color:#ff5a5a;text-shadow:0 3px 10px #000;transform:rotate(-12deg);z-index:9;animation:cgpopbig .5s both}
+@keyframes cghp{to{width:var(--to)}}
+@keyframes cglungeU{50%{transform:translateY(-46px) scale(1.06)}}@keyframes cglungeD{50%{transform:translateY(46px) scale(1.06)}}
+@keyframes cghit{0%,100%{transform:none;filter:none}20%{transform:translateX(-10px);filter:brightness(2) saturate(2) hue-rotate(-30deg)}40%{transform:translateX(10px)}60%{transform:translateX(-6px)}}
+@keyframes cgdmg{0%{opacity:0;transform:translate(-50%,10px) scale(.5)}20%{opacity:1;transform:translate(-50%,-10px) scale(1.2)}80%{opacity:1;transform:translate(-50%,-40px) scale(1)}100%{opacity:0;transform:translate(-50%,-60px)}}
+/* distribution des cartes en début de partie */
+@keyframes cgdeal{from{transform:translateY(-120px) rotate(-20deg) scale(.6);opacity:0}to{transform:none;opacity:1}}
+.cgwrap.deal .cghand>*,.cgwrap.deal .cgduo>*,.cgwrap.deal .cgopp>.tcg{animation:cgdeal .5s both}
+.cgwrap.deal .cghand>*:nth-child(2){animation-delay:.1s}.cgwrap.deal .cghand>*:nth-child(3){animation-delay:.2s}.cgwrap.deal .cghand>*:nth-child(4){animation-delay:.3s}.cgwrap.deal .cghand>*:nth-child(5){animation-delay:.4s}.cgwrap.deal .cghand>*:nth-child(6){animation-delay:.5s}.cgwrap.deal .cghand>*:nth-child(n+7){animation-delay:.6s}
+/* fin de partie */
+.cgend.boom{animation:cgpopbig .6s both;position:relative;overflow:visible}
+.cgconf{position:fixed;inset:0;pointer-events:none;z-index:999;overflow:hidden}
+.cgconf i{position:absolute;top:-20px;width:9px;height:14px;border-radius:2px;animation:cgfall 2s ease-in both}
+@keyframes cgfall{to{transform:translate(var(--x),105vh) rotate(var(--r))}}
+.cgend.lose.boom{animation:cgshake .5s both}
+body.lowfx .cgstage *{animation-duration:.01s!important;animation-delay:0s!important}
 </style>
 </head>
 <body>
@@ -6145,7 +6216,7 @@ function onCardData(all){ const prev=cgOnline; cgOnline={};
     if(x.status==="running"&&was&&JSON.stringify(was.mv||{})!==JSON.stringify(x.mv||{})){ const S=cgReplay(x), side=x.players.indexOf(me); if(cgNeedMe(x,S,side)&&!(cgCur&&cgCur.id===k&&mode==="cards")) toast(`🃏 À toi de jouer : ${CG_MODES[x.g].n} contre ${NAMES[o]||"?"}`); } }
   if(cgCur&&cgCur.id&&cgOnline[cgCur.id]) cgCur=cgOnline[cgCur.id];
   try{ cgSettle(); }catch(e){}
-  if(mode==="cards") renderCards(); try{ renderHubs(); }catch(e){} }
+  if(mode==="cards"&&Date.now()>=cgBusyTill) renderCards(); try{ renderHubs(); }catch(e){} }
 const cgRef=id=>db.collection("onzeol_drafts").doc(id);
 function cgMine(){ return Object.values(cgOnline).filter(x=>x.status!=="cancelled"&&!(x.status==="done"&&x.at<Date.now()-3*86400000)).sort((a,b)=>b.at-a.at); }
 function cgTodo(){ let n=0; for(const x of cgMine()){ const side=x.players.indexOf(me); if(x.status==="lobby"&&x.by!==me) n++; else if(x.status==="running"){ const S=cgReplay(x); if(cgNeedMe(x,S,side)) n++; } } return n; }
@@ -6212,12 +6283,90 @@ function pomBoardHTML(){ const L=Object.keys(NAMES).map(u=>({u,b:((C(u).cg||{}).
   const my=((W().cg||{}).pom||{}); return `<div class="cgrules">🏆 <b>Meilleures séries</b> (toutes les cartes)${L.length?L.map((x,i)=>`<div class="cgrk${x.u===me?" me":""}"><span>${i+1}. ${esc(NAMES[x.u])}</span><b>${x.b}</b></div>`).join(""):`<div class="mute">Personne encore : à toi d'ouvrir le bal !</div>`}${my.best?`<div class="mute" style="margin-top:4px">Ton record : <b>${my.best}</b>${my.d===today()?` · aujourd'hui : ${my.db||0}`:""}</div>`:""}</div>`; }
 
 // --- écran de jeu ---
+
+// ======================================================================
+// 🎬 JEUX DE CARTES : animations et sons. Après chaque coup, une « scène » rejoue la manche (révélation, tir, attaque…)
+// puis l'écran normal revient. cgSeen retient le dernier coup déjà montré pour chaque partie.
+// ======================================================================
+let cgSeen={}, cgBusyTill=0, cgPend=false, cgFxT=null;
+const cgSnd=(k,...a)=>{ try{ if(SFX&&SFX[k]) SFX[k](...a); }catch(_){} };
+const cgAt=(ms,f)=>setTimeout(f,ms);
+const cgAvatar=(id,cls)=>{ const p=BY_ID[id]; if(!p) return ""; const b=p.base||p.id; return `<span class="cgav ${cls||""}">${TCG_ART.has(b)?`<img src="img/tcg/art/${b}.webp?v=${IMGV}" alt="">`:PORTRAITS.has(b)?`<img src="img/cartes/${b}.webp?v=${IMGV}" alt="">`:`<b>${esc(initials(p.name))}</b>`}</span>`; };
+function cgConfetti(n){ let h=""; const C=["#ffd970","#e3002b","#1d4aa0","#7ee2a0","#ffffff","#ff6ad5"]; for(let i=0;i<n;i++) h+=`<i style="left:${(Math.random()*100).toFixed(1)}%;background:${C[i%C.length]};animation-delay:${(Math.random()*.6).toFixed(2)}s;animation-duration:${(1.6+Math.random()*1.4).toFixed(2)}s;--r:${Math.floor(Math.random()*720-360)}deg;--x:${Math.floor(Math.random()*80-40)}px"></i>`; return `<div class="cgconf">${h}</div>`; }
+// révélation commune (Bataille, Duel, Pyramide) : ta carte, la sienne qui se retourne, la stat, le résultat
+function cgRevealStage(t,my,his,myEvo,hisEvo,k,myV,hisV,res,resTxt,hisVisible){
+  const cls=res>0?"w":res<0?"l":"d";
+  return `<div class="cgstage rvst">
+    <div class="stg-t">${t}</div>
+    <div class="rv">
+      <div class="rvc me ${cls}">${cgCard(my,124,{evo:myEvo})}<b class="rvn">${myV}</b></div>
+      <i class="cgvs big">VS</i>
+      <div class="rvc opp ${res>0?"l":res<0?"w":"d"}">${hisVisible?cgCard(his,124,{evo:hisEvo}):`<div class="flip3"><div class="fb">${tcgBackHTML(124)}</div><div class="ff">${cgCard(his,124,{evo:hisEvo})}</div></div>`}<b class="rvn">${hisV}</b></div>
+    </div>
+    <div class="stg-k">${k}</div>
+    <div class="stg-r ${cls}">${resTxt}</div></div>`; }
+const CG_FX={};
+CG_FX.bat=(G,S,side)=>{ const L=S.log[S.log.length-1]; const o=1-side; const my=side===0?L.a:L.b, his=side===0?L.b:L.a, mv=side===0?L.va:L.vb, hv=side===0?L.vb:L.va; const r=L.w===side?1:L.w===-1?0:-1;
+  cgAt(0,()=>cgSnd("whoosh")); cgAt(450,()=>cgSnd("flip")); cgAt(1050,()=>cgSnd("tick")); cgAt(1350,()=>r>0?cgSnd("chime","gold"):r<0?cgSnd("thump"):cgSnd("tick"));
+  return {d:2500,html:cgRevealStage(`Manche ${S.log.length}`,my,his,G.evo[side][my],G.evo[o][his],`📊 ${CG_N[L.k]}`,mv,hv,r,r>0?"✅ Manche gagnée !":r<0?"❌ Manche perdue":"🤝 Égalité")}; };
+CG_FX.duel=(G,S,side)=>{ const L=S.log[S.log.length-1]; const o=1-side; const my=side===0?L.a:L.b, his=side===0?L.b:L.a, mv=side===0?L.va:L.vb, hv=side===0?L.vb:L.va; const r=L.w===side?1:L.w===-1?0:-1;
+  cgAt(0,()=>cgSnd("whoosh")); cgAt(450,()=>cgSnd("flip")); cgAt(1050,()=>cgSnd("tick")); cgAt(1350,()=>r>0?cgSnd("chime","gold"):r<0?cgSnd("thump"):cgSnd("tick"));
+  return {d:2500,html:cgRevealStage(`Manche ${S.log.length}/5`,my,his,G.evo[side][my],G.evo[o][his],`📊 ${CG_N[L.k]}`,mv,hv,r,r>0?"✅ Manche gagnée !":r<0?"❌ Manche perdue":"🤝 Égalité")}; };
+CG_FX.pyr=(G,S,side)=>{ const P=S.p[side], L=P.log[P.log.length-1]; const r=L.win?1:-1;
+  cgAt(0,()=>cgSnd("whoosh")); cgAt(700,()=>cgSnd("tick")); cgAt(900,()=>cgSnd("tick")); cgAt(1350,()=>r>0?cgSnd("chime",PYR_T[L.f]):cgSnd("heartbeat"));
+  const st=PYR_T.map((t,i)=>`<div class="pyst${i<L.f?" ok":""}${i===L.f?(L.win?" climb":" fall"):""}" style="--i:${i}">${TIER_NAME[t]}</div>`).reverse().join("");
+  return {d:2600,html:cgRevealStage(`Étage ${TIER_NAME[PYR_T[L.f]]}`,L.id,L.opp,G.evo[side][L.id],0,`🎲 Stat cachée : <b class="slot">${CG_N[L.k]}</b>`,L.v,L.vo,r,L.win?(L.f>=4?"👑 Sommet atteint !":"⬆️ Tu montes !"):"💔 Une vie perdue",true)+`<div class="pyr sm">${st}</div>`}; };
+CG_FX.tab=(G,S,side)=>{ const L=S.log[S.log.length-1]; const mine=L.sh===side; const goal=L.res==="but"; const good=goal===mine;
+  const cls=`d-${L.d} k-${L.gd} r-${goal?"g":L.res==="arrêt"?"s":"m"}${L.pw?" pw":""}`;
+  cgAt(0,()=>cgSnd("whistle")); cgAt(650,()=>cgSnd("whoosh")); cgAt(1150,()=>goal?cgSnd("goal"):L.res==="arrêt"?(cgSnd("thump"),cgSnd("crowd",1.2,.15)):cgSnd("crowd",1.4,.12));
+  if(good) cgAt(1150,()=>pxVib([30,40,30]));
+  return {d:2600,html:`<div class="cgstage">
+    <div class="stg-t">${mine?"⚽ Ton tir":"🧤 Ton arrêt"} · ${S.log.length<=10?`tir ${S.log.length}/10`:"mort subite"}</div>
+    <div class="pen ${cls}"><div class="goal"><i class="net"></i></div>${cgAvatar(L.gid,"kp")}<span class="ball">⚽</span>${cgAvatar(L.sid,"sh")}
+      <div class="pres ${good?"w":"l"}">${goal?"BUT !":L.res==="arrêt"?"ARRÊT !":L.res==="poteau"?"POTEAU !":"AU-DESSUS !"}</div></div>
+    <div class="stg-k">${esc(short(BY_ID[L.sid].name))} tire ${TAB_DN[L.d]}${L.pw?" (puissant)":""} · ${esc(short(BY_ID[L.gid].name))} plonge ${TAB_DN[L.gd]}</div>
+    <div class="stg-r ${good?"w":"l"}">Toi ${S.sc[side]} - ${S.sc[1-side]} ${cgNm(G.players[1-side])}</div></div>`}; };
+CG_FX.cbt=(G,S,side,prev)=>{ const o=1-side; const last=S.log[S.log.length-1];
+  if(last.start){ cgAt(0,()=>cgSnd("whistle")); [0,1,2].forEach(i=>cgAt(300+i*220,()=>cgSnd("flip")));
+    const team=s=>S.t[s].map((id,i)=>`<span class="dealc" style="animation-delay:${(.25+i*.22).toFixed(2)}s">${tcgHTML(id,{w:96,evo:G.evo[s][id]||0,lvl:G.tl[s][id]||0,cls:"mini"})}</span>`).join("");
+    return {d:2000,html:`<div class="cgstage"><div class="stg-t">🔥 Coup d'envoi !</div><div class="cgteam">${team(o)}</div><i class="cgvs big">VS</i><div class="cgteam">${team(side)}</div></div>`}; }
+  const ev=last.ev||[]; const cur=[prev.t[0][prev.act[0]],prev.t[1][prev.act[1]]], hp0={}, fx={0:[],1:[]}; let t=.35, ko=null;
+  const hpOf=(st,s,id)=>{ const i=st.t[s].indexOf(id); return i<0?0:st.hp[s][i]; };
+  for(const e of ev){ if(e.sw){ cur[e.s]=e.sw; fx[e.s].push(`<b class="cgpop sw" style="animation-delay:${t}s">🔄 Changement</b>`); cgAt(t*1000,()=>cgSnd("flip")); t+=.6; continue; }
+    if(e.fail){ fx[e.s].push(`<b class="cgpop" style="animation-delay:${t}s">⚡ Pas assez d'énergie</b>`); t+=.5; continue; }
+    if(e.in){ continue; }
+    if(e.ko){ ko={s:e.s,t}; cgAt(t*1000,()=>{ cgSnd("thunder"); pxVib([60,40,60]); }); t+=.5; continue; }
+    const tg=1-e.s; fx[e.s].push(`<style>.cgcbt .s${e.s} .act{animation:cglunge${e.s===side?"U":"D"} .45s ${t.toFixed(2)}s both}</style>`);
+    fx[tg].push(`<b class="cgdmg${e.sup?" sup":""}" style="animation-delay:${(t+.3).toFixed(2)}s">-${e.dmg}${e.sup?"<small>super efficace !</small>":""}</b><style>.cgcbt .s${tg} .act{animation:cghit .5s ${(t+.3).toFixed(2)}s both}</style>`);
+    cgAt(t*1000,()=>cgSnd("whoosh")); cgAt((t+.3)*1000,()=>{ cgSnd("boom",!!e.sup); });
+    const h=hp0[tg]||(hp0[tg]={from:hpOf(prev,tg,cur[tg]),to:null,at:t+.3}); t+=.9; }
+  const card=(s,w)=>{ const id=cur[s]; const T=tcgOf(id,G.evo[s][id]||0,G.tl[s][id]||0); const from=hpOf(prev,s,id), to=hpOf(S,s,id);
+    const html=tcgHTML(id,{w,evo:G.evo[s][id]||0,lvl:G.tl[s][id]||0,hp:from,cls:"act"+(ko&&ko.s===s?" kofx":"")});
+    return html.replace('<i style="width:',`<i data-hpa="1" style="--to:${Math.max(0,to/T.hp*100).toFixed(1)}%;--hd:${hp0[s]?hp0[s].at:0}s;width:`).replace(/<b>\d+ \/ (\d+) PV<\/b>/,`<b>${Math.max(0,Math.round(to))} / $1 PV</b>`)+(ko&&ko.s===s?`<b class="kostamp" style="animation-delay:${ko.t}s">K.O. !</b><style>.cgcbt .s${s} .kofx{--kd:${ko.t}s}</style>`:""); };
+  return {d:Math.round(t*1000)+900,html:`<div class="cgstage cgcbt"><div class="cgside s${o} opp">${card(o,140)}${fx[o].join("")}</div><div class="cgside s${side} me">${card(side,150)}${fx[side].join("")}</div></div>`}; };
+// ↕️ Plus ou moins : la nouvelle carte se retourne à côté de l'ancienne
+function pomFx(g){ const L=g.last; const prevId=g.seq[(g.i-1)%g.seq.length], cur=g.seq[g.i%g.seq.length];
+  cgAt(0,()=>cgSnd("whoosh")); cgAt(450,()=>cgSnd("flip")); cgAt(1000,()=>L.ok?cgSnd(L.eq?"tick":"chime","silver"):cgSnd("thump"));
+  return {d:L.ok?1700:2100,html:`<div class="cgstage rvst"><div class="stg-t">${g.guess?"⬆️ Plus haute ?":"⬇️ Plus basse ?"}</div>
+    <div class="rv"><div class="rvc me">${cgCard(prevId,110)}<b class="rvn">${L.a}</b></div><i class="cgvs big">${g.guess?"⬆️":"⬇️"}</i>
+    <div class="rvc opp ${L.ok?"w":"l"}"><div class="flip3"><div class="fb">${tcgBackHTML(110)}</div><div class="ff">${cgCard(cur,110)}</div></div><b class="rvn">${L.b}</b></div></div>
+    <div class="stg-r ${L.ok?"w":"l"}">${L.eq?"🤝 Égalité, on continue":L.ok?`✅ Bien vu ! Série ${g.streak}`:"❌ Raté…"}</div></div>`}; }
+// scène affichée ? → on bloque les nouveaux rendus pendant l'animation, puis on revient à l'écran normal
+function cgStageWrap(stage){ clearTimeout(cgFxT); cgBusyTill=Date.now()+stage.d; cgFxT=setTimeout(()=>{ cgBusyTill=0; renderCards(); },stage.d); return stage.html; }
+function cgCountOf(G,S,side){ return G.g==="pyr"?S.p[side].log.length:S.log.length; }
+function cgPrevState(X,S){ if(X.g==="pyr") return null; const E=CG_ENG[X.g]; const S0=E.init(X); const mv=X.mv||{}; for(let i=0;i<S.i-1;i++){ const M={}; for(const s of E.need(S0)) M[s]=mv["r"+i+"_"+s]; E.step(S0,M,X); } return S0; }
+
 function cgGameHTML(){ const G=cgCur, X=cgG(G); const S=cgReplay(X); const side=G.cpu?0:G.players.indexOf(me), o=1-side; const opp=G.players[o];
   const head=`<div class="cgtop"><span>${CG_MODES[G.g].ic} <b>${CG_MODES[G.g].n}</b></span><small>contre ${cgNm(opp)} · ${G.src==="coll"?"🎴 collections":"🌍 toutes les cartes"}</small></div>`;
   if(G.status==="lobby"){ return head+(G.by===me?`<div class="cgmsg">⏳ Invitation envoyée à <b>${cgNm(opp)}</b>.<small>La partie commence dès qu'il accepte. Tu peux fermer, il sera prévenu.</small></div><button class="btn ghost" id="cgCancel">Annuler l'invitation</button>`:
     `<div class="cgmsg">📨 <b>${cgNm(G.by)}</b> t'invite à une partie de <b>${CG_MODES[G.g].n}</b> !<small>${G.src==="coll"?"Chacun joue avec sa collection.":"Avec toutes les cartes du jeu."}</small></div><div class="dbtns"><button class="btn big" id="cgYes">✅ Accepter</button><button class="btn ghost" id="cgNo">Refuser</button></div>`); }
+  const key=G.id||("cpu-"+G.seed), cnt=cgCountOf(X,S,side), was=cgSeen[key]; cgSeen[key]=cnt;
+  if(was!==undefined&&cnt>was&&CG_FX[G.g]){ try{ return head+cgStageWrap(CG_FX[G.g](X,S,side,cgPrevState(X,S))); }catch(e){ console.error(e); } }
+  if(was===undefined&&!S.end){ cgDealFx=true; [0,1,2].forEach(i=>cgAt(i*140,()=>cgSnd("flip"))); }
   const need=cgNeedMe(X,S,side); const body=CG_VIEW[G.g](X,S,side,need);
-  let foot=""; if(S.end){ const w=S.end.w; foot=`<div class="cgend ${w===side?"win":w===-1?"draw":"lose"}"><b>${w===side?"🏆 Victoire !":w===-1?"🤝 Égalité":"😞 Défaite"}</b><div class="dbtns"><button class="btn" id="cgAgain">🔁 Rejouer</button><button class="btn ghost" id="cgQuit">Retour aux jeux</button></div></div>`; }
+  let foot=""; if(S.end){ const w=S.end.w; const ek=key+"_end", boom=!cgSeen[ek]&&was!==undefined; cgSeen[ek]=1;
+    if(boom){ if(w===side){ cgAt(100,()=>cgSnd("fanfare")); cgAt(300,()=>cgSnd("cheer")); pxVib([40,60,40,60,120]); } else if(w===-1) cgAt(100,()=>cgSnd("chime","silver")); else cgAt(100,()=>{ cgSnd("thump"); cgAt(250,()=>cgSnd("thump")); }); }
+    foot=(boom&&w===side?cgConfetti(70):"")+`<div class="cgend ${w===side?"win":w===-1?"draw":"lose"}${boom?" boom":""}"><b>${w===side?"🏆 Victoire !":w===-1?"🤝 Égalité":"😞 Défaite"}</b><div class="dbtns"><button class="btn" id="cgAgain">🔁 Rejouer</button><button class="btn ghost" id="cgQuit">Retour aux jeux</button></div></div>`; }
   else if(!need&&!G.cpu) foot=`<div class="cgwait">⏳ En attente de ${cgNm(opp)}… <small>Tu seras prévenu quand c'est à toi.</small></div>`;
   return head+body+foot; }
 const CG_VIEW={};
@@ -6273,11 +6422,13 @@ let cgPick=null;
 let pomG=null;
 function pomNew(src){ const pool=cgPool(src,me); if(pool.length<CG_MIN.pom){ toast(cgPoolMsg("pom"),true); return; } pomG={src,seed:(Math.random()*2**31)>>>0,i:0,streak:0,pool,last:null}; pomG.seq=cgShuffle(pool,cgRng(pomG.seed)); renderCards(); }
 function pomGuess(up){ const g=pomG; if(!g||g.over) return; const a=BY_ID[g.seq[g.i%g.seq.length]].ovr; g.i++; if(g.i%g.seq.length===0) g.seq=cgShuffle(g.pool,cgRng(g.seed+g.i)); const b=BY_ID[g.seq[g.i%g.seq.length]].ovr;
-  const ok=b===a||(up?b>a:b<a); g.last={a,b,ok,eq:b===a}; if(ok){ if(b!==a) g.streak++; } else { g.over=1; pomEnd(); } renderCards(); }
+  const ok=b===a||(up?b>a:b<a); g.last={a,b,ok,eq:b===a}; g.guess=up; g.fx=1; if(ok){ if(b!==a) g.streak++; } else { g.over=1; pomEnd(); } renderCards(); }
 function pomEnd(){ const g=pomG; const c=W(); c.cg=c.cg||{}; const P=c.cg.pom=c.cg.pom||{best:0};
   if(g.src==="all"){ if(g.streak>(P.best||0)){ P.best=g.streak; setTimeout(()=>toast(`🏆 Nouveau record : ${g.streak} !`),500); } if(P.d!==today()){ P.d=today(); P.db=0; } P.db=Math.max(P.db||0,g.streak); }
   try{ track("play"); }catch(_){} const e=g.streak>=10?2:g.streak>=5?1:0; const got=eclatsGain(e,false); if(got) setTimeout(()=>toast(`+${got} 💠 Éclat${got>1?"s":""} pour ta série de ${g.streak}`),1200); save(); }
 function pomHTML(){ const g=pomG; const cur=g.seq[g.i%g.seq.length];
+  if(g.fx){ g.fx=0; return `<div class="cgtop"><span>↕️ <b>Plus ou moins</b></span></div>`+cgStageWrap(pomFx(g)); }
+  if(g.i===0&&!g.dealt){ g.dealt=1; cgDealFx=true; cgSnd("flip"); }
   return `<div class="cgtop"><span>↕️ <b>Plus ou moins</b></span><small>${g.src==="coll"?"🎴 ta collection (hors classement)":"🌍 toutes les cartes"}</small></div>
     <div class="cgscore"><span>Série <b>${g.streak}</b></span><small>Record ${((W().cg||{}).pom||{}).best||0}</small><span></span></div>
     ${g.last?`<div class="cgres ${g.last.ok?"win":"lose"}">${g.last.a} → ${g.last.b} · ${g.last.eq?"égalité, on continue":g.last.ok?"bien vu !":"raté…"}</div>`:""}
@@ -6285,12 +6436,13 @@ function pomHTML(){ const g=pomG; const cur=g.seq[g.i%g.seq.length];
     ${g.over?`<div class="cgend lose"><b>Série terminée : ${g.streak}</b><div class="dbtns"><button class="btn" id="pomAgain">🔁 Rejouer</button><button class="btn ghost" id="cgQuit">Retour aux jeux</button></div></div>`:
       `<div class="cgmsg sm">La prochaine carte a une note…</div><div class="cgdirs"><button class="btn big" data-pom="1">⬆️ Plus haute</button><button class="btn big" data-pom="0">⬇️ Plus basse</button></div><div class="mute" style="font-size:11px;text-align:center">Égalité = on continue (sans point)</div>`}`; }
 
-function renderCards(){ const V=$("#viewCards"); if(!V||!me) return; let html="", bg="";
+let cgDealFx=false;
+function renderCards(){ const V=$("#viewCards"); if(!V||!me) return; clearTimeout(cgFxT); cgBusyTill=0; cgDealFx=false; let html="", bg="";
   if(pomG&&cgSel==="pom"&&pomG.started){ html=pomHTML(); bg="pom"; }
   else if(cgCur&&cgSel==="game"){ html=cgGameHTML(); bg=cgCur.g; }
   else if(cgSel&&CG_MODES[cgSel]){ html=cardsSetupHTML(cgSel); bg=cgSel; }
   else html=cardsHomeHTML();
-  V.style.setProperty("--cgbg",bg?`url(img/jeux/fond-${bg}.webp)`:"none"); V.classList.toggle("cgplay",!!bg); V.innerHTML=`<div class="cgwrap">${html}</div>`; cgBind(V); renderBack(); }
+  V.style.setProperty("--cgbg",bg?`url(img/jeux/fond-${bg}.webp)`:"none"); V.classList.toggle("cgplay",!!bg); V.innerHTML=`<div class="cgwrap${cgDealFx?" deal":""}">${html}</div>`; cgBind(V); renderBack(); }
 function cgBind(V){ const on=(q,f)=>V.querySelectorAll(q).forEach(b=>b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); f(b); });
   on("[data-cgm]",b=>{ cgSel=b.dataset.cgm; renderCards(); window.scrollTo(0,0); });
   on("[data-cgsrc]",b=>{ cgSrc=b.dataset.cgsrc; renderCards(); });
@@ -6314,7 +6466,7 @@ function cgBind(V){ const on=(q,f)=>V.querySelectorAll(q).forEach(b=>b.onclick=e
   V.querySelectorAll("[data-tcg]").forEach(el=>{ if(el.closest("[data-cgt],[data-cgsw]")) return; el.onclick=e=>{ e.stopPropagation(); showTcg(el.dataset.tcg); }; }); }
 function openCards(from){ cgBack=from==="online"?"online":"solo"; NAV_OF.cards=cgBack==="online"?"nOnline":"nSolo"; if(!(cgCur&&cgSel==="game")) cgSel=null; setMode("cards"); }
 
-const APP_V="2026-11-27a"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-27b"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
