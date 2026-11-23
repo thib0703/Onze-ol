@@ -2016,7 +2016,7 @@ function renderBack(){ const B=$("#backbar"); if(!B) return; let t=null, go=null
 // 🎯 Objectifs du jour, en résumé en haut des pages En ligne et Solo
 function topStripHTML(){ let a="",b=""; try{ const o=objState(), oc=objClaimable(); const n=DAILY.length, d=DAILY.filter(x=>o.day.done.includes(x.k)||(o.day.p[x.k]||0)>=x.n).length;
     a=`<button data-objmini="1"><span class="tsi">🎯</span><span style="min-width:0;flex:1"><b>Objectifs du jour</b><small>${d}/${n} réussis</small><i class="trk"><i style="width:${d/n*100}%"></i></i></span>${oc?`<i class="num">${oc}</i>`:""}</button>`; }catch(e){}
-  try{ const P=passState(), cur=P.xp-P.lv*PASS_XP; b=`<button data-passmini="1"><span class="tsi">🎟️</span><span style="min-width:0;flex:1"><b>Pass · palier ${P.lv}</b><small>${P.lv>=PASS_N?"Terminé 🏆":`${cur}/${PASS_XP} XP`}</small><i class="trk"><i style="width:${P.lv>=PASS_N?100:cur/PASS_XP*100}%"></i></i></span></button>`; }catch(e){}
+  try{ const P=passState(), cur=P.xp-P.lv*PASS_XP_(); b=`<button data-passmini="1"><span class="tsi">🎟️</span><span style="min-width:0;flex:1"><b>Pass · palier ${P.lv}</b><small>${P.lv>=PASS_N?"Terminé 🏆":`${cur}/${PASS_XP_()} XP`}</small><i class="trk"><i style="width:${P.lv>=PASS_N?100:cur/PASS_XP_()*100}%"></i></i></span></button>`; }catch(e){}
   return a+b; }
 // ☀️ Résumé du jour : affiché à la 1re ouverture de la journée (et depuis le menu compte)
 function homeHTML(){ const c=W(); const L=todoList(); TODO_CUR=[]; const PG={online:"🌐",solo:"🎮",collec:"🎴",social:"👥",ol:"📰"};
@@ -4351,7 +4351,7 @@ function objState(){
   if(!c.obj.week||c.obj.week.w!==WEEKN()) c.obj.week={w:WEEKN(),p:{},done:[]};
   return c.obj;
 }
-function track(k,n=1,kx=1){ if(!me) return; const o=objState(); for(const s of [o.day,o.week]) s.p[k]=(s.p[k]||0)+n; try{ passXP(Math.round(({play:70,win:40,goals:10,pack:25,deal:30,sbc:60}[k]||0)*n*kx)); }catch(e){} save(); badgeLigue(); }
+function track(k,n=1,kx=1){ if(!me) return; const o=objState(); for(const s of [o.day,o.week]) s.p[k]=(s.p[k]||0)+n; try{ passXP(Math.round((passNew()?{play:70,win:40,goals:10,pack:25,deal:30,sbc:60}:{play:100,win:60,goals:15,pack:40,deal:50,sbc:80})[k]*n*(passNew()?kx:1)||0)); }catch(e){} save(); badgeLigue(); }
 function objClaimable(){ const o=objState(); return DAILY.filter(x=>(o.day.p[x.k]||0)>=x.n&&!o.day.done.includes(x.k)).length+WEEKLY.filter(x=>(o.week.p[x.k]||0)>=x.n&&!o.week.done.includes(x.k)).length; }
 function claimObj(scope,k){ const o=objState(); const s=o[scope]; const L=scope==="day"?DAILY:WEEKLY; const x=L.find(y=>y.k===k); if(!x||s.done.includes(k)||(s.p[k]||0)<x.n) return; s.done.push(k); grant(x.r,`Objectif « ${x.t} »`); renderLigue(); }
 
@@ -5233,18 +5233,21 @@ setInterval(()=>{ try{ tutoCheck(); if(mode==="compo") renderTuto(); }catch(e){}
 // ======================================================================
 // 🎟️ PASS DE SAISON : 1 saison = 1 mois, 30 paliers, de l'XP à chaque match, pack, échange, défi…
 // ======================================================================
-const PASS_XP=700, PASS_N=30; // ~1 mois en jouant chaque jour (l'XP des matchs baisse comme les gains après 5 matchs/jour)
+const PASS_N=30;
+// nouveau rythme à partir du pass de décembre 2026 : 700 XP par palier, XP réduite et dégressive après 5 matchs/jour (~1 mois)
+const passNew=()=>passSeason()>="2026-12";
+const PASS_XP_=()=>passNew()?700:500;
 const PASS_R=i=>{ const L=i+1; if(L===30) return {pack:"legende",n:2,coins:2000}; if(L===20) return {pack:"legende"}; if(L%10===0||L===25||L===15) return {pack:"or"}; if(L%5===0) return {pack:"or"}; if(L%3===0) return {pack:"bronze"}; return {coins:100+L*10}; };
 const passSeason=()=>{ const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"); };
 const PASS_NAME=()=>new Date().toLocaleDateString("fr-FR",{month:"long",year:"numeric"});
-function passState(){ const c=W(); const s=passSeason(); if(!c.pass||c.pass.s!==s) c.pass={s,xp:0,lv:0}; if(c.pass.xp<c.pass.lv*PASS_XP) c.pass.xp=c.pass.lv*PASS_XP; /* paliers déjà gagnés gardés après le passage à 700 XP */ return c.pass; }
+function passState(){ const c=W(); const s=passSeason(); if(!c.pass||c.pass.s!==s) c.pass={s,xp:0,lv:0}; return c.pass; }
 function passXP(x){ if(!x||!me||!compos[me]) return; const P=passState(); P.xp+=x; let up=0;
-  while(P.lv<PASS_N&&P.xp>=(P.lv+1)*PASS_XP){ const r=PASS_R(P.lv); P.lv++; up++; grant(r,`🎟️ Pass de saison : palier ${P.lv}`); }
+  while(P.lv<PASS_N&&P.xp>=(P.lv+1)*PASS_XP_()){ const r=PASS_R(P.lv); P.lv++; up++; grant(r,`🎟️ Pass de saison : palier ${P.lv}`); }
   if(up){ toast(`🎟️ Palier ${P.lv} du pass de saison atteint !`); try{ SFX.chime("gold"); }catch(_){} if(P.lv===PASS_N) post(`🎟️ ${NAMES[me]} a terminé le pass de saison de ${PASS_NAME()} !`); } }
-function passHTML(){ const P=passState(), cur=P.xp-P.lv*PASS_XP, d=new Date(), end=new Date(d.getFullYear(),d.getMonth()+1,1), left=Math.ceil((end-d)/86400000);
+function passHTML(){ const P=passState(), cur=P.xp-P.lv*PASS_XP_(), d=new Date(), end=new Date(d.getFullYear(),d.getMonth()+1,1), left=Math.ceil((end-d)/86400000);
   return `<h3>🎟️ Pass de saison <small>${PASS_NAME()} · encore ${left} j</small></h3>
-    <div class="passh"><div class="passlv"><b>${P.lv}</b><small>palier</small></div><div style="flex:1"><div class="track" style="height:10px"><i style="width:${P.lv>=PASS_N?100:cur/PASS_XP*100}%"></i></div><small class="mute">${P.lv>=PASS_N?"Pass terminé, bravo ! 🏆":`${cur}/${PASS_XP} XP pour le palier ${P.lv+1}`}</small></div></div>
-    <div class="rules" style="font-size:12px">De l'XP à chaque action : match joué 70, victoire +40, but +10, pack ouvert 25, échange/vente 30, défi d'équipe 60 (après 5 matchs dans la journée, l'XP des matchs baisse comme les pièces). Les récompenses arrivent toutes seules à chaque palier. Nouvelle saison chaque mois !</div>
+    <div class="passh"><div class="passlv"><b>${P.lv}</b><small>palier</small></div><div style="flex:1"><div class="track" style="height:10px"><i style="width:${P.lv>=PASS_N?100:cur/PASS_XP_()*100}%"></i></div><small class="mute">${P.lv>=PASS_N?"Pass terminé, bravo ! 🏆":`${cur}/${PASS_XP_()} XP pour le palier ${P.lv+1}`}</small></div></div>
+    <div class="rules" style="font-size:12px">${passNew()?"De l'XP à chaque action : match joué 70, victoire +40, but +10, pack ouvert 25, échange/vente 30, défi d'équipe 60 (après 5 matchs dans la journée, l'XP des matchs baisse comme les pièces).":"De l'XP à chaque action : match joué 100, victoire +60, but +15, pack ouvert 40, échange/vente 50, défi d'équipe 80."} Les récompenses arrivent toutes seules à chaque palier. Nouvelle saison chaque mois !</div>
     <div class="passg">${Array.from({length:PASS_N},(_,i)=>{ const r=PASS_R(i), ok=i<P.lv, nx=i===P.lv; return `<div class="passc${ok?" ok":""}${nx?" nx":""}${(i+1)%10===0?" big":""}"><small>${i+1}</small><span>${r.pack==="legende"?"🌟":r.pack==="or"?"💛":r.pack?"🎴":"🪙"}</span><em>${r.pack?(PACKS[r.pack].name.replace("Pack ","")+(r.n>1?" ×"+r.n:"")):r.coins}</em></div>`; }).join("")}</div>`; }
 
 // 🏟️ Matchs lancés par d'autres avec/contre moi : en direct → « Regarder », terminés → « Revoir » (le résumé est gardé)
@@ -5259,8 +5262,8 @@ function missedMatches(){ if(!me) return []; const S=seenM(), now=Date.now(), L=
       :{ic:h.duo?"👥":"🏟️",txt:`Match ${h.duo?"en duo ":""}lancé par <b>${by}</b> : ${esc((h.names||[]).join(" vs "))} <b>${sc}</b>`,btn:"▶️ Revoir",go:()=>{ markSeenM(h.id); openReplay(h.id); }}); }
   return L.slice(0,4); }
 // 🎟️ mini pass de saison, en haut des pages En ligne et Solo
-function passMiniHTML(){ try{ const P=passState(), cur=P.xp-P.lv*PASS_XP, nx=P.lv<PASS_N?PASS_R(P.lv):null;
-  return `<button class="passmini" data-passmini="1"><span class="pmlv"><b>${P.lv}</b></span><span class="pmt"><b>🎟️ Pass de saison</b><small>${P.lv>=PASS_N?"Terminé ce mois-ci 🏆":`${cur}/${PASS_XP} XP · prochain : ${nx.pack?PACKS[nx.pack].name:nx.coins+" 🪙"}`}</small><i class="track"><i style="width:${P.lv>=PASS_N?100:cur/PASS_XP*100}%"></i></i></span><span class="pmgo">›</span></button>`; }catch(e){ return ""; } }
+function passMiniHTML(){ try{ const P=passState(), cur=P.xp-P.lv*PASS_XP_(), nx=P.lv<PASS_N?PASS_R(P.lv):null;
+  return `<button class="passmini" data-passmini="1"><span class="pmlv"><b>${P.lv}</b></span><span class="pmt"><b>🎟️ Pass de saison</b><small>${P.lv>=PASS_N?"Terminé ce mois-ci 🏆":`${cur}/${PASS_XP_()} XP · prochain : ${nx.pack?PACKS[nx.pack].name:nx.coins+" 🪙"}`}</small><i class="track"><i style="width:${P.lv>=PASS_N?100:cur/PASS_XP_()*100}%"></i></i></span><span class="pmgo">›</span></button>`; }catch(e){ return ""; } }
 
 // ======================================================================
 // 🎮 JEUX : carrière, coupe, défi du jour, quiz, canapé, stats, réactions
@@ -5862,7 +5865,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-26j"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-26k"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
