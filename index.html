@@ -6717,7 +6717,7 @@ function tcgChips(T,G,s,c){ if(!c) return ""; const mine=[c.id,...T.bench[s].map
   for(const k of tcgSkills(c.id)) ch.push(`🏅 ${esc(k.n)}`); return ch.length?`<div class="tchips">${ch.map(x=>`<span>${x}</span>`).join("")}</div>`:""; }
 
 // 🎴 cartes non-joueurs : Action, Stade, Entraîneur, Époque (cadre propre à chaque type, zones mesurées sur chaque image)
-const TCG_XART=new Set(["stade-gerland","stade-groupama","act-cf","act-jaune","act-mt","act-mur","act-soin","act-kop","act-remo"]); // illustrations prêtes dans img/tcg/x/<clé>.webp
+const TCG_XART=new Set(["stade-gerland","stade-groupama","act-cf","act-jaune","act-mt","act-mur","act-soin","act-kop","act-remo","era-aul","era-new","era-pion","era-sept","era-y2k"]); // illustrations prêtes dans img/tcg/x/<clé>.webp
 const TCGX={action:{t:"Action de match"},stade:{t:"Stade"},coach:{t:"Entraîneur"},epoque:{t:"Collectif d'époque"}};
 function tcgXHTML(kind,o){ const w=o.w||150; const art=o.img?`<img src="${o.img}" alt="" loading="lazy">`:`<span>${o.ic||"🃏"}</span>`;
   return `<div class="tcgx x-${kind}${o.cls?" "+o.cls:""}${o.off?" off":""}" style="--w:${w}px"${o.attr||""}>
@@ -6738,6 +6738,7 @@ function tcgPrepHTML(G,side,ids){ const cos=tcgCoaches(G.src,G.players[side]); c
     <div class="txrow">${cos.map(id=>{ const n=ids.filter(x=>tcgCoachOk(id,x)).length; return `<span class="txpick${cgTB.co===id?" on":""}" data-tco="${id}">${tcgCoachCard(id,{w:96,tag:ids.length?`${n} joueur${n>1?"s":""}`:""})}</span>`; }).join("")||`<div class="mute" style="font-size:12px">Pas d'entraîneur : obtiens-en dans les packs.</div>`}</div>
     <h4 class="tdh">🏟️ Stade</h4><div class="txrow">${Object.keys(TCG_STAD).map(k=>`<span class="txpick${cgTB.st===k?" on":""}" data-tst="${k}">${tcgStadCard(k,{w:96})}</span>`).join("")}</div>
     <h4 class="tdh">🃏 Cartes Action <small>(${cgTB.ac.length}/${TCG_ACT_N} · 1 fois chacune, 1 par tour)</small></h4><div class="txrow">${Object.keys(TCG_ACT).map(k=>`<span class="txpick${cgTB.ac.includes(k)?" on":""}" data-tac="${k}">${tcgActCard(k,{w:96})}</span>`).join("")}</div>
+    <h4 class="tdh">📜 Collectifs d'époque <small>(3 joueurs de la même époque = bonus automatique)</small></h4><div class="txrow">${TCG_ERAS.map(E=>{ const n=ids.filter(id=>tcgInEra(id,E)).length; return `<span class="txpick${n>=3?" on":""}">${tcgEraCard(E.k,{w:96,off:n<3,tag:`${Math.min(n,3)}/3`})}</span>`; }).join("")}</div>
     <div class="cgrules tsyn">✨ <b>Synergies de ton équipe</b>${syn.length?syn.map(x=>`<div>${x}</div>`).join(""):`<div class="mute">Aucune pour l'instant.</div>`}${nextEra?`<div class="mute">💡 Encore 1 joueur de l'époque « ${esc(nextEra.E.n)} » pour activer : ${esc(nextEra.E.d)}</div>`:""}</div>`; }
 CG_VIEW.cbt=(G,S,side,need)=>{ const o=1-side; const key=(G.id||G.seed)+"_"+(S.i||0);
   if(cgTB.key!==key) cgTB={key,acts:[],tgt:null,sel:[],co:null,st:null,ac:[]};
@@ -6900,7 +6901,7 @@ function cgBind(V){ const on=(q,f)=>V.querySelectorAll(q).forEach(b=>b.onclick=e
   V.querySelectorAll("[data-tcg]").forEach(el=>{ if(el.closest("[data-cgt],[data-cgsw],[data-cgi],.cgstage,.cgc,[data-tb],[data-th],[data-tsel],.tdeck")) return; el.onclick=e=>{ e.stopPropagation(); showTcg(el.dataset.tcg); }; }); }
 function openCards(from){ cgBack=from==="online"?"online":"solo"; NAV_OF.cards=cgBack==="online"?"nOnline":"nSolo"; if(!(cgCur&&cgSel==="game")) cgSel=null; setMode("cards"); }
 
-const APP_V="2026-11-27n"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-27o"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
