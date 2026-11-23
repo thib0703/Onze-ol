@@ -1361,6 +1361,11 @@ body.lowfx .cgstage *{animation-duration:.01s!important;animation-delay:0s!impor
 .ctb-img{height:150px;margin:0 -16px 10px;background:linear-gradient(180deg,#0000 50%,#0b1530),var(--bg) center/cover}
 .ctb h3{margin:6px 0;font-size:20px}.ctb p{font-size:15px;line-height:1.5;color:#dfe7ff;min-height:66px}
 .ctb-dots{display:flex;gap:6px;justify-content:center}.ctb-dots i{width:8px;height:8px;border-radius:50%;background:#ffffff44}.ctb-dots i.on{background:#ffd970;width:20px;border-radius:4px}
+
+.tcg-bdg{position:absolute;z-index:4;left:11%;top:calc(var(--wt) + 2%);display:flex;gap:2px}.tcg-bdg i{font-style:normal;font-size:.85em;background:#000b;border:1px solid #ffd97099;border-radius:50%;width:1.6em;height:1.6em;display:flex;align-items:center;justify-content:center}
+.tdiv{gap:4px}.tdiv .trk{display:block;height:7px;background:#0007;border-radius:5px;overflow:hidden}.tdiv .trk i{display:block;height:100%;background:linear-gradient(90deg,#ffd970,#e3002b)}
+.tcap{display:flex;gap:8px;align-items:flex-start;font-size:12px;margin:8px 2px;color:#dfe7ff}.tcap input{margin-top:2px}
+.cgstats{display:block!important}.cgstats summary{display:block;cursor:pointer;list-style:none;margin-bottom:4px}.cgstats .cgrk{display:flex;width:100%}.cgstats .cgrk b{text-align:right;white-space:nowrap}.cgstats summary::-webkit-details-marker{display:none}
 </style>
 </head>
 <body>
@@ -6151,7 +6156,7 @@ function tcgHTML(id,o={}){ const p=BY_ID[id]; if(!p) return ""; const T=tcgOf(id
   return `<div class="tcg t-${tcgFrame(p)}${o.ko?" ko":""}${o.cls?" "+o.cls:""}" style="--w:${w}px" data-tcg="${id}">
     <div class="tcg-face${TCG_ART.has(p.base||p.id)?" art":""}">${TCG_ART.has(p.base||p.id)?`<img src="img/tcg/art/${p.base||p.id}.webp?v=${IMGV}" alt="" loading="lazy">`:PORTRAITS.has(p.base||p.id)?`<img src="img/cartes/${p.base||p.id}.webp?v=${IMGV}" alt="" loading="lazy">`:`<span>${esc(initials(p.name))}</span>`}</div>
     <img class="tcg-fr" src="img/tcg/cadre-${tcgFrame(p)}.webp" alt="">
-    <div class="tcg-ovr">${T.ovr}</div><div class="tcg-nm">${esc(nm)}${T.lv?` <i>+${T.lv}</i>`:""}</div><img class="tcg-ic" src="${CG_GRP[T.g].ic}" alt="${CG_GRP[T.g].n}">
+    <div class="tcg-ovr">${T.ovr}</div><div class="tcg-nm">${esc(nm)}${T.lv?` <i>+${T.lv}</i>`:""}</div><img class="tcg-ic" src="${CG_GRP[T.g].ic}" alt="${CG_GRP[T.g].n}">${o.cls&&o.cls.includes("mini")?"":tcgBadges(id)}
     <div class="tcg-hp"><i style="width:${pct}%" class="${pct<30?"lo":pct<60?"mid":""}"></i><b>${Math.max(0,Math.round(hp))} / ${hpm} PV</b></div>
     ${T.a.map((a,i)=>`<div class="tcg-a a${i+1}"><span class="tcg-c">${a.c}<i>⚡</i></span><b>${esc(a.n)}</b><em>${a.d}</em></div>`).join("")}
     <div class="tcg-ab">${T.ab.n?`<b>${esc(T.ab.n)}</b>&nbsp;·&nbsp;${esc(T.ab.d)}`:"—"}</div>
@@ -6172,7 +6177,7 @@ function eclatsGain(n,online){ if(!n) return 0; const T=tcgW(); if(!online){ con
   if(n){ T.e=(T.e||0)+n; save(); } return n; }
 function showTcg(id){ const M=$("#cardModal"); const c=W(), own=(c.coll||{})[id], lv=(tcgW().lv||{})[id]||0;
   M.innerHTML=`<div class="cm-box"><div class="cm-card" style="display:flex;justify-content:center">${tcgHTML(id,{w:250,evo:evoOf(me,id),lvl:lv})}</div>
-    <div class="cm-note" style="text-align:left;font-size:12px;line-height:1.5">${cgTypeLine(id)}<br>⚡ Énergie : +1 par tour (max 6). Attaque 1 = 1 énergie, attaque 2 = 3 énergies.<br>💠 Tu as <b>${tcgW().e||0} Éclats</b>${own?` · niveau ${lv}/${TCG_MAXL}`:""}</div><div class="mbtns" id="tcgBtns"></div></div>`;
+    <div class="cm-note" style="text-align:left;font-size:12px;line-height:1.5">${cgTypeLine(id)}${tcgSkills(id).map(k=>`<br>🏅 <b>${esc(k.n)}</b> : ${esc(k.d)}`).join("")}${tcgDuosOf(id).filter(d=>BY_ID[d.w]).map(d=>`<br>🤝 <b>${esc(d.n)}</b> avec ${esc(BY_ID[d.w].name)} : +15 dégâts s'ils sont ensemble`).join("")}<br>👥 Coéquipiers de la même époque en jeu : +5 dégâts chacun · 🌍 compatriotes étrangers : −5 dégâts subis<br>⚽ Attaque 1 = 1 Ballon, Attaque 2 = 3 Ballons (+1 par tour)<br>💠 Tu as <b>${tcgW().e||0} Éclats</b>${own?` · niveau ${lv}/${TCG_MAXL}`:""}</div><div class="mbtns" id="tcgBtns"></div></div>`;
   const B=$("#tcgBtns"); const mk=(t,fn,gh,dis)=>{ const b=document.createElement("button"); b.className="btn"+(gh?" ghost":""); b.textContent=t; b.disabled=!!dis; b.onclick=fn; B.appendChild(b); };
   if(own&&lv<TCG_MAXL) mk(`💠 Améliorer les attaques (${TCG_COST[lv]} Éclats)`,()=>{ if(tcgUpgrade(id)) showTcg(id); },false,(tcgW().e||0)<TCG_COST[lv]);
   mk("Voir la carte classique",()=>{ M.classList.remove("open"); showCard(id); },true); mk("Fermer",()=>M.classList.remove("open"),true); M.classList.add("open"); }
@@ -6194,7 +6199,7 @@ function cgDeal(g,seed,poolA,poolB,src){ const r=cgRng(seed); const pick=(pool,n
   if(g==="duel") return [pick(poolA,6),pick(poolB,6)];
   if(g==="tab"){ const one=pool=>{ const sh=pick(pool,5,id=>BY_ID[id].pos[0]!=="GB").sort((a,b)=>cgStats6(b)[1]-cgStats6(a)[1]); let gk=pool.filter(id=>BY_ID[id].pos[0]==="GB").sort((a,b)=>BY_ID[b].ovr-BY_ID[a].ovr)[0];
       if(!gk){ const L=cgAll().filter(id=>BY_ID[id].pos[0]==="GB"&&!BY_ID[id].v); gk=L[Math.floor(r()*L.length)]; } return [...sh,gk]; }; return [one(poolA),one(poolB)]; }
-  if(g==="cbt") return src==="coll"?[tcgOffer(poolA.slice().sort((a,b)=>BY_ID[b].ovr-BY_ID[a].ovr),()=>0,15),tcgOffer(poolB,r,10)]:[tcgOffer(poolA,r,10),tcgOffer(poolB,r,10)];
+  if(g==="cbt") return src==="coll"?[tcgCollOffer(poolA),tcgCollOffer(poolB)]:[tcgOffer(poolA,r,10),tcgOffer(poolB,r,10)];
   if(g==="pyr") return [poolA.slice(),poolB.slice()];
   return [poolA.slice(),poolB.slice()]; }
 
@@ -6308,7 +6313,8 @@ CG_ENG.cbt={
   step(S,M,G){ const ev=[];
     if(S.phase==="setup"){ for(const s of [0,1]){ const m=M[s]||{}, H=S.hand[s]; let a=H.includes(m.a)?m.a:H[0]; S.act[s]=tcgNew(a,G,s);
         for(const b of (m.b||[])){ if(S.bench[s].length>=TCG_BENCH) break; if(H.includes(b)&&b!==a&&!S.bench[s].some(c=>c.id===b)) S.bench[s].push(tcgNew(b,G,s)); }
-        for(const b of H){ if(S.bench[s].length>=TCG_BENCH) break; if(b!==a&&!S.bench[s].some(c=>c.id===b)) S.bench[s].push(tcgNew(b,G,s)); } S.hand[s]=[]; }
+        for(const b of H){ if(S.bench[s].length>=TCG_BENCH) break; if(b!==a&&!S.bench[s].some(c=>c.id===b)) S.bench[s].push(tcgNew(b,G,s)); } S.hand[s]=[];
+        if(G.cap){ const sorted=H.slice().sort((x,y)=>BY_ID[x].ovr-BY_ID[y].ovr); while(tcgTeamOvr([S.act[s].id,...S.bench[s].map(c=>c.id)],G,s)>TCG_CAP){ let hi=0; S.bench[s].forEach((c,i)=>{ if(BY_ID[c.id].ovr>BY_ID[S.bench[s][hi].id].ovr) hi=i; }); const lo=sorted.find(x=>x!==S.act[s].id&&!S.bench[s].some(c=>c.id===x)); if(!lo||BY_ID[lo].ovr>=BY_ID[S.bench[s][hi].id].ovr) break; S.bench[s][hi]=tcgNew(lo,G,s); } } }
       S.phase="play"; S.turn=S.first; S.log.push({start:1,ev}); tcgStartTurn(S,S.turn); return; }
     const s=S.turn; for(const A of ((M[s]||{}).x||[])){ if(S.end||S.done) break; tcgAct(S,G,s,A,ev); }
     if(!S.end&&S.act[s]===null){ if(S.bench[s].length) tcgAct(S,G,s,["p",0],ev); else S.end={w:1-s,why:"ko"}; }
@@ -6316,7 +6322,11 @@ CG_ENG.cbt={
     S.turn=1-s; S.n++; const o=S.turn; if(S.act[o]===null){ if(!S.bench[o].length){ S.end={w:s,why:"ko"}; return; } }
     tcgStartTurn(S,o); if(S.n>=60) S.end={w:S.sc[0]>S.sc[1]?0:S.sc[1]>S.sc[0]?1:-1,why:"temps"}; },
   cpu(S,G,side){
-    if(S.phase==="setup"){ const P=S.hand[side].slice().sort((a,b)=>tcgMax(b,G,side)-tcgMax(a,G,side)); return {a:P[0],b:P.slice(1,1+TCG_BENCH)}; }
+    if(S.phase==="setup"){ let P=S.hand[side].slice().sort((a,b)=>tcgMax(b,G,side)-tcgMax(a,G,side));
+      const gs=[...new Set(P.map(id=>tcgOf(id).g))]; const pick=[]; for(const g of gs){ const id=P.find(x=>tcgOf(x).g===g&&!pick.includes(x)); if(id) pick.push(id); } for(const id of P) if(pick.length<5&&!pick.includes(id)) pick.push(id);
+      if(G.cap){ while(pick.length>1&&tcgTeamOvr(pick,G,side)>TCG_CAP){ const lo=P.slice().reverse().find(x=>!pick.includes(x)); const hi=pick.slice().sort((a,b)=>BY_ID[b].ovr-BY_ID[a].ovr)[0]; pick.splice(pick.indexOf(hi),1); if(lo&&tcgTeamOvr([...pick,lo],G,side)<=TCG_CAP) pick.push(lo); } }
+      return {a:pick[0],b:pick.slice(1,5)}; }
+    if(!G.dumb) return tcgCpuSmart(S,G,side);
     const T=JSON.parse(JSON.stringify(S)), x=[]; const go=A=>{ if(tcgAct(T,G,side,A,[])) x.push(A); };
     if(T.act[side]===null){ let bi=0; T.bench[side].forEach((c,i)=>{ if(c.hp+c.e*20>T.bench[side][bi].hp+T.bench[side][bi].e*20) bi=i; }); go(["p",bi]); if(T.act[side]&&T.act[side].e<1) T.act[side].e=0; }
     const a=T.act[side], d=T.act[1-side]; if(!a) return {x:[["x"]]};
@@ -6327,7 +6337,59 @@ CG_ENG.cbt={
     if(d&&!firstT){ if(a.e>=tcgCost(a.id,1)){ x.push(["a",1]); return {x}; } if(a.e>=tcgCost(a.id,0)&&(a.e<tcgCost(a.id,1)-1||Math.random()<.4)){ x.push(["a",0]); return {x}; } }
     x.push(["x"]); return {x}; } };
 // offre de cartes : 10 cartes au hasard (toutes les cartes) ou tes 15 meilleures (collection), on en choisit 5
+// collection : tes 10 meilleures + tes 8 moins fortes (utile pour le niveau égal)
+function tcgCollOffer(pool){ const P=tcgOffer(pool.slice().sort((a,b)=>BY_ID[b].ovr-BY_ID[a].ovr),()=>0,999); return P.length<=18?P:[...P.slice(0,10),...P.slice(-8)]; }
 function tcgOffer(pool,r,n){ const P=cgShuffle(pool.filter(id=>tcgOk(id)),r||Math.random); const out=[], seen={}; for(const id of P){ const b=tcgBase(id); if(seen[b]) continue; seen[b]=1; out.push(id); if(out.length>=n) break; } return out; }
+
+
+// 🏅 compétences et liens visibles : petits médaillons sur la carte + détail dans la fiche TCG
+function tcgBadges(id){ const L=tcgSkills(id); if(!L.length) return ""; const ic={bo:"🏆",wc:"🌍",ucl:"⭐",eu:"🇪🇺",sept:"7️⃣",l1:"🥇",fid:"❤️",but:"⚽",mur:"🧱"};
+  return `<div class="tcg-bdg">${L.slice(0,4).map(k=>`<i title="${esc(k.n)}">${ic[k.k]||"🏅"}</i>`).join("")}</div>`; }
+function tcgDuosOf(id){ const b=tcgBase(id); return TCG_DUOS.filter(([p,q])=>p===b||q===b).map(([p,q,n])=>({w:p===b?q:p,n})); }
+// ⚖️ niveau égal : note totale de l'équipe plafonnée
+const TCG_CAP=440;
+const tcgTeamOvr=(ids,G,s)=>ids.reduce((a,id)=>a+BY_ID[id].ovr+((G&&G.evo[s][id])||0),0);
+// 🏅 DIVISIONS TCG : victoire +3 pts, nul +1, défaite 0 · 9 pts pour monter · récompense à chaque montée
+const TCGD=[{n:"Division 5",ic:"🥉",r:{coins:300}},{n:"Division 4",ic:"🥈",r:{coins:500}},{n:"Division 3",ic:"🥇",r:{coins:700,pack:"or"}},{n:"Division 2",ic:"💎",r:{coins:1000,pack:"or"}},{n:"Division 1",ic:"👑",r:{coins:1500,pack:"legende"}},{n:"Élite",ic:"🔥",r:{coins:2500,pack:"legende"}}];
+const TCGD_UP=9;
+function tcgDiv(u){ const c=C(u||me)||{}; const d=((c.cg||{}).div)||{d:0,p:0}; return {d:Math.min(d.d||0,TCGD.length-1),p:d.p||0,best:d.best||0}; }
+function tcgDivAdd(res){ const c=W(); c.cg=c.cg||{}; const D=c.cg.div=c.cg.div||{d:0,p:0,best:0}; const add=res==="w"?3:res==="d"?1:0; let msg="";
+  if(D.d>=TCGD.length-1){ D.p=(D.p||0)+add; return `🔥 Élite · ${D.p} pts`; }
+  D.p=(D.p||0)+add; if(D.p>=TCGD_UP){ D.d++; D.p=0; const T=TCGD[D.d]; msg=`⬆️ Montée en ${T.ic} ${T.n} !`; if(D.d>(D.best||0)){ D.best=D.d; setTimeout(()=>grant(T.r,`🔥 TCG : ${T.n}`),1800); } try{ cgSnd("fanfare"); }catch(_){} }
+  return msg||`${TCGD[D.d].ic} ${TCGD[D.d].n} · ${D.p}/${TCGD_UP} pts`; }
+function tcgDivHTML(){ const D=tcgDiv(); const T=TCGD[D.d], N=TCGD[D.d+1];
+  return `<div class="cgbar tdiv"><span>${T.ic} <b>${T.n}</b> · Combat TCG</span><i class="trk"><i style="width:${D.d>=TCGD.length-1?100:D.p/TCGD_UP*100}%"></i></i><small>${N?`${D.p}/${TCGD_UP} pts pour monter en ${N.ic} ${N.n} (victoire +3, nul +1) · récompense : ${N.r.coins} 🪙${N.r.pack?" + "+PACKS[N.r.pack].name:""}`:`Tu es au sommet ! ${D.p} pts`}</small></div>`; }
+function tcgDivBoard(){ const L=Object.keys(NAMES).map(u=>({u,...tcgDiv(u)})).filter(x=>x.d>0||x.p>0).sort((a,b)=>b.d-a.d||b.p-a.p).slice(0,8);
+  return L.length?`<div class="cgrules">🏅 <b>Classement TCG</b>${L.map((x,i)=>`<div class="cgrk${x.u===me?" me":""}"><span>${i+1}. ${esc(NAMES[x.u])}</span><b>${TCGD[x.d].ic} ${TCGD[x.d].n} · ${x.p} pts</b></div>`).join("")}</div>`:""; }
+// 📜 historique et statistiques
+function cgHistAdd(X,res,extra){ const c=W(); c.cg=c.cg||{}; const opp=X.cpu?"cpu":X.players.find(u=>u!==me); c.cg.hist=[{g:X.g,o:opp,r:res,at:Date.now(),...(extra||{})},...(c.cg.hist||[])].slice(0,25); }
+function cgStatsHTML(){ const c=W(), st=(c.cg||{}).st||{}, H=(c.cg||{}).hist||[], K=(c.cg||{}).kos||{};
+  const rows=Object.entries(CG_MODES).filter(([k])=>k!=="pom").map(([k,m])=>{ const s=st[k]||{w:0,n:0,d:0}, t=s.w+s.n+s.d; return t?`<div class="cgrk"><span>${m.ic} ${m.n}</span><b>${s.w}V ${s.d}N ${s.n}D · ${Math.round(s.w/t*100)} %</b></div>`:""; }).join("");
+  const top=Object.entries(K).sort((a,b)=>b[1]-a[1])[0];
+  if(!rows&&!H.length) return "";
+  return `<details class="cgrules cgstats"><summary>📊 <b>Mes stats et dernières parties</b></summary>${rows}${top&&BY_ID[top[0]]?`<div class="cgrk"><span>💥 Meilleur buteur TCG</span><b>${esc(BY_ID[top[0]].name)} · ${top[1]} K.O.</b></div>`:""}
+    ${H.slice(0,10).map(h=>`<div class="cgrk"><span>${CG_MODES[h.g]?CG_MODES[h.g].ic:""} ${h.o==="cpu"?"🤖 L'ordi":esc(NAMES[h.o]||"?")}${h.s?` · ${h.s}`:""}</span><b>${h.r==="w"?"✅":h.r==="d"?"🤝":"❌"} <small class="mute">${new Date(h.at).toLocaleDateString("fr-FR",{day:"numeric",month:"short"})}</small></b></div>`).join("")}</details>`; }
+// 🤖 IA plus maligne pour le Combat TCG
+function tcgThreat(T,G,s){ const o=1-s; const a=T.act[o], d=T.act[s]; if(!a||!d) return 0; const e=Math.min(5,a.e+1); let best=0;
+  for(const ai of [0,1]) if(e>=tcgCost(a.id,ai)){ const R=tcgDmg(Object.assign({},T,{act:s===0?[d,a]:[a,d]}),G,o,ai); best=Math.max(best,R.dmg); } return best; }
+function tcgCpuSmart(S,G,side){ const T=JSON.parse(JSON.stringify(S)); const x=[]; const o=1-side;
+  if(T.act[side]===null){ const d=T.act[o]; let bi=0,bv=-1e9; T.bench[side].forEach((c,i)=>{ const tc=tcgOf(c.id); let v=c.hp+c.e*25; if(d){ if(CG_BEATS[tc.g]===tcgOf(d.id).g) v+=60; if(CG_BEATS[tcgOf(d.id).g]===tc.g) v-=50; } if(v>bv){ bv=v; bi=i; } }); tcgAct(T,G,side,["p",bi],[]); x.push(["p",bi]); }
+  const a=T.act[side], d=T.act[o]; if(!a||!d) return {x:[...x,["x"]]};
+  const firstT=T.first===side&&T.n===0; const can=firstT?[]:[1,0].filter(ai=>a.e>=tcgCost(a.id,ai));
+  const dm=ai=>tcgDmg(T,G,side,ai).dmg;
+  // 1) K.O. possible : on le prend
+  const ko=can.find(ai=>dm(ai)>=d.hp); if(ko!=null) return {x:[...x,["a",ko]]};
+  const threat=tcgThreat(T,G,side), dying=threat>=a.hp;
+  // 2) en danger ou mauvais type : changer pour un joueur avantagé et en forme
+  const bad=CG_BEATS[tcgOf(d.id).g]===tcgOf(a.id).g;
+  const mine=T.log.filter(L=>L.s===side).slice(-2), justSw=mine.some(L=>(L.ev||[]).some(e=>e.t==="r"));
+  if((dying||bad)&&T.bench[side].length&&!justSw){ let bi=-1,bv=-1e9; T.bench[side].forEach((c,i)=>{ const tc=tcgOf(c.id); let v=c.hp+c.e*25; if(CG_BEATS[tc.g]===tcgOf(d.id).g) v+=70; if(CG_BEATS[tcgOf(d.id).g]===tc.g) v-=60; if(v>bv){ bv=v; bi=i; } });
+    const cur=a.hp+a.e*25+(bad?-60:0); if(bi>=0&&bv>cur+20&&!(can.length&&dying&&dm(can[0])>=d.hp*.7)) return {x:[...x,["r",bi]]}; }
+  // 3) attaque 2 si possible
+  if(can.includes(1)) return {x:[...x,["a",1]]};
+  // 4) économiser pour l'attaque 2 si on n'est pas menacé, sinon taper tout de suite
+  if(can.includes(0)){ const next2=a.e+1>=tcgCost(a.id,1); if(next2&&!dying&&threat<a.hp*.5&&dm(1)>=d.hp) return {x:[...x,["x"]]}; return {x:[...x,["a",0]]}; }
+  return {x:[...x,["x"]]}; }
 
 // 🔺 PYRAMIDE (chacun sa propre ascension, même pyramide pour les 2 joueurs)
 const PYR_T=["gold","icon","myth","spec","ul"], PYR_N=["Épique","Légendaire","Mythique","Spéciale","Légende Ultime"];
@@ -6354,7 +6416,7 @@ const cgKey=(G,S,side)=>CG_ENG[G.g].solo?"p"+side+"_"+S.p[side].log.length:"r"+S
 // ======================================================================
 // PARTIES : contre l'ordi (en local) ou en ligne (Firestore)
 // ======================================================================
-let cgOnline={}, cgCur=null, cgSel=null, cgOpp="cpu", cgSrc="all", cgBack="solo", cgPrevSt={}, cgAnim=null;
+let cgCap=false, cgOnline={}, cgCur=null, cgSel=null, cgOpp="cpu", cgSrc="all", cgBack="solo", cgPrevSt={}, cgAnim=null;
 try{ const x=JSON.parse(localStorage.getItem("gl_cg_cpu")||"null"); if(x&&x.g&&CG_ENG[x.g]) cgCur=x; }catch(_){}
 const cgSaveCpu=()=>{ try{ if(cgCur&&cgCur.cpu) localStorage.setItem("gl_cg_cpu",JSON.stringify(cgCur)); }catch(_){} };
 function onCardData(all){ const prev=cgOnline; cgOnline={};
@@ -6376,7 +6438,7 @@ function cgNewGame(g,src,opp){ const seed=(Math.random()*2**31)>>>0;
   const deck=cgDeal(g,seed,pA,pB,src); const players=[me,opp==="cpu"?CPU:opp];
   const ev=s=>{ const o={}; if(src!=="coll"||players[s]===CPU) return o; for(const id of deck[s]) { const v=evoOf(players[s],id); if(v) o[id]=v; } return o; };
   const tl=s=>{ if(players[s]===CPU) return {}; const o={}, L=(C(players[s]).tcg||{}).lv||{}; if(src==="coll") for(const id of deck[s]) if(L[id]) o[id]=L[id]; return o; };
-  return {mode:"cards",g,src,seed,players,by:me,deck:{0:deck[0],1:deck[1]},evo:{0:ev(0),1:ev(1)},tl:{0:tl(0),1:tl(1)},mv:{},status:opp==="cpu"?"running":"lobby",at:Date.now(),cpu:opp==="cpu"}; }
+  return {mode:"cards",g,src,seed,cap:g==="cbt"&&src==="coll"&&cgCap?1:0,players,by:me,deck:{0:deck[0],1:deck[1]},evo:{0:ev(0),1:ev(1)},tl:{0:tl(0),1:tl(1)},mv:{},status:opp==="cpu"?"running":"lobby",at:Date.now(),cpu:opp==="cpu"}; }
 // la donne est stockée en {0:[],1:[]} (Firestore n'accepte pas les tableaux de tableaux)
 const cgG=x=>Object.assign({},x,{deck:[x.deck[0]||x.deck["0"],x.deck[1]||x.deck["1"]],evo:[(x.evo||{})[0]||{},(x.evo||{})[1]||{}],tl:[(x.tl||{})[0]||{},(x.tl||{})[1]||{}]});
 async function cgStart(g){ const opp=CG_MODES[g].on?cgOpp:"cpu"; const x=cgNewGame(g,cgSrc,opp); if(!x) return;
@@ -6400,8 +6462,10 @@ function cgFinish(X,S){ const c=W(); c.cg=c.cg||{}; c.cg.done=c.cg.done||[]; con
   const side=X.cpu?0:X.players.indexOf(me); const w=S.end.w; const win=w===side, draw=w===-1; c.cg.st=c.cg.st||{}; const st=c.cg.st[X.g]=c.cg.st[X.g]||{w:0,n:0,d:0}; st[win?"w":draw?"d":"n"]++;
   let e=win?(X.cpu?1:3):draw?(X.cpu?0:1):0; if(X.g==="cbt") e*=2; const got=eclatsGain(e,!X.cpu);
   const pc=cgCoins(X.cpu?(win?40:draw?20:10):(win?80:draw?40:20),X.cpu);
+  let dv=""; if(X.g==="cbt"){ dv=tcgDivAdd(win?"w":draw?"d":"l"); c.cg.kos=c.cg.kos||{}; for(const L of S.log) for(const e of (L.ev||[])) if(e.t==="a"&&e.s===side&&e.hp1<=0) c.cg.kos[tcgBase(e.id)]=(c.cg.kos[tcgBase(e.id)]||0)+1; }
+  cgHistAdd(X,win?"w":draw?"d":"l",X.g==="cbt"?{s:S.sc[side]+"-"+S.sc[1-side]}:{});
   try{ track("play"); if(win) track("win"); }catch(_){}
-  save(); setTimeout(()=>toast(`${win?"🏆 Victoire":draw?"🤝 Égalité":"😞 Défaite"} · ${CG_MODES[X.g].n}${pc?` · +${pc} 🪙`:" · limite de pièces du jour atteinte"}${got?` · +${got} 💠`:""}`),900); }
+  save(); setTimeout(()=>toast(`${win?"🏆 Victoire":draw?"🤝 Égalité":"😞 Défaite"} · ${CG_MODES[X.g].n}${pc?` · +${pc} 🪙`:" · limite de pièces du jour atteinte"}${got?` · +${got} 💠`:""}`),900); if(dv) setTimeout(()=>toast(dv),3200); }
 function cgSettle(){ for(const x of Object.values(cgOnline)){ if(x.status!=="running") continue; const X=cgG(x), S=cgReplay(X); if(S.end){ cgFinish(X,S); if(x.status!=="done") cgRef(x.id).update({status:"done"}).catch(()=>{}); } } }
 
 // ======================================================================
@@ -6421,7 +6485,7 @@ function cardsHomeHTML(){ const L=cgMine(); const others_=others();
   return `<div class="hubh"><h2>🃏 Jeux de cartes</h2><small>Contre l'ordi ou en ligne · avec toutes les cartes du jeu ou ta collection</small></div>
     <div class="cgbar"><span>💠 <b>${T.e||0}</b> Éclats</span><small>Gagnés en jouant (le Combat rapporte double) · ils améliorent les attaques de tes cartes TCG</small></div>
     <div class="cgbar"><span>🪙 <b>${Math.max(0,cgCoinsLeft().all)}</b> pièces encore à gagner aujourd'hui</span><small>Victoire en ligne 80 · contre l'ordi 40 (max 150/jour) · nul ou défaite : un peu aussi · limite 300/jour</small></div>
-    ${resume}${list}<div class="hub cghub">${tiles}</div>`; }
+    ${resume}${list}<div class="hub cghub">${tiles}</div>${cgStatsHTML()}`; }
 
 // 🎓 Tutoriel : 3-4 écrans la 1re fois qu'on ouvre un jeu (et bouton ❓ Règles)
 const CG_TUTO={
@@ -6443,12 +6507,13 @@ function cgTuto(g){ const L=CG_TUTO[g]; if(!L) return; let i=0; let el=document.
 function cardsSetupHTML(g){ const m=CG_MODES[g]; const ops=others(); const pA=cgPool(cgSrc,me); const ok=cgPoolOk(g,pA);
   if(!m.on) cgOpp="cpu"; if(cgOpp!=="cpu"&&!NAMES[cgOpp]) cgOpp="cpu";
   if(!cgTutoSeen(g)) setTimeout(()=>{ if(cgSel===g&&!document.querySelector("#cgTutoBox.open")) cgTuto(g); },350);
-  return `<div class="cgsetup" style="--bg:url(img/jeux/fond-${g}.webp)"><div class="cgsh"><b>${m.ic} ${m.n}</b><small>${esc(m.d)}</small><button class="btn sm ghost" data-cgtuto="${g}" style="margin-top:6px">❓ Règles du jeu</button></div>
+  const capOpt=g==="cbt"&&cgSrc==="coll"?`<label class="tcap"><input type="checkbox" id="cgCap" ${cgCap?"checked":""}> ⚖️ Niveau égal : équipe de ${TCG_CAP} de note maximum (pour que les petites collections aient leur chance)</label>`:"";
+  return (g==="cbt"?tcgDivHTML():"")+`<div class="cgsetup" style="--bg:url(img/jeux/fond-${g}.webp)"><div class="cgsh"><b>${m.ic} ${m.n}</b><small>${esc(m.d)}</small><button class="btn sm ghost" data-cgtuto="${g}" style="margin-top:6px">❓ Règles du jeu</button></div>
     ${m.on?`<div class="field"><span>👥 Adversaire</span><select id="cgOppSel"><option value="cpu"${cgOpp==="cpu"?" selected":""}>🤖 L'ordi</option>${ops.map(u=>`<option value="${u}"${cgOpp===u?" selected":""}>🌐 ${esc(NAMES[u])}${isFriend(u)?" ⭐":""}</option>`).join("")}</select></div>`:`<div class="mute" style="font-size:12px;margin:6px 0">🎮 Se joue seul · <b>classement des meilleures séries</b> avec les autres joueurs</div>`}
     <div class="cgseg"><button class="${cgSrc==="all"?"on":""}" data-cgsrc="all">🌍 Toutes les cartes</button><button class="${cgSrc==="coll"?"on":""}" data-cgsrc="coll">🎴 Ma collection</button></div>
     <div class="mute" style="font-size:12px;margin:6px 2px">${cgSrc==="all"?"Cartes TCG (Épique et plus) tirées au hasard parmi tout le jeu : tout le monde à égalité.":`Tes cartes TCG (Épique et plus, ${pA.length}) avec leurs évolutions${g==="cbt"?" et améliorations 💠":""}.${ok?"":` <b style="color:#ff9a8a">${cgPoolMsg(g)}.</b>`}`}${cgOpp!=="cpu"&&cgSrc==="coll"?` ${esc(NAMES[cgOpp])} joue avec sa collection.`:""}</div>
-    <button class="btn big" id="cgGo" ${ok?"":"disabled"}>${cgOpp==="cpu"||!m.on?"▶️ Jouer":"📨 Inviter "+esc(NAMES[cgOpp]||"")}</button>
-    ${g==="pom"?pomBoardHTML():""}${g==="cbt"?`<div class="cgrules">🔥 <b>Règles</b> : choisis 5 joueurs (1 titulaire + 4 au banc). À chaque tour, ton titulaire gagne <b>1 ⚽</b>, puis tu choisis : <b>Attaque 1</b> (1 ⚽), <b>Attaque 2</b> (3 ⚽) ou <b>Changer de joueur</b>. Chaque K.O. = 1 but : <b>3 buts</b> pour gagner.<br>🔥 Attaquant > 🧤 Gardien > ⚽ Milieu > 🛡️ Défenseur > 🔥 Attaquant (×1,25).<br>🏅 Les compétences de carrière et 🤝 les liens entre coéquipiers s'appliquent tout seuls.</div>`:""}
+    ${capOpt}<button class="btn big" id="cgGo" ${ok?"":"disabled"}>${cgOpp==="cpu"||!m.on?"▶️ Jouer":"📨 Inviter "+esc(NAMES[cgOpp]||"")}</button>
+    ${g==="pom"?pomBoardHTML():""}${g==="cbt"?`<div class="cgrules">🔥 <b>Règles</b> : choisis 5 joueurs (1 titulaire + 4 au banc). À chaque tour, ton titulaire gagne <b>1 ⚽</b>, puis tu choisis : <b>Attaque 1</b> (1 ⚽), <b>Attaque 2</b> (3 ⚽) ou <b>Changer de joueur</b>. Chaque K.O. = 1 but : <b>3 buts</b> pour gagner.<br>🔥 Attaquant > 🧤 Gardien > ⚽ Milieu > 🛡️ Défenseur > 🔥 Attaquant (×1,25).<br>🏅 Les compétences de carrière et 🤝 les liens entre coéquipiers s'appliquent tout seuls.</div>`+tcgDivBoard():""}
     ${g==="tab"?`<div class="cgrules">🥅 Le tireur choisit son côté et sa frappe (placée = précise, puissante = dure à arrêter mais peut s'envoler). Le gardien choisit où plonger. Le TIR du tireur et les réflexes du gardien comptent. Mort subite en cas d'égalité.</div>`:""}
     ${g==="pyr"?`<div class="cgrules">🔺 5 étages : Épique, Légendaire, Mythique, Spéciale, Légende Ultime. À chaque étage, une carte adverse visible et une <b>stat cachée</b> : choisis parmi tes 3 cartes celle qui a le plus de chances de faire au moins aussi bien. 3 vies.${m.on?" En ligne : vous grimpez la même pyramide, le plus haut gagne.":""}</div>`:""}
   </div>`; }
@@ -6570,7 +6635,8 @@ CG_VIEW.cbt=(G,S,side,need)=>{ const o=1-side; const key=(G.id||G.seed)+"_"+(S.i
     const H=S.hand[side], sel=cgTB.sel;
     return `<div class="cgmsg sm">Choisis <b>5 joueurs</b> : le 1er touché est ton <b>titulaire</b>, les 4 suivants vont sur le <b>banc</b>. (${sel.length}/5)</div>
       <div class="thand big">${H.map((id,i)=>{ const k=sel.indexOf(i); return `<span class="thc can${k>=0?" on":""}" data-tsel="${i}">${tcgHTML(id,{w:100,evo:G.evo[side][id]||0,lvl:(G.tl[side]||{})[id]||0,hpm:tcgMax(id,G,side),cls:"mini"})}${k>=0?`<i class="tnum">${k===0?"TITULAIRE":"Banc "+k}</i>`:""}</span>`; }).join("")}</div>
-      <button class="btn big" id="tcgSetup" ${sel.length===5||sel.length===H.length?"":"disabled"}>✅ Lancer le match</button>`; }
+      ${G.cap?`<div class="mute" style="font-size:12px;text-align:center">⚖️ Note totale : <b style="color:${tcgTeamOvr(sel.map(i=>H[i]),G,side)>TCG_CAP?"#ff7a7a":"#7ee2a0"}">${tcgTeamOvr(sel.map(i=>H[i]),G,side)}</b> / ${TCG_CAP}</div>`:""}
+      <button class="btn big" id="tcgSetup" ${(sel.length===5||sel.length===H.length)&&!(G.cap&&tcgTeamOvr(sel.map(i=>H[i]),G,side)>TCG_CAP)?"":"disabled"}>✅ Lancer le match</button>`; }
   const myTurn=need; const T=JSON.parse(JSON.stringify(S)); if(myTurn) for(const A of cgTB.acts) tcgAct(T,G,side,A,[]); const mustP=myTurn&&T.act[side]===null;
   const goals=s=>`<span class="tgoals">${[0,1,2].map(i=>`<i class="${i<T.sc[s]?"on":""}">⚽</i>`).join("")}</span>`;
   const pickB=myTurn&&(mustP||cgTB.tgt==="r");
@@ -6686,6 +6752,7 @@ function cgBind(V){ const on=(q,f)=>V.querySelectorAll(q).forEach(b=>b.onclick=e
   on("[data-cgtuto]",b=>cgTuto(b.dataset.cgtuto));
   on("[data-cgm]",b=>{ cgSel=b.dataset.cgm; renderCards(); window.scrollTo(0,0); });
   on("[data-cgsrc]",b=>{ cgSrc=b.dataset.cgsrc; renderCards(); });
+  const cp=V.querySelector("#cgCap"); if(cp) cp.onchange=e=>{ cgCap=e.target.checked; };
   const os=V.querySelector("#cgOppSel"); if(os) os.onchange=e=>{ cgOpp=e.target.value; renderCards(); };
   on("#cgGo",()=>{ if(cgSel==="pom"){ pomNew(cgSrc); if(pomG) pomG.started=1; renderCards(); return; } cgPick=null; cgAnim=null; const g=cgSel; cgStart(g).then(()=>{ if(cgCur&&cgCur.g===g){ cgSel="game"; renderCards(); } }); });
   on("#cgResume",()=>{ cgSel="game"; renderCards(); });
@@ -6717,7 +6784,7 @@ function cgBind(V){ const on=(q,f)=>V.querySelectorAll(q).forEach(b=>b.onclick=e
   V.querySelectorAll("[data-tcg]").forEach(el=>{ if(el.closest("[data-cgt],[data-cgsw],[data-cgi],.cgstage,.cgc,[data-tb],[data-th],[data-tsel],.tdeck")) return; el.onclick=e=>{ e.stopPropagation(); showTcg(el.dataset.tcg); }; }); }
 function openCards(from){ cgBack=from==="online"?"online":"solo"; NAV_OF.cards=cgBack==="online"?"nOnline":"nSolo"; if(!(cgCur&&cgSel==="game")) cgSel=null; setMode("cards"); }
 
-const APP_V="2026-11-27i"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-27k"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
