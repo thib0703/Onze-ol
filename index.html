@@ -1371,7 +1371,7 @@ body.lowfx .cgstage *{animation-duration:.01s!important;animation-delay:0s!impor
 .tcgx{--w:150px;position:relative;width:var(--w);height:calc(var(--w)*1.5);display:inline-block;flex:none;font-size:calc(var(--w)*.058);color:#fff}
 .tcgx .tx-face{position:absolute;z-index:1;overflow:hidden;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 40%,#ffffff33,transparent 60%),linear-gradient(160deg,#1d4aa0,#e3002b)}
 .tcgx .tx-face img{width:100%;height:100%;object-fit:cover;object-position:center 25%}.tcgx .tx-face span{font-size:3.4em;filter:drop-shadow(0 3px 6px #000a)}
-.tcgx .tx-ic{position:absolute;z-index:3;display:flex;align-items:center;justify-content:center;font-size:2.2em}
+.tcgx .tx-ic{position:absolute;z-index:3;display:flex;align-items:center;justify-content:center;font-size:2.2em}.tcgx .tx-ic img{width:96%;height:auto;aspect-ratio:1;object-fit:contain;filter:drop-shadow(0 2px 4px #0008)}
 .tcgx .tx-nm{position:absolute;z-index:3;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1.05em;text-align:center;line-height:1.05;overflow:hidden;padding:0 3%}
 .tcgx .tx-ty{position:absolute;z-index:3;display:flex;align-items:center;justify-content:center;font-size:.72em;font-weight:700;letter-spacing:.5px;text-transform:uppercase}
 .tcgx .tx-d{position:absolute;z-index:3;display:flex;align-items:center;justify-content:center;text-align:center;font-size:.85em;line-height:1.25;padding:2% 4%;color:#2a1a05}
@@ -6717,17 +6717,17 @@ function tcgChips(T,G,s,c){ if(!c) return ""; const mine=[c.id,...T.bench[s].map
   for(const k of tcgSkills(c.id)) ch.push(`🏅 ${esc(k.n)}`); return ch.length?`<div class="tchips">${ch.map(x=>`<span>${x}</span>`).join("")}</div>`:""; }
 
 // 🎴 cartes non-joueurs : Action, Stade, Entraîneur, Époque (cadre propre à chaque type, zones mesurées sur chaque image)
-const TCG_XART=new Set([]); // illustrations prêtes dans img/tcg/x/<clé>.webp
+const TCG_XART=new Set(["stade-gerland","stade-groupama"]); // illustrations prêtes dans img/tcg/x/<clé>.webp
 const TCGX={action:{t:"Action de match"},stade:{t:"Stade"},coach:{t:"Entraîneur"},epoque:{t:"Collectif d'époque"}};
 function tcgXHTML(kind,o){ const w=o.w||150; const art=o.img?`<img src="${o.img}" alt="" loading="lazy">`:`<span>${o.ic||"🃏"}</span>`;
   return `<div class="tcgx x-${kind}${o.cls?" "+o.cls:""}${o.off?" off":""}" style="--w:${w}px"${o.attr||""}>
     <div class="tx-face">${art}</div><img class="tcg-fr" src="img/tcg/cadre-${kind}.webp" alt="">
-    <div class="tx-ic">${o.ic||""}</div><div class="tx-nm">${esc(o.n||"")}</div><div class="tx-ty">${TCGX[kind].t}</div><div class="tx-d">${o.d||""}</div>${o.tag?`<i class="tnum">${o.tag}</i>`:""}</div>`; }
-const tcgActCard=(k,o={})=>tcgXHTML("action",Object.assign({ic:TCG_ACT[k].ic,n:TCG_ACT[k].n,d:esc(TCG_ACT[k].d),img:TCG_XART.has("act-"+k)?`img/tcg/x/act-${k}.webp`:null},o));
-const tcgStadCard=(k,o={})=>tcgXHTML("stade",Object.assign({ic:"🏟️",n:TCG_STAD[k].n,d:esc(TCG_STAD[k].d),img:TCG_XART.has("stade-"+k)?`img/tcg/x/stade-${k}.webp`:null},o));
+    <div class="tx-ic">${o.ico?`<img src="img/tcg/ico/${o.ico}.webp" alt="">`:o.ic||""}</div><div class="tx-nm">${esc(o.n||"")}</div><div class="tx-ty">${TCGX[kind].t}</div><div class="tx-d"><div>${o.d||""}</div></div>${o.tag?`<i class="tnum">${o.tag}</i>`:""}</div>`; }
+const tcgActCard=(k,o={})=>tcgXHTML("action",Object.assign({ico:"act-"+k,ic:TCG_ACT[k].ic,n:TCG_ACT[k].n,d:esc(TCG_ACT[k].d),img:TCG_XART.has("act-"+k)?`img/tcg/x/act-${k}.webp`:null},o));
+const tcgStadCard=(k,o={})=>tcgXHTML("stade",Object.assign({ico:"stade",ic:"🏟️",n:TCG_STAD[k].n,d:esc(TCG_STAD[k].d),img:TCG_XART.has("stade-"+k)?`img/tcg/x/stade-${k}.webp`:null},o));
 function tcgCoachCard(id,o={}){ const p=BY_ID[id]; const sp=(COACH_SPANS[id]||[[0,0]])[0]; const img=TCG_XART.has(id)?`img/tcg/x/${id}.webp`:PORTRAITS.has(id)?`img/cartes/${id}.webp?v=${IMGV}`:null;
-  return tcgXHTML("coach",Object.assign({ic:"📋",n:p.name,d:`À l'OL ${sp[0]}${sp[1]>sp[0]?"-"+sp[1]:""}<br><b>+5 dégâts</b> pour ses joueurs (même époque)`,img},o)); }
-function tcgEraCard(k,o={}){ const E=TCG_ERAS.find(e=>e.k===k); return tcgXHTML("epoque",Object.assign({ic:E.ic,n:E.n,d:`${E.y?E.y[0]+"-"+Math.min(E.y[1],2026):"Avant 2000"} · 3 joueurs de l'époque<br><b>${esc(E.d)}</b>`,img:TCG_XART.has("era-"+k)?`img/tcg/x/era-${k}.webp`:null},o)); }
+  return tcgXHTML("coach",Object.assign({ico:"coach",ic:"📋",n:p.name,d:`À l'OL ${sp[0]}${sp[1]>sp[0]?"-"+sp[1]:""}<br><b>+5 dégâts</b> pour ses joueurs (même époque)`,img},o)); }
+function tcgEraCard(k,o={}){ const E=TCG_ERAS.find(e=>e.k===k); return tcgXHTML("epoque",Object.assign({ico:"era-"+k,ic:E.ic,n:E.n,d:`${E.y?E.y[0]+"-"+Math.min(E.y[1],2026):"Avant 2000"} · 3 joueurs de l'époque<br><b>${esc(E.d)}</b>`,img:TCG_XART.has("era-"+k)?`img/tcg/x/era-${k}.webp`:null},o)); }
 
 
 function tcgPrepHTML(G,side,ids){ const cos=tcgCoaches(G.src,G.players[side]); const eras=tcgEras(ids);
@@ -6900,7 +6900,7 @@ function cgBind(V){ const on=(q,f)=>V.querySelectorAll(q).forEach(b=>b.onclick=e
   V.querySelectorAll("[data-tcg]").forEach(el=>{ if(el.closest("[data-cgt],[data-cgsw],[data-cgi],.cgstage,.cgc,[data-tb],[data-th],[data-tsel],.tdeck")) return; el.onclick=e=>{ e.stopPropagation(); showTcg(el.dataset.tcg); }; }); }
 function openCards(from){ cgBack=from==="online"?"online":"solo"; NAV_OF.cards=cgBack==="online"?"nOnline":"nSolo"; if(!(cgCur&&cgSel==="game")) cgSel=null; setMode("cards"); }
 
-const APP_V="2026-11-27l"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-27m"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
