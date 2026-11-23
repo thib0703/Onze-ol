@@ -3249,6 +3249,9 @@ function cpuLeft(){ const c=W(); return c.cpud&&c.cpud.d===today()?Math.max(0,CP
 let trFirst=true;
 function claimRewards(){
   if(!me||!C(me)) return; try{ trophyCheck(trFirst); if(trFirst) setTimeout(()=>{ const c=W(); if((c.tuto||{}).fin&&mode!=="match"&&!document.querySelector(".modal.open,#cardModal.open,.trz,#packfx.open")) showHome(); },1500); trFirst=false; }catch(e){} const c=W(); c.claimed=c.claimed||[]; let got=0, lines=[];
+  // 👑 Rattrapage (une fois) : Légendes Ultimes / Modernes / Grande Forme tirées avant le correctif, restées hors collection
+  if(!c.ulFix){ c.ulFix=1; c.coll=c.coll||{}; const add=[]; for(const L of c.packLog||[]) for(const id of L.ids||[]){ const q=BY_ID[id]; if(q&&(q.v==="ul"||q.v==="lm"||q.v==="gf")&&!(c.coll[id]>0)&&!add.includes(id)) add.push(id); }
+    add.forEach(id=>c.coll[id]=1); save(); if(add.length) setTimeout(()=>toast(`👑 Carte récupérée dans ta collection : ${add.map(id=>BY_ID[id].name).join(", ")}`),1800); }
   for(const h of matches){ if(!h.owners||c.claimed.includes(h.id)) continue; const i=h.owners.indexOf(me); if(i<0) continue;
     if((Date.now()-h.at)/MSPEED<100&&!(mSkip===h.id&&isCpuH(h))) continue; // match pas encore fini (contre l'ordi : dès que tu as vu le résultat)
     if(h.owners[0]===h.owners[1]||h.nr){ c.claimed.push(h.id); continue; }
@@ -5847,7 +5850,7 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-26e"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-26f"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
