@@ -72,6 +72,23 @@ exports.duoDraft = onDocumentWritten({ document: "onzeol_drafts/{id}", region: R
     await notify(after.turn, "👥 2 contre 2 : à toi de choisir !", prev ? `${prev} a fait son choix, c'est ton tour.` : "Les 4 ont accepté, tu choisis en premier !");
   }
 });
+// 🃏 Jeux de cartes : invitation, réponse, « à toi de jouer », fin de partie (nx = joueurs qui doivent jouer, écrit par l'appli)
+const CG_N = { bat: "⚔️ Bataille de stats", duel: "🃏 Duel 5 cartes", tab: "🥅 Tirs au but", cbt: "🔥 Combat TCG", pyr: "🔺 Pyramide", pom: "↕️ Plus ou moins" };
+exports.cardGame = onDocumentWritten({ document: "onzeol_drafts/{id}", region: REGION }, async ev => {
+  const before = ev.data.before.exists ? ev.data.before.data() : null, after = ev.data.after.exists ? ev.data.after.data() : null;
+  if (!after || after.mode !== "cards") return;
+  const kind = CG_N[after.g] || "🃏 Jeu de cartes", pl = after.players || [], other = pl.find(u => u !== after.by), bs = before && before.status;
+  if (!before && after.status === "lobby") return notify(other, `${kind} : invitation`, `${await nameOf(after.by)} t'invite à jouer. Réponds dans 🎮 Solo › 🃏 Jeux de cartes.`);
+  if (bs === "lobby" && after.status === "cancelled") return notify(after.by, `${kind} : invitation refusée`, `${await nameOf(other)} a refusé ta partie.`);
+  if (bs === "lobby" && after.status === "running") return notify(after.by, `${kind} : c'est parti !`, `${await nameOf(other)} a accepté ta partie, à toi de jouer.`);
+  if (after.status === "done" && bs === "running") return;
+  if (after.status !== "running") return;
+  const was = (before && before.nx) || [], now = after.nx || [];
+  for (const u of now) if (!was.includes(u)) {
+    const o = pl.find(x => x !== u); await notify(u, `${kind} : à toi de jouer !`, `${await nameOf(o)} a joué, c'est ton tour.`);
+  }
+});
+
 // Match lancé contre toi
 exports.matchLaunched = onDocumentWritten({ document: "onzeol_meta/main", region: REGION }, async ev => {
   const before = ev.data.before.exists ? ev.data.before.data() : {}, after = ev.data.after.exists ? ev.data.after.data() : {};
