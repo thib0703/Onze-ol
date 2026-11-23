@@ -22,3 +22,7 @@
 - Images : `img/` (fonds de cartes, cartes/portraits, trophees, tuiles, packs, ecussons, nav,
   stade.webp, vitrine-*.webp, logo.webp). Toutes générées avec ChatGPT puis converties en webp.
 - À vérifier au 1er vrai match OL : le live score ESPN (buteurs dans `details`, détection de Lyon).
+- Jeux de cartes (🃏, vue `#viewCards`, code « JEUX DE CARTES » dans `index.html`) : 6 modes (`CG_MODES`, moteurs `CG_ENG`,
+  vues `CG_VIEW`). Parties en ligne = docs `mode:"cards"` dans `onzeol_drafts` (donne + graine + coups `mv`), l'état est
+  rejoué par `cgReplay` : tout doit rester déterministe (utiliser `cgRng`, jamais `Math.random` dans `step`).
+  Cartes TCG (`tcgOf`, `tcgHTML`) seulement pour Épique et plus ; Éclats 💠 dans `tcg` du doc joueur. Images : `img/tcg`, `img/jeux`.

@@ -1133,6 +1133,81 @@ body.lowfx .tile,body.lowfx .vt img,body.lowfx .hype,body.lowfx .pkbtn,body.lowf
 .olv-ev{display:flex;gap:10px;padding:7px 4px;border-top:1px solid #ffffff10;font-size:13px}.olv-ev span{width:38px;color:var(--mute)}.olv-ev.a{flex-direction:row-reverse;text-align:right}
 .olgoal{position:fixed;inset:0;z-index:90;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:radial-gradient(circle,#e3002bcc,#000e 70%);color:#fff;text-align:center;animation:hypeFade 3.6s forwards}
 .olgoal b{font-size:clamp(48px,16vw,90px);font-weight:900;font-style:italic;text-shadow:0 0 30px #ff9a1a,0 6px 0 #1d4ed8;animation:hypeZoom .6s cubic-bezier(.2,1.6,.4,1)}.olgoal span{font-size:22px;font-weight:800}.olgoal em{font-style:normal;font-size:16px;opacity:.9}
+/* 🃏 Jeux de cartes */
+#viewCards{min-height:70vh}
+#viewCards.cgplay{background:linear-gradient(180deg,#0b1530cc,#0b153055 20%,#0b153088 80%,#0b1530),var(--cgbg) center top/cover no-repeat fixed;border-radius:18px}
+.cgwrap{padding:4px 2px 30px}
+.cgbar{display:flex;flex-direction:column;gap:2px;background:linear-gradient(135deg,#1d4aa0,#13306b);border:1px solid #6aa8ff55;border-radius:14px;padding:9px 12px;margin:0 0 10px}
+.cgbar span{font-size:15px}.cgbar small{color:var(--mute);font-size:11px}
+.cghub .tile{min-height:140px}
+.cgrow{display:flex;align-items:center;gap:8px;justify-content:space-between;background:#16244acc;border:1px solid #ffffff1a;border-radius:12px;padding:8px 10px;margin:6px 0}
+.cgrow span{font-size:13px;min-width:0}.cgrow small{display:block;color:var(--mute);font-size:11px;margin-top:2px}.cgrow.resume{border-color:#ffd97088}
+.cgsetup{background:#0b1530cc;border:1px solid #ffffff22;border-radius:16px;padding:12px;backdrop-filter:blur(3px)}
+.cgsh b{font-size:18px;display:block}.cgsh small{color:var(--mute);font-size:12px}
+.cgseg{display:flex;gap:6px;margin:10px 0 4px}.cgseg button{flex:1;border:1px solid #ffffff33;background:#16244a;color:#fff;border-radius:12px;padding:9px 6px;font-weight:700;font-size:13px}
+.cgseg button.on{background:linear-gradient(135deg,#e3002b,#1d4aa0);border-color:#ffd97099}
+.cgrules{font-size:12px;line-height:1.5;background:#16244acc;border-radius:12px;padding:9px 11px;margin-top:10px;color:#dfe7ff}
+.cgrk{display:flex;justify-content:space-between;padding:3px 2px;border-bottom:1px solid #ffffff12}.cgrk.me{color:#ffd970;font-weight:700}
+.cgtop{display:flex;flex-direction:column;align-items:center;margin:2px 0 8px;text-shadow:0 2px 6px #000}.cgtop b{font-size:17px}.cgtop small{color:#cfd9f5;font-size:11px}
+.cgscore{display:flex;justify-content:space-between;align-items:center;background:#000a;border:1px solid #ffd97055;border-radius:14px;padding:8px 12px;margin:0 0 8px}
+.cgscore b{font-size:22px;color:#ffd970;margin:0 4px}.cgscore small{color:#cfd9f5;font-size:12px}
+.cgmsg{text-align:center;background:#000a;border-radius:12px;padding:10px;margin:8px 0;font-size:14px}.cgmsg small{display:block;color:var(--mute);font-size:12px;margin-top:4px}.cgmsg.sm{font-size:13px;padding:7px}
+.cgwait{text-align:center;color:#cfd9f5;margin:10px 0;font-size:13px}.cgwait small{display:block;color:var(--mute);font-size:11px}
+.cgres{text-align:center;border-radius:12px;padding:7px 10px;margin:6px 0;font-size:13px;background:#000a;border:1px solid #ffffff22;animation:cgpop .35s ease}
+.cgres.win{border-color:#43d17a;box-shadow:0 0 14px #43d17a55}.cgres.lose{border-color:#ff5a5a;box-shadow:0 0 14px #ff5a5a44}.cgres.draw{border-color:#ffd970}
+@keyframes cgpop{from{transform:scale(.92);opacity:0}to{transform:none;opacity:1}}
+.cgduo{display:flex;justify-content:center;align-items:center;gap:14px;margin:8px 0}.cgduo>div{display:flex;flex-direction:column;align-items:center;gap:3px}.cgduo small{font-size:11px;color:#cfd9f5}
+.cgvs{font-style:normal;font-weight:900;color:#ffd970;text-shadow:0 0 8px #000;margin:0 4px}
+.cgprev{display:flex;justify-content:center;align-items:center;gap:6px;flex-wrap:wrap;margin:4px 0}
+.cgc{display:inline-flex;flex-direction:column;align-items:center;cursor:pointer;position:relative}.cgc em{font-style:normal;font-size:11px;font-weight:800;background:#000b;border-radius:8px;padding:1px 6px;margin-top:3px;color:#ffd970}
+.cgc.can{transition:transform .15s}.cgc.can:active{transform:scale(.95)}
+.cghand{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:8px 0}
+.cgstats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:6px 0}
+.cgsb{border:1px solid #ffd97066;background:linear-gradient(180deg,#1d4aa0,#13306b);color:#fff;border-radius:12px;padding:8px 4px;display:flex;flex-direction:column;align-items:center}
+.cgsb small{font-size:11px;color:#cfd9f5}.cgsb b{font-size:20px}.cgsb:active{transform:scale(.96)}
+.cgstl{display:flex;gap:4px;justify-content:center;flex-wrap:wrap;margin:4px 0}.cgstl span{font-size:11px;padding:3px 7px;border-radius:10px;background:#000a;color:#cfd9f5;border:1px solid #ffffff22}
+.cgstl span.on{background:#e3002b;color:#fff;border-color:#ffd970}.cgstl span.done{opacity:.45}
+.cgopp{display:flex;align-items:center;justify-content:center;gap:4px;margin-top:8px}.cgopp small{font-size:11px;color:var(--mute);margin-left:6px}
+.cgdirs{display:flex;gap:6px;margin:6px 0}.cgdirs .btn{flex:1;margin:0}
+.cgpens{display:flex;justify-content:space-between;margin:-2px 4px 6px}.cgpens i{font-style:normal;font-size:14px;margin-right:2px}.cgpens i.m{color:#ff6a6a}.cgpens i.e{color:#ffffff55}
+.cgend{text-align:center;border-radius:16px;padding:12px;margin:12px 0;background:#000c;border:2px solid #ffd970}.cgend b{font-size:22px}
+.cgend.win{border-color:#43d17a;box-shadow:0 0 30px #43d17a55}.cgend.lose{border-color:#ff5a5a}.cgend .dbtns{margin-top:10px}
+.cgatk{display:flex;flex-direction:column;gap:6px;margin:8px 0}.cgatk .btn{margin:0;display:flex;justify-content:space-between;align-items:center}.cgatk .btn small{opacity:.8}
+.cgarena{display:flex;flex-direction:column;gap:6px}
+.cgside{display:flex;align-items:center;justify-content:center;gap:8px;position:relative}
+.cgbenchs{display:flex;flex-direction:column;gap:4px}
+.cgbench{display:block;cursor:pointer}.cgbench.ko{opacity:.35;filter:grayscale(1)}.cgbench.can{outline:2px solid #7ee2a0;border-radius:8px}
+.cgen{font-weight:800;color:#ffd970;background:#000b;border-radius:10px;padding:3px 8px;font-size:12px;white-space:nowrap}
+.cglog{text-align:center;font-size:12px;line-height:1.5;background:#000b;border-radius:12px;padding:6px 8px;animation:cgpop .35s ease}
+.cgtsel{position:relative;display:inline-block;cursor:pointer;border-radius:10px;transition:transform .15s}.cgtsel.on{transform:translateY(-6px);filter:drop-shadow(0 0 10px #ffd970)}
+.cgtsel>i{position:absolute;top:-6px;right:-6px;background:#e3002b;color:#fff;font-style:normal;font-weight:900;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #ffd970;z-index:5}
+.pyr{display:flex;flex-direction:column;align-items:center;gap:4px;margin:6px 0}
+.pyst{width:calc(46% + var(--i)*-6% + 30%);text-align:center;font-size:12px;font-weight:700;padding:5px;border-radius:8px;background:#000a;border:1px solid #ffffff22;color:#cfd9f5}
+.pyst.ok{background:linear-gradient(90deg,#1f8a4c,#2fb36a);color:#fff}.pyst.on{border-color:#ffd970;box-shadow:0 0 12px #ffd97088;color:#fff}
+/* carte TCG : cadre (image) + textes posés dans les zones */
+.tcg{--w:180px;position:relative;width:var(--w);height:calc(var(--w)*1.5);display:inline-block;flex:none;font-size:calc(var(--w)*.058);color:#fff;user-select:none;cursor:pointer}
+.tcg-fr{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none}
+.tcg-face{position:absolute;left:10.5%;right:10.5%;top:20.5%;height:36%;z-index:1;overflow:hidden;display:flex;align-items:flex-end;justify-content:center;background:radial-gradient(circle at 50% 35%,#ffffff40,transparent 60%),linear-gradient(160deg,#e3002b,#13306b)}
+.tcg.t-icon .tcg-face{background:radial-gradient(circle at 50% 35%,#fff8,transparent 60%),linear-gradient(160deg,#c9a24a,#13306b)}
+.tcg.t-myth .tcg-face{background:radial-gradient(circle at 50% 35%,#fff8,transparent 60%),linear-gradient(160deg,#ff6ad5,#6ad5ff 50%,#ffe76a)}
+.tcg.t-ul .tcg-face{background:radial-gradient(circle at 50% 35%,#ffd97088,transparent 60%),linear-gradient(160deg,#2a2208,#000)}
+.tcg-face img{width:100%;height:100%;object-fit:cover;object-position:top}.tcg-face span{font-size:3em;font-weight:900;opacity:.6;align-self:center}
+.tcg-ovr{position:absolute;z-index:3;left:4.2%;top:6.6%;width:18.5%;height:12.4%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:2em;text-shadow:0 2px 4px #000}
+.tcg-nm{position:absolute;z-index:3;left:27%;right:23%;top:9.5%;height:5.6%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.05em;white-space:nowrap;overflow:hidden;text-shadow:0 1px 3px #000}
+.tcg-nm i{font-style:normal;color:#7ee2a0;margin-left:3px}
+.tcg-ic{position:absolute;z-index:3;left:79.5%;top:7.5%;width:14.5%;aspect-ratio:1;border-radius:50%}
+.tcg-hp{position:absolute;z-index:3;left:14%;right:14%;top:59.6%;height:3.8%;background:#0009;border-radius:99px;overflow:hidden}
+.tcg-hp i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#2fb36a,#7ee2a0);border-radius:99px;transition:width .5s}.tcg-hp i.mid{background:linear-gradient(90deg,#d9a21b,#ffd970)}.tcg-hp i.lo{background:linear-gradient(90deg,#b4232b,#ff6a6a)}
+.tcg-hp b{position:relative;display:flex;align-items:center;justify-content:center;height:100%;font-size:.85em;text-shadow:0 1px 2px #000}
+.tcg-a{position:absolute;z-index:3;left:6.5%;right:7.5%;height:8.6%;display:flex;align-items:center}.tcg-a.a1{top:67.9%}.tcg-a.a2{top:78.6%}
+.tcg-c{width:12.5%;flex:none;text-align:center;font-weight:900;font-size:.9em;margin-left:1%}
+.tcg-a b{flex:1;padding-left:4%;font-size:.95em;line-height:1.05;text-shadow:0 1px 3px #000}.tcg-a em{font-style:normal;font-weight:900;font-size:1.25em;padding-right:4%;color:#ffd970;text-shadow:0 1px 3px #000}
+.tcg-ab{position:absolute;z-index:3;left:9%;right:9%;top:89%;height:5%;display:flex;align-items:center;justify-content:center;font-size:.6em;text-align:center;line-height:1.05;overflow:hidden;text-shadow:0 1px 2px #000}
+.tcg.t-icon .tcg-nm,.tcg.t-icon .tcg-a b,.tcg.t-icon .tcg-ab,.tcg.t-icon .tcg-c,.tcg.t-icon .tcg-ovr{color:#3a2a06;text-shadow:none}.tcg.t-icon .tcg-a em{color:#8a4b00;text-shadow:none}
+.tcg.mini .tcg-a,.tcg.mini .tcg-ab,.tcg.mini .tcg-nm{display:none}.tcg.mini .tcg-hp b{font-size:0}
+.tcg.ko{filter:grayscale(1) brightness(.6)}.tcg-kos{position:absolute;z-index:4;inset:30% 0 auto;text-align:center;font-weight:900;font-size:2.4em;color:#ff5a5a;transform:rotate(-12deg);text-shadow:0 2px 6px #000}
+.tcg.act{filter:drop-shadow(0 0 12px #ffd97088)}
+.tcg-back{cursor:default}
 </style>
 </head>
 <body>
@@ -1262,6 +1337,7 @@ body.lowfx .tile,body.lowfx .vt img,body.lowfx .hype,body.lowfx .pkbtn,body.lowf
 <div id="viewSolo" class="wrap" style="display:none"><div id="soTodo"></div><div id="soHub"></div><div id="soSub"></div></div>
 <div id="viewOL" class="wrap" style="display:none"><div class="hubh"><h2>📰 OL &amp; classements</h2><small>L'actu du club, les classements, tes pronos et tes objectifs</small></div><div id="olTodo"></div><div class="segs" id="olSegs"></div><div id="olBody"></div></div>
 <div id="viewSocial" class="wrap" style="display:none"><div class="hubh"><h2>👥 Social</h2><small>Les clubs des autres, tes amis et tes invitations</small></div><div id="soc"></div></div>
+<div id="viewCards" class="wrap" style="display:none"></div>
 <div id="viewLigue" class="wrap" style="display:none">
   <div id="lEvent"></div>
   <div class="section" id="lObj"></div>
@@ -1928,7 +2004,7 @@ let dPrevStatus={}, dOppManual=false;
 // 📨 Invitations de draft : prévenir l'invité, et l'inviteur s'il y a un refus
 let invPrev=null;
 function invWatch(all){
-  const cur={}; for(const [k,x] of Object.entries(all||{})){ if(x&&x.mode!=="duo"&&Array.isArray(x.players)&&x.players.includes(me)) cur[k]=x; }
+  const cur={}; for(const [k,x] of Object.entries(all||{})){ if(x&&x.mode!=="duo"&&x.mode!=="cards"&&Array.isArray(x.players)&&x.players.includes(me)) cur[k]=x; }
   if(invPrev){ for(const [k,x] of Object.entries(cur)){ const was=invPrev[k]||{}; const kind=x.mode==="budget"?"partie Budget":"draft";
     if(x.inv&&x.inv.by!==me&&(!was.inv||was.inv.at!==x.inv.at)) toast(`📨 ${NAMES[x.inv.by]||"?"} t'invite à un ${kind} (🌐 En ligne)`);
     if(was.inv&&was.inv.by===me&&!x.inv&&x.refused&&x.refused.by!==me&&x.refused.at>was.inv.at) toast(`❌ ${NAMES[x.refused.by]||"?"} a refusé ton invitation au ${kind}`,true);
@@ -1943,8 +2019,8 @@ function invBox(x,o,kind,{onInvite,onCancel,onAccept,onRefuse,extra}){ // bloc d
   return {html:`<div class="invst me">📨 <b>${N}</b> t'invite à un ${kind} !${extra?`<small>${extra}</small>`:""}</div><div class="dbtns"><button class="btn big" id="invYes">✅ Accepter</button><button class="btn ghost big" id="invNo">❌ Refuser</button></div>`, bind:()=>{ $("#invYes").onclick=onAccept; $("#invNo").onclick=onRefuse; }};
 }
 function onDraftData(all){
-  all=Object.assign({},all||{}); try{ invWatch(all); }catch(_){} const bud={}, duo={}; for(const k of Object.keys(all)){ if(all[k]&&all[k].mode==="budget"){ bud[k]=all[k]; delete all[k]; } else if(all[k]&&all[k].mode==="duo"){ duo[k]=all[k]; delete all[k]; } }
-  onBudgetData(bud); try{ onDuoData(duo); }catch(e){ console.error(e); }
+  all=Object.assign({},all||{}); try{ invWatch(all); }catch(_){} const bud={}, duo={}, crd={}; for(const k of Object.keys(all)){ if(all[k]&&all[k].mode==="cards"){ crd[k]=all[k]; delete all[k]; } else if(all[k]&&all[k].mode==="budget"){ bud[k]=all[k]; delete all[k]; } else if(all[k]&&all[k].mode==="duo"){ duo[k]=all[k]; delete all[k]; } }
+  onBudgetData(bud); try{ onDuoData(duo); }catch(e){ console.error(e); } try{ onCardData(crd); }catch(e){ console.error(e); }
   drafts=all;
   for(const [k,x] of Object.entries(drafts)){
     if(!x||!Array.isArray(x.players)) continue;
@@ -1990,8 +2066,8 @@ let dResetArm=false;
 $("#dReset").onclick=e=>{ if(!dResetArm){dResetArm=true;e.target.textContent="Sûr ? Tout le draft sera effacé (re-touche)";setTimeout(()=>{dResetArm=false;e.target.textContent="Recommencer le draft";},3500);return;} dResetArm=false; e.target.textContent="Recommencer le draft"; dRestart(); };
 $("#dNew").onclick=dRestart; $("#dPlay").onclick=()=>playDraftMatch("classic");
 // 📱 Navigation façon jeu mobile : 5 onglets en bas, pages « En ligne » et « Solo » en tuiles, page « OL »
-const NAV_OF={compo:"nCompo",draft:"nOnline",online:"nOnline",solo:"nSolo",collec:"nCollec",ol:"nOL",social:"socBtn"};
-const VIEWS={compo:"#viewCompo",draft:"#viewDraft",match:"#viewMatch",collec:"#viewCollec",online:"#viewOnline",solo:"#viewSolo",ol:"#viewOL",social:"#viewSocial"};
+const NAV_OF={cards:"nSolo",compo:"nCompo",draft:"nOnline",online:"nOnline",solo:"nSolo",collec:"nCollec",ol:"nOL",social:"socBtn"};
+const VIEWS={compo:"#viewCompo",draft:"#viewDraft",match:"#viewMatch",collec:"#viewCollec",online:"#viewOnline",solo:"#viewSolo",ol:"#viewOL",social:"#viewSocial",cards:"#viewCards"};
 let onSel=null, soSel=null, olSel="actu", matchBack="online";
 const inJ=()=>["online","solo","ol"].includes(mode);
 function setMode(m){ if(m==="jeux") m="solo"; if(m==="ligue") m="ol";
@@ -2000,7 +2076,7 @@ function setMode(m){ if(m==="jeux") m="solo"; if(m==="ligue") m="ol";
   for(const [k,v] of Object.entries(VIEWS)){ const e=$(v); if(e) e.style.display=m===k?"":"none"; }
   const nv=m==="match"?(matchBack==="solo"?"nSolo":matchBack==="ol"?"nOL":"nOnline"):NAV_OF[m]; document.querySelectorAll("#bnav button").forEach(b=>b.classList.toggle("on",b.id===nv)); try{ $("#socBtn").classList.toggle("on",m==="social"); }catch(_){}
   $("#dHistWrap").style.display=m==="draft"?"":"none";
-  if(m==="draft"){ renderDraft(); renderDraftHist(); } else if(m==="match") renderMatch(); else if(m==="collec") renderCollec(); else if(m==="online") renderOnline(); else if(m==="solo") renderSolo(); else if(m==="ol") renderOL(); else if(m==="social") renderSocial(); else render();
+  if(m==="draft"){ renderDraft(); renderDraftHist(); } else if(m==="match") renderMatch(); else if(m==="collec") renderCollec(); else if(m==="online") renderOnline(); else if(m==="solo") renderSolo(); else if(m==="ol") renderOL(); else if(m==="social") renderSocial(); else if(m==="cards") renderCards(); else render();
   renderBack(); try{ renderTodo(); }catch(e){} window.scrollTo(0,0); }
 const SUBN={div:"🏅 Divisions",duo:"👥 2 contre 2",cup:"🏟️ Coupes",league:"🏆 Championnats",career:"🧗 Carrière",defi:"🎯 Défi du jour",quiz:"🧠 Quiz OL",sofa:"🛋️ Canapé"};
 function renderBack(){ const B=$("#backbar"); if(!B) return; let t=null, go=null;
@@ -2008,9 +2084,10 @@ function renderBack(){ const B=$("#backbar"); if(!B) return; let t=null, go=null
   else if(mode==="match"){ t="🏟️ Match"; go=()=>setMode(matchBack); }
   else if(mode==="online"&&onSel){ t=SUBN[onSel]; go=()=>{ onSel=null; renderOnline(); renderBack(); window.scrollTo(0,0); }; }
   else if(mode==="solo"&&soSel){ t=SUBN[soSel]; go=()=>{ soSel=null; renderSolo(); renderBack(); window.scrollTo(0,0); }; }
+  else if(mode==="cards"){ t=cgSel==="game"&&cgCur?CG_MODES[cgCur.g].ic+" "+CG_MODES[cgCur.g].n:cgSel==="pom"?"↕️ Plus ou moins":cgSel&&CG_MODES[cgSel]?CG_MODES[cgSel].ic+" "+CG_MODES[cgSel].n:"🃏 Jeux de cartes"; go=()=>{ if(cgSel){ cgSel=null; pomG=null; renderCards(); window.scrollTo(0,0); } else setMode(cgBack); }; }
   else if(mode==="social"&&socClub){ t="🏟️ Club de "+esc(NAMES[socClub]||"?"); go=()=>{ socClub=null; renderSocial(); renderBack(); window.scrollTo(0,0); }; }
   if(!t){ B.style.display="none"; return; }
-  const home=mode==="match"?(matchBack==="solo"?"🎮 Solo":matchBack==="ol"?"📰 OL":"🌐 En ligne"):mode==="solo"?"🎮 Solo":mode==="social"?"👥 Social":"🌐 En ligne";
+  const home=mode==="cards"?(cgSel?"🃏 Jeux de cartes":cgBack==="online"?"🌐 En ligne":"🎮 Solo"):mode==="match"?(matchBack==="solo"?"🎮 Solo":matchBack==="ol"?"📰 OL":"🌐 En ligne"):mode==="solo"?"🎮 Solo":mode==="social"?"👥 Social":"🌐 En ligne";
   B.style.display=""; B.innerHTML=`<button id="backBtn">‹ ${home}</button><b>${t}</b>`; $("#backBtn").onclick=go; }
 // tuiles : état de chaque mode (badge = quelque chose t'attend)
 // 🎯 Objectifs du jour, en résumé en haut des pages En ligne et Solo
@@ -2039,7 +2116,7 @@ function renderTopStrip(){ const el=$("#topStrip"); if(!el||!me) return; el.inne
 function objMiniHTML(){ try{ const o=objState(), oc=objClaimable();
   return `<button class="objmini" data-objmini="1"><div class="omh"><b>🎯 Objectifs du jour</b><span>${oc?`<i class="num">${oc} à récupérer</i>`:"Tout voir ›"}</span></div>${DAILY.map(x=>{ const v=Math.min(x.n,o.day.p[x.k]||0), done=o.day.done.includes(x.k); return `<div class="omr${done?" done":""}"><span>${done?"✅":v>=x.n?"🎁":"▫️"} ${x.t}</span><small>${done?"fait":`${v}/${x.n}`}</small><div class="track"><i style="width:${v/x.n*100}%"></i></div></div>`; }).join("")}</button>`; }catch(e){ return ""; } }
 function bindObjMini(root){ root.querySelectorAll("[data-objmini]").forEach(b=>b.onclick=()=>{ olSel="obj"; setMode("ol"); }); root.querySelectorAll("[data-passmini]").forEach(b=>b.onclick=()=>{ olSel="pass"; setMode("ol"); }); }
-const TILE_IMG=new Set(["draft","budget","duo","league","cup","match","career","defi","quiz","sofa","div","cpu"]);
+const TILE_IMG=new Set(["cards","draft","budget","duo","league","cup","match","career","defi","quiz","sofa","div","cpu"]);
 function hubTile(k,ic,title,st,grad,badge,wide){ const im=TILE_IMG.has(k); return `<button class="tile${wide?" wide":""}${im?" timg":""}" data-tile="${k}" style="background:${im?`linear-gradient(180deg,#0000 30%,#000c 100%),url(img/tuiles/${k}.webp) ${wide?"85% 30%":"72% center"}/cover no-repeat,${grad}`:grad}"><span class="tw">${ic}</span><span class="ti">${ic}</span><span><b>${title}</b><small>${st||""}</small></span>${badge?`<span class="tb">${badge}</span>`:""}</button>`; }
 function drStatus(list){ const mine=list.filter(d=>d&&Array.isArray(d.players)&&d.players.includes(me)); const o=d=>NAMES[d.players.find(x=>x!==me)]||"?";
   const t=mine.find(d=>d.status==="running"&&d.turn===me); if(t) return ["⚡ À toi de jouer vs "+o(t),"À toi !"];
@@ -2066,6 +2143,9 @@ function todoList(){ const L=[]; if(!me||!C(me)) return L; const c=W(); const ad
        if(c.daily!==today()) add("collec","🎁","<b>Pack du jour</b> gratuit à ouvrir",goC("#cShop"),"Ouvrir");
        const fp=Object.values(c.freePacks||{}).reduce((a,b)=>a+(b>0?b:0),0); if(fp) add("collec","🎁",`<b>${fp} pack${fp>1?"s":""} offert${fp>1?"s":""}</b> à ouvrir`,goC("#cShop"),"Ouvrir");
        const tr=Object.values(trades||{}).filter(t=>t&&t.to===me&&t.status==="pending").length; if(tr) add("collec","🔄",`<b>${tr} proposition${tr>1?"s":""} d'échange</b> reçue${tr>1?"s":""}`,goC("#cTrades"),"Voir",true); }catch(e){}
+  try{ for(const x of cgMine()){ const side=x.players.indexOf(me), o=esc(NAMES[x.players[1-side]]||"?"); const go=()=>{ cgCur=x; cgSel="game"; openCards("online"); };
+      if(x.status==="lobby"&&x.by!==me) add("online","🃏",`${CG_MODES[x.g].n} : <b>${o} t'invite</b>`,go,"Répondre",true);
+      else if(x.status==="running"){ const S=cgReplay(cgG(x)); if(cgNeedMe(cgG(x),S,side)) add("online","🃏",`${CG_MODES[x.g].n} : <b>à toi de jouer</b> contre ${o}`,go,"Jouer"); } } }catch(e){}
   try{ const fi=frIn().length; if(fi) add("social","👥",`<b>${fi} demande${fi>1?"s":""} d'ami</b>`,()=>{ socSel="amis"; socClub=null; setMode("social"); },"Voir"); }catch(e){}
   try{ const oc=objClaimable(); if(oc) add("ol","🎯",`<b>${oc} objectif${oc>1?"s":""}</b> à récupérer`,()=>{ olSel="obj"; setMode("ol"); },"Récupérer");
        if(newsUnread()) add("ol","📰","<b>Nouvelles actus</b> de l'OL",()=>{ olSel="actu"; setMode("ol"); },"Lire"); }catch(e){}
@@ -2088,6 +2168,7 @@ function renderHubs(){ if(!me) return;
     const html=`<div class="hubh"><h2>🌐 En ligne</h2><small>Affronte tes potes : drafts, championnats, coupes…</small></div>
       ${live?hubTile("live","🔴","Match en direct","Touche pour regarder","linear-gradient(135deg,#e3002b,#7a0018)","LIVE",true):""}
       <div class="hub">
+      ${(()=>{ try{ const n=cgTodo(); return hubTile("cards","🃏","Jeux de cartes",n?`⚡ ${n} partie${n>1?"s":""} t'attend${n>1?"ent":""}`:"Bataille, Duel, Tirs au but, Combat TCG, Plus ou moins, Pyramide","linear-gradient(135deg,#7c3aed,#13306b)",n?"À toi !":"Nouveau",true); }catch(e){ return ""; } })()}
       ${hubTile("draft","⚡","Draft",dr[0]||"5 joueurs proposés par poste, chacun son tour","linear-gradient(135deg,#1d4ed8,#0b1f5c)",dr[1])}
       ${hubTile("budget","💰","Draft Budget",bu[0]||"Même budget, mêmes propositions","linear-gradient(135deg,#b7791f,#5a3a07)",bu[1])}
       ${hubTile("duo","👥","2 contre 2",duoS[0]||"En duo avec un pote, à 4 en direct","linear-gradient(135deg,#7c3aed,#2e1065)",duoS[1])}
@@ -2102,6 +2183,7 @@ function renderHubs(){ if(!me) return;
     try{ const n=c.quiz&&c.quiz.d===today()?c.quiz.n:0; qz=`${n}/${QUIZ_MAX} quiz récompensés aujourd'hui`; }catch(e){}
     const defiTodo=!(c.dch&&c.dch.day===today()&&c.dch.done), quizTodo=!(c.quiz&&c.quiz.d===today()&&c.quiz.n>=QUIZ_MAX);
     const html=`<div class="hubh"><h2>🎮 Solo</h2><small>Joue seul, ou à deux sur ce téléphone</small></div><div class="hub">
+      ${(()=>{ try{ const n=cgTodo(); return hubTile("cards","🃏","Jeux de cartes",n?`⚡ ${n} partie${n>1?"s":""} t'attend${n>1?"ent":""}`:"Bataille, Duel, Tirs au but, Combat TCG, Plus ou moins, Pyramide","linear-gradient(135deg,#7c3aed,#13306b)",n?"À toi !":"Nouveau",true); }catch(e){ return ""; } })()}
       ${hubTile("career","🧗","Carrière",car,"linear-gradient(135deg,#0369a1,#082f49)",null)}
       ${hubTile("defi","🎯","Défi du jour",df,"linear-gradient(135deg,#ea580c,#7c2d12)",defiTodo?"À jouer":null)}
       ${hubTile("quiz","🧠","Quiz OL",qz,"linear-gradient(135deg,#9333ea,#3b0764)",quizTodo?"Dispo":null)}
@@ -2110,7 +2192,7 @@ function renderHubs(){ if(!me) return;
       ${hubTile("cpu","🤖","Contre l'ordi",(()=>{ try{ const n=cpuLeft(); return n>0?`Ton 11 type contre l'ordinateur · ${n}/${CPU_MAX} matchs récompensés aujourd'hui`:"⏳ Limite du jour atteinte · entraînement seulement"; }catch(e){ return "Ton 11 type contre l'ordinateur"; } })(),"linear-gradient(135deg,#475569,#0f172a)",null,true)}
       </div>`;
     if(setHub(H,html)){ H.querySelectorAll("[data-tile]").forEach(b=>b.onclick=()=>openTile(b.dataset.tile)); bindObjMini(H); } } }
-function openTile(k){ hubCache={};
+function openTile(k){ hubCache={}; if(k==="cards"){ openCards(mode); return; }
   if(k==="draft"||k==="budget"){ dSub=k==="budget"?"budget":"classic"; setMode("draft"); return; }
   if(k==="match"||k==="live"||k==="cpu"){ if(k!=="live"){ mPreset=k==="cpu"?"cpu":"friend"; pB=null; selB=null; } if(mode==="solo") matchBack="solo"; setMode("match"); return; }
   if(["duo","cup","league"].includes(k)){ onSel=k; renderOnline(); renderBack(); window.scrollTo(0,0); try{ tip(k==="league"?"league":k==="cup"?"cup":"tab_online"); }catch(e){} return; }
@@ -2365,6 +2447,7 @@ function showCard(pid,act,lv){
   if(act&&act.evo){ mk(act.evo.label,act.evo.fn); if(act.evo.dis) B.lastChild.disabled=true; }
   if(act&&act.sell) mk(act.sell.label,act.sell.fn);
   if(act&&act.remove) mk("Retirer",act.remove,true);
+  try{ if(tcgOk(pid)) mk("🔥 Voir la carte TCG",()=>showTcg(pid),true); }catch(e){}
   if(!(act&&act.noShare)) mk("📤 Partager la carte",()=>shareCard(pid,lv),true);
   mk("Fermer",null,true);
   M.classList.add("open");
@@ -5852,7 +5935,378 @@ function installGuide(force){
 installGuide(false);
 
 // ---------- 🔄 Mise à jour automatique ----------
-const APP_V="2026-11-26g"; // affichage seulement : la détection des mises à jour est automatique
+
+// ======================================================================
+// 🃏 JEUX DE CARTES : Bataille de stats, Duel 5 cartes, Tirs au but, Combat (TCG), Plus ou moins, Pyramide
+// Contre l'ordi ou en ligne (docs "cards" dans onzeol_drafts). Cartes : toutes les cartes du jeu ou ta collection.
+// Une partie en ligne = donne (decks) + graine + coups. L'état est REJOUÉ à partir des coups (même résultat chez les 2 joueurs).
+// ======================================================================
+const CG_L=["VIT","TIR","PAS","DRI","DEF","PHY"], CG_N=["Vitesse","Tir","Passe","Dribble","Défense","Physique"];
+const CG_MODES={
+  bat:{s:"La plus haute stat gagne",n:"Bataille de stats",ic:"⚔️",d:"Chacun sa carte : celui qui a la main choisit la stat, la plus haute gagne. 10 manches.",on:true},
+  duel:{s:"5 manches, stat imposée",n:"Duel 5 cartes",ic:"🃏",d:"6 cartes en main, 5 manches avec une stat imposée par manche. Devine ce que l'autre va jouer !",on:true},
+  tab:{s:"Tire, plonge, gagne",n:"Tirs au but",ic:"🥅",d:"5 tireurs et un gardien chacun. Choisis où tirer… et où plonger.",on:true},
+  cbt:{s:"Cartes TCG · PV, attaques",n:"Combat de cartes",ic:"🔥",d:"Équipe de 3 cartes TCG (Épique et plus) : PV, énergie, 2 attaques, types et capacités.",on:true},
+  pom:{s:"Fais la plus longue série",n:"Plus ou moins",ic:"↕️",d:"La prochaine carte a-t-elle une note plus haute ou plus basse ? Fais la plus longue série.",on:false},
+  pyr:{s:"De Commune à Mythique",n:"Pyramide de rareté",ic:"🔺",d:"Grimpe de Commune à Mythique : bats la carte de chaque étage sur une stat cachée. 3 vies.",on:true}
+};
+// --- hasard reproductible ---
+function cgRng(seed){ let a=(seed>>>0)||1; return ()=>{ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+const cgSeed=(s,k)=>{ let h=(s>>>0)^0x9e3779b9; for(const ch of String(k)) h=Math.imul(h^ch.charCodeAt(0),16777619)>>>0; return h; };
+function cgShuffle(arr,r){ const a=arr.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(r()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+// --- stats communes (les gardiens ont leurs propres stats, ramenées sur les 6 mêmes) ---
+const _cgS={};
+function cgStats(id,lv){ const p=BY_ID[id]; if(!p) return [50,50,50,50,50,50]; const k=id+"|"+(lv||0); if(_cgS[k]) return _cgS[k];
+  const cs=cardStats(p); let v; if(!cs) v=[60,60,60,60,60,60];
+  else if(p.pos[0]==="GB"){ const g=cs.vals; v=[g[4],Math.max(30,p.ovr-28),g[2],Math.max(30,p.ovr-22),Math.round((g[0]+g[3])/2),g[5]]; }
+  else v=cs.vals.slice();
+  return _cgS[k]=v.map(x=>Math.min(99,x+(lv||0))); }
+const cgGrp=p=>{ const x=p.pos[0]; return x==="GB"?"gk":["DC","DD","DG","PG","PD"].includes(x)?"def":["BU","AG","AD"].includes(x)?"att":"mil"; };
+const CG_GRP={gk:{n:"Gardien",ic:"img/tcg/ico-gk.webp",e:"🧤"},def:{n:"Défenseur",ic:"img/tcg/ico-def.webp",e:"🛡️"},mil:{n:"Milieu",ic:"img/tcg/ico-mil.webp",e:"⚽"},att:{n:"Attaquant",ic:"img/tcg/ico-att.webp",e:"🔥"}};
+// type fort contre : Attaquant → Gardien → Milieu → Défenseur → Attaquant (×1,25)
+const CG_BEATS={att:"gk",gk:"mil",mil:"def",def:"att"};
+// --- cartes TCG : Épique et plus (pas de TCG pour les Communes et les Rares) ---
+const tcgOk=id=>{ const p=BY_ID[id]; return !!p&&p.pos[0]!=="COACH"&&["gold","icon","myth"].includes(cardTier(p)); };
+const TCG_ATK={gk:[["Dégagement",2],["Sortie kamikaze",5]],def:[["Tacle glissé",4],["Tête rageuse",5]],mil:[["Passe laser",2],["Frappe de loin",1]],att:[["Frappe",1],["Lucarne",3]]};
+const TCG_SIG={juninho:"Coup franc magique","alexandre-lacazette":"Renard des surfaces","karim-benzema":"Talonnade","sonny-anderson":"Retourné","michael-essien":"Charge du Bison","hugo-lloris":"Envolée","gregory-coupet":"Mur de Gerland","cris":"Tacle du Policier","nabil-fekir":"Slalom","fleury-di-nallo":"Petit Prince","bernard-lacombe":"Tête plongeante","serge-chiesa":"Chef d'orchestre"};
+function tcgAbil(p){ const v=p.v, t=cardTier(p);
+  if(v==="ul") return {k:"ul",n:"Légende Ultime",d:"+20 % dégâts · +1 ⚡ au départ",dmg:1.2,e0:1};
+  if(v==="lm") return {k:"lm",n:"Légende Moderne",d:"+15 % de dégâts",dmg:1.15};
+  if(v==="gf") return {k:"gf",n:"Inarrêtable",d:"+2 ⚡ au départ",e0:2};
+  if(v==="ml") return {k:"ml",n:"Moment de légende",d:"+15 PV après l'attaque 2",heal2:15};
+  if(v==="xm") return {k:"xm",n:"Esprit de Noël",d:"+25 PV en entrant",enter:25};
+  if(v==="fs") return {k:"fs",n:"Pépite",d:"+2 ⚡ par tour",eg:2};
+  if(v==="tf") return {k:"tf",n:"En forme",d:"+10 % de dégâts",dmg:1.1};
+  if(t==="myth") return {k:"wc",n:"Classe mondiale",d:"+10 % de dégâts",dmg:1.1};
+  if(t==="icon") return {k:"xp",n:"Sang-froid",d:"−10 % de dégâts subis",def:.9};
+  return {k:"",n:"",d:"Pas de capacité spéciale"}; }
+function tcgOf(id,evo,lvl){ const p=BY_ID[id]; if(!p) return null; const g=cgGrp(p), st=cgStats(id,evo||0), lv=lvl||0, ovr=p.ovr+(evo||0);
+  const A=TCG_ATK[g]; const sig=TCG_SIG[p.base||p.id];
+  const d1=Math.round(14+(st[A[0][1]]-60)*.45)+3*lv, d2=Math.round(34+(st[A[1][1]]-60)*.8)+3*lv;
+  return {id,g,ovr,hp:Math.round(ovr*1.3)+(g==="def"?10:g==="gk"?15:0),vit:st[0],a:[{n:A[0][0],c:1,d:Math.max(8,d1)},{n:sig||A[1][0],c:3,d:Math.max(20,d2)}],ab:tcgAbil(p),lv}; }
+const tcgFrame=p=>p.v==="ul"?"ul":cardTier(p);
+function tcgHTML(id,o={}){ const p=BY_ID[id]; if(!p) return ""; const T=tcgOf(id,o.evo,o.lvl); const w=o.w||180;
+  const hp=o.hp!=null?o.hp:T.hp, hpm=T.hp, pct=Math.max(0,Math.min(100,hp/hpm*100));
+  const nm=p.name.length>15&&p.name.split(" ").length>1?p.name.split(" ").slice(1).join(" "):p.name;
+  return `<div class="tcg t-${tcgFrame(p)}${o.ko?" ko":""}${o.cls?" "+o.cls:""}" style="--w:${w}px" data-tcg="${id}">
+    <div class="tcg-face">${PORTRAITS.has(p.base||p.id)?`<img src="img/cartes/${p.base||p.id}.webp?v=${IMGV}" alt="" loading="lazy">`:`<span>${esc(initials(p.name))}</span>`}</div>
+    <img class="tcg-fr" src="img/tcg/cadre-${tcgFrame(p)}.webp" alt="">
+    <div class="tcg-ovr">${T.ovr}</div><div class="tcg-nm">${esc(nm)}${T.lv?` <i>+${T.lv}</i>`:""}</div><img class="tcg-ic" src="${CG_GRP[T.g].ic}" alt="${CG_GRP[T.g].n}">
+    <div class="tcg-hp"><i style="width:${pct}%" class="${pct<30?"lo":pct<60?"mid":""}"></i><b>${Math.max(0,Math.round(hp))} / ${hpm} PV</b></div>
+    ${T.a.map((a,i)=>`<div class="tcg-a a${i+1}"><span class="tcg-c">${a.c}⚡</span><b>${esc(a.n)}</b><em>${a.d}</em></div>`).join("")}
+    <div class="tcg-ab">${T.ab.n?`<b>${esc(T.ab.n)}</b>&nbsp;·&nbsp;${esc(T.ab.d)}`:"—"}</div>
+    ${o.ko?`<div class="tcg-kos">K.O.</div>`:""}</div>`; }
+const tcgBackHTML=(w,cls)=>`<div class="tcg tcg-back${cls?" "+cls:""}" style="--w:${w||120}px"><img class="tcg-fr" src="img/tcg/dos.webp" alt=""></div>`;
+// --- Éclats (monnaie du mode Combat) : améliorer les attaques d'une carte TCG ---
+const TCG_COST=[5,12,25], TCG_MAXL=3, ECL_CPU_MAX=10;
+const tcgW=()=>{ const c=W(); c.tcg=c.tcg||{e:0,lv:{}}; c.tcg.lv=c.tcg.lv||{}; return c.tcg; };
+const tcgLvOf=(u,id)=>(((C(u)||{}).tcg||{}).lv||{})[id]||0;
+function tcgUpgrade(id){ const T=tcgW(), lv=T.lv[id]||0; if(lv>=TCG_MAXL){ toast("Déjà au niveau maximum",true); return false; }
+  const cost=TCG_COST[lv]; if((T.e||0)<cost){ toast(`Il te faut ${cost} 💠 Éclats (tu en as ${T.e||0})`,true); return false; }
+  T.e-=cost; T.lv[id]=lv+1; save(); toast(`💠 ${BY_ID[id].name} : attaques niveau ${lv+1} (+${3*(lv+1)} dégâts)`); return true; }
+function eclatsGain(n,online){ if(!n) return 0; const T=tcgW(); if(!online){ const d=today(); if(!T.d||T.d.day!==d) T.d={day:d,n:0}; n=Math.max(0,Math.min(n,ECL_CPU_MAX-T.d.n)); T.d.n+=n; }
+  if(n){ T.e=(T.e||0)+n; save(); } return n; }
+function showTcg(id){ const M=$("#cardModal"); const c=W(), own=(c.coll||{})[id], lv=(tcgW().lv||{})[id]||0;
+  M.innerHTML=`<div class="cm-box"><div class="cm-card" style="display:flex;justify-content:center">${tcgHTML(id,{w:250,evo:evoOf(me,id),lvl:lv})}</div>
+    <div class="cm-note" style="text-align:left;font-size:12px;line-height:1.5">${cgTypeLine(id)}<br>⚡ Énergie : +1 par tour (max 6). Attaque 1 = 1 énergie, attaque 2 = 3 énergies.<br>💠 Tu as <b>${tcgW().e||0} Éclats</b>${own?` · niveau ${lv}/${TCG_MAXL}`:""}</div><div class="mbtns" id="tcgBtns"></div></div>`;
+  const B=$("#tcgBtns"); const mk=(t,fn,gh,dis)=>{ const b=document.createElement("button"); b.className="btn"+(gh?" ghost":""); b.textContent=t; b.disabled=!!dis; b.onclick=fn; B.appendChild(b); };
+  if(own&&lv<TCG_MAXL) mk(`💠 Améliorer les attaques (${TCG_COST[lv]} Éclats)`,()=>{ if(tcgUpgrade(id)) showTcg(id); },false,(tcgW().e||0)<TCG_COST[lv]);
+  mk("Voir la carte classique",()=>{ M.classList.remove("open"); showCard(id); },true); mk("Fermer",()=>M.classList.remove("open"),true); M.classList.add("open"); }
+function cgTypeLine(id){ const g=cgGrp(BY_ID[id]); const strong=CG_BEATS[g], weak=Object.keys(CG_BEATS).find(k=>CG_BEATS[k]===g);
+  return `${CG_GRP[g].e} <b>${CG_GRP[g].n}</b> · fort contre les ${CG_GRP[strong].n.toLowerCase()}s, faible contre les ${CG_GRP[weak].n.toLowerCase()}s (×1,25)`; }
+
+// --- pioches : toutes les cartes ou ta collection ---
+const cgAll=()=>ALL_CARDS.filter(p=>p.pos[0]!=="COACH"&&p.v!=="xm"&&p.v!=="tf").map(p=>p.id);
+function cgPool(src,u){ if(src==="all") return cgAll(); const own=(C(u)||{}).coll||{}; return ALL_CARDS.filter(p=>p.pos[0]!=="COACH"&&own[p.id]>0).map(p=>p.id); }
+// cartes de l'ordi en mode collection : même niveau que la pioche du joueur
+function cgCpuPool(pool){ const avg=pool.reduce((s,id)=>s+BY_ID[id].ovr,0)/Math.max(1,pool.length); const all=cgAll();
+  let L=all.filter(id=>Math.abs(BY_ID[id].ovr-avg)<=5); if(L.length<pool.length) L=all.slice().sort((a,b)=>Math.abs(BY_ID[a].ovr-avg)-Math.abs(BY_ID[b].ovr-avg)).slice(0,Math.max(pool.length,30)); return L; }
+const CG_MIN={bat:10,duel:6,tab:6,cbt:3,pom:8,pyr:6};
+function cgPoolOk(g,pool){ if(g==="cbt") return pool.filter(tcgOk).length>=3; if(g==="tab") return pool.filter(id=>BY_ID[id].pos[0]!=="GB").length>=5; return pool.length>=CG_MIN[g]; }
+function cgPoolMsg(g){ return g==="cbt"?"Il te faut au moins 3 cartes Épiques ou plus":g==="tab"?"Il te faut au moins 5 joueurs de champ":`Il te faut au moins ${CG_MIN[g]} cartes`; }
+// donne de départ (stockée dans la partie)
+function cgDeal(g,seed,poolA,poolB,src){ const r=cgRng(seed); const pick=(pool,n,f)=>cgShuffle(pool.filter(f||(()=>true)),r).slice(0,n);
+  if(g==="bat") return [pick(poolA,10),pick(poolB,10)];
+  if(g==="duel") return [pick(poolA,6),pick(poolB,6)];
+  if(g==="tab"){ const one=pool=>{ const sh=pick(pool,5,id=>BY_ID[id].pos[0]!=="GB").sort((a,b)=>cgStats(b)[1]-cgStats(a)[1]); let gk=pool.filter(id=>BY_ID[id].pos[0]==="GB").sort((a,b)=>BY_ID[b].ovr-BY_ID[a].ovr)[0];
+      if(!gk){ const L=cgAll().filter(id=>BY_ID[id].pos[0]==="GB"&&cardTier(BY_ID[id])==="bronze"); gk=L[Math.floor(r()*L.length)]; } return [...sh,gk]; }; return [one(poolA),one(poolB)]; }
+  if(g==="cbt"){ const one=pool=>{ const L=pool.filter(tcgOk); const n=src==="coll"?15:8; return (L.length<=n?L:pick(L,n)).sort((a,b)=>BY_ID[b].ovr-BY_ID[a].ovr); }; return [one(poolA),one(poolB)]; }
+  if(g==="pyr") return [poolA.slice(),poolB.slice()];
+  return [poolA.slice(),poolB.slice()]; }
+
+// ======================================================================
+// MOTEURS : init(G) → état ; need(S) → camps qui doivent jouer ; step(S,{0:coup,1:coup},G) ; fin : S.end={w:0|1|-1}
+// ======================================================================
+const CG_ENG={};
+// ⚔️ BATAILLE DE STATS
+CG_ENG.bat={ init(G){ return {r:0,h:cgRng(cgSeed(G.seed,"h"))()<.5?0:1,sc:[0,0],log:[]}; },
+  need(S){ return S.end?[]:[0,1]; },
+  step(S,M,G){ const k=+M[S.h].k; const a=G.deck[0][S.r], b=G.deck[1][S.r]; const va=cgStats(a,G.evo[0][a]||0)[k], vb=cgStats(b,G.evo[1][b]||0)[k];
+    const w=va>vb?0:vb>va?1:-1; if(w>=0){ S.sc[w]++; S.h=w; } S.log.push({a,b,k,va,vb,w}); S.r++;
+    if(S.r>=10||S.sc[0]>5||S.sc[1]>5||(S.r>=G.deck[0].length)) S.end={w:S.sc[0]>S.sc[1]?0:S.sc[1]>S.sc[0]?1:-1}; },
+  cpu(S,G,side){ if(S.h!==side) return {ok:1}; const id=G.deck[side][S.r]; const st=cgStats(id,G.evo[side][id]||0); const r=Math.random(); const ord=st.map((v,i)=>[v,i]).sort((x,y)=>y[0]-x[0]); return {k:(r<.75?ord[0]:r<.95?ord[1]:ord[2])[1]}; } };
+// 🃏 DUEL 5 CARTES
+CG_ENG.duel={ init(G){ const r=cgRng(cgSeed(G.seed,"st")); return {r:0,st:[0,1,2,3,4].map(()=>Math.floor(r()*6)),used:[[],[]],sc:[0,0],log:[]}; },
+  need(S){ return S.end?[]:[0,1]; },
+  step(S,M,G){ const k=S.st[S.r]; const ia=+M[0].i, ib=+M[1].i; const a=G.deck[0][ia], b=G.deck[1][ib];
+    const va=cgStats(a,G.evo[0][a]||0)[k], vb=cgStats(b,G.evo[1][b]||0)[k]; const w=va>vb?0:vb>va?1:-1; if(w>=0) S.sc[w]++;
+    S.used[0].push(ia); S.used[1].push(ib); S.log.push({a,b,k,va,vb,w}); S.r++;
+    if(S.r>=5) S.end={w:S.sc[0]>S.sc[1]?0:S.sc[1]>S.sc[0]?1:-1}; },
+  cpu(S,G,side){ const left=G.deck[side].map((id,i)=>i).filter(i=>!S.used[side].includes(i)); const k=S.st[S.r], fut=S.st.slice(S.r+1);
+    const val=i=>{ const s=cgStats(G.deck[side][i],G.evo[side][G.deck[side][i]]||0); return s[k]-.35*Math.max(0,...fut.map(f=>s[f]))+Math.random()*4; };
+    return {i:left.sort((x,y)=>val(y)-val(x))[0]}; } };
+// 🥅 TIRS AU BUT
+const TAB_D=["G","C","D"], TAB_DN={G:"à gauche",C:"au centre",D:"à droite"};
+CG_ENG.tab={ init(G){ return {k:0,sc:[0,0],n:[0,0],log:[]}; },
+  need(S){ return S.end?[]:[0,1]; },
+  step(S,M,G){ const sh=S.k%2, ke=1-sh; const idx=Math.floor(S.k/2)%5; const sid=G.deck[sh][idx], gid=G.deck[ke][5];
+    const tir=cgStats(sid,G.evo[sh][sid]||0)[1], gs=cardStats(BY_ID[gid]); const ref=gs&&BY_ID[gid].pos[0]==="GB"?Math.round((gs.vals[0]+gs.vals[3])/2):BY_ID[gid].ovr-15;
+    const d=M[sh].d, pw=+M[sh].p||0, gd=M[ke].d; const r=cgRng(cgSeed(G.seed,"t"+S.k))();
+    let res; if(d===gd){ const save=(pw?.48:.72)+(ref-tir)*.012; res=r<save?"arrêt":"but"; }
+    else { const miss=(pw?.16:.07)-(tir-70)*.004; res=r<Math.max(.02,miss)?(pw?"au-dessus":"poteau"):"but"; }
+    if(res==="but") S.sc[sh]++; S.n[sh]++; S.log.push({k:S.k,sh,sid,gid,d,pw,gd,res}); S.k++;
+    const [a,b]=S.sc, [na,nb]=S.n;
+    if(S.k<=10){ const la=5-na, lb=5-nb; if(a>b+lb||b>a+la) S.end={w:a>b?0:1}; else if(S.k===10&&a!==b) S.end={w:a>b?0:1}; }
+    else if(S.k%2===0&&a!==b) S.end={w:a>b?0:1};
+    if(!S.end&&S.k>=20) S.end={w:-1}; },
+  cpu(S,G,side){ const sh=S.k%2; const d=TAB_D[Math.floor(Math.random()*3)]; return side===sh?{d,p:Math.random()<.4?1:0}:{d}; } };
+// 🔥 COMBAT (TCG)
+const CBT_EMAX=6;
+CG_ENG.cbt={ init(G){ return {r:0,pick:null,t:[[],[]],hp:[[],[]],act:[0,0],e:[0,0],log:[]}; },
+  need(S){ return S.end?[]:[0,1]; },
+  step(S,M,G){ const rr=cgRng(cgSeed(G.seed,"c"+S.r));
+    if(!S.pick){ S.pick=1; for(const s of [0,1]){ const ids=(M[s].t||[]).slice(0,3); S.t[s]=ids; S.hp[s]=ids.map(id=>tcgOf(id,G.evo[s][id]||0,(G.tl[s]||{})[id]||0).hp); S.act[s]=0;
+        const T0=tcgOf(ids[0],G.evo[s][ids[0]]||0); S.e[s]=1+(T0.ab.e0||0); if(T0.ab.enter) S.hp[s][0]=Math.min(T0.hp,S.hp[s][0]+T0.ab.enter); }
+      S.log.push({start:1}); S.r++; return; }
+    const T=s=>tcgOf(S.t[s][S.act[s]],G.evo[s][S.t[s][S.act[s]]]||0,(G.tl[s]||{})[S.t[s][S.act[s]]]||0);
+    const ev=[]; const alive=s=>S.hp[s].map((h,i)=>h>0?i:-1).filter(i=>i>=0);
+    const enter=(s,i)=>{ S.act[s]=i; const t=T(s); if(t.ab.enter) S.hp[s][i]=Math.min(t.hp,S.hp[s][i]+t.ab.enter); if(t.ab.e0) S.e[s]=Math.min(CBT_EMAX,S.e[s]+t.ab.e0); };
+    // 1) changements (prioritaires)
+    for(const s of [0,1]){ const m=M[s]; if(m&&m.s!=null&&S.hp[s][+m.s]>0&&+m.s!==S.act[s]){ enter(s,+m.s); ev.push({s,sw:S.t[s][+m.s]}); } }
+    // 2) attaques, la plus rapide d'abord
+    const skip={}; const order=[0,1].filter(s=>M[s]&&M[s].a!=null).sort((x,y)=>T(y).vit-T(x).vit||(rr()<.5?-1:1));
+    for(const s of order){ const o=1-s; if(S.end) break; const me_=T(s); const ai=+M[s].a; const at=me_.a[ai]; if(!at||skip[s]||S.hp[s][S.act[s]]<=0) continue;
+      if(S.e[s]<at.c){ ev.push({s,fail:1}); continue; } S.e[s]-=at.c; const op=T(o);
+      let dmg=at.d*(me_.ab.dmg||1)*(op.ab.def||1)*(CG_BEATS[me_.g]===op.g?1.25:1)*(.9+rr()*.2); dmg=Math.round(dmg); S.hp[o][S.act[o]]=Math.max(0,S.hp[o][S.act[o]]-dmg);
+      ev.push({s,id:me_.id,at:at.n,dmg,sup:CG_BEATS[me_.g]===op.g});
+      if(ai===1&&me_.ab.heal2){ S.hp[s][S.act[s]]=Math.min(me_.hp,S.hp[s][S.act[s]]+me_.ab.heal2); }
+      if(S.hp[o][S.act[o]]<=0){ ev.push({ko:op.id,s:o}); skip[o]=1; const L=alive(o); if(!L.length){ S.end={w:s}; break; } enter(o,L[0]); ev.push({s:o,in:S.t[o][L[0]]}); } }
+    // 3) énergie
+    if(!S.end) for(const s of [0,1]){ S.e[s]=Math.min(CBT_EMAX,S.e[s]+(T(s).ab.eg||1)); }
+    S.log.push({ev}); S.r++;
+    if(!S.end&&S.r>40){ const pct=s=>S.hp[s].reduce((a,h,i)=>a+h/tcgOf(S.t[s][i]).hp,0); const a=pct(0),b=pct(1); S.end={w:a>b?0:b>a?1:-1}; } },
+  cpu(S,G,side){ if(!S.pick){ const L=G.deck[side].slice().sort((a,b)=>BY_ID[b].ovr-BY_ID[a].ovr); return {t:L.slice(0,3)}; }
+    const id=S.t[side][S.act[side]]; const t=tcgOf(id,G.evo[side][id]||0,(G.tl[side]||{})[id]||0); const o=1-side, oid=S.t[o][S.act[o]], ot=tcgOf(oid);
+    // en mauvaise posture contre le type adverse : changer parfois
+    const L=S.hp[side].map((h,i)=>h>0&&i!==S.act[side]?i:-1).filter(i=>i>=0);
+    if(CG_BEATS[ot.g]===t.g&&L.length&&Math.random()<.35){ const good=L.find(i=>CG_BEATS[cgGrp(BY_ID[S.t[side][i]])]===ot.g); if(good!=null) return {s:good}; }
+    if(S.e[side]>=3&&(Math.random()<.8||S.hp[o][S.act[o]]>t.a[0].d)) return {a:1}; return {a:0}; } };
+// 🔺 PYRAMIDE (chacun sa propre ascension, même pyramide pour les 2 joueurs)
+const PYR_T=["bronze","silver","gold","icon","myth"];
+function pyrFloor(G,side,f,tr){ const r=cgRng(cgSeed(G.seed,"p"+f+"_"+tr)); const L=POOL[PYR_T[f]].filter(id=>BY_ID[id].pos[0]!=="COACH"); const opp=L[Math.floor(r()*L.length)];
+  const k=Math.floor(r()*6); const r2=cgRng(cgSeed(G.seed,"h"+side+"_"+f+"_"+tr)); const hand=cgShuffle(G.deck[side],r2).slice(0,3); return {opp,k,hand}; }
+CG_ENG.pyr={ solo:true, init(G){ return {p:[{f:0,tr:0,lives:3,log:[]},{f:0,tr:0,lives:3,log:[]}]}; },
+  needS(S,s){ const P=S.p[s]; return !P.done; },
+  stepS(S,s,m,G){ const P=S.p[s]; const F=pyrFloor(G,s,P.f,P.tr); const id=F.hand[+m.i]; const v=cgStats(id,G.evo[s][id]||0)[F.k], vo=cgStats(F.opp)[F.k];
+    const win=v>=vo; P.log.push({f:P.f,id,opp:F.opp,k:F.k,v,vo,win}); P.tr++;
+    if(win){ P.f++; if(P.f>=5) P.done=1; } else { P.lives--; if(P.lives<=0) P.done=1; } },
+  score(P){ return P.f*10+P.lives; },
+  cpu(S,G,side){ const P=S.p[side], F=pyrFloor(G,side,P.f,P.tr); const so=cgStats(F.opp); let best=0,bv=-1e9;
+    F.hand.forEach((id,i)=>{ const s=cgStats(id,G.evo[side][id]||0); const v=s.reduce((a,x,j)=>a+(x>=so[j]?1:0),0)+Math.random()*.5; if(v>bv){bv=v;best=i;} }); return {i:best}; } };
+// rejouer une partie depuis ses coups
+function cgReplay(G){ const E=CG_ENG[G.g]; const S=E.init(G); const mv=G.mv||{};
+  if(E.solo){ for(const s of [0,1]){ let i=0; while(E.needS(S,s)&&mv["p"+s+"_"+i]){ E.stepS(S,s,mv["p"+s+"_"+i],G); i++; } }
+    if(!E.needS(S,0)&&!E.needS(S,1)){ const a=E.score(S.p[0]), b=E.score(S.p[1]); S.end={w:a>b?0:b>a?1:-1}; } return S; }
+  let i=0; while(!S.end){ const need=E.need(S); const M={}; let ok=true; for(const s of need){ const m=mv["r"+i+"_"+s]; if(!m){ ok=false; break; } M[s]=m; } if(!ok) break; E.step(S,M,G); i++; }
+  S.i=i; return S; }
+const cgNeedMe=(G,S,side)=>{ const E=CG_ENG[G.g]; if(S.end) return false; if(E.solo) return E.needS(S,side); if(!E.need(S).includes(side)) return false; return !(G.mv||{})["r"+S.i+"_"+side]; };
+const cgKey=(G,S,side)=>CG_ENG[G.g].solo?"p"+side+"_"+S.p[side].log.length:"r"+S.i+"_"+side;
+
+// ======================================================================
+// PARTIES : contre l'ordi (en local) ou en ligne (Firestore)
+// ======================================================================
+let cgOnline={}, cgCur=null, cgSel=null, cgOpp="cpu", cgSrc="all", cgBack="solo", cgPrevSt={}, cgAnim=null;
+try{ const x=JSON.parse(localStorage.getItem("gl_cg_cpu")||"null"); if(x&&x.g&&CG_ENG[x.g]) cgCur=x; }catch(_){}
+const cgSaveCpu=()=>{ try{ if(cgCur&&cgCur.cpu) localStorage.setItem("gl_cg_cpu",JSON.stringify(cgCur)); }catch(_){} };
+function onCardData(all){ const prev=cgOnline; cgOnline={};
+  for(const [k,x] of Object.entries(all||{})){ if(!x||!Array.isArray(x.players)||!x.players.includes(me)) continue; x.id=k; cgOnline[k]=x;
+    const o=x.players.find(u=>u!==me), was=prev[k];
+    if(x.status==="lobby"&&x.by!==me&&!was) toast(`🃏 ${NAMES[o]||"?"} t'invite : ${CG_MODES[x.g].n} (🃏 Jeux de cartes)`);
+    if(was&&was.status==="lobby"&&x.status==="running"&&x.by===me) toast(`🃏 ${NAMES[o]||"?"} a accepté : ${CG_MODES[x.g].n} !`);
+    if(was&&x.status==="cancelled"&&was.status==="lobby"&&x.by===me) toast(`❌ ${NAMES[o]||"?"} a refusé ta partie de ${CG_MODES[x.g].n}`,true);
+    if(x.status==="running"&&was&&JSON.stringify(was.mv||{})!==JSON.stringify(x.mv||{})){ const S=cgReplay(x), side=x.players.indexOf(me); if(cgNeedMe(x,S,side)&&!(cgCur&&cgCur.id===k&&mode==="cards")) toast(`🃏 À toi de jouer : ${CG_MODES[x.g].n} contre ${NAMES[o]||"?"}`); } }
+  if(cgCur&&cgCur.id&&cgOnline[cgCur.id]) cgCur=cgOnline[cgCur.id];
+  try{ cgSettle(); }catch(e){}
+  if(mode==="cards") renderCards(); try{ renderHubs(); }catch(e){} }
+const cgRef=id=>db.collection("onzeol_drafts").doc(id);
+function cgMine(){ return Object.values(cgOnline).filter(x=>x.status!=="cancelled"&&!(x.status==="done"&&x.at<Date.now()-3*86400000)).sort((a,b)=>b.at-a.at); }
+function cgTodo(){ let n=0; for(const x of cgMine()){ const side=x.players.indexOf(me); if(x.status==="lobby"&&x.by!==me) n++; else if(x.status==="running"){ const S=cgReplay(x); if(cgNeedMe(x,S,side)) n++; } } return n; }
+function cgNewGame(g,src,opp){ const seed=(Math.random()*2**31)>>>0;
+  const pA=cgPool(src,me); if(!cgPoolOk(g,pA)){ toast(cgPoolMsg(g)+(src==="coll"?" dans ta collection : essaie « Toutes les cartes »":""),true); return null; }
+  let pB; if(opp==="cpu") pB=src==="coll"?cgCpuPool(pA):cgAll(); else { pB=cgPool(src,opp); if(!cgPoolOk(g,pB)){ toast(`${NAMES[opp]} n'a pas assez de cartes dans sa collection pour ce jeu (${cgPoolMsg(g).toLowerCase()})`,true); return null; } }
+  const deck=cgDeal(g,seed,pA,pB,src); const players=[me,opp==="cpu"?CPU:opp];
+  const ev=s=>{ const o={}; if(src!=="coll"||players[s]===CPU) return o; for(const id of deck[s]) { const v=evoOf(players[s],id); if(v) o[id]=v; } return o; };
+  const tl=s=>{ if(players[s]===CPU) return {}; const o={}, L=(C(players[s]).tcg||{}).lv||{}; if(src==="coll") for(const id of deck[s]) if(L[id]) o[id]=L[id]; return o; };
+  return {mode:"cards",g,src,seed,players,by:me,deck:{0:deck[0],1:deck[1]},evo:{0:ev(0),1:ev(1)},tl:{0:tl(0),1:tl(1)},mv:{},status:opp==="cpu"?"running":"lobby",at:Date.now(),cpu:opp==="cpu"}; }
+// la donne est stockée en {0:[],1:[]} (Firestore n'accepte pas les tableaux de tableaux)
+const cgG=x=>Object.assign({},x,{deck:[x.deck[0]||x.deck["0"],x.deck[1]||x.deck["1"]],evo:[(x.evo||{})[0]||{},(x.evo||{})[1]||{}],tl:[(x.tl||{})[0]||{},(x.tl||{})[1]||{}]});
+async function cgStart(g){ const opp=CG_MODES[g].on?cgOpp:"cpu"; const x=cgNewGame(g,cgSrc,opp); if(!x) return;
+  if(opp==="cpu"){ cgCur=x; cgSaveCpu(); cgCpuMoves(); renderCards(); window.scrollTo(0,0); return; }
+  if(!db){ toast("Pas connecté",true); return; } const id="cg-"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+  try{ await cgRef(id).set(JSON.parse(JSON.stringify(x))); x.id=id; cgOnline[id]=x; cgCur=x; toast(`📨 Invitation envoyée à ${NAMES[opp]}`); renderCards(); }catch(e){ toast("Pas de connexion, réessaie",true); } }
+async function cgAnswer(id,yes){ try{ await db.runTransaction(async tx=>{ const s=await tx.get(cgRef(id)); const d=s.data(); if(!d||d.status!=="lobby") throw new Error("Trop tard");
+      tx.update(cgRef(id),yes?{status:"running",at:Date.now()}:{status:"cancelled",at:Date.now()}); }); if(yes){ cgCur=Object.assign({},cgOnline[id],{status:"running"}); renderCards(); } }catch(e){ toast(e.message||"Erreur",true); } }
+async function cgPlay(m){ const G=cgCur; if(!G) return; const X=cgG(G); const S=cgReplay(X); const side=G.cpu?0:G.players.indexOf(me); if(!cgNeedMe(X,S,side)) return;
+  const key=cgKey(X,S,side); cgAnim={id:G.id||"cpu",key};
+  if(G.cpu){ G.mv[key]=m; cgCpuMoves(); cgSaveCpu(); cgAfter(); renderCards(); return; }
+  G.mv=Object.assign({},G.mv,{[key]:m}); renderCards();
+  try{ await cgRef(G.id).update({["mv."+key]:m,at:Date.now()}); }catch(e){ toast("Coup non envoyé : vérifie ta connexion",true); } }
+function cgCpuMoves(){ const G=cgCur; if(!G||!G.cpu) return; const X=cgG(G); const E=CG_ENG[G.g];
+  for(let n=0;n<60;n++){ const S=cgReplay(X); if(S.end) break; if(!cgNeedMe(X,S,1)) break; const m=E.cpu(S,X,1); G.mv[cgKey(X,S,1)]=m; X.mv=G.mv; } }
+// fin de partie : Éclats + objectifs (une seule fois par partie)
+function cgAfter(){ const G=cgCur; if(!G) return; const X=cgG(G), S=cgReplay(X); if(!S.end) return; cgFinish(X,S); }
+function cgFinish(X,S){ const c=W(); c.cg=c.cg||{}; c.cg.done=c.cg.done||[]; const key=X.id||("cpu-"+X.seed); if(c.cg.done.includes(key)) return; c.cg.done=[...c.cg.done,key].slice(-200);
+  const side=X.cpu?0:X.players.indexOf(me); const w=S.end.w; const win=w===side, draw=w===-1; c.cg.st=c.cg.st||{}; const st=c.cg.st[X.g]=c.cg.st[X.g]||{w:0,n:0,d:0}; st[win?"w":draw?"d":"n"]++;
+  let e=win?(X.cpu?1:3):draw?(X.cpu?0:1):0; if(X.g==="cbt") e*=2; const got=eclatsGain(e,!X.cpu);
+  try{ track("play"); if(win) track("win"); }catch(_){}
+  save(); setTimeout(()=>toast(`${win?"🏆 Victoire":draw?"🤝 Égalité":"😞 Défaite"} · ${CG_MODES[X.g].n}${got?` · +${got} 💠 Éclat${got>1?"s":""}`:(e&&X.cpu?" · limite d'Éclats du jour atteinte":"")}`),900); }
+function cgSettle(){ for(const x of Object.values(cgOnline)){ if(x.status!=="running") continue; const X=cgG(x), S=cgReplay(X); if(S.end){ cgFinish(X,S); if(x.status!=="done") cgRef(x.id).update({status:"done"}).catch(()=>{}); } } }
+
+// ======================================================================
+// AFFICHAGE
+// ======================================================================
+const cgNm=u=>u===CPU?"🤖 L'ordi":esc(NAMES[u]||"?");
+const cgCard=(id,w,o={})=>`<span class="cardbtn cgc${o.cls?" "+o.cls:""}"${o.data?` ${o.data}`:""}>${cardHTML(id,{w:w||96,ovr:BY_ID[id].ovr+(o.evo||0)})}</span>`;
+function cgStatBtns(id,evo,dis){ const s=cgStats(id,evo); return `<div class="cgstats">${CG_L.map((l,k)=>`<button class="cgsb" data-cgk="${k}" ${dis?"disabled":""}><small>${CG_N[k]}</small><b>${s[k]}</b></button>`).join("")}</div>`; }
+function cardsHomeHTML(){ const L=cgMine(); const others_=others();
+  const tiles=Object.entries(CG_MODES).map(([k,m])=>`<button class="tile timg" data-cgm="${k}" style="background:linear-gradient(180deg,#0000 35%,#000d 100%),url(img/tuiles/cg-${k}.webp) center/cover no-repeat,#13306b"><span class="tw">${m.ic}</span><span class="ti">${m.ic}</span><span><b>${m.n}</b><small>${esc(m.s)}</small></span></button>`).join("");
+  const T=tcgW();
+  const list=L.length?`<div class="section"><h3>🌐 Tes parties en ligne</h3>${L.map(x=>{ const side=x.players.indexOf(me), o=x.players[1-side]; let st="", btn="Voir";
+      if(x.status==="lobby") { st=x.by===me?"⏳ En attente de sa réponse":"📨 <b>Il t'invite !</b>"; btn=x.by===me?"Voir":"Répondre"; }
+      else { const X=cgG(x), S=cgReplay(X); if(S.end){ const w=S.end.w; st=w===-1?"🤝 Égalité":w===side?"🏆 Gagné":"😞 Perdu"; } else if(cgNeedMe(X,S,side)){ st="⚡ <b>À toi de jouer</b>"; btn="Jouer"; } else st="⏳ À lui de jouer"; }
+      return `<div class="cgrow"><span>${CG_MODES[x.g].ic} <b>${CG_MODES[x.g].n}</b> contre ${cgNm(o)}<small>${st} · ${x.src==="coll"?"🎴 collections":"🌍 toutes les cartes"}</small></span><button class="btn sm" data-cgo="${x.id}">${btn}</button></div>`; }).join("")}</div>`:"";
+  const resume=cgCur&&cgCur.cpu&&!cgReplay(cgG(cgCur)).end?`<div class="cgrow resume"><span>${CG_MODES[cgCur.g].ic} Partie en cours contre l'ordi : <b>${CG_MODES[cgCur.g].n}</b></span><button class="btn sm" id="cgResume">Reprendre</button></div>`:"";
+  return `<div class="hubh"><h2>🃏 Jeux de cartes</h2><small>Contre l'ordi ou en ligne · avec toutes les cartes du jeu ou ta collection</small></div>
+    <div class="cgbar"><span>💠 <b>${T.e||0}</b> Éclats</span><small>Gagnés en jouant (le Combat rapporte double) · ils améliorent les attaques de tes cartes TCG</small></div>
+    ${resume}${list}<div class="hub cghub">${tiles}</div>`; }
+function cardsSetupHTML(g){ const m=CG_MODES[g]; const ops=others(); const pA=cgPool(cgSrc,me); const ok=cgPoolOk(g,pA);
+  if(!m.on) cgOpp="cpu"; if(cgOpp!=="cpu"&&!NAMES[cgOpp]) cgOpp="cpu";
+  return `<div class="cgsetup" style="--bg:url(img/jeux/fond-${g}.webp)"><div class="cgsh"><b>${m.ic} ${m.n}</b><small>${esc(m.d)}</small></div>
+    ${m.on?`<div class="field"><span>👥 Adversaire</span><select id="cgOppSel"><option value="cpu"${cgOpp==="cpu"?" selected":""}>🤖 L'ordi</option>${ops.map(u=>`<option value="${u}"${cgOpp===u?" selected":""}>🌐 ${esc(NAMES[u])}${isFriend(u)?" ⭐":""}</option>`).join("")}</select></div>`:`<div class="mute" style="font-size:12px;margin:6px 0">🎮 Se joue seul · <b>classement des meilleures séries</b> avec les autres joueurs</div>`}
+    <div class="cgseg"><button class="${cgSrc==="all"?"on":""}" data-cgsrc="all">🌍 Toutes les cartes</button><button class="${cgSrc==="coll"?"on":""}" data-cgsrc="coll">🎴 Ma collection</button></div>
+    <div class="mute" style="font-size:12px;margin:6px 2px">${cgSrc==="all"?"Cartes tirées au hasard parmi tout le jeu : tout le monde à égalité.":`Tes propres cartes${g==="cbt"?" Épiques et plus":""} (${g==="cbt"?pA.filter(tcgOk).length:pA.length}) avec leurs évolutions${g==="cbt"?" et améliorations 💠":""}.${ok?"":` <b style="color:#ff9a8a">${cgPoolMsg(g)}.</b>`}`}${cgOpp!=="cpu"&&cgSrc==="coll"?` ${esc(NAMES[cgOpp])} joue avec sa collection.`:""}</div>
+    <button class="btn big" id="cgGo" ${ok?"":"disabled"}>${cgOpp==="cpu"||!m.on?"▶️ Jouer":"📨 Inviter "+esc(NAMES[cgOpp]||"")}</button>
+    ${g==="pom"?pomBoardHTML():""}${g==="cbt"?`<div class="cgrules">🔥 <b>Règles</b> : choisis 3 cartes. À chaque tour, chacun choisit une attaque ou un changement de joueur, puis la carte la plus rapide (VIT) frappe en premier. ⚡ +1 énergie par tour (max ${CBT_EMAX}). Types : 🔥 Attaquant > 🧤 Gardien > ⚽ Milieu > 🛡️ Défenseur > 🔥 Attaquant (×1,25). Mets tous les adversaires K.O. !</div>`:""}
+    ${g==="tab"?`<div class="cgrules">🥅 Le tireur choisit son côté et sa frappe (placée = précise, puissante = dure à arrêter mais peut s'envoler). Le gardien choisit où plonger. Le TIR du tireur et les réflexes du gardien comptent. Mort subite en cas d'égalité.</div>`:""}
+    ${g==="pyr"?`<div class="cgrules">🔺 5 étages : Commune, Rare, Épique, Légendaire, Mythique. À chaque étage, une carte adverse visible et une <b>stat cachée</b> : choisis parmi tes 3 cartes celle qui a le plus de chances de faire au moins aussi bien. 3 vies.${m.on?" En ligne : vous grimpez la même pyramide, le plus haut gagne.":""}</div>`:""}
+  </div>`; }
+function pomBoardHTML(){ const L=Object.keys(NAMES).map(u=>({u,b:((C(u).cg||{}).pom||{}).best||0})).filter(x=>x.b>0).sort((a,b)=>b.b-a.b).slice(0,10);
+  const my=((W().cg||{}).pom||{}); return `<div class="cgrules">🏆 <b>Meilleures séries</b> (toutes les cartes)${L.length?L.map((x,i)=>`<div class="cgrk${x.u===me?" me":""}"><span>${i+1}. ${esc(NAMES[x.u])}</span><b>${x.b}</b></div>`).join(""):`<div class="mute">Personne encore : à toi d'ouvrir le bal !</div>`}${my.best?`<div class="mute" style="margin-top:4px">Ton record : <b>${my.best}</b>${my.d===today()?` · aujourd'hui : ${my.db||0}`:""}</div>`:""}</div>`; }
+
+// --- écran de jeu ---
+function cgGameHTML(){ const G=cgCur, X=cgG(G); const S=cgReplay(X); const side=G.cpu?0:G.players.indexOf(me), o=1-side; const opp=G.players[o];
+  const head=`<div class="cgtop"><span>${CG_MODES[G.g].ic} <b>${CG_MODES[G.g].n}</b></span><small>contre ${cgNm(opp)} · ${G.src==="coll"?"🎴 collections":"🌍 toutes les cartes"}</small></div>`;
+  if(G.status==="lobby"){ return head+(G.by===me?`<div class="cgmsg">⏳ Invitation envoyée à <b>${cgNm(opp)}</b>.<small>La partie commence dès qu'il accepte. Tu peux fermer, il sera prévenu.</small></div><button class="btn ghost" id="cgCancel">Annuler l'invitation</button>`:
+    `<div class="cgmsg">📨 <b>${cgNm(G.by)}</b> t'invite à une partie de <b>${CG_MODES[G.g].n}</b> !<small>${G.src==="coll"?"Chacun joue avec sa collection.":"Avec toutes les cartes du jeu."}</small></div><div class="dbtns"><button class="btn big" id="cgYes">✅ Accepter</button><button class="btn ghost" id="cgNo">Refuser</button></div>`); }
+  const need=cgNeedMe(X,S,side); const body=CG_VIEW[G.g](X,S,side,need);
+  let foot=""; if(S.end){ const w=S.end.w; foot=`<div class="cgend ${w===side?"win":w===-1?"draw":"lose"}"><b>${w===side?"🏆 Victoire !":w===-1?"🤝 Égalité":"😞 Défaite"}</b><div class="dbtns"><button class="btn" id="cgAgain">🔁 Rejouer</button><button class="btn ghost" id="cgQuit">Retour aux jeux</button></div></div>`; }
+  else if(!need&&!G.cpu) foot=`<div class="cgwait">⏳ En attente de ${cgNm(opp)}… <small>Tu seras prévenu quand c'est à toi.</small></div>`;
+  return head+body+foot; }
+const CG_VIEW={};
+CG_VIEW.bat=(G,S,side,need)=>{ const o=1-side; const L=S.log[S.log.length-1]; const r=Math.min(S.r,9);
+  const mine=G.deck[side][r], his=G.deck[o][r];
+  const res=L?`<div class="cgres ${L.w===side?"win":L.w===-1?"draw":"lose"}">Manche ${S.log.length} · <b>${CG_N[L.k]}</b> : ${side===0?L.va:L.vb} contre ${side===0?L.vb:L.va} → ${L.w===side?"gagnée":L.w===-1?"égalité":"perdue"}</div>
+    <div class="cgprev">${cgCard(side===0?L.a:L.b,74,{evo:G.evo[side][side===0?L.a:L.b]})}<i class="cgvs">vs</i>${cgCard(side===0?L.b:L.a,74,{evo:G.evo[o][side===0?L.b:L.a]})}</div>`:"";
+  const hand=S.h===side;
+  return `<div class="cgscore"><span>Toi <b>${S.sc[side]}</b></span><small>Manche ${Math.min(S.r+1,10)}/10</small><span><b>${S.sc[o]}</b> ${cgNm(G.players[o])}</span></div>${res}
+    ${S.end?"":`<div class="cgduo"><div>${cgCard(mine,128,{evo:G.evo[side][mine]})}<small>Ta carte</small></div><div>${tcgBackHTML(92)}<small>Sa carte (cachée)</small></div></div>
+    ${!need?`<div class="cgmsg sm">${hand?"Stat choisie":"Prêt"}, en attente de ${cgNm(G.players[o])}…</div>`:hand?`<div class="cgmsg sm">✋ Tu as la main : choisis la stat</div>${cgStatBtns(mine,G.evo[side][mine]||0,false)}`:`<div class="cgmsg sm">🙄 ${cgNm(G.players[o])} a la main et choisit la stat</div><button class="btn big" data-cgok="1">👀 Révéler la manche</button>`}`}`; };
+CG_VIEW.duel=(G,S,side,need)=>{ const o=1-side; const L=S.log[S.log.length-1];
+  const res=L?`<div class="cgres ${L.w===side?"win":L.w===-1?"draw":"lose"}">Manche ${S.log.length} · <b>${CG_N[L.k]}</b> : ${side===0?L.va:L.vb} contre ${side===0?L.vb:L.va} → ${L.w===side?"gagnée":L.w===-1?"égalité":"perdue"}</div>${cgCard(side===0?L.a:L.b,74)}<i class="cgvs">vs</i>${cgCard(side===0?L.b:L.a,74)}`:"";
+  const stl=S.st.map((k,i)=>`<span class="${i===S.r&&!S.end?"on":i<S.r?"done":""}">${i+1}. ${CG_L[k]}</span>`).join("");
+  const hand=G.deck[side].map((id,i)=>S.used[side].includes(i)?"":`<span class="cardbtn cgc${need?" can":""}" data-cgi="${i}">${cardHTML(id,{w:92,ovr:BY_ID[id].ovr+(G.evo[side][id]||0)})}<em>${CG_L[S.st[Math.min(S.r,4)]]} ${cgStats(id,G.evo[side][id]||0)[S.st[Math.min(S.r,4)]]}</em></span>`).join("");
+  return `<div class="cgscore"><span>Toi <b>${S.sc[side]}</b></span><small>Manche ${Math.min(S.r+1,5)}/5</small><span><b>${S.sc[o]}</b> ${cgNm(G.players[o])}</span></div>
+    <div class="cgstl">${stl}</div>${L?`<div class="cgprev">${res}</div>`:""}
+    ${S.end?"":`<div class="cgmsg sm">${need?`Stat de la manche : <b>${CG_N[S.st[S.r]]}</b> · choisis ta carte`:"Carte jouée, en attente…"}</div><div class="cghand">${hand}</div>`}
+    <div class="cgopp">${G.deck[o].map((x,i)=>S.used[o].includes(i)?"":tcgBackHTML(34)).join("")}<small>Ses cartes restantes</small></div>`; };
+CG_VIEW.tab=(G,S,side,need)=>{ const o=1-side; const sh=S.k%2; const iSh=sh===side; const idx=Math.floor(S.k/2)%5;
+  const dots=s=>{ const L=S.log.filter(l=>l.sh===s); return L.map(l=>`<i class="${l.res==="but"?"g":"m"}">${l.res==="but"?"⚽":"✖"}</i>`).join("")+(S.end?"":"<i class='e'>·</i>".repeat(Math.max(0,5-L.length))); };
+  const L=S.log[S.log.length-1];
+  const res=L?`<div class="cgres ${(L.res==="but")===(L.sh===side)?"win":"lose"}">${esc(BY_ID[L.sid].name)} tire ${TAB_DN[L.d]}${L.pw?" (puissant)":""}, ${esc(short(BY_ID[L.gid].name))} plonge ${TAB_DN[L.gd]} → <b>${L.res==="but"?"BUT !":L.res==="arrêt"?"ARRÊT !":"raté ("+L.res+")"}</b></div>`:"";
+  const sid=G.deck[sh][idx], gid=G.deck[1-sh][5];
+  const ctrl=S.end?"":need?(iSh?`<div class="cgmsg sm">⚽ <b>${esc(BY_ID[sid].name)}</b> tire (TIR ${cgStats(sid,G.evo[sh][sid]||0)[1]}). Où et comment ?</div>
+      <div class="cgdirs">${TAB_D.map(d=>`<button class="btn" data-tabd="${d}">${d==="G"?"⬅️":d==="C"?"⬆️":"➡️"} ${d==="G"?"Gauche":d==="C"?"Centre":"Droite"}</button>`).join("")}</div>
+      <div class="cgseg"><button class="on" data-tabp="0">🎯 Placée</button><button data-tabp="1">💥 Puissante</button></div>`:
+      `<div class="cgmsg sm">🧤 Ton gardien <b>${esc(BY_ID[gid].name)}</b> face à ${esc(BY_ID[sid].name)}. Où plonger ?</div><div class="cgdirs">${TAB_D.map(d=>`<button class="btn" data-tabd="${d}">${d==="G"?"⬅️":d==="C"?"⏺️":"➡️"} ${d==="G"?"Gauche":d==="C"?"Rester":"Droite"}</button>`).join("")}</div>`):`<div class="cgmsg sm">Choix fait, en attente…</div>`;
+  return `<div class="cgscore"><span>Toi <b>${S.sc[side]}</b></span><small>${S.k<10?`Tir ${S.k+1}/10`:"Mort subite"}</small><span><b>${S.sc[o]}</b> ${cgNm(G.players[o])}</span></div>
+    <div class="cgpens"><div>${dots(side)}</div><div>${dots(o)}</div></div>${res}
+    ${S.end?"":`<div class="cgduo">${cgCard(sid,104,{evo:G.evo[sh][sid]})}<i class="cgvs">vs</i>${cgCard(gid,104,{evo:G.evo[1-sh][gid]})}</div>`}${ctrl}`; };
+CG_VIEW.cbt=(G,S,side,need)=>{ const o=1-side;
+  if(!S.pick){ const sel=cgPick||[]; return need?`<div class="cgmsg sm">Choisis tes <b>3 cartes</b> (la 1re entre en premier) · ${sel.length}/3</div><div class="cghand tcgh">${G.deck[side].map(id=>`<span class="cgtsel${sel.includes(id)?" on":""}" data-cgt="${id}">${tcgHTML(id,{w:150,evo:G.evo[side][id]||0,lvl:G.tl[side][id]||0})}${sel.includes(id)?`<i>${sel.indexOf(id)+1}</i>`:""}</span>`).join("")}</div><button class="btn big" id="cgTeam" ${sel.length===3?"":"disabled"}>✅ Valider l'équipe</button>`:`<div class="cgmsg">Équipe choisie, en attente de ${cgNm(G.players[o])}…</div>`; }
+  const T=(s,i)=>{ const id=S.t[s][i]; return {id,html:(w,cls)=>tcgHTML(id,{w,evo:G.evo[s][id]||0,lvl:G.tl[s][id]||0,hp:S.hp[s][i],ko:S.hp[s][i]<=0,cls})}; };
+  const bench=s=>S.t[s].map((id,i)=>i===S.act[s]?"":`<span class="cgbench${S.hp[s][i]<=0?" ko":""}${s===side&&need&&S.hp[s][i]>0&&!S.end?" can":""}" ${s===side?`data-cgsw="${i}"`:""}>${T(s,i).html(64,"mini")}</span>`).join("");
+  const last=S.log[S.log.length-1]; const evs=(last&&last.ev||[]).map(e=>{ const who=e.s===side?"Ta carte":"Sa carte";
+      if(e.sw) return `🔄 ${e.s===side?"Tu fais":"Il fait"} entrer ${esc(BY_ID[e.sw].name)}`; if(e.fail) return `${who} n'a pas assez d'énergie`; if(e.ko) return `💀 ${esc(BY_ID[e.ko].name)} est K.O. !`; if(e.in) return `➡️ ${esc(BY_ID[e.in].name)} entre en jeu`;
+      return `${e.s===side?"⚔️":"💥"} ${esc(short(BY_ID[e.id].name))} : <b>${esc(e.at)}</b> → ${e.dmg} dégâts${e.sup?" (super efficace !)":""}`; }).join("<br>");
+  const me_=T(side,S.act[side]), my=tcgOf(me_.id,G.evo[side][me_.id]||0,G.tl[side][me_.id]||0);
+  const ctrl=S.end?"":need?`<div class="cgatk">${my.a.map((a,i)=>`<button class="btn${S.e[side]<a.c?" ghost":""}" data-cga="${i}" ${S.e[side]<a.c?"disabled":""}>${a.c}⚡ ${esc(a.n)} <small>${a.d} dégâts</small></button>`).join("")}</div><div class="mute" style="font-size:11px;text-align:center">Touche une carte du banc pour la faire entrer (ça prend ton tour)</div>`:`<div class="cgmsg sm">Action choisie, en attente…</div>`;
+  return `<div class="cgarena"><div class="cgside opp"><div class="cgen">⚡ ${S.e[o]}/${CBT_EMAX}</div><div class="cgbenchs">${bench(o)}</div>${T(o,S.act[o]).html(150,"act")}</div>
+    ${evs?`<div class="cglog">${evs}</div>`:""}
+    <div class="cgside me">${T(side,S.act[side]).html(170,"act")}<div class="cgbenchs">${bench(side)}</div><div class="cgen">⚡ ${S.e[side]}/${CBT_EMAX}</div></div></div>${ctrl}`; };
+CG_VIEW.pyr=(G,S,side,need)=>{ const P=S.p[side], O=S.p[1-side];
+  const steps=PYR_T.map((t,i)=>`<div class="pyst${i<P.f?" ok":i===P.f&&!P.done?" on":""}" style="--i:${i}">${TIER_NAME[t]}${i<P.f?" ✅":""}</div>`).reverse().join("");
+  const L=P.log[P.log.length-1]; const res=L?`<div class="cgres ${L.win?"win":"lose"}">Étage ${TIER_NAME[PYR_T[L.f]]} · stat cachée : <b>${CG_N[L.k]}</b> · ${L.v} contre ${L.vo} → ${L.win?"tu montes !":"une vie perdue"}</div>`:"";
+  let play=""; if(!P.done){ const F=pyrFloor(G,side,P.f,P.tr); play=`<div class="cgmsg sm">Étage <b>${TIER_NAME[PYR_T[P.f]]}</b> · bats cette carte sur une stat cachée</div><div class="cgduo">${cgCard(F.opp,118)}</div>
+      <div class="cghand">${F.hand.map((id,i)=>`<span class="cardbtn cgc can" data-cgi="${i}">${cardHTML(id,{w:96,ovr:BY_ID[id].ovr+(G.evo[side][id]||0)})}</span>`).join("")}</div>`; }
+  const vs=`<div class="mute" style="font-size:12px;text-align:center;margin:6px">${cgNm(G.players[1-side])} : étage ${O.f}/5 · ${"❤️".repeat(O.lives)}${O.done?" (terminé)":""}</div>`;
+  return `<div class="cgscore"><span>${"❤️".repeat(P.lives)||"💔"}</span><small>Étage ${Math.min(P.f+1,5)}/5</small><span>${P.f}/5 ✅</span></div><div class="pyr">${steps}</div>${res}${play}${P.done&&!S.end?`<div class="cgwait">Ton ascension est finie (${P.f}/5). En attente de ${cgNm(G.players[1-side])}…</div>`:""}${vs}`; };
+let cgPick=null;
+// ↕️ PLUS OU MOINS (local)
+let pomG=null;
+function pomNew(src){ const pool=cgPool(src,me); if(pool.length<CG_MIN.pom){ toast(cgPoolMsg("pom"),true); return; } pomG={src,seed:(Math.random()*2**31)>>>0,i:0,streak:0,pool,last:null}; pomG.seq=cgShuffle(pool,cgRng(pomG.seed)); renderCards(); }
+function pomGuess(up){ const g=pomG; if(!g||g.over) return; const a=BY_ID[g.seq[g.i%g.seq.length]].ovr; g.i++; if(g.i%g.seq.length===0) g.seq=cgShuffle(g.pool,cgRng(g.seed+g.i)); const b=BY_ID[g.seq[g.i%g.seq.length]].ovr;
+  const ok=b===a||(up?b>a:b<a); g.last={a,b,ok,eq:b===a}; if(ok){ if(b!==a) g.streak++; } else { g.over=1; pomEnd(); } renderCards(); }
+function pomEnd(){ const g=pomG; const c=W(); c.cg=c.cg||{}; const P=c.cg.pom=c.cg.pom||{best:0};
+  if(g.src==="all"){ if(g.streak>(P.best||0)){ P.best=g.streak; setTimeout(()=>toast(`🏆 Nouveau record : ${g.streak} !`),500); } if(P.d!==today()){ P.d=today(); P.db=0; } P.db=Math.max(P.db||0,g.streak); }
+  try{ track("play"); }catch(_){} const e=g.streak>=10?2:g.streak>=5?1:0; const got=eclatsGain(e,false); if(got) setTimeout(()=>toast(`+${got} 💠 Éclat${got>1?"s":""} pour ta série de ${g.streak}`),1200); save(); }
+function pomHTML(){ const g=pomG; const cur=g.seq[g.i%g.seq.length];
+  return `<div class="cgtop"><span>↕️ <b>Plus ou moins</b></span><small>${g.src==="coll"?"🎴 ta collection (hors classement)":"🌍 toutes les cartes"}</small></div>
+    <div class="cgscore"><span>Série <b>${g.streak}</b></span><small>Record ${((W().cg||{}).pom||{}).best||0}</small><span></span></div>
+    ${g.last?`<div class="cgres ${g.last.ok?"win":"lose"}">${g.last.a} → ${g.last.b} · ${g.last.eq?"égalité, on continue":g.last.ok?"bien vu !":"raté…"}</div>`:""}
+    <div class="cgduo">${cgCard(cur,150)}</div>
+    ${g.over?`<div class="cgend lose"><b>Série terminée : ${g.streak}</b><div class="dbtns"><button class="btn" id="pomAgain">🔁 Rejouer</button><button class="btn ghost" id="cgQuit">Retour aux jeux</button></div></div>`:
+      `<div class="cgmsg sm">La prochaine carte a une note…</div><div class="cgdirs"><button class="btn big" data-pom="1">⬆️ Plus haute</button><button class="btn big" data-pom="0">⬇️ Plus basse</button></div><div class="mute" style="font-size:11px;text-align:center">Égalité = on continue (sans point)</div>`}`; }
+
+function renderCards(){ const V=$("#viewCards"); if(!V||!me) return; let html="", bg="";
+  if(pomG&&cgSel==="pom"&&pomG.started){ html=pomHTML(); bg="pom"; }
+  else if(cgCur&&cgSel==="game"){ html=cgGameHTML(); bg=cgCur.g; }
+  else if(cgSel&&CG_MODES[cgSel]){ html=cardsSetupHTML(cgSel); bg=cgSel; }
+  else html=cardsHomeHTML();
+  V.style.setProperty("--cgbg",bg?`url(img/jeux/fond-${bg}.webp)`:"none"); V.classList.toggle("cgplay",!!bg); V.innerHTML=`<div class="cgwrap">${html}</div>`; cgBind(V); renderBack(); }
+function cgBind(V){ const on=(q,f)=>V.querySelectorAll(q).forEach(b=>b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); f(b); });
+  on("[data-cgm]",b=>{ cgSel=b.dataset.cgm; renderCards(); window.scrollTo(0,0); });
+  on("[data-cgsrc]",b=>{ cgSrc=b.dataset.cgsrc; renderCards(); });
+  const os=V.querySelector("#cgOppSel"); if(os) os.onchange=e=>{ cgOpp=e.target.value; renderCards(); };
+  on("#cgGo",()=>{ if(cgSel==="pom"){ pomNew(cgSrc); if(pomG) pomG.started=1; renderCards(); return; } cgPick=null; cgAnim=null; const g=cgSel; cgStart(g).then(()=>{ if(cgCur&&cgCur.g===g){ cgSel="game"; renderCards(); } }); });
+  on("#cgResume",()=>{ cgSel="game"; renderCards(); });
+  on("[data-cgo]",b=>{ cgCur=cgOnline[b.dataset.cgo]; cgPick=null; cgAnim=null; cgSel="game"; renderCards(); window.scrollTo(0,0); });
+  on("#cgYes",()=>cgAnswer(cgCur.id,true)); on("#cgNo",()=>{ cgAnswer(cgCur.id,false); cgSel=null; cgCur=null; renderCards(); });
+  on("#cgCancel",()=>{ cgAnswer(cgCur.id,false); cgSel=null; cgCur=null; renderCards(); });
+  on("#cgQuit",()=>{ cgSel=null; if(cgCur&&cgCur.cpu){ cgCur=null; try{ localStorage.removeItem("gl_cg_cpu"); }catch(_){} } pomG=null; renderCards(); window.scrollTo(0,0); });
+  on("#cgAgain",()=>{ const g=cgCur.g, src=cgCur.src, opp=cgCur.cpu?"cpu":cgCur.players.find(u=>u!==me); cgOpp=opp; cgSrc=src; cgPick=null; cgAnim=null; cgStart(g).then(()=>{ if(cgCur&&cgCur.g===g&&(cgCur.cpu||cgCur.status==="lobby")){ cgSel="game"; renderCards(); } }); });
+  on("#pomAgain",()=>{ pomNew(pomG.src); pomG.started=1; renderCards(); }); on("[data-pom]",b=>pomGuess(b.dataset.pom==="1"));
+  on("[data-cgk]",b=>cgPlay({k:+b.dataset.cgk})); on("[data-cgok]",()=>cgPlay({ok:1}));
+  on("[data-cgi]",b=>{ if(!b.classList.contains("can")) return; cgPlay({i:+b.dataset.cgi}); });
+  let tabP=0; on("[data-tabp]",b=>{ tabP=+b.dataset.tabp; V.querySelectorAll("[data-tabp]").forEach(x=>x.classList.toggle("on",x===b)); });
+  on("[data-tabd]",b=>{ const X=cgG(cgCur), S=cgReplay(X), side=cgCur.cpu?0:cgCur.players.indexOf(me); cgPlay(S.k%2===side?{d:b.dataset.tabd,p:tabP}:{d:b.dataset.tabd}); });
+  on("[data-cgt]",b=>{ const id=b.dataset.cgt; cgPick=cgPick||[]; if(cgPick.includes(id)) cgPick=cgPick.filter(x=>x!==id); else if(cgPick.length<3) cgPick.push(id); renderCards(); });
+  on("#cgTeam",()=>{ if((cgPick||[]).length===3){ const t=cgPick; cgPick=null; cgPlay({t}); } });
+  on("[data-cga]",b=>cgPlay({a:+b.dataset.cga}));
+  on("[data-cgsw]",b=>{ if(!b.classList.contains("can")) return; cgPlay({s:+b.dataset.cgsw}); });
+  V.querySelectorAll("[data-tcg]").forEach(el=>{ if(el.closest("[data-cgt],[data-cgsw]")) return; el.onclick=e=>{ e.stopPropagation(); showTcg(el.dataset.tcg); }; }); }
+function openCards(from){ cgBack=from==="online"?"online":"solo"; NAV_OF.cards=cgBack==="online"?"nOnline":"nSolo"; if(!(cgCur&&cgSel==="game")) cgSel=null; setMode("cards"); }
+
+const APP_V="2026-11-27a"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
