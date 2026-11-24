@@ -4507,7 +4507,7 @@ async function makeBackup(manual){ const qs=await db.collection("onzeol_users").
   await db.collection("onzeol_backups").doc(BK_DAY()).set({at:Date.now(),by:manual?"admin":"auto",users}); return Object.keys(users).length; }
 async function autoBackup(){ try{ const d=await db.collection("onzeol_backups").doc(BK_DAY()).get(); if(!d.exists) await makeBackup(false); }catch(e){} }
 // 🪙 Redistribution (une fois) : les 2 000 🪙 gagnées en trop par l'admin la nuit du 24/11 sont partagées à parts égales entre TOUS les joueurs (admin compris)
-async function redis2000(){ try{ if(me!==ADMIN) return; const c=W(); if(c.redis2000&&c.redis2000.v===2) return;
+async function redis2000(manual){ try{ if(me!==ADMIN) return; const c=W(); if(c.redis2000&&c.redis2000.v===2){ if(manual) toast(`Déjà fait : ${c.redis2000.part} 🪙 pour chacun des ${c.redis2000.n} joueurs`); return; }
   if(!compos[me]||Object.keys(NAMES).length<3){ setTimeout(redis2000,8000); return; }
   const users=Object.keys(NAMES).filter(u=>u!==ADMIN&&u!==CPU); if(!users.length) return; const N=users.length, part=Math.floor(2000/(N+1)); if(part<1) return;
   const MSG=`Cette nuit, un bug a fait gagner 2 000 pièces en trop d'un coup à ${NAMES[ADMIN]||"Thibaut"}. Plutôt que de les garder, elles sont partagées à parts égales entre tous les joueurs (${N+1}, lui compris) : tu reçois ta part. Le bug est corrigé et un historique des pièces existe maintenant (touche ton compteur de pièces). Bon jeu !`;
@@ -4519,7 +4519,7 @@ async function redis2000(){ try{ if(me!==ADMIN) return; const c=W(); if(c.redis2
     c.coins=(c.coins||0)+refund; c.redis2000={v:2,at:Date.now(),part,n:N+1}; save(); renderCoins(); toast(`🤝 Redistribution corrigée : ${part} 🪙 pour chacun des ${N+1} joueurs (toi compris)`); return; }
   c.redis2000={v:2,at:Date.now(),part,n:N+1}; c.coins=Math.max(0,(c.coins||0)-part*N); save(); renderCoins();
   for(const u of users) await adminOp({to:u,type:"coins",n:part,ic:"🤝",title:"Redistribution de pièces",msg:MSG});
-  toast(`🤝 Redistribution : ${part} 🪙 pour chacun des ${N+1} joueurs (toi compris, tu gardes ta part)`); }catch(e){} }
+  toast(`🤝 Redistribution : ${part} 🪙 pour chacun des ${N+1} joueurs (toi compris, tu gardes ta part)`); }catch(e){ toast("Redistribution impossible : "+(e.code||e.message),true); } }
 async function adminOp(o){ try{ await db.collection("onzeol_admin").add({...o,by:me,at:Date.now(),done:false}); }catch(e){ toast("Admin refusé ("+(e.code||e.message)+") : les règles Firestore ne sont peut-être pas publiées",true); throw e; } }
 async function adminPanel(){ if(me!==ADMIN) return; const T=$("#tradeUI"); T.classList.add("open");
   const users=Object.keys(NAMES).filter(u=>u!==CPU).sort((a,b)=>(NAMES[a]||"").localeCompare(NAMES[b]||"","fr"));
@@ -4529,6 +4529,7 @@ async function adminPanel(){ if(me!==ADMIN) return; const T=$("#tradeUI"); T.cla
    <div class="adm"><label>Joueur</label><select id="aU">${opt}</select><div id="aInfo" class="mute" style="font-size:12.5px;margin:6px 0"></div>
    <div id="aOk" style="display:none;background:#1f8a4c;color:#fff;font-weight:700;border-radius:10px;padding:8px 10px;margin:6px 0"></div>
    <h4>⏳ Suivi des actions <small class="mute">(appliquées quand il ouvre l'appli, mise à jour en direct)</small></h4><div id="aPend"></div>
+   <button class="btn sm" id="aRedis" style="margin:6px 0">🤝 Redistribuer les 2 000 🪙 en trop (parts égales, toi compris)</button>
    <h4>🪙 Pièces</h4><div class="arow"><input id="aCoins" type="number" value="200" inputmode="numeric"><button class="btn sm" id="aCoinsGo">Donner</button><button class="btn sm ghost" id="aCoinsRm">Retirer</button></div>
    <h4>🎁 Pack offert</h4><div class="arow"><select id="aPack">${Object.entries(PACKS).map(([k,v])=>`<option value="${k}">${esc(v.name)}</option>`).join("")}</select><input id="aPackN" type="number" value="1" style="width:60px"><button class="btn sm" id="aPackGo">Offrir</button></div>
    <h4>🎁 Packs offerts en attente <small class="mute">(pas encore ouverts — modifiable)</small></h4><div id="aFree"></div>
@@ -4559,6 +4560,7 @@ async function adminPanel(){ if(me!==ADMIN) return; const T=$("#tradeUI"); T.cla
       const v=typeof a==="number"||typeof b==="number"?`${sm(a)} → <b>${sm(b)}</b>${typeof a==="number"&&typeof b==="number"?` (${b-a>0?"+":""}${b-a})`:""}`:`${sm(a)} → <b>${sm(b)}</b>`; return `<div class="sgl" style="display:block"><b>${esc(k)}</b> <small>${esc(v).replace(/&lt;b&gt;|&lt;\/b&gt;/g,"")}</small></div>`; }).join("");
     const L=(NB.cLog||[]).filter(x=>x.at>(sn.exists?sn.data().at:0));
     box.innerHTML=`<h4 style="margin:8px 0 4px">Autres changements depuis le ${d}</h4>${ch||'<div class="mute">Rien d\'autre.</div>'}${L.length?`<h4 style="margin:8px 0 4px">🪙 Historique des pièces</h4>${L.map(x=>`<div class="sgl"><span>${x.n>0?"+":""}${x.n} 🪙 <small>${esc(x.w||"—")}</small></span><small class="mute">${new Date(x.at).toLocaleString("fr-FR")}</small></div>`).join("")}`:""}<h4 style="margin:8px 0 4px">Nouvelles cartes</h4>`+(add.map(id=>cardRow(id,own).replace("</small>",` · +${own[id]-(old[id]||0)} depuis le ${d}</small>`)).join("")||`<div class="mute">Aucune nouvelle carte depuis le ${d}.</div>`); bindRm(box); };
+  $("#aRedis").onclick=()=>redis2000(true);
   $("#aU").onchange=()=>{ info(); pks(); pend(); free(); $("#aDiffL").innerHTML=""; $("#aCardQ").oninput(); };
   $("#tClose").onclick=()=>{ if(pendU) pendU(); T.classList.remove("open"); };
   const free=()=>{ const c=compos[U()]||{}, F_=c.freePacks||{}, box=$("#aFree"); const L=Object.keys(PACKS).filter(k=>F_[k]>0);
@@ -6975,7 +6977,7 @@ function cgTeaser(){ const M=$("#cardModal"); M.innerHTML=`<div class="cm-box" s
   <button class="btn" id="cgTzX" style="margin-top:10px">J'ai hâte !</button></div>`; M.classList.add("open"); $("#cgTzX").onclick=()=>M.classList.remove("open"); M.onclick=e=>{ if(e.target===M) M.classList.remove("open"); }; cgCdTick(); }
 function openCards(from){ if(!cgLive()){ cgTeaser(); return; } cgBack=from==="online"?"online":"solo"; NAV_OF.cards=cgBack==="online"?"nOnline":"nSolo"; if(!(cgCur&&cgSel==="game")) cgSel=null; setMode("cards"); }
 
-const APP_V="2026-11-28d"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-28e"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
