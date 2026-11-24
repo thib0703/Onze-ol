@@ -2609,9 +2609,9 @@ document.addEventListener("click",ev=>{
 document.addEventListener("click",e=>{ const z=e.target.closest&&e.target.closest("[data-zoom]"); if(!z) return; e.preventDefault(); e.stopPropagation(); showCard(z.dataset.zoom); },true);
 // 🔎 Où obtenir une carte qu'on n'a pas
 function whereHTML(p){ const L=[]; const t=cardTier(p);
-  const V={tf:"🔥 Pack Événement et Pack Légende, pendant 7 jours après le match",gf:"💥 Pack Légende (≈3 %)",ul:"👑 Pack Légende (≈0,2 % : 1 sur 500)",lm:"⭐ Pack Légende (≈0,6 % : 1 sur 160)",xm:"🎄 Calendrier de l'Avent"};
+  const V={tf:"🔥 Pendant 7 jours après le match : Pack Événement (20 %), Pack Légende (8 %), Pack Épique (1 %)",fs:"🌟 Pack Légende (5 % : 1 sur 20) · Pack Épique (1 %)",ml:"🏆 Pack Légende (2 % : 1 sur 50) · Pack Épique (0,2 %)",gf:"💥 Pack Légende (1 % : 1 sur 100) · Pack Épique (0,1 %)",lm:"⭐ Pack Légende (0,5 % : 1 sur 200) · Pack Épique (0,05 %)",ul:"👑 Pack Légende (0,2 % : 1 sur 500) · Pack Épique (0,02 %)",xm:"🎄 Calendrier de l'Avent"};
   if(V[p.v]) L.push(V[p.v]);
-  else { const pk=["bronze","or","legende","jour"].map(k=>[k,PACKS[k]]).filter(([k,P])=>P&&P.w&&P.w[t]>0).sort((a,b)=>b[1].w[t]-a[1].w[t]).map(([k,P])=>`${P.name.replace("Pack ","")} ${(P.w[t]>=1?Math.round(P.w[t]):P.w[t]).toLocaleString("fr-FR")} %`); if(pk.length) L.push(`🎴 Chance d'une carte ${TIER_NAME[t]} par carte tirée : ${pk.join(" · ")}`);
+  else if(!p.v){ const pk=["bronze","or","legende","jour"].map(k=>[k,PACKS[k]]).filter(([k,P])=>P&&P.w&&P.w[t]>0).sort((a,b)=>b[1].w[t]-a[1].w[t]).map(([k,P])=>`${P.name.replace("Pack ","")} ${(P.w[t]>=1?Math.round(P.w[t]):P.w[t]).toLocaleString("fr-FR")} %`); if(pk.length) L.push(`🎴 Chance d'une carte ${TIER_NAME[t]} par carte tirée : ${pk.join(" · ")}`);
     const sb={silver:"Recyclage",gold:"Montée en gamme",icon:"Élite"}[t]; if(sb) L.push(`🧩 Défi d'équipe « ${sb} » (carte ${TIER_NAME[t]} garantie, au hasard)`); }
   if(!["xm"].includes(p.v)){ const sellers=Object.values(market||{}).filter(l=>l.status==="open"&&l.pid===p.id).length; L.push(`🏪 Marché, enchères ou échange avec un joueur qui l'a en double${sellers?` · <b style="color:#7ee2a0">${sellers} en vente maintenant</b>`:""}`); }
   return `<div class="cm-where"><b>🔎 Où l'obtenir ?</b>${L.map(x=>`<div>${x}</div>`).join("")}</div>`; }
@@ -3426,10 +3426,10 @@ async function shareResult(M){ try{
  }catch(e){ toast("Partage impossible",true); } }
 // ---------- Récompenses, packs et collection ----------
 const PACKS={
-  jour:{name:"Pack du jour",price:0,n:2,w:{bronze:72,silver:24,gold:3.6,icon:.4,myth:0},color:"#7ee2a0"},
-  bronze:{name:"Pack Classique",price:300,n:3,w:{bronze:66,silver:27,gold:6,icon:.9,myth:.1},color:"#c98a52"},
-  or:{name:"Pack Épique",price:900,n:3,w:{bronze:35,silver:40,gold:20,icon:4.5,myth:.5},guarantee:"gold",color:"#e7c45a"},
-  legende:{name:"Pack Légende",price:2500,n:3,w:{gold:68,icon:26,myth:6},guarantee:"icon",color:"#f4ecd2"}
+  jour:{name:"Pack du jour",price:0,n:2,w:{bronze:70,silver:25,gold:4.7,icon:.3,myth:0},color:"#7ee2a0"},
+  bronze:{name:"Pack Classique",price:300,n:3,w:{bronze:62,silver:30,gold:7.2,icon:.75,myth:.05},color:"#c98a52"},
+  or:{name:"Pack Épique",price:900,n:3,w:{bronze:30,silver:43,gold:22,icon:4.5,myth:.5},guarantee:"gold",color:"#e7c45a"},
+  legende:{name:"Pack Légende",price:2500,n:3,w:{gold:65,icon:30,myth:5},guarantee:"icon",color:"#f4ecd2"}
 };
 PACKS.starter={name:"Pack de départ",price:0,n:12,w:{bronze:100},color:"#7ec8ff"};
 const SELL={bronze:4,silver:12,gold:32,icon:100,myth:300};
@@ -3540,10 +3540,22 @@ function claimRewards(){
 }
 const today=()=>new Date().toLocaleDateString("fr-CA");
 function dailyBonus(){ const c=W(); if(c.daily!==today()) toast("🎁 Ton pack du jour t'attend dans 🎴 Collec !"); }
+// ⚖️ RARETÉ (nov. 2026) : les cartes spéciales (Pépite, Moment de légende…) ne sont plus mélangées aux cartes de base :
+// chacune a son propre tirage (SPEC_RATE). Dans un même niveau, plus la note est haute, plus la carte est rare.
+const BASE_POOL={}; for(const k in POOL) BASE_POOL[k]=POOL[k].filter(id=>!BY_ID[id].v);
+const TIER_K={myth:.75,icon:.75,gold:.9,silver:1,bronze:1}; // poids = k^(note − note la plus basse du niveau)
+function wCard(arr,k){ if(!arr.length) return null; if(k>=1) return arr[Math.floor(Math.random()*arr.length)]; const lo=Math.min(...arr.map(id=>BY_ID[id].ovr)); return wpick(arr,id=>Math.pow(k,BY_ID[id].ovr-lo)); }
 function drawCard(pack,force){
   const P=PACKS[pack]; let tier=force||wpick(Object.keys(P.w),k=>P.w[k]);
-  let arr=POOL[tier]; if(!arr.length) arr=POOL.icon; return arr[Math.floor(Math.random()*arr.length)];
+  let arr=BASE_POOL[tier]; if(!arr.length){ tier="icon"; arr=BASE_POOL.icon; } return wCard(arr,TIER_K[tier]);
 }
+// ✨ cartes spéciales : chance PAR PACK (une seule spéciale max par pack, elle remplace la carte la plus faible)
+const SPEC_RATE={legende:{ul:.002,lm:.005,gf:.01,ml:.02,fs:.05,tf:.08},or:{ul:.0002,lm:.0005,gf:.001,ml:.002,fs:.01,tf:.01},event:{tf:.2}};
+const SPEC_K={ml:.85,ul:.85,lm:.85,gf:1,fs:1,tf:1};
+function drawSpecial(pack){ const R=SPEC_RATE[pack]; if(!R) return null; let x=Math.random();
+  for(const v of ["ul","lm","gf","ml","fs","tf"]){ const p=R[v]||0; if(x<p){ const L=v==="tf"?tfWeek():VARIANTS.filter(q=>q.v===v).map(q=>q.id); return L.length?wCard(L,SPEC_K[v]):null; } x-=p; }
+  return null; }
+const PITY_N=10; // 🍀 garantie : après 10 Packs Légende sans Mythique, le suivant en contient une
 const GOLD_RATE=0.001;
 // 👑 Légende Ultime : 1 Pack Légende sur 500 · ⭐ Légende Moderne : 1 sur 160 (avant : 1 sur 100 et 1 sur 67)
 const UL_RATE=0.002, LM_RATE=0.00625;
@@ -3562,10 +3574,11 @@ function openPack(pack,free){
     if(!ids.some(id=>rank[cardTier(BY_ID[id])]>=rank[P.guarantee])) ids[ids.length-1]=drawFrom(f,P.w,P.guarantee); }
   else { for(let i=0;i<P.n;i++) ids.push(drawCard(pack));
     if(P.guarantee&&!ids.some(id=>rank[cardTier(BY_ID[id])]>=rank[P.guarantee])) ids[ids.length-1]=drawCard(pack,P.guarantee); }
-  if(!gold&&((pack==="event"&&Math.random()<.2)||(pack==="legende"&&Math.random()<.08))){ const L=tfWeek(); if(L.length){ let lo=0; ids.forEach((id,i)=>{ if(rank[cardTier(BY_ID[id])]<rank[cardTier(BY_ID[ids[lo]])]) lo=i; }); ids[lo]=L[Math.floor(Math.random()*L.length)]; } } // remplace la carte la plus faible (jamais la Légendaire garantie)
-  // 👑⭐💥 Légendes Ultimes / Modernes / Grande Forme : tirées AVANT l'ajout à la collection (sinon la carte n'y arrivait jamais)
-  try{ const r_=Math.random(), UL=VARIANTS.filter(p=>p.v===(r_<UL_RATE?"ul":"lm")).map(p=>p.id); if(!gold&&pack==="legende"&&UL.length&&r_<UL_RATE+LM_RATE){ let lo=0; ids.forEach((id,i)=>{ if(rank[cardTier(BY_ID[id])]<rank[cardTier(BY_ID[ids[lo]])]) lo=i; }); ids[lo]=UL[Math.floor(Math.random()*UL.length)]; } }catch(e){}
-  try{ const GF=VARIANTS.filter(p=>p.v==="gf").map(p=>p.id); if(!gold&&pack==="legende"&&GF.length&&Math.random()<.03){ let lo=0; ids.forEach((id,i)=>{ if(rank[cardTier(BY_ID[id])]<rank[cardTier(BY_ID[ids[lo]])]) lo=i; }); ids[lo]=GF[Math.floor(Math.random()*GF.length)]; } }catch(e){}
+  const lowest=()=>{ let lo=0; ids.forEach((id,i)=>{ if(rank[cardTier(BY_ID[id])]<rank[cardTier(BY_ID[ids[lo]])]) lo=i; }); return lo; };
+  // ✨ carte spéciale (Pépite, Forme du moment, Moment de légende, Grande Forme, Légende moderne/ultime) : tirée AVANT l'ajout à la collection
+  try{ if(!gold){ const sp=drawSpecial(pack); if(sp) ids[lowest()]=sp; } }catch(e){}
+  // 🍀 garantie Mythique dans le Pack Légende
+  if(pack==="legende"&&!gold){ if(ids.some(id=>rank[cardTier(BY_ID[id])]>=4)) c.pity=0; else if((c.pity=(c.pity||0)+1)>=PITY_N){ ids[lowest()]=drawCard(pack,"myth"); c.pity=0; setTimeout(()=>toast("🍀 Garantie : une Mythique après 10 Packs Légende !"),2500); } }
   if(pack!=="starter") ids.sort((a,b)=>rank[cardTier(BY_ID[a])]-rank[cardTier(BY_ID[b])]||BY_ID[a].ovr-BY_ID[b].ovr);
   c.coll=c.coll||{}; const isNew=ids.map(id=>!c.coll[id]);
   for(const id of ids) c.coll[id]=(c.coll[id]||0)+1;
@@ -6933,7 +6946,7 @@ function cgTeaser(){ const M=$("#cardModal"); M.innerHTML=`<div class="cm-box" s
   <button class="btn" id="cgTzX" style="margin-top:10px">J'ai hâte !</button></div>`; M.classList.add("open"); $("#cgTzX").onclick=()=>M.classList.remove("open"); M.onclick=e=>{ if(e.target===M) M.classList.remove("open"); }; cgCdTick(); }
 function openCards(from){ if(!cgLive()){ cgTeaser(); return; } cgBack=from==="online"?"online":"solo"; NAV_OF.cards=cgBack==="online"?"nOnline":"nSolo"; if(!(cgCur&&cgSel==="game")) cgSel=null; setMode("cards"); }
 
-const APP_V="2026-11-27w"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-27x"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
