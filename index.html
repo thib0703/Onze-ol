@@ -1143,6 +1143,13 @@ body.lowfx .tile,body.lowfx .vt img,body.lowfx .hype,body.lowfx .pkbtn,body.lowf
 #viewCards{min-height:70vh}
 #viewCards.cgplay{background:linear-gradient(180deg,#0b1530cc,#0b153055 20%,#0b153088 80%,#0b1530),var(--cgbg) center top/cover no-repeat fixed;border-radius:18px}
 .cgwrap{padding:4px 2px 30px}
+.tstaff{display:flex;gap:5px;justify-content:center;margin:4px 0}.tstaff .tstf{cursor:pointer;transition:transform .15s}.tstaff .tstf:active{transform:scale(1.1)}
+.tacts2{background:#0f1d40;border-radius:14px;padding:6px;margin:6px 0}.tacts2 .tah{font-size:12.5px;font-weight:800;margin:0 2px 4px}.tacts2 .tah small{font-weight:400;color:var(--mute);margin-left:4px}
+.tacts2 .tag{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+.tuse2{display:flex;flex-direction:column;align-items:center;gap:3px;border:1px solid #2b3c6e;background:#ffffff08;color:#fff;border-radius:12px;padding:5px 4px;text-align:center;font:inherit;cursor:pointer;opacity:.55;min-width:0}
+.tuse2.can{opacity:1;border-color:#ffd97088;background:linear-gradient(90deg,#ffd9701a,#0000);animation:tuglow 2s infinite}.tuse2.used{filter:grayscale(1)}
+.tuse2 .tuc{flex:none}.tuse2 .tut b{display:block;font-size:12px}.tuse2 .tut small{display:block;font-size:10.5px;color:#c8d6ff;line-height:1.25;margin-top:2px}
+@keyframes tuglow{50%{box-shadow:0 0 12px #ffd97055}}
 .cgch{background:#0f1d40;border:1px solid #ffd97044;border-radius:14px;padding:8px 10px;margin:8px 0}.cgch summary{cursor:pointer;font-size:14px;list-style:none}.cgch summary small{color:var(--mute);margin-left:4px;font-size:11.5px}
 .cgchr{position:relative;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 8px;margin-top:6px;border-radius:10px;background:#ffffff0d;overflow:hidden;font-size:13px}.cgchr span{position:relative;z-index:1}.cgchr small{display:block;color:#ffd970;font-size:11px}.cgchr b{position:relative;z-index:1}.cgchr i{position:absolute;left:0;bottom:0;height:3px;background:#ffd970}.cgchr.ok{background:#1f8a4c33}.cgchr.ok i{background:#7ee2a0}
 .cghub .cgrw{display:block;color:#ffd970;font-size:10.5px;margin-top:2px}
@@ -6897,6 +6904,7 @@ function pomFx(g){ const L=g.last; const prevId=g.seq[(g.i-1)%g.seq.length], cur
 // scène affichée ? → on bloque les nouveaux rendus pendant l'animation, puis on revient à l'écran normal
 function cgStageWrap(stage){ clearTimeout(cgFxT); cgBusyTill=Date.now()+stage.d; cgFxT=setTimeout(()=>{ cgBusyTill=0; renderCards(); },stage.d); return stage.html; }
 function cgCountOf(G,S,side){ return G.g==="pyr"?S.p[side].log.length:S.log.length; }
+function cgStateAt(X,k){ const E=CG_ENG[X.g]; const S0=E.init(X); const mv=X.mv||{}; for(let i=0;i<k;i++){ const M={}; for(const s of E.need(S0)) M[s]=mv["r"+i+"_"+s]; E.step(S0,M,X); } return S0; }
 function cgPrevState(X,S){ if(X.g==="pyr") return null; const E=CG_ENG[X.g]; const S0=E.init(X); const mv=X.mv||{}; for(let i=0;i<S.i-1;i++){ const M={}; for(const s of E.need(S0)) M[s]=mv["r"+i+"_"+s]; E.step(S0,M,X); } return S0; }
 
 function cgGameHTML(){ const G=cgCur, X=cgG(G); const S=cgReplay(X); const side=G.cpu?0:G.players.indexOf(me), o=1-side; const opp=G.players[o];
@@ -6904,7 +6912,11 @@ function cgGameHTML(){ const G=cgCur, X=cgG(G); const S=cgReplay(X); const side=
   if(G.status==="lobby"){ return head+(G.by===me?`<div class="cgmsg">⏳ Invitation envoyée à <b>${cgNm(opp)}</b>.<small>La partie commence dès qu'il accepte. Tu peux fermer, il sera prévenu.</small></div><button class="btn ghost" id="cgCancel">Annuler l'invitation</button>`:
     `<div class="cgmsg">📨 <b>${cgNm(G.by)}</b> t'invite à une partie de <b>${CG_MODES[G.g].n}</b> !<small>${G.src==="coll"?"Chacun joue avec sa collection.":"Avec toutes les cartes du jeu."}</small></div><div class="dbtns"><button class="btn big" id="cgYes">✅ Accepter</button><button class="btn ghost" id="cgNo">Refuser</button></div>`); }
   const key=G.id||("cpu-"+G.seed), cnt=cgCountOf(X,S,side), was=cgSeen[key]; cgSeen[key]=cnt;
-  if(was!==undefined&&cnt>was&&CG_FX[G.g]){ try{ const st=CG_FX[G.g](X,S,side,cgPrevState(X,S)); if(st) return head+cgStageWrap(st); }catch(e){ console.error(e); } }
+  if(was!==undefined&&cnt>was&&CG_FX[G.g]){ try{
+    if(G.g==="cbt"&&cnt>was+1){ // plusieurs coups d'un coup (ex. ton attaque + la réponse de l'ordi) : on les montre un par un
+      let k=S.i, Sk=S; while(k>0){ const P=cgStateAt(X,k-1); if(cgCountOf(X,P,side)<=was) break; Sk=P; k--; }
+      cgSeen[key]=cgCountOf(X,Sk,side); const st=CG_FX.cbt(X,Sk,side,cgStateAt(X,k-1)); if(st) return head+cgStageWrap(st); setTimeout(renderCards,30); }
+    else { const st=CG_FX[G.g](X,S,side,cgPrevState(X,S)); if(st) return head+cgStageWrap(st); } }catch(e){ console.error(e); } }
   if(was===undefined&&!S.end){ cgDealFx=true; [0,1,2].forEach(i=>cgAt(i*140,()=>cgSnd("flip"))); }
   const need=cgNeedMe(X,S,side); const body=CG_VIEW[G.g](X,S,side,need);
   let foot=""; if(S.end){ const w=S.end.w; const ek=key+"_end", boom=!cgSeen[ek]&&was!==undefined; cgSeen[ek]=1;
@@ -6920,6 +6932,17 @@ const tcgBallHTML=(w,cls)=>`<div class="tcg tball${cls?" "+cls:""}" style="--w:$
 function tcgPlayHTML(c,G,s,w,cls,extra){ if(!c) return `<div class="tcg-empty" style="--w:${w}px">—</div>`; const hpm=tcgMax(c.id,G,s);
   return `<span class="tpc${cls?" "+cls:""}"${extra||""}>${tcgHTML(c.id,{w,evo:G.evo[s][c.id]||0,lvl:(G.tl[s]||{})[c.id]||0,hp:c.hp,hpm,cls:w<80?"mini":""})}${c.e?`<i class="tballs">${"⚽".repeat(Math.min(c.e,5))}${c.e>5?"+"+(c.e-5):""}</i>`:""}</span>`; }
 function tcgHandHTML(id,G,s,i,can){ return `<span class="thc${can?" can":""}" data-th="${i}">${isBall(id)?tcgBallHTML(84):tcgHTML(id,{w:84,evo:G.evo[s][id]||0,lvl:(G.tl[s]||{})[id]||0,hpm:tcgMax(id,G,s),cls:"mini"})}</span>`; }
+function tcgStaff(T,G,s,mine){ const M=(T.mod||[])[s]; if(!M) return ""; const w=mine?54:44; const L=[];
+  if(M.co) L.push(`<span class="tstf" data-txz="coach:${M.co}">${tcgCoachCard(M.co,{w,cls:"mini"})}</span>`);
+  if(M.st) L.push(`<span class="tstf" data-txz="stade:${M.st}">${tcgStadCard(M.st,{w,cls:"mini"})}</span>`);
+  for(const k of M.eras||[]) L.push(`<span class="tstf" data-txz="epoque:${k}">${tcgEraCard(k,{w,cls:"mini"})}</span>`);
+  return L.length?`<div class="tstaff${mine?" me":""}">${L.join("")}</div>`:""; }
+// 🔍 zoom sur une carte entraîneur / stade / époque / action, avec explication (et bouton « Jouer » pour une action jouable)
+function tcgXZoom(kind,k,play){ const M=$("#cardModal"); const card=kind==="coach"?tcgCoachCard(k,{w:230}):kind==="stade"?tcgStadCard(k,{w:230}):kind==="epoque"?tcgEraCard(k,{w:230}):tcgActCard(k,{w:230});
+  const why={coach:"📋 Entraîneur : bonus automatique pour les joueurs qu'il a dirigés à l'OL.",stade:"🏟️ Stade : bonus de PV dès le coup d'envoi pour les joueurs concernés.",epoque:"📜 Collectif d'époque : actif car tu as 3 joueurs de cette époque, bonus pour toute l'équipe.",action:"🃏 Carte Action : se joue une seule fois, maximum 1 par tour, avant d'attaquer."}[kind];
+  M.innerHTML=`<div class="cm-box" style="text-align:center"><div style="display:flex;justify-content:center">${card}</div><div class="cm-note" style="margin-top:8px">${why}${kind==="action"?`<br><b>${esc(TCG_ACT[k].d)}</b>`:""}</div>
+    <div class="mbtns">${play?`<button class="btn" id="txPlay">${TCG_ACT[k].ic} Jouer ${esc(TCG_ACT[k].n)}</button>`:""}<button class="btn ghost" id="txX">${play?"Pas maintenant":"Fermer"}</button></div></div>`;
+  M.classList.add("open"); $("#txX").onclick=()=>M.classList.remove("open"); if(play) $("#txPlay").onclick=()=>{ M.classList.remove("open"); play(); }; }
 function tcgChips(T,G,s,c){ if(!c) return ""; const mine=[c.id,...T.bench[s].map(x=>x.id)], L=tcgLinks(mine,c.id); const ch=[]; const M=(T.mod||[])[s];
   if(M){ for(const k of M.eras){ const E=TCG_ERAS.find(e=>e.k===k); if(E) ch.push(`${E.ic} ${esc(E.n)}`); } if(c.co&&M.co) ch.push(`📋 ${esc(short(BY_ID[M.co].name))}`); if(M.st) ch.push(`🏟️ ${esc(TCG_STAD[M.st].n)}`); }
   if(T.boost&&T.boost[s]) ch.push(`🔥 +${T.boost[s]} prochaine attaque`); if(T.shield&&T.shield[s]) ch.push(`🧱 −${T.shield[s]} prochain coup`);
@@ -6964,7 +6987,7 @@ CG_VIEW.cbt=(G,S,side,need)=>{ const o=1-side; const key=(G.id||G.seed)+"_"+(S.i
   const myTurn=need; const T=JSON.parse(JSON.stringify(S)); if(myTurn) for(const A of cgTB.acts) tcgAct(T,G,side,A,[]); const mustP=myTurn&&T.act[side]===null;
   const goals=s=>`<span class="tgoals">${[0,1,2].map(i=>`<i class="${i<T.sc[s]?"on":""}">⚽</i>`).join("")}</span>`;
   const pickB=myTurn&&(mustP||cgTB.tgt==="r");
-  const bench=(s,mine)=>T.bench[s].map((c,i)=>tcgPlayHTML(c,G,s,44,mine&&pickB?"pick":"",mine&&pickB?` data-tb="${i}"`:"")).join("");
+  const bench=(s,mine)=>T.bench[s].map((c,i)=>tcgPlayHTML(c,G,s,mine?56:46,mine&&pickB?"pick":"",mine&&pickB?` data-tb="${i}"`:"")).join("");
   const last=S.log[S.log.length-1]; const info=last&&last.ev?tcgEvText(last.ev,side):"";
   let ctrl="";
   if(S.end) ctrl="";
@@ -6974,13 +6997,13 @@ CG_VIEW.cbt=(G,S,side,need)=>{ const o=1-side; const key=(G.id||G.seed)+"_"+(S.i
   else { const a=T.act[side], d=T.act[o]; const firstT=T.first===side&&T.n===0;
     const atk=[0,1].map(ai=>{ const Tc=tcgOf(a.id,G.evo[side][a.id]||0,(G.tl[side]||{})[a.id]||0), cost=tcgCost(a.id,ai), ok=a.e>=cost&&!firstT&&d; const R=d?tcgDmg(T,G,side,ai):{dmg:0,parts:[]};
       return `<button class="btn tatk${ok?"":" ghost"}" data-tatk="${ai}" ${ok?"":"disabled"}><span>${"⚽".repeat(cost)} ${esc(Tc.a[ai].n)}</span><b>~${R.dmg}${R.sup?" 💥":""}</b>${R.parts.length?`<small>${esc(R.parts.join(" · "))}</small>`:""}</button>`; }).join("");
-    const acts=(T.acts[side]||[]).map(k=>{ const used=T.used[side].includes(k), can=!used&&!T.acted; return `<span class="tuse${can?" can":""}" data-tuse="${k}">${tcgActCard(k,{w:62,cls:"mini",off:used})}</span>`; }).join("");
-    ctrl=`${acts?`<div class="tacts">${acts}<small>${T.acted?"✅ Action jouée ce tour":"🃏 Touche une action (1 par tour)"}</small></div>`:""}<div class="tatks">${atk}</div>${firstT?`<div class="mute" style="font-size:11px;text-align:center">Tu commences : pas d'attaque au 1er tour</div>`:a.e<1?"":""}
+    const acts=(T.acts[side]||[]).map(k=>{ const used=T.used[side].includes(k), can=!used&&!T.acted, A=TCG_ACT[k]; return `<button class="tuse2${can?" can":""}${used?" used":""}" data-tuse="${k}"><span class="tuc">${tcgActCard(k,{w:58,cls:"mini",off:used})}</span><span class="tut"><b>${A.ic} ${esc(A.n)}</b><small>${used?"✔️ Déjà jouée":esc(A.d)}</small></span></button>`; }).join("");
+    ctrl=`${acts?`<div class="tacts2"><div class="tah">🃏 Tes cartes Action <small>${T.acted?"✅ action jouée ce tour":"1 par tour, avant d'attaquer · touche pour voir"}</small></div><div class="tag">${acts}</div></div>`:""}<div class="tatks">${atk}</div>${firstT?`<div class="mute" style="font-size:11px;text-align:center">Tu commences : pas d'attaque au 1er tour</div>`:a.e<1?"":""}
       <div class="tbtns"><button class="btn sm ghost" id="tcgRet" ${T.bench[side].length?"":"disabled"}>🔄 Changer de joueur</button><button class="btn sm ghost" id="tcgEnd">⏭️ Passer</button></div>`; }
   return `<div class="tboard">
-    <div class="tzone opp"><div class="tbar">${goals(o)}<span>${cgNm(G.players[o])}</span></div><div class="tbench">${bench(o,false)}</div><div class="tact">${tcgPlayHTML(T.act[o],G,o,88,"act opp")}</div></div>
+    <div class="tzone opp"><div class="tbar">${goals(o)}<span>${cgNm(G.players[o])}</span></div><div class="tbench">${bench(o,false)}</div>${tcgStaff(T,G,o,false)}<div class="tact">${tcgPlayHTML(T.act[o],G,o,cgZ(104),"act opp")}</div></div>
     ${info?`<div class="tinfo">${info}</div>`:""}
-    <div class="tzone me"><div class="tact">${tcgPlayHTML(T.act[side],G,side,104,"act me")}</div><div class="tbench">${bench(side,true)}</div>${tcgChips(T,G,side,T.act[side])}<div class="tbar">${goals(side)}<span>Toi${myTurn&&T.act[side]?` · ⚽ ${T.act[side].e}`:""}</span></div></div>
+    <div class="tzone me"><div class="tact">${tcgPlayHTML(T.act[side],G,side,cgZ(120),"act me")}</div><div class="tbench">${bench(side,true)}</div>${tcgStaff(T,G,side,true)}${tcgChips(T,G,side,T.act[side])}<div class="tbar">${goals(side)}<span>Toi${myTurn&&T.act[side]?` · ⚽ ${T.act[side].e}`:""}</span></div></div>
     ${ctrl}</div>`; };
 function tcgEvText(ev,side){ const N=id=>esc(short(BY_ID[id].name)); return ev.map(e=>{ const w=e.s===side?"Tu":"Il";
   if(e.t==="b") return `📥 ${N(e.id)} sur le banc`; if(e.t==="e") return `⚽ Ballon pour ${N(e.id)}`; if(e.t==="r") return `🔄 ${N(e.id)} remplace ${N(e.out)}`; if(e.t==="p") return `➡️ ${N(e.id)} entre en jeu`;
@@ -7106,7 +7129,8 @@ function cgBind(V){ const on=(q,f)=>V.querySelectorAll(q).forEach(b=>b.onclick=e
   on("[data-tco]",b=>{ cgTB.co=cgTB.co===b.dataset.tco?null:b.dataset.tco; cgSnd("flip"); renderCards(); });
   on("[data-tst]",b=>{ cgTB.st=cgTB.st===b.dataset.tst?null:b.dataset.tst; cgSnd("flip"); renderCards(); });
   on("[data-tac]",b=>{ const k=b.dataset.tac, L=cgTB.ac; const i=L.indexOf(k); if(i>=0) L.splice(i,1); else if(L.length<TCG_ACT_N) L.push(k); cgSnd("flip"); renderCards(); });
-  on("[data-tuse]",b=>{ if(!b.classList.contains("can")) return; tPush(["c",b.dataset.tuse]); });
+  on("[data-tuse]",b=>{ const k=b.dataset.tuse; tcgXZoom("action",k,b.classList.contains("can")?()=>tPush(["c",k]):null); });
+  on("[data-txz]",b=>{ const [kind,k]=b.dataset.txz.split(":"); tcgXZoom(kind,k); });
   on("#tcgRet",()=>{ cgTB.tgt="r"; renderCards(); }); on("#tcgCancelT",()=>{ cgTB.tgt=null; renderCards(); });
   on("#tcgUndo",()=>{ cgTB.acts.pop(); cgTB.tgt=null; renderCards(); });
   on("#tcgEnd",()=>{ const x=[...cgTB.acts,["x"]]; cgTB.acts=[]; cgPlay({x}); });
@@ -7125,7 +7149,7 @@ function cgTeaser(){ const M=$("#cardModal"); M.innerHTML=`<div class="cm-box" s
   <button class="btn" id="cgTzX" style="margin-top:10px">J'ai hâte !</button></div>`; M.classList.add("open"); $("#cgTzX").onclick=()=>M.classList.remove("open"); M.onclick=e=>{ if(e.target===M) M.classList.remove("open"); }; cgCdTick(); }
 function openCards(from){ if(!cgLive()){ cgTeaser(); return; } cgBack=from==="online"?"online":"solo"; NAV_OF.cards=cgBack==="online"?"nOnline":"nSolo"; if(!(cgCur&&cgSel==="game")) cgSel=null; setMode("cards"); }
 
-const APP_V="2026-11-28j"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-28k"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
