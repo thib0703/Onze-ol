@@ -4518,7 +4518,7 @@ async function adminPanel(){ if(me!==ADMIN) return; const T=$("#tradeUI"); T.cla
    <h4>🎁 Pack offert</h4><div class="arow"><select id="aPack">${Object.entries(PACKS).map(([k,v])=>`<option value="${k}">${esc(v.name)}</option>`).join("")}</select><input id="aPackN" type="number" value="1" style="width:60px"><button class="btn sm" id="aPackGo">Offrir</button></div>
    <h4>🎁 Packs offerts en attente <small class="mute">(pas encore ouverts — modifiable)</small></h4><div id="aFree"></div>
    <h4>📦 Derniers packs ouverts</h4><div id="aPk"></div>
-   <h4>🆕 Cartes gagnées depuis une sauvegarde</h4><div class="arow"><select id="aDiffBk">${bks.map(b=>`<option>${b}</option>`).join("")||"<option value=''>Aucune</option>"}</select><button class="btn sm ghost" id="aDiffGo">Comparer</button></div><div id="aDiffL"></div>
+   <h4>🆕 Ce qui a changé depuis une sauvegarde <small class="mute">(pièces, pass, cartes…)</small></h4><div class="arow"><select id="aDiffBk">${bks.map(b=>`<option>${b}</option>`).join("")||"<option value=''>Aucune</option>"}</select><button class="btn sm ghost" id="aDiffGo">Comparer</button></div><div id="aDiffL"></div>
    <h4>🎂 Anniversaire</h4><div class="arow"><select id="aBd">${Array.from({length:31},(_,i)=>`<option>${i+1}</option>`).join("")}</select><select id="aBm">${MOIS.map((m,i)=>`<option value="${i+1}">${m}</option>`).join("")}</select><button class="btn sm" id="aBdGo">Corriger</button><button class="btn sm ghost" id="aBdRm">Effacer</button></div>
    <h4>🎄 Aperçu du calendrier de l'Avent <small class="mute">(sur ton téléphone seulement, sans rien gagner)</small></h4><div class="arow"><select id="aAvD">${Array.from({length:24},(_,i)=>`<option value="${i+1}">${i+1} décembre</option>`).join("")}<option value="0">Avant (décompte)</option></select><button class="btn sm" id="aAvGo">Voir</button><button class="btn sm ghost" id="aAvX">Quitter l'aperçu</button></div>
    <h4>🎴 Carte</h4><div class="arow"><input id="aCardQ" placeholder="Nom du joueur…" autocomplete="off"></div><div id="aCardL"></div>
@@ -4535,9 +4535,15 @@ async function adminPanel(){ if(me!==ADMIN) return; const T=$("#tradeUI"); T.cla
       if(x.paid) await adminOp({to:U(),type:"coins",n:x.paid}); else await adminOp({to:U(),type:"pack",pack:x.p,n:1});
       done(`Pack annulé pour ${NAMES[U()]}`); }; }); };
   $("#aDiffGo").onclick=async()=>{ const d=$("#aDiffBk").value, box=$("#aDiffL"); if(!d) return; box.innerHTML=`<div class="mute">Chargement…</div>`;
-    const sn=await db.collection("onzeol_backups").doc(d).get(); const old=(sn.exists&&sn.data().users[U()]||{}).coll||{}; const own=(compos[U()]||{}).coll||{};
+    const sn=await db.collection("onzeol_backups").doc(d).get(); const OB=(sn.exists&&sn.data().users[U()])||{}, NB=compos[U()]||{}; const old=OB.coll||{}; const own=NB.coll||{};
     const add=Object.keys(own).filter(id=>(own[id]||0)>(old[id]||0));
-    box.innerHTML=add.map(id=>cardRow(id,own).replace("</small>",` · +${own[id]-(old[id]||0)} depuis le ${d}</small>`)).join("")||`<div class="mute">Aucune nouvelle carte depuis le ${d}.</div>`; bindRm(box); };
+    // 🔎 ce qui a changé d'autre (pièces, pass, albums, trophées, classements…)
+    const SKIP=new Set(["coll","packLog","cLog","cl0","claimed","updated","fcm","heroes","compo","formation","lineup","bench","evo","tuto","obj","mis","mday","cpud","seen","cg","tcg","pend","daily"]);
+    const sm=v=>{ if(v==null) return "—"; if(typeof v!=="object") return String(v); const j=JSON.stringify(v); return j.length>90?j.slice(0,90)+"…":j; };
+    const ch=[...new Set([...Object.keys(OB),...Object.keys(NB)])].filter(k=>!SKIP.has(k)&&JSON.stringify(OB[k])!==JSON.stringify(NB[k])).map(k=>{ const a=OB[k], b=NB[k];
+      const v=typeof a==="number"||typeof b==="number"?`${sm(a)} → <b>${sm(b)}</b>${typeof a==="number"&&typeof b==="number"?` (${b-a>0?"+":""}${b-a})`:""}`:`${sm(a)} → <b>${sm(b)}</b>`; return `<div class="sgl" style="display:block"><b>${esc(k)}</b> <small>${esc(v).replace(/&lt;b&gt;|&lt;\/b&gt;/g,"")}</small></div>`; }).join("");
+    const L=(NB.cLog||[]).filter(x=>x.at>(sn.exists?sn.data().at:0));
+    box.innerHTML=`<h4 style="margin:8px 0 4px">Autres changements depuis le ${d}</h4>${ch||'<div class="mute">Rien d\'autre.</div>'}${L.length?`<h4 style="margin:8px 0 4px">🪙 Historique des pièces</h4>${L.map(x=>`<div class="sgl"><span>${x.n>0?"+":""}${x.n} 🪙 <small>${esc(x.w||"—")}</small></span><small class="mute">${new Date(x.at).toLocaleString("fr-FR")}</small></div>`).join("")}`:""}<h4 style="margin:8px 0 4px">Nouvelles cartes</h4>`+(add.map(id=>cardRow(id,own).replace("</small>",` · +${own[id]-(old[id]||0)} depuis le ${d}</small>`)).join("")||`<div class="mute">Aucune nouvelle carte depuis le ${d}.</div>`); bindRm(box); };
   $("#aU").onchange=()=>{ info(); pks(); pend(); free(); $("#aDiffL").innerHTML=""; $("#aCardQ").oninput(); };
   $("#tClose").onclick=()=>{ if(pendU) pendU(); T.classList.remove("open"); };
   const free=()=>{ const c=compos[U()]||{}, F_=c.freePacks||{}, box=$("#aFree"); const L=Object.keys(PACKS).filter(k=>F_[k]>0);
@@ -6954,7 +6960,7 @@ function cgTeaser(){ const M=$("#cardModal"); M.innerHTML=`<div class="cm-box" s
   <button class="btn" id="cgTzX" style="margin-top:10px">J'ai hâte !</button></div>`; M.classList.add("open"); $("#cgTzX").onclick=()=>M.classList.remove("open"); M.onclick=e=>{ if(e.target===M) M.classList.remove("open"); }; cgCdTick(); }
 function openCards(from){ if(!cgLive()){ cgTeaser(); return; } cgBack=from==="online"?"online":"solo"; NAV_OF.cards=cgBack==="online"?"nOnline":"nSolo"; if(!(cgCur&&cgSel==="game")) cgSel=null; setMode("cards"); }
 
-const APP_V="2026-11-28a"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-28b"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
