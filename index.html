@@ -4506,11 +4506,20 @@ const BK_DAY=()=>new Date().toLocaleDateString("fr-CA");
 async function makeBackup(manual){ const qs=await db.collection("onzeol_users").get(); const users={}; qs.forEach(d=>{ const x={...d.data()}; delete x.fcm; users[d.id]=x; });
   await db.collection("onzeol_backups").doc(BK_DAY()).set({at:Date.now(),by:manual?"admin":"auto",users}); return Object.keys(users).length; }
 async function autoBackup(){ try{ const d=await db.collection("onzeol_backups").doc(BK_DAY()).get(); if(!d.exists) await makeBackup(false); }catch(e){} }
-// 🪙 Redistribution (une fois) : les 2 000 🪙 gagnées en trop par l'admin la nuit du 24/11 sont partagées entre tous les autres joueurs
-async function redis2000(){ try{ if(me!==ADMIN) return; const c=W(); if(c.redis2000) return; if(!compos[me]||Object.keys(NAMES).length<3){ setTimeout(redis2000,8000); return; } const users=Object.keys(NAMES).filter(u=>u!==ADMIN&&u!==CPU); if(users.length<1) return;
-  const part=Math.floor(2000/users.length); if(part<1) return; c.redis2000=Date.now(); c.coins=Math.max(0,(c.coins||0)-part*users.length); save(); renderCoins();
-  for(const u of users) await adminOp({to:u,type:"coins",n:part,ic:"🤝",title:"Redistribution de pièces",msg:`Cette nuit, un bug a fait gagner 2 000 pièces en trop d'un coup à ${NAMES[ADMIN]||"Thibaut"}. Plutôt que de les garder, il les a partagées à parts égales entre tous les joueurs (${users.length}) : tu reçois ta part. Le bug est corrigé et un historique des pièces existe maintenant (touche ton compteur de pièces). Bon jeu !`});
-  toast(`🤝 ${part*users.length} 🪙 redistribuées : ${part} 🪙 à chacun des ${users.length} joueurs`); }catch(e){} }
+// 🪙 Redistribution (une fois) : les 2 000 🪙 gagnées en trop par l'admin la nuit du 24/11 sont partagées à parts égales entre TOUS les joueurs (admin compris)
+async function redis2000(){ try{ if(me!==ADMIN) return; const c=W(); if(c.redis2000&&c.redis2000.v===2) return;
+  if(!compos[me]||Object.keys(NAMES).length<3){ setTimeout(redis2000,8000); return; }
+  const users=Object.keys(NAMES).filter(u=>u!==ADMIN&&u!==CPU); if(!users.length) return; const N=users.length, part=Math.floor(2000/(N+1)); if(part<1) return;
+  const MSG=`Cette nuit, un bug a fait gagner 2 000 pièces en trop d'un coup à ${NAMES[ADMIN]||"Thibaut"}. Plutôt que de les garder, elles sont partagées à parts égales entre tous les joueurs (${N+1}, lui compris) : tu reçois ta part. Le bug est corrigé et un historique des pièces existe maintenant (touche ton compteur de pièces). Bon jeu !`;
+  if(typeof c.redis2000==="number"){ // 1re version (sans compter l'admin) déjà lancée : on corrige les parts
+    const old=Math.floor(2000/N); let refund=0; const qs=await db.collection("onzeol_admin").where("title","==","Redistribution de pièces").get(); const L=[]; qs.forEach(d=>L.push([d.id,d.data()]));
+    for(const [id,o] of L){ if(o.by!==ADMIN||o.n!==old) continue; refund+=old-part;
+      if(!o.done) await db.collection("onzeol_admin").doc(id).update({n:part,msg:MSG});
+      else await adminOp({to:o.to,type:"coins",n:part-old,ic:"🤝",title:"Ajustement de la redistribution",msg:`Petit ajustement : la redistribution des 2 000 pièces compte finalement aussi ${NAMES[ADMIN]||"Thibaut"}, pour des parts vraiment égales entre les ${N+1} joueurs. Ta part passe de ${old} à ${part} pièces.`}); }
+    c.coins=(c.coins||0)+refund; c.redis2000={v:2,at:Date.now(),part,n:N+1}; save(); renderCoins(); toast(`🤝 Redistribution corrigée : ${part} 🪙 pour chacun des ${N+1} joueurs (toi compris)`); return; }
+  c.redis2000={v:2,at:Date.now(),part,n:N+1}; c.coins=Math.max(0,(c.coins||0)-part*N); save(); renderCoins();
+  for(const u of users) await adminOp({to:u,type:"coins",n:part,ic:"🤝",title:"Redistribution de pièces",msg:MSG});
+  toast(`🤝 Redistribution : ${part} 🪙 pour chacun des ${N+1} joueurs (toi compris, tu gardes ta part)`); }catch(e){} }
 async function adminOp(o){ try{ await db.collection("onzeol_admin").add({...o,by:me,at:Date.now(),done:false}); }catch(e){ toast("Admin refusé ("+(e.code||e.message)+") : les règles Firestore ne sont peut-être pas publiées",true); throw e; } }
 async function adminPanel(){ if(me!==ADMIN) return; const T=$("#tradeUI"); T.classList.add("open");
   const users=Object.keys(NAMES).filter(u=>u!==CPU).sort((a,b)=>(NAMES[a]||"").localeCompare(NAMES[b]||"","fr"));
@@ -6966,7 +6975,7 @@ function cgTeaser(){ const M=$("#cardModal"); M.innerHTML=`<div class="cm-box" s
   <button class="btn" id="cgTzX" style="margin-top:10px">J'ai hâte !</button></div>`; M.classList.add("open"); $("#cgTzX").onclick=()=>M.classList.remove("open"); M.onclick=e=>{ if(e.target===M) M.classList.remove("open"); }; cgCdTick(); }
 function openCards(from){ if(!cgLive()){ cgTeaser(); return; } cgBack=from==="online"?"online":"solo"; NAV_OF.cards=cgBack==="online"?"nOnline":"nSolo"; if(!(cgCur&&cgSel==="game")) cgSel=null; setMode("cards"); }
 
-const APP_V="2026-11-28c"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-28d"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
