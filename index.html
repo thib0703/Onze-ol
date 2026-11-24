@@ -1143,6 +1143,7 @@ body.lowfx .tile,body.lowfx .vt img,body.lowfx .hype,body.lowfx .pkbtn,body.lowf
 #viewCards{min-height:70vh}
 #viewCards.cgplay{background:linear-gradient(180deg,#0b1530cc,#0b153055 20%,#0b153088 80%,#0b1530),var(--cgbg) center top/cover no-repeat fixed;border-radius:18px}
 .cgwrap{padding:4px 2px 30px}
+.thc.full,.txpick.full{opacity:.32;filter:grayscale(.85);transform:scale(.94)}
 .tstaff{display:flex;gap:5px;justify-content:center;margin:4px 0}.tstaff .tstf{cursor:pointer;transition:transform .15s}.tstaff .tstf:active{transform:scale(1.1)}
 .tacts2{background:#0f1d40;border-radius:14px;padding:6px;margin:6px 0}.tacts2 .tah{font-size:12.5px;font-weight:800;margin:0 2px 4px}.tacts2 .tah small{font-weight:400;color:var(--mute);margin-left:4px}
 .tacts2 .tag{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
@@ -6969,9 +6970,9 @@ function tcgPrepHTML(G,side,ids){ const cos=tcgCoaches(G.src,G.players[side]); c
   const syn=[...eras.map(e=>`${e.ic} <b>${esc(e.n)}</b> : ${esc(e.d)}`), cgTB.co?`📋 <b>${esc(BY_ID[cgTB.co].name)}</b> : +5 dégâts pour ${coN} joueur${coN>1?"s":""}`:"", cgTB.st?`🏟️ <b>${esc(TCG_STAD[cgTB.st].n)}</b> : +10 PV pour ${stN} joueur${stN>1?"s":""}`:""].filter(Boolean);
   const nextEra=TCG_ERAS.map(E=>({E,n:ids.filter(id=>tcgInEra(id,E)).length})).filter(x=>x.n===2)[0];
   return `<h4 class="tdh">📋 Entraîneur <small>${cos.length?"(bonus pour les joueurs de son époque)":G.src==="coll"?"(aucun dans ta collection)":""}</small></h4>
-    <div class="txrow">${cos.map(id=>{ const n=ids.filter(x=>tcgCoachOk(id,x)).length; return `<span class="txpick${cgTB.co===id?" on":""}" data-tco="${id}">${tcgCoachCard(id,{w:96,tag:ids.length?`${n} joueur${n>1?"s":""}`:""})}</span>`; }).join("")||`<div class="mute" style="font-size:12px">Pas d'entraîneur : obtiens-en dans les packs.</div>`}</div>
-    <h4 class="tdh">🏟️ Stade</h4><div class="txrow">${Object.keys(TCG_STAD).map(k=>`<span class="txpick${cgTB.st===k?" on":""}" data-tst="${k}">${tcgStadCard(k,{w:96})}</span>`).join("")}</div>
-    <h4 class="tdh">🃏 Cartes Action <small>(${cgTB.ac.length}/${TCG_ACT_N} · 1 fois chacune, 1 par tour)</small></h4><div class="txrow">${Object.keys(TCG_ACT).map(k=>`<span class="txpick${cgTB.ac.includes(k)?" on":""}" data-tac="${k}">${tcgActCard(k,{w:96})}</span>`).join("")}</div>
+    <div class="txrow">${cos.map(id=>{ const n=ids.filter(x=>tcgCoachOk(id,x)).length; return `<span class="txpick${cgTB.co===id?" on":cgTB.co?" full":""}" data-tco="${id}">${tcgCoachCard(id,{w:96,tag:ids.length?`${n} joueur${n>1?"s":""}`:""})}</span>`; }).join("")||`<div class="mute" style="font-size:12px">Pas d'entraîneur : obtiens-en dans les packs.</div>`}</div>
+    <h4 class="tdh">🏟️ Stade</h4><div class="txrow">${Object.keys(TCG_STAD).map(k=>`<span class="txpick${cgTB.st===k?" on":cgTB.st?" full":""}" data-tst="${k}">${tcgStadCard(k,{w:96})}</span>`).join("")}</div>
+    <h4 class="tdh">🃏 Cartes Action <small>(${cgTB.ac.length}/${TCG_ACT_N} · 1 fois chacune, 1 par tour)</small></h4><div class="txrow">${Object.keys(TCG_ACT).map(k=>`<span class="txpick${cgTB.ac.includes(k)?" on":cgTB.ac.length>=TCG_ACT_N?" full":""}" data-tac="${k}">${tcgActCard(k,{w:96})}</span>`).join("")}</div>
     <h4 class="tdh">📜 Collectifs d'époque <small>(3 joueurs de la même époque = bonus automatique)</small></h4><div class="txrow">${TCG_ERAS.map(E=>{ const n=ids.filter(id=>tcgInEra(id,E)).length; return `<span class="txpick${n>=3?" on":""}">${tcgEraCard(E.k,{w:96,off:n<3,tag:`${Math.min(n,3)}/3`})}</span>`; }).join("")}</div>
     <div class="cgrules tsyn">✨ <b>Synergies de ton équipe</b>${syn.length?syn.map(x=>`<div>${x}</div>`).join(""):`<div class="mute">Aucune pour l'instant.</div>`}${nextEra?`<div class="mute">💡 Encore 1 joueur de l'époque « ${esc(nextEra.E.n)} » pour activer : ${esc(nextEra.E.d)}</div>`:""}</div>`; }
 CG_VIEW.cbt=(G,S,side,need)=>{ const o=1-side; const key=(G.id||G.seed)+"_"+(S.i||0);
@@ -6979,9 +6980,9 @@ CG_VIEW.cbt=(G,S,side,need)=>{ const o=1-side; const key=(G.id||G.seed)+"_"+(S.i
   if(S.phase==="setup"){ if(!need) return `<div class="cgmsg">✅ Équipe choisie. En attente de ${cgNm(G.players[o])}…</div>`;
     const H=S.hand[side], sel=cgTB.sel;
     const many=H.length>10, flt=cgTB.flt;
-    return `<div class="cgmsg sm">Choisis <b>5 joueurs</b>${many?` parmi tes <b>${H.length}</b> cartes`:""} : le 1er touché est ton <b>titulaire</b>, les 4 suivants vont sur le <b>banc</b>. (${sel.length}/5)</div>
+    return `<div class="cgmsg sm">Choisis <b>5 joueurs</b>${many?` parmi tes <b>${H.length}</b> cartes`:""} : le 1er touché est ton <b>titulaire</b>, les 4 suivants vont sur le <b>banc</b>. (${sel.length}/5)${sel.length>=5?` <b style="color:#7ee2a0">✅ Équipe complète</b> <small>· touche un joueur choisi pour le retirer</small>`:""}</div>
       ${many?`<div class="tflt"><button class="btn sm${flt?" ghost":""}" data-tflt="">Toutes</button>${Object.keys(CG_GRP).map(g=>`<button class="btn sm${flt===g?"":" ghost"}" data-tflt="${g}">${CG_GRP[g].e} ${CG_GRP[g].n}s <small>${H.filter(id=>tcgOf(id).g===g).length}</small></button>`).join("")}</div>`:""}
-      <div class="thand big">${H.map((id,i)=>{ const k=sel.indexOf(i); if(flt&&k<0&&tcgOf(id).g!==flt) return ""; return `<span class="thc can${k>=0?" on":""}" data-tsel="${i}">${tcgHTML(id,{w:100,evo:G.evo[side][id]||0,lvl:(G.tl[side]||{})[id]||0,hpm:tcgMax(id,G,side),cls:"mini"})}<i class="tnm">${esc(short(BY_ID[id].name))}${BY_ID[id].v?` <small>${esc(BY_ID[id].v.toUpperCase())}</small>`:""}</i>${k>=0?`<i class="tnum">${k===0?"TITULAIRE":"Banc "+k}</i>`:""}</span>`; }).join("")}</div>
+      <div class="thand big">${H.map((id,i)=>{ const k=sel.indexOf(i); if(flt&&k<0&&tcgOf(id).g!==flt) return ""; const full=sel.length>=1+TCG_BENCH; return `<span class="thc can${k>=0?" on":full?" full":""}" data-tsel="${i}">${tcgHTML(id,{w:100,evo:G.evo[side][id]||0,lvl:(G.tl[side]||{})[id]||0,hpm:tcgMax(id,G,side),cls:"mini"})}<i class="tnm">${esc(short(BY_ID[id].name))}${BY_ID[id].v?` <small>${esc(BY_ID[id].v.toUpperCase())}</small>`:""}</i>${k>=0?`<i class="tnum">${k===0?"TITULAIRE":"Banc "+k}</i>`:""}</span>`; }).join("")}</div>
       ${G.cap?`<div class="mute" style="font-size:12px;text-align:center">⚖️ Note totale : <b style="color:${tcgTeamOvr(sel.map(i=>H[i]),G,side)>TCG_CAP?"#ff7a7a":"#7ee2a0"}">${tcgTeamOvr(sel.map(i=>H[i]),G,side)}</b> / ${TCG_CAP}</div>`:""}
       ${tcgPrepHTML(G,side,sel.map(i=>H[i]))}
       <button class="btn big" id="tcgSetup" ${(sel.length===5||sel.length===H.length)&&cgTB.ac.length===TCG_ACT_N&&!(G.cap&&tcgTeamOvr(sel.map(i=>H[i]),G,side)>TCG_CAP)?"":"disabled"}>✅ Lancer le match</button>`; }
@@ -7127,7 +7128,7 @@ function cgBind(V){ const on=(q,f)=>V.querySelectorAll(q).forEach(b=>b.onclick=e
   on("[data-cga]",b=>cgPlay({a:+b.dataset.cga}));
   on("[data-tsel]",b=>{ const i=+b.dataset.tsel, L=cgTB.sel; const k=L.indexOf(i); const H=cgReplay(cgG(cgCur)).hand[cgCur.cpu?0:cgCur.players.indexOf(me)]||[];
     if(k<0&&L.some(j=>tcgBase(H[j])===tcgBase(H[i]))){ toast(`${BY_ID[H[i]].name} est déjà dans ton équipe (une seule version par joueur)`,true); return; }
-    if(k>=0) L.splice(k,1); else if(L.length<1+TCG_BENCH) L.push(i); cgSnd("flip"); renderCards(); });
+    if(k>=0) L.splice(k,1); else if(L.length<1+TCG_BENCH) L.push(i); else { toast("Tes 5 joueurs sont choisis : touche-en un pour le retirer, puis choisis le nouveau",true); return; } cgSnd("flip"); renderCards(); });
   on("#tcgSetup",()=>{ const S=cgReplay(cgG(cgCur)), side=cgCur.cpu?0:cgCur.players.indexOf(me), H=S.hand[side]; const L=cgTB.sel; if(!L.length) return; const pk={a:H[L[0]],b:L.slice(1).map(i=>H[i]),co:cgTB.co,st:cgTB.st,ac:cgTB.ac.slice()}; cgTB.sel=[]; cgPlay(pk); });
   const tPrev=()=>{ const X=cgG(cgCur), S=cgReplay(X), side=cgCur.cpu?0:cgCur.players.indexOf(me); const T=JSON.parse(JSON.stringify(S)); for(const A of cgTB.acts) tcgAct(T,X,side,A,[]); return {X,T,side}; };
   const tPush=A=>{ const {X,T,side}=tPrev(); if(tcgAct(T,X,side,A,[])){ cgTB.acts.push(A); cgSnd(A[0]==="e"?"tick":"flip"); } else { toast("Action impossible",true); } cgTB.tgt=null; renderCards(); };
@@ -7136,7 +7137,7 @@ function cgBind(V){ const on=(q,f)=>V.querySelectorAll(q).forEach(b=>b.onclick=e
   on("[data-tflt]",b=>{ cgTB.flt=b.dataset.tflt||null; cgSnd("flip"); renderCards(); });
   on("[data-tco]",b=>{ cgTB.co=cgTB.co===b.dataset.tco?null:b.dataset.tco; cgSnd("flip"); renderCards(); });
   on("[data-tst]",b=>{ cgTB.st=cgTB.st===b.dataset.tst?null:b.dataset.tst; cgSnd("flip"); renderCards(); });
-  on("[data-tac]",b=>{ const k=b.dataset.tac, L=cgTB.ac; const i=L.indexOf(k); if(i>=0) L.splice(i,1); else if(L.length<TCG_ACT_N) L.push(k); cgSnd("flip"); renderCards(); });
+  on("[data-tac]",b=>{ const k=b.dataset.tac, L=cgTB.ac; const i=L.indexOf(k); if(i>=0) L.splice(i,1); else if(L.length<TCG_ACT_N) L.push(k); else { toast("Tes 3 actions sont choisies : touche-en une pour la retirer, puis choisis la nouvelle",true); return; } cgSnd("flip"); renderCards(); });
   on("[data-tuse]",b=>{ const k=b.dataset.tuse; tcgXZoom("action",k,b.classList.contains("can")?()=>tPush(["c",k]):null); });
   on("[data-txz]",b=>{ const [kind,k]=b.dataset.txz.split(":"); tcgXZoom(kind,k); });
   on("#tcgRet",()=>{ cgTB.tgt="r"; renderCards(); }); on("#tcgCancelT",()=>{ cgTB.tgt=null; renderCards(); });
@@ -7157,7 +7158,7 @@ function cgTeaser(){ const M=$("#cardModal"); M.innerHTML=`<div class="cm-box" s
   <button class="btn" id="cgTzX" style="margin-top:10px">J'ai hâte !</button></div>`; M.classList.add("open"); $("#cgTzX").onclick=()=>M.classList.remove("open"); M.onclick=e=>{ if(e.target===M) M.classList.remove("open"); }; cgCdTick(); }
 function openCards(from){ if(!cgLive()){ cgTeaser(); return; } cgBack=from==="online"?"online":"solo"; NAV_OF.cards=cgBack==="online"?"nOnline":"nSolo"; if(!(cgCur&&cgSel==="game")) cgSel=null; setMode("cards"); }
 
-const APP_V="2026-11-28m"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-28n"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
