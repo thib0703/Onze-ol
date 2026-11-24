@@ -1344,7 +1344,7 @@ body.lowfx .cgstage *{animation-duration:.01s!important;animation-delay:0s!impor
 .tgoals i{font-style:normal;opacity:.25;filter:grayscale(1);margin-right:2px}.tgoals i.on{opacity:1;filter:none}
 .tbench{display:flex;gap:5px;justify-content:center;min-height:40px}
 .tslot{width:54px;height:81px;border:2px dashed #ffffff22;border-radius:8px}
-.tpc{position:relative;display:inline-block}.tpc.adv,.tpc.weak{z-index:4}.tpc.adv::after,.tpc.weak::after{position:absolute;left:0;bottom:-4px;font-size:9px;font-weight:900;padding:1px 5px;border-radius:6px;white-space:nowrap;z-index:6;pointer-events:none}.tpc.adv::after{content:"💥 Fort";background:#1f8a4c;color:#fff;border:1px solid #7ee2a0}.tpc.weak::after{content:"⚠️ Faible";background:#8a1f3a;color:#fff;border:1px solid #ff7a7a}.ttip{font-size:12px;text-align:center;background:#000b;border:1px solid #ffffff33;border-radius:10px;padding:6px 8px;margin:4px 0;line-height:1.4}.ttip.adv{border-color:#7ee2a0}.ttip.weak{border-color:#ff7a7a;background:#3a0b16cc}.tpc.pick{outline:3px solid #7ee2a0;border-radius:10px;animation:tpick 1s infinite;cursor:pointer}@keyframes tpick{50%{outline-color:#ffd970;filter:drop-shadow(0 0 10px #7ee2a0)}}
+.tpc{position:relative;display:inline-block}.tpc.tyA::after,.tpc.tyW::after{position:absolute;left:0;bottom:-4px;font-size:9px;font-weight:900;padding:1px 5px;border-radius:6px;white-space:nowrap;z-index:6;pointer-events:none}.tpc.tyA::after{content:"💥 Fort";background:#1f8a4c;color:#fff;border:1px solid #7ee2a0}.tpc.tyW::after{content:"⚠️ Faible";background:#8a1f3a;color:#fff;border:1px solid #ff7a7a}.tpl{position:absolute;left:0;right:0;top:100%;display:block;font-style:normal;font-size:9.5px;font-weight:800;line-height:1.15;text-align:center;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 2px #000}.tpl b{display:block;font-size:9px;color:#7ee2a0}.tbench .tpc{margin-bottom:24px}.tpc.tyA::after,.tpc.tyW::after{bottom:auto!important;top:-6px}.best{box-shadow:0 0 0 2px #ffd970,0 0 14px #ffd970aa!important;animation:tbest 1.2s infinite}@keyframes tbest{50%{box-shadow:0 0 0 3px #ffd970,0 0 22px #ffd970!important}}.tpc.best{outline:3px solid #ffd970;border-radius:10px}.ttip.coach{border-color:#ffd970;background:#2a2000cc}.ttip{display:block!important}.ttip b{display:inline!important}.ttip{font-size:12px;text-align:center;background:#000b;border:1px solid #ffffff33;border-radius:10px;padding:6px 8px;margin:4px 0;line-height:1.4}.ttip.tyA{border-color:#7ee2a0}.ttip.tyW{border-color:#ff7a7a;background:#3a0b16cc}.tpc.pick{outline:3px solid #7ee2a0;border-radius:10px;animation:tpick 1s infinite;cursor:pointer}@keyframes tpick{50%{outline-color:#ffd970;filter:drop-shadow(0 0 10px #7ee2a0)}}
 .tballs{position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);font-style:normal;font-size:12px;background:#000c;border:1px solid #ffd970;border-radius:10px;padding:0 5px;white-space:nowrap;z-index:5}
 .tcg-empty{width:var(--w);height:calc(var(--w)*1.5);border:2px dashed #ffffff33;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#ffffff55}
 .tinfo{font-size:12px;text-align:center;background:#000a;border-radius:10px;padding:5px 8px;line-height:1.4}
@@ -1368,7 +1368,7 @@ body.lowfx .cgstage *{animation-duration:.01s!important;animation-delay:0s!impor
 /* plateau TCG compact (tient sur un écran de téléphone) */
 #viewCards.tcgon .cgtop{display:none}
 .tboard{gap:4px}.tzone{padding:4px 6px;gap:4px 10px}
-.tzone .tbench{display:grid;grid-template-columns:44px 44px;gap:4px;max-height:none;min-height:0}
+.tzone .tbench{display:grid;grid-template-columns:repeat(2,auto);gap:4px 6px;max-height:none;min-height:0;justify-content:center}
 .tinfo{font-size:11px;padding:3px 8px;max-height:34px;overflow:hidden}
 .tchips{flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;max-width:100%;-webkit-overflow-scrolling:touch}.tchips span{flex:none}
 .tbar{font-size:11px}
@@ -6934,7 +6934,7 @@ const CG_VIEW={};
 let cgTB={key:null,acts:[],tgt:null,sel:[]};
 const tcgBallHTML=(w,cls)=>`<div class="tcg tball${cls?" "+cls:""}" style="--w:${w||84}px"><div class="tb-in"><span>⚽</span><b>BALLON</b><small>Attache-le à un joueur pour payer ses attaques</small></div></div>`;
 function tcgPlayHTML(c,G,s,w,cls,extra){ if(!c) return `<div class="tcg-empty" style="--w:${w}px">—</div>`; const hpm=tcgMax(c.id,G,s);
-  return `<span class="tpc${cls?" "+cls:""}"${extra||""}>${tcgHTML(c.id,{w,evo:G.evo[s][c.id]||0,lvl:(G.tl[s]||{})[c.id]||0,hp:c.hp,hpm,cls:w<80?"mini":""})}${c.e?`<i class="tballs">${"⚽".repeat(Math.min(c.e,5))}${c.e>5?"+"+(c.e-5):""}</i>`:""}</span>`; }
+  return `<span class="tpc${cls?" "+cls:""}"${extra||""}>${tcgHTML(c.id,{w,evo:G.evo[s][c.id]||0,lvl:(G.tl[s]||{})[c.id]||0,hp:c.hp,hpm,cls:w<80?"mini":""})}${w<80?`<i class="tpl">${CG_GRP[tcgOf(c.id).g].e} ${esc(short(BY_ID[c.id].name))}<b>${Math.max(0,Math.round(c.hp))} PV</b></i>`:""}${c.e?`<i class="tballs">${"⚽".repeat(Math.min(c.e,5))}${c.e>5?"+"+(c.e-5):""}</i>`:""}</span>`; }
 function tcgHandHTML(id,G,s,i,can){ return `<span class="thc${can?" can":""}" data-th="${i}">${isBall(id)?tcgBallHTML(84):tcgHTML(id,{w:84,evo:G.evo[s][id]||0,lvl:(G.tl[s]||{})[id]||0,hpm:tcgMax(id,G,s),cls:"mini"})}</span>`; }
 function tcgStaff(T,G,s,mine){ const M=(T.mod||[])[s]; if(!M) return ""; const w=mine?54:44; const L=[];
   if(M.co) L.push(`<span class="tstf" data-txz="coach:${M.co}">${tcgCoachCard(M.co,{w,cls:"mini"})}</span>`);
@@ -6993,12 +6993,23 @@ CG_VIEW.cbt=(G,S,side,need)=>{ const o=1-side; const key=(G.id||G.seed)+"_"+(S.i
   const goals=s=>`<span class="tgoals">${[0,1,2].map(i=>`<i class="${i<T.sc[s]?"on":""}">⚽</i>`).join("")}</span>`;
   const pickB=myTurn&&(mustP||cgTB.tgt==="r");
   const dA=T.act[o], dg=dA?tcgOf(dA.id).g:null, tyOf=c=>!dg?"":CG_BEATS[tcgOf(c.id).g]===dg?"adv":CG_BEATS[dg]===tcgOf(c.id).g?"weak":"";
-  const bench=(s,mine)=>T.bench[s].map((c,i)=>tcgPlayHTML(c,G,s,mine?56:46,[mine&&pickB?"pick":"",mine?tyOf(c):""].filter(Boolean).join(" "),mine&&pickB?` data-tb="${i}"`:"")).join("");
+  const bench=(s,mine)=>T.bench[s].map((c,i)=>tcgPlayHTML(c,G,s,mine?60:50,[mine&&pickB?"pick":"",mine?({adv:"tyA",weak:"tyW"})[tyOf(c)]||"":"",mine&&recAll[0]&&["p","r"].includes(recAll[0][0])&&recAll[0][1]===i?"best":""].filter(Boolean).join(" "),mine&&pickB?` data-tb="${i}"`:"")).join("");
   const advB=T.bench[side].filter(c=>tyOf(c)==="adv").sort((x,y)=>y.hp-x.hp)[0], N=c=>esc(short(BY_ID[c.id].name));
-  const tip=!myTurn||S.end||!dA?"":(()=>{ const a=T.act[side], my=a?tyOf(a):"";
-    if(!a) return advB?`<div class="ttip adv">💡 Fais entrer <b>${N(advB)}</b> : ${CG_GRP[tcgOf(advB.id).g].n} fort contre ${CG_GRP[dg].n.toLowerCase()} (×1,25)</div>`:`<div class="ttip">💡 Évite les joueurs marqués ⚠️ : ils prennent ×1,25 contre ${N(dA)}</div>`;
-    if(my==="weak") return `<div class="ttip weak">⚠️ <b>${N(a)}</b> est faible contre ${N(dA)} : il prend ×1,25.${advB?` Change pour <b>${N(advB)}</b> 💥 (fort contre lui).`:""}</div>`;
-    if(my==="adv") return `<div class="ttip adv">💥 <b>${N(a)}</b> est fort contre ${N(dA)} : tes attaques font ×1,25, garde-le !</div>`;
+  // 🧠 coach : le coup que jouerait l'ordi à ta place, mis en évidence
+  const recAll=(()=>{ try{ return myTurn&&!S.end&&S.phase==="play"?tcgCpuSmart(T,G,side).x||[]:[]; }catch(e){ return []; } })();
+  const best=k=>recAll.length&&JSON.stringify(recAll[0])===JSON.stringify(k);
+  const coach=(()=>{ if(!recAll.length) return ""; const A=recAll[0], a=T.act[side], Bn=i=>T.bench[side][i]?N(T.bench[side][i]):"?";
+    const txt=A[0]==="p"?`fais entrer <b>${Bn(A[1])}</b>${tyOf(T.bench[side][A[1]]||{id:T.bench[side][0].id})==="adv"?" (💥 fort contre lui)":""}`:
+      A[0]==="c"?`joue d'abord <b>${TCG_ACT[A[1]].ic} ${TCG_ACT[A[1]].n}</b>, puis touche le bouton conseillé`:
+      A[0]==="r"?`change pour <b>${Bn(A[1])}</b>${tyOf(T.bench[side][A[1]])==="adv"?" : 💥 fort contre lui":" : il est plus en forme"}`:
+      A[0]==="a"?`attaque avec <b>${esc(tcgOf(a.id).a[A[1]].n)}</b>${tcgDmg(T,G,side,A[1]).dmg>=dA.hp?" : ça peut le mettre K.O. !":""}`:
+      `passe ton tour : garde tes ⚽ pour l'attaque 2 au prochain tour`;
+    const a2=T.act[side]; const thr=a2?tcgThreat(T,G,side):0;
+    return `<div class="ttip coach">🧠 <b>Conseil</b> : ${txt}</div>${a2&&thr>=a2.hp&&A[0]!=="r"?`<div class="ttip tyW">⚠️ Il peut faire jusqu'à ~${thr} au prochain tour : ${N(a2)} (${a2.hp} PV) risque le K.O.</div>`:""}`; })();
+  const tip=!myTurn||S.end||!dA?"":coach||(()=>{ const a=T.act[side], my=a?tyOf(a):"";
+    if(!a) return advB?`<div class="ttip tyA">💡 Fais entrer <b>${N(advB)}</b> : ${CG_GRP[tcgOf(advB.id).g].n} fort contre ${CG_GRP[dg].n.toLowerCase()} (×1,25)</div>`:`<div class="ttip">💡 Évite les joueurs marqués ⚠️ : ils prennent ×1,25 contre ${N(dA)}</div>`;
+    if(my==="weak") return `<div class="ttip tyW">⚠️ <b>${N(a)}</b> est faible contre ${N(dA)} : il prend ×1,25.${advB?` Change pour <b>${N(advB)}</b> 💥 (fort contre lui).`:""}</div>`;
+    if(my==="adv") return `<div class="ttip tyA">💥 <b>${N(a)}</b> est fort contre ${N(dA)} : tes attaques font ×1,25, garde-le !</div>`;
     return advB?`<div class="ttip">💡 <b>${N(advB)}</b> 💥 serait fort contre ${N(dA)} (×1,25)</div>`:""; })();
   const last=S.log[S.log.length-1]; const info=last&&last.ev?tcgEvText(last.ev,side):"";
   let ctrl="";
@@ -7008,10 +7019,10 @@ CG_VIEW.cbt=(G,S,side,need)=>{ const o=1-side; const key=(G.id||G.seed)+"_"+(S.i
   else if(cgTB.tgt==="r") ctrl=`${tip}<div class="cgmsg sm tgt">🔄 Touche le joueur du banc qui entre (ça termine ton tour) <button class="btn sm ghost" id="tcgCancelT">Annuler</button></div>`;
   else { const a=T.act[side], d=T.act[o]; const firstT=T.first===side&&T.n===0;
     const atk=[0,1].map(ai=>{ const Tc=tcgOf(a.id,G.evo[side][a.id]||0,(G.tl[side]||{})[a.id]||0), cost=tcgCost(a.id,ai), ok=a.e>=cost&&!firstT&&d; const R=d?tcgDmg(T,G,side,ai):{dmg:0,parts:[]};
-      return `<button class="btn tatk${ok?"":" ghost"}" data-tatk="${ai}" ${ok?"":"disabled"}><span>${"⚽".repeat(cost)} ${esc(Tc.a[ai].n)}</span><b>~${R.dmg}${R.sup?" 💥":""}</b>${R.parts.length?`<small>${esc(R.parts.join(" · "))}</small>`:""}</button>`; }).join("");
-    const acts=(T.acts[side]||[]).map(k=>{ const used=T.used[side].includes(k), can=!used&&!T.acted, A=TCG_ACT[k]; return `<button class="tuse2${can?" can":""}${used?" used":""}" data-tuse="${k}"><span class="tuc">${tcgActCard(k,{w:58,cls:"mini",off:used})}</span><span class="tut"><b>${A.ic} ${esc(A.n)}</b><small>${used?"✔️ Déjà jouée":esc(A.d)}</small></span></button>`; }).join("");
+      return `<button class="btn tatk${ok?"":" ghost"}${ok&&best(["a",ai])?" best":""}" data-tatk="${ai}" ${ok?"":"disabled"}><span>${"⚽".repeat(cost)} ${esc(Tc.a[ai].n)}</span><b>~${R.dmg}${R.sup?" 💥":""}</b>${R.parts.length?`<small>${esc(R.parts.join(" · "))}</small>`:""}</button>`; }).join("");
+    const acts=(T.acts[side]||[]).map(k=>{ const used=T.used[side].includes(k), can=!used&&!T.acted, A=TCG_ACT[k]; return `<button class="tuse2${can?" can":""}${used?" used":""}${can&&best(["c",k])?" best":""}" data-tuse="${k}"><span class="tuc">${tcgActCard(k,{w:58,cls:"mini",off:used})}</span><span class="tut"><b>${A.ic} ${esc(A.n)}</b><small>${used?"✔️ Déjà jouée":esc(A.d)}</small></span></button>`; }).join("");
     ctrl=`${tip}${acts?`<div class="tacts2"><div class="tah">🃏 Tes cartes Action <small>${T.acted?"✅ action jouée ce tour":"1 par tour, avant d'attaquer · touche pour voir"}</small></div><div class="tag">${acts}</div></div>`:""}<div class="tatks">${atk}</div>${firstT?`<div class="mute" style="font-size:11px;text-align:center">Tu commences : pas d'attaque au 1er tour</div>`:a.e<1?"":""}
-      <div class="tbtns"><button class="btn sm ghost" id="tcgRet" ${T.bench[side].length?"":"disabled"}>🔄 Changer de joueur</button><button class="btn sm ghost" id="tcgEnd">⏭️ Passer</button></div>`; }
+      <div class="tbtns"><button class="btn sm ghost${recAll[0]&&recAll[0][0]==="r"?" best":""}" id="tcgRet" ${T.bench[side].length?"":"disabled"}>🔄 Changer de joueur</button><button class="btn sm ghost${best(["x"])?" best":""}" id="tcgEnd">⏭️ Passer</button></div>`; }
   return `<div class="tboard">
     <div class="tzone opp"><div class="tbar">${goals(o)}<span>${cgNm(G.players[o])}</span></div><div class="tbench">${bench(o,false)}</div>${tcgStaff(T,G,o,false)}<div class="tact">${tcgPlayHTML(T.act[o],G,o,cgZ(104),"act opp")}</div></div>
     ${info?`<div class="tinfo">${info}</div>`:""}
@@ -7173,7 +7184,7 @@ function cgTeaser(){ const M=$("#cardModal"); M.innerHTML=`<div class="cm-box" s
   <button class="btn" id="cgTzX" style="margin-top:10px">J'ai hâte !</button></div>`; M.classList.add("open"); $("#cgTzX").onclick=()=>M.classList.remove("open"); M.onclick=e=>{ if(e.target===M) M.classList.remove("open"); }; cgCdTick(); }
 function openCards(from){ if(!cgLive()){ cgTeaser(); return; } cgBack=from==="online"?"online":"solo"; NAV_OF.cards=cgBack==="online"?"nOnline":"nSolo"; if(!(cgCur&&cgSel==="game")) cgSel=null; setMode("cards"); }
 
-const APP_V="2026-11-28r"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-28s"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
