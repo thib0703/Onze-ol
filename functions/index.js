@@ -74,6 +74,15 @@ exports.duoDraft = onDocumentWritten({ document: "onzeol_drafts/{id}", region: R
 });
 // 🃏 Jeux de cartes : invitation, réponse, « à toi de jouer », fin de partie (nx = joueurs qui doivent jouer, écrit par l'appli)
 const CG_N = { bat: "⚔️ Bataille de stats", duel: "🃏 Duel 5 cartes", tab: "🥅 Tirs au but", cbt: "🔥 Combat TCG", pyr: "🔺 Pyramide", pom: "↕️ Plus ou moins" };
+// 🔴 Échange en direct : invitation, acceptation, échange conclu
+exports.liveTrade = onDocumentWritten({ document: "onzeol_ltrades/{id}", region: REGION }, async ev => {
+  const before = ev.data.before.exists ? ev.data.before.data() : null, after = ev.data.after.exists ? ev.data.after.data() : null;
+  if (!after) return; const [a, b] = after.players || [], bs = before && before.status;
+  if (!before && after.status === "invite") return notify(b, "🔴 Échange en direct", `${await nameOf(a)} t'invite à échanger des cartes en direct. Ouvre l'appli pour le rejoindre !`);
+  if (bs === "invite" && after.status === "open") return notify(a, "🔴 Échange en direct", `${await nameOf(b)} a rejoint ton échange.`);
+  if (bs === "invite" && after.status === "cancelled") return notify(a, "🔴 Échange en direct", `${await nameOf(b)} a refusé ton invitation.`);
+});
+
 exports.cardGame = onDocumentWritten({ document: "onzeol_drafts/{id}", region: REGION }, async ev => {
   const before = ev.data.before.exists ? ev.data.before.data() : null, after = ev.data.after.exists ? ev.data.after.data() : null;
   if (!after || after.mode !== "cards") return;

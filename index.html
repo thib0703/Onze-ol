@@ -253,7 +253,12 @@ html:has(.modal.open),body:has(.modal.open){overflow:hidden}
 .tmsg{text-align:center;font-size:13px;margin:6px 0 4px;color:#c8d6ff}
 .tui-box h4{margin:12px 0 6px;font-size:13px;color:var(--mute)}
 .tline{display:flex;align-items:center;gap:8px;padding:6px;border-radius:10px}
-.tline.on{background:#1d4aa033}
+.tline.on{background:#1d4aa033}.tline.wish{outline:1px solid #ff7a9a66}.ltw{font-size:10.5px;color:#ff9ab3;font-weight:700}
+.ltside{background:#0f1d40;border-radius:12px;padding:6px 8px;margin:6px 0}.ltside.his{background:#1a1440}.ltside h4{margin:2px 0 4px!important}.ltok{color:#7ee2a0;font-size:12px;margin-left:6px}
+.ltch{display:flex;gap:6px;flex-wrap:wrap;align-items:flex-end}.ltc{position:relative;display:flex;flex-direction:column;align-items:center;width:52px}.ltc small{font-size:9.5px;max-width:52px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ltc i{position:absolute;top:0;right:0;background:#ffd970;color:#111;font-style:normal;font-weight:800;font-size:10px;border-radius:6px;padding:0 4px}
+.ltcoin{display:flex;flex-direction:column;align-items:center;justify-content:center;width:60px;height:62px;border-radius:10px;background:#ffd97022;border:1px solid #ffd97066;font-size:20px}.ltcoin b{font-size:12px;color:#ffd970}
+.ltreq{background:#2a2350;border-radius:10px;padding:8px;margin:6px 0;font-size:13px}.ltreq.me{background:#5a3b10;outline:2px solid #ffd970}
+.ltcoins{display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap;margin:8px 0;font-size:12.5px}.ltcoins .step button{width:auto;padding:0 7px;font-size:12px}
 .tname{flex:1;font-size:14px;font-weight:600}
 .tname small{display:block;font-weight:400;font-size:11px;color:var(--mute);margin-top:2px}
 .tname .rar{font-size:9.5px;padding:1px 6px;margin:0}
@@ -3801,12 +3806,16 @@ function renderTrades(){
   const inc=mine.filter(([i,t])=>t.to===me&&t.status==="pending"), out=mine.filter(([i,t])=>t.from===me&&t.status==="pending"), done=mine.filter(([i,t])=>t.status!=="pending").slice(0,6);
   const row=(id,t,btns)=>`<div class="trow"><div class="tcol"><small>${t.from===me?"Tu donnes":esc(NAMES[t.from]||"?")+" donne"}</small>${esc(listTxt(t.give))}</div><div class="tarrow">⇄</div><div class="tcol"><small>${t.from===me?"Tu reçois":"Tu donnes"}</small>${esc(listTxt(t.want))}</div><div class="tpts">${ptsOf(t.give)} pts ⇄ ${ptsOf(t.want)} pts${ptsOf(t.give)===ptsOf(t.want)?" · équilibré":t.to===me&&ptsOf(t.want)>ptsOf(t.give)?` · <b style="color:#ffb38a">tu donnerais ${ptsOf(t.want)-ptsOf(t.give)} pts de plus</b>`:t.to===me?` · <b style="color:#7ee2a0">tu gagnes ${ptsOf(t.give)-ptsOf(t.want)} pts</b>`:""}</div>${btns}</div>`;
   el.innerHTML=`<h3>🔄 Échanges <small>doublons uniquement</small></h3>
-   <button class="btn big" id="tNew" style="margin-top:0">Proposer un échange</button>
+   <button class="btn big" id="tLive" style="margin-top:0;background:linear-gradient(135deg,#d43c3c,#7c1d1d)">🔴 Échange en direct</button>
+   <button class="btn ghost" id="tNew" style="width:100%;margin-top:6px">Proposer un échange (sans attendre)</button>
    <div class="rules" style="font-size:12px">Valeur : Commune 1 · Rare 3 · Épique 8 · Légendaire 25 · Mythique 75. Un échange équilibré a le même total des deux côtés ; sinon, celui qui donne le plus de points doit l\'accepter.</div>
    ${inc.length?`<h4>Reçus</h4>`+inc.map(([id,t])=>row(id,t,`<div class="tbtns"><button class="btn sm" data-acc="${id}">Accepter</button><button class="btn sm ghost" data-ref="${id}">Refuser</button><button class="btn sm ghost" data-ctr="${id}">Contre-proposer</button></div>`)).join(""):""}
    ${out.length?`<h4>Envoyés · en attente</h4>`+out.map(([id,t])=>row(id,t,`<div class="tbtns"><span class="mute" style="font-size:12px">vers ${esc(NAMES[t.to]||"?")}</span><button class="btn sm ghost" data-can="${id}">Annuler</button></div>`)).join(""):""}
    ${done.length?`<h4>Historique</h4>`+done.map(([id,t])=>`<div class="mute" style="font-size:12px;padding:4px 0">${t.status==="accepted"?"✅":t.status==="refused"?"❌":"↩️"} ${esc(NAMES[t.from]||"?")} ⇄ ${esc(NAMES[t.to]||"?")} : ${esc(listTxt(t.give))} contre ${esc(listTxt(t.want))}</div>`).join(""):""}`;
   $("#tNew").onclick=()=>openTradeUI(null);
+  $("#tLive").onclick=()=>{ const L=others(); if(!L.length){ toast("Personne d'autre pour l'instant",true); return; } const M=$("#cardModal");
+    M.innerHTML=`<div class="cm-box"><h3 style="margin:0 0 6px">🔴 Échange en direct avec…</h3><div style="max-height:55vh;overflow:auto">${L.map(u=>`<button class="btn ghost" data-ltu="${esc(u)}" style="width:100%;margin:3px 0">${esc(NAMES[u])}</button>`).join("")}</div><div class="mbtns"><button class="btn ghost" id="ltuX">Fermer</button></div></div>`; M.classList.add("open");
+    $("#ltuX").onclick=()=>M.classList.remove("open"); M.querySelectorAll("[data-ltu]").forEach(b=>b.onclick=()=>{ M.classList.remove("open"); ltStart(b.dataset.ltu); }); };
   el.querySelectorAll("[data-acc]").forEach(b=>b.onclick=()=>acceptTrade(b.dataset.acc));
   el.querySelectorAll("[data-ref]").forEach(b=>b.onclick=()=>setTradeStatus(b.dataset.ref,"refused"));
   el.querySelectorAll("[data-can]").forEach(b=>b.onclick=()=>setTradeStatus(b.dataset.can,"cancelled"));
@@ -3861,6 +3870,96 @@ async function sendTrade(){
   catch(e){ toast("Impossible d'envoyer (règles Firebase à jour ?)",true); return; }
   { const c=W(); for(const [pid,n] of Object.entries(d.give)) c.coll[pid]-=n; } // mises de côté
   save(); $("#tradeUI").classList.remove("open"); toast(`Proposition envoyée à ${NAMES[d.to]} ✓`); renderCollec();
+}
+
+// ---------- 🔴 Échange EN DIRECT : les 2 joueurs sur le même écran, chacun met ses cartes (+ pièces), validation des deux ----------
+// doc onzeol_ltrades/{id} : players[a,b], status invite|open|done|cancelled, v (version, +1 à chaque changement),
+// offer{uid:{cards:{pid:n},coins}}, wish{uid:{pid:1}}, ok{uid:v}, req{from,n}, settled{uid:true}
+const LT_PT=30; // 1 point d'échange ≈ 30 🪙
+let ltAll={}, ltCur=null, ltSeen=new Set(), ltTab="mine";
+const ltOf=id=>ltAll[id];
+const ltOther=t=>t.players.find(u=>u!==me);
+const ltOff=(t,u)=>(t.offer||{})[u]||{cards:{},coins:0};
+const ltVal=(t,u)=>{ const o=ltOff(t,u); return ptsOf(o.cards)*LT_PT+(o.coins||0); };
+function onLTrades(all){ ltAll=all; const now=Date.now();
+  for(const [id,t] of Object.entries(all)){
+    if(t.status==="invite"&&t.players[1]===me&&!ltSeen.has(id)&&now-t.at<30*60e3){ ltSeen.add(id); ltInvite(id,t); }
+    if(t.status==="done"&&!(t.settled||{})[me]) ltSettle(id);
+    if(t.status==="open"&&t.players[0]===me&&!ltSeen.has(id+"o")&&!ltCur&&now-t.at<30*60e3){ ltSeen.add(id+"o"); ltOpen(id); toast(`🔴 ${NAMES[ltOther(t)]||"?"} a rejoint l'échange !`); }
+    if(t.status==="cancelled"&&ltCur===id){ ltCur=null; $("#tradeUI").classList.remove("open"); toast(`L'échange avec ${NAMES[ltOther(t)]||"?"} est annulé`,true); }
+  }
+  if(ltCur&&ltAll[ltCur]) renderLT(); }
+async function ltStart(u){ if(!u||u===me) return; const id=Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+  try{ await db.collection("onzeol_ltrades").doc(id).set({players:[me,u],status:"invite",at:Date.now(),v:0,offer:{},wish:{},ok:{},settled:{}}); }catch(e){ toast("Impossible de lancer l'échange ("+(e.code||e.message)+")",true); return; }
+  ltSeen.add(id+"o"); ltCur=id; ltAll[id]={players:[me,u],status:"invite",at:Date.now(),v:0,offer:{},wish:{},ok:{},settled:{}}; $("#tradeUI").classList.add("open"); renderLT();
+}
+function ltInvite(id,t){ const M=$("#cardModal"); const o=ltOther(t);
+  M.innerHTML=`<div class="cm-box" style="text-align:center"><div style="font-size:40px">🔴🔄</div><h3 style="margin:4px 0">${esc(NAMES[o]||"?")} t'invite à échanger en direct</h3><div class="cm-note">Vous mettez chacun vos cartes (et des pièces si besoin) sur le même écran, puis vous validez tous les deux.</div>
+   <div class="mbtns"><button class="btn" id="ltY">Rejoindre</button><button class="btn ghost" id="ltN">Refuser</button></div></div>`; M.classList.add("open");
+  $("#ltY").onclick=async()=>{ M.classList.remove("open"); try{ await db.collection("onzeol_ltrades").doc(id).update({status:"open",v:(t.v||0)+1}); }catch(e){ toast("Échange plus disponible",true); return; } ltOpen(id); };
+  $("#ltN").onclick=async()=>{ M.classList.remove("open"); try{ await db.collection("onzeol_ltrades").doc(id).update({status:"cancelled"}); }catch(e){} }; }
+function ltOpen(id){ ltCur=id; ltTab="mine"; $("#tradeUI").classList.add("open"); renderLT(); }
+async function ltEdit(fn){ const id=ltCur; if(!id) return; const ref=db.collection("onzeol_ltrades").doc(id);
+  try{ await db.runTransaction(async tx=>{ const sn=await tx.get(ref); const t=sn.data(); if(!t||t.status!=="open") throw new Error("Échange terminé"); const up=fn(t)||{}; up.v=(t.v||0)+1; tx.update(ref,up); }); }
+  catch(e){ toast(e.message||"Raté, réessaie",true); } }
+function ltSetCards(pid,d){ const t=ltOf(ltCur); const o=JSON.parse(JSON.stringify(ltOff(t,me))); const max=(dupesOf(me).find(x=>x.id===pid)||{}).n||0; const v=Math.max(0,Math.min(max,(o.cards[pid]||0)+d)); if(v) o.cards[pid]=v; else delete o.cards[pid];
+  ltEdit(()=>({[`offer.${me}`]:o})); }
+function ltSetCoins(n){ const t=ltOf(ltCur); const o=JSON.parse(JSON.stringify(ltOff(t,me))); o.coins=Math.max(0,Math.min(W().coins||0,Math.round(n))); ltEdit(()=>({[`offer.${me}`]:o})); }
+function ltWish(pid){ const t=ltOf(ltCur); const w=Object.assign({},(t.wish||{})[me]||{}); if(w[pid]) delete w[pid]; else w[pid]=1; ltEdit(()=>({[`wish.${me}`]:w})); }
+async function ltOk(){ const id=ltCur, t=ltOf(id); if(!t) return; const o=ltOff(t,me), c=W();
+  for(const [pid,n] of Object.entries(o.cards||{})) if((c.coll[pid]||0)<n+1){ toast(`Tu n'as plus assez de doublons de ${BY_ID[pid]?.name}`,true); return; }
+  if((o.coins||0)>(c.coins||0)){ toast("Tu n'as plus assez de pièces",true); return; }
+  if(!ptsOf(ltOff(t,me).cards)&&!ptsOf(ltOff(t,ltOther(t)).cards)){ toast("Mettez au moins une carte",true); return; }
+  const ref=db.collection("onzeol_ltrades").doc(id);
+  try{ await db.runTransaction(async tx=>{ const sn=await tx.get(ref); const x=sn.data(); if(!x||x.status!=="open") throw new Error("Échange terminé"); if(x.v!==t.v) throw new Error("L'offre vient de changer, regarde-la avant de valider");
+    const ok=Object.assign({},x.ok||{}); ok[me]=x.v; const both=x.players.every(u=>ok[u]===x.v); tx.update(ref,both?{ok,status:"done",doneAt:Date.now()}:{ok}); }); }
+  catch(e){ toast(e.message||"Raté, réessaie",true); } }
+async function ltSettle(id){ const ref=db.collection("onzeol_ltrades").doc(id); let t=null;
+  try{ await db.runTransaction(async tx=>{ const sn=await tx.get(ref); const x=sn.data(); if(!x||x.status!=="done"||(x.settled||{})[me]) throw new Error("skip"); t=x; tx.update(ref,{[`settled.${me}`]:true}); }); }catch(e){ return; }
+  const c=W(), o=ltOther(t), mine=ltOff(t,me), his=ltOff(t,o);
+  for(const [pid,n] of Object.entries(mine.cards||{})) c.coll[pid]=Math.max(1,(c.coll[pid]||0)-n);
+  for(const [pid,n] of Object.entries(his.cards||{})) c.coll[pid]=(c.coll[pid]||0)+n;
+  c.coins=Math.max(0,(c.coins||0)-(mine.coins||0)+(his.coins||0)); track("deal"); save(); renderCoins();
+  toast(`✅ Échange conclu avec ${NAMES[o]||"?"} : les cartes sont dans ta collection`); try{ SFX.chime("gold"); }catch(e){}
+  try{ post(`🔄 ${NAMES[me]} et ${NAMES[o]} ont conclu un échange en direct`); }catch(e){}
+  if(ltCur===id){ ltCur=null; $("#tradeUI").classList.remove("open"); } try{ if(mode==="collec") renderCollec(); }catch(e){} }
+function renderLT(){ const T=$("#tradeUI"), t=ltOf(ltCur); if(!t){ T.classList.remove("open"); return; } const o=ltOther(t), on=NAMES[o]||"?";
+  if(t.status==="invite"){ T.innerHTML=`<div class="tui-box" style="text-align:center"><div class="tui-head"><b>🔴 Échange en direct</b><button class="btn sm ghost" id="ltX">Annuler</button></div><div style="font-size:40px;margin:14px 0">⏳</div><b>En attente de ${esc(on)}…</b><div class="cm-note">Il reçoit l'invitation quand il ouvre l'appli.</div></div>`;
+    $("#ltX").onclick=async()=>{ try{ await db.collection("onzeol_ltrades").doc(ltCur).update({status:"cancelled"}); }catch(e){} ltCur=null; T.classList.remove("open"); }; return; }
+  const my=ltOff(t,me), hs=ltOff(t,o), vm=ltVal(t,me), vh=ltVal(t,o), diff=vm-vh, okM=(t.ok||{})[me]===t.v, okH=(t.ok||{})[o]===t.v;
+  const chips=(m,coins,empty)=>{ const L=Object.entries(m||{}); return (L.length||coins)?`<div class="ltch">${L.map(([id,n])=>`<span class="ltc" data-zoom="${id}">${cardHTML(id,{w:46,mini:true})}${n>1?`<i>×${n}</i>`:""}<small>${esc(short(BY_ID[id].name))}</small></span>`).join("")}${coins?`<span class="ltcoin">🪙<b>${coins.toLocaleString("fr-FR")}</b></span>`:""}</div>`:`<div class="mute" style="font-size:12.5px;padding:8px">${empty}</div>`; };
+  const req=t.req&&t.req.n>0?t.req:null;
+  const reqBox=req?(req.from===me?`<div class="ltreq">📨 Tu as demandé <b>${req.n} 🪙</b> à ${esc(on)} pour compléter… <button class="btn sm ghost" id="ltRqX">Retirer</button></div>`
+    :`<div class="ltreq me">💬 ${esc(on)} te demande de compléter avec <b>${req.n} 🪙</b><div class="mbtns"><button class="btn sm" id="ltRqY" ${(W().coins||0)<req.n?"disabled":""}>Ajouter ${req.n} 🪙</button><button class="btn sm ghost" id="ltRqN">Non</button></div></div>`):"";
+  const gap=Math.abs(diff), ask=Math.ceil(gap/10)*10;
+  const wishH=(t.wish||{})[o]||{}, wishM=(t.wish||{})[me]||{};
+  const myList=dupesOf(me).map(x=>{ const p=BY_ID[x.id], tr=cardTier(p), n=(my.cards||{})[x.id]||0; return `<div class="tline${n?" on":""}${wishH[x.id]?" wish":""}"><span class="tmini" data-zoom="${x.id}">${cardHTML(x.id,{w:34,mini:true})}</span><span class="tname">${esc(p.name)}${wishH[x.id]?` <b class="ltw">❤️ ${esc(on)} la veut</b>`:""}<small><span class="rar r-${tr}">${TIER_NAME[tr]}</span> ${TPTS[tr]} pts · ${x.n} dispo</small></span><span class="step"><button data-ltc="${x.id}" data-d="-1" ${n?"":"disabled"}>−</button><b>${n}</b><button data-ltc="${x.id}" data-d="1" ${n<x.n?"":"disabled"}>+</button></span></div>`; }).join("")||`<div class="mute" style="font-size:13px;padding:8px">Aucun doublon.</div>`;
+  const hisList=dupesOf(o).map(x=>{ const p=BY_ID[x.id], tr=cardTier(p); return `<div class="tline${wishM[x.id]?" on":""}"><span class="tmini" data-zoom="${x.id}">${cardHTML(x.id,{w:34,mini:true})}</span><span class="tname">${esc(p.name)}<small><span class="rar r-${tr}">${TIER_NAME[tr]}</span> ${TPTS[tr]} pts · ${x.n} dispo</small></span><button class="btn sm${wishM[x.id]?"":" ghost"}" data-ltw="${x.id}">${wishM[x.id]?"❤️ Demandée":"🤍 Je la veux"}</button></div>`; }).join("")||`<div class="mute" style="font-size:13px;padding:8px">${esc(on)} n'a aucun doublon.</div>`;
+  const sc=T.querySelector(".tui-box")?.scrollTop||0;
+  T.innerHTML=`<div class="tui-box"><div class="tui-head"><b>🔴 Échange avec ${esc(on)}</b><button class="btn sm ghost" id="ltX">Quitter</button></div>
+   <div class="ltside"><h4>🫵 Tu donnes ${okM?"<span class='ltok'>✅ validé</span>":""}</h4>${chips(my.cards,my.coins,"Ajoute tes cartes en dessous")}</div>
+   <div class="ltside his"><h4>🤝 ${esc(on)} donne ${okH?"<span class='ltok'>✅ validé</span>":""}</h4>${chips(hs.cards,hs.coins,`${esc(on)} n'a encore rien mis`)}</div>
+   <div class="tbal ${gap<=LT_PT&&(vm||vh)?"ok":""}"><div>Tu donnes<b>${vm.toLocaleString("fr-FR")}</b>🪙 de valeur</div><div class="tsym">${gap<=LT_PT?"=":diff>0?">":"<"}</div><div>Tu reçois<b>${vh.toLocaleString("fr-FR")}</b>🪙 de valeur</div></div>
+   <div class="tmsg">${!(vm||vh)?"Mettez vos cartes : la valeur s'affiche ici (1 pt de carte ≈ ${LT_PT} 🪙)":gap<=LT_PT?"✅ Échange équilibré":diff>0?`Tu donnes ≈ <b>${gap} 🪙</b> de plus`:`${esc(on)} donne ≈ <b>${gap} 🪙</b> de plus`}</div>
+   ${reqBox}
+   ${!req&&diff>LT_PT?`<button class="btn sm ghost" id="ltRq" style="width:100%">💬 Demander à ${esc(on)} de compléter avec ${ask} 🪙</button>`:""}
+   <div class="ltcoins"><span>🪙 Tes pièces dans l'échange : <b>${(my.coins||0).toLocaleString("fr-FR")}</b></span><span class="step"><button data-ltm="-100">−100</button><button data-ltm="-10">−10</button><button data-ltm="10">+10</button><button data-ltm="100">+100</button></span></div>
+   <button class="btn big" id="ltOk" ${okM?"disabled":""}>${okM?(okH?"Conclusion…":`✅ Validé · en attente de ${esc(on)}`):okH?`✅ ${esc(on)} a validé : valider l'échange`:"Valider l'échange"}</button>
+   <div class="mute" style="font-size:11.5px;text-align:center">Le moindre changement d'un côté annule les validations : chacun revalide la nouvelle offre.</div>
+   <div class="segs" style="margin-top:10px"><button class="seg${ltTab==="mine"?" on":""}" data-ltt="mine">Mes doublons</button><button class="seg${ltTab==="his"?" on":""}" data-ltt="his">Doublons de ${esc(on)}</button></div>
+   <div class="tlist">${ltTab==="mine"?myList:hisList}</div></div>`;
+  T.querySelector(".tui-box").scrollTop=sc;
+  $("#ltX").onclick=async()=>{ if(!confirm("Quitter et annuler l'échange ?")) return; try{ await db.collection("onzeol_ltrades").doc(ltCur).update({status:"cancelled"}); }catch(e){} ltCur=null; T.classList.remove("open"); };
+  T.querySelectorAll("[data-ltc]").forEach(b=>b.onclick=()=>ltSetCards(b.dataset.ltc,+b.dataset.d));
+  T.querySelectorAll("[data-ltm]").forEach(b=>b.onclick=()=>ltSetCoins((my.coins||0)+(+b.dataset.ltm)));
+  T.querySelectorAll("[data-ltw]").forEach(b=>b.onclick=()=>ltWish(b.dataset.ltw));
+  T.querySelectorAll("[data-ltt]").forEach(b=>b.onclick=()=>{ ltTab=b.dataset.ltt; renderLT(); });
+  T.querySelectorAll("[data-zoom]").forEach(e=>e.onclick=ev=>{ ev.stopPropagation(); try{ showCard(e.dataset.zoom); }catch(_){} });
+  $("#ltOk").onclick=ltOk;
+  if($("#ltRq")) $("#ltRq").onclick=()=>ltEdit(()=>({req:{from:me,n:ask}}));
+  if($("#ltRqX")) $("#ltRqX").onclick=()=>ltEdit(()=>({req:null}));
+  if($("#ltRqN")) $("#ltRqN").onclick=()=>ltEdit(()=>({req:null}));
+  if($("#ltRqY")) $("#ltRqY").onclick=()=>{ const o2=JSON.parse(JSON.stringify(my)); o2.coins=(o2.coins||0)+req.n; if(o2.coins>(W().coins||0)){ toast("Pas assez de pièces",true); return; } ltEdit(()=>({[`offer.${me}`]:o2,req:null})); };
 }
 // ---------- Marché de doublons entre joueurs ----------
 const TAX=.05, PMAX=20;
@@ -5126,9 +5225,10 @@ function clubResults(id,max){ return matches.filter(h=>h&&h.owners&&h.owners.inc
 function socGo(u,what){ if(!NAMES[u]||u===me) return;
   if(what==="match"){ mPreset="friend"; pB=u; selB=null; matchBack="online"; setMode("match"); return; }
   if(what==="draft"||what==="budget"){ dOpp=u; dOppManual=true; try{ localStorage.setItem("onze-ol-opp",u); }catch(_){} dSub=what==="budget"?"budget":"classic"; dView=null; draft=drafts[dKey()]?dNorm(drafts[dKey()]):null; setMode("draft"); return; }
+  if(what==="ltrade"){ ltStart(u); return; }
   if(what==="trade"){ if(!dupesOf(me).length){ toast("Il te faut des doublons pour proposer un échange",true); return; } openTradeUI(u); return; }
   if(what==="xi"){ setMode("compo"); peek=u; render(); window.scrollTo(0,0); return; } }
-function socActsHTML(u){ return `<div class="socacts"><button class="btn sm" data-sg="match:${u}">⚔️ Match</button><button class="btn sm ghost" data-sg="draft:${u}">⚡ Draft</button><button class="btn sm ghost" data-sg="budget:${u}">💰 Budget</button><button class="btn sm ghost" data-sg="trade:${u}">🔄 Échange</button></div>`; }
+function socActsHTML(u){ return `<div class="socacts"><button class="btn sm" data-sg="match:${u}">⚔️ Match</button><button class="btn sm ghost" data-sg="draft:${u}">⚡ Draft</button><button class="btn sm ghost" data-sg="budget:${u}">💰 Budget</button><button class="btn sm ghost" data-sg="trade:${u}">🔄 Échange</button><button class="btn sm ghost" data-sg="ltrade:${u}">🔴 Échange direct</button></div>`; }
 function frBtnHTML(u){ if(u===me) return ""; const f=frDoc(u);
   if(f&&f.status==="accepted") return `<button class="btn sm ghost" data-fr="remove:${u}">✅ Ami</button>`;
   if(f&&f.status==="pending"&&f.by===me) return `<button class="btn sm ghost" data-fr="cancel:${u}">⏳ Demande envoyée</button>`;
@@ -6980,7 +7080,7 @@ function cgTeaser(){ const M=$("#cardModal"); M.innerHTML=`<div class="cm-box" s
   <button class="btn" id="cgTzX" style="margin-top:10px">J'ai hâte !</button></div>`; M.classList.add("open"); $("#cgTzX").onclick=()=>M.classList.remove("open"); M.onclick=e=>{ if(e.target===M) M.classList.remove("open"); }; cgCdTick(); }
 function openCards(from){ if(!cgLive()){ cgTeaser(); return; } cgBack=from==="online"?"online":"solo"; NAV_OF.cards=cgBack==="online"?"nOnline":"nSolo"; if(!(cgCur&&cgSel==="game")) cgSel=null; setMode("cards"); }
 
-const APP_V="2026-11-28f"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-28g"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
@@ -7050,6 +7150,7 @@ function startListeners(){
     if(dirty) push();
   },()=>setSync("⚠️ Synchro coupée — recharge la page","err")));
   unsubs.push(db.collection("onzeol_drafts").onSnapshot(qs=>{ const all={}; qs.forEach(doc=>all[doc.id]=doc.data()); onDraftData(all); },()=>{}));
+  try{ unsubs.push(db.collection("onzeol_ltrades").where("players","array-contains",me).onSnapshot(qs=>{ const all={}; qs.forEach(d=>all[d.id]=d.data()); onLTrades(all); },()=>{})); }catch(e){}
   unsubs.push(db.collection("onzeol_trades").onSnapshot(qs=>{ const all={}; qs.forEach(doc=>{ const t=doc.data(); if(t&&(t.from===me||t.to===me)) all[doc.id]=t; }); onTrades(all); },()=>{}));
   unsubs.push(db.collection("onzeol_market").onSnapshot(qs=>{ const all={}; qs.forEach(doc=>{ const l=doc.data(); if(l&&(l.status==="open"||l.status==="sold"||l.seller===me||l.buyer===me)) all[doc.id]=l; }); onMarket(all); },()=>{}));
   unsubs.push(db.collection("onzeol_auctions").onSnapshot(qs=>{ const all={}; const now=Date.now(); qs.forEach(doc=>{ const a=doc.data(); if(a&&(a.ends>now-7*86400000)) all[doc.id]=a; }); onAuctions(all); },()=>{}));

@@ -19,6 +19,14 @@ service cloud.firestore {
                     && request.resource.data.players == resource.data.players;
       allow delete: if false;
     }
+    // Échanges en direct : les 2 joueurs modifient le même doc (chacun son offre), la liste des joueurs ne change jamais
+    match /onzeol_ltrades/{id} {
+      allow read: if joueurConnecte() && request.auth.uid in resource.data.players;
+      allow create: if joueurConnecte() && request.resource.data.players.size() == 2 && request.resource.data.players[0] == request.auth.uid;
+      allow update: if joueurConnecte() && request.auth.uid in resource.data.players
+                    && request.resource.data.players == resource.data.players;
+      allow delete: if false;
+    }
     // Échanges de cartes : créés par le proposeur, modifiables seulement par les 2 joueurs concernés
     match /onzeol_trades/{id} {
       allow read: if joueurConnecte();
