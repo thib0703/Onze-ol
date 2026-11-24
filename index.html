@@ -1247,7 +1247,7 @@ body.lowfx .tile,body.lowfx .vt img,body.lowfx .hype,body.lowfx .pkbtn,body.lowf
 .flip3{display:grid;perspective:700px}.flip3>div{grid-area:1/1;backface-visibility:hidden;-webkit-backface-visibility:hidden;display:flex;justify-content:center;align-items:center}
 .flip3 .fb{animation:cgflipA .5s .35s both}.flip3 .ff{animation:cgflipB .5s .35s both}
 .stg-k .slot{display:inline-block;animation:cgslot .7s .3s both}
-.pyr.sm .pyst{font-size:11px;padding:3px}.pyst.climb{animation:cgclimb .7s 1.5s both}.pyst.fall{animation:cgshake .5s 1.4s both}
+.pyr.sm .pyst{font-size:11px;padding:3px}.pyrduo{display:flex;gap:8px;align-items:flex-start}.pyrduo>div{flex:1;min-width:0}.pyrduo .pyr{margin:2px 0}.pyrduo .opp{opacity:.85}.pyrduo .opp .pyst.ok{background:linear-gradient(90deg,#8a1f3a,#c0304f)}.pyrh{text-align:center;font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pyrlast{text-align:center;font-size:11px;color:#cfd9f5;margin-top:2px}.pyst.climb{animation:cgclimb .7s 1.5s both}.pyst.fall{animation:cgshake .5s 1.4s both}
 @keyframes cgslideL{from{transform:translateX(-60px) rotate(-8deg);opacity:0}to{transform:none;opacity:1}}
 @keyframes cgslideR{from{transform:translateX(60px) rotate(8deg);opacity:0}to{transform:none;opacity:1}}
 @keyframes cgflipA{from{transform:rotateY(0)}to{transform:rotateY(180deg)}}
@@ -6720,7 +6720,7 @@ async function cgPlay(m){ const G=cgCur; if(!G) return; const X=cgG(G); const S=
 // qui doit jouer maintenant (sert aux notifications push côté serveur)
 function cgNext(X){ const S=cgReplay(X); if(S.end) return []; return [0,1].filter(s=>cgNeedMe(X,S,s)).map(s=>X.players[s]); }
 function cgCpuMoves(){ const G=cgCur; if(!G||!G.cpu) return; const X=cgG(G); const E=CG_ENG[G.g];
-  for(let n=0;n<60;n++){ const S=cgReplay(X); if(S.end) break; if(!cgNeedMe(X,S,1)) break; const m=E.cpu(S,X,1); G.mv[cgKey(X,S,1)]=m; X.mv=G.mv; } }
+  for(let n=0;n<60;n++){ const S=cgReplay(X); if(S.end) break; if(!cgNeedMe(X,S,1)) break; if(E.solo&&!S.p[0].done&&S.p[1].log.length>=S.p[0].log.length) break; /* 🔺 l'ordi grimpe au même rythme que toi */ const m=E.cpu(S,X,1); G.mv[cgKey(X,S,1)]=m; X.mv=G.mv; } }
 // fin de partie : Éclats + objectifs (une seule fois par partie)
 function cgAfter(){ const G=cgCur; if(!G) return; const X=cgG(G), S=cgReplay(X); if(!S.end) return; cgFinish(X,S); }
 function cgFinish(X,S){ const c=W(); c.cg=c.cg||{}; c.cg.done=c.cg.done||[]; const key=X.id||("cpu-"+X.seed); if(c.cg.done.includes(key)) return; c.cg.done=[...c.cg.done,key].slice(-200);
@@ -7067,12 +7067,14 @@ CG_VIEW.tab=(G,S,side,need)=>{ const o=1-side; const sh=S.k%2; const iSh=sh===si
   return `<div class="cgscore"><span>Toi <b>${S.sc[side]}</b></span><small>${S.k<10?`Tir ${S.k+1}/10`:"Mort subite"}</small><span><b>${S.sc[o]}</b> ${cgNm(G.players[o])}</span></div>
     <div class="cgpens"><div>${dots(side)}</div><div>${dots(o)}</div></div>${res}
     ${S.end?"":`<div class="cgduo">${cgCard(sid,104,{evo:G.evo[sh][sid]})}<i class="cgvs">vs</i>${cgCard(gid,104,{evo:G.evo[1-sh][gid]})}</div>`}${ctrl}`; };
+const pyrSteps=Q=>PYR_T.map((t,i)=>`<div class="pyst${i<Q.f?" ok":i===Q.f&&!Q.done?" on":""}" style="--i:${i}">${PYR_N[i]}${i<Q.f?" ✅":""}</div>`).reverse().join("");
 CG_VIEW.pyr=(G,S,side,need)=>{ const P=S.p[side], O=S.p[1-side];
-  const steps=PYR_T.map((t,i)=>`<div class="pyst${i<P.f?" ok":i===P.f&&!P.done?" on":""}" style="--i:${i}">${PYR_N[i]}${i<P.f?" ✅":""}</div>`).reverse().join("");
+  const OL=O.log[O.log.length-1], onm=cgNm(G.players[1-side]);
+  const steps=`<div class="pyrduo"><div><div class="pyrh">Toi · ${"❤️".repeat(P.lives)||"💔"}</div><div class="pyr sm">${pyrSteps(P)}</div></div><div class="opp"><div class="pyrh">${onm} · ${"❤️".repeat(O.lives)||"💔"}</div><div class="pyr sm">${pyrSteps(O)}</div><div class="pyrlast">${O.done?`🏁 Terminé : ${O.f}/5`:OL?`${OL.win?"⬆️ a passé":"💔 a raté"} ${PYR_N[OL.f]}`:"Pas encore joué"}</div></div></div>`;
   const L=P.log[P.log.length-1]; const res=L?`<div class="cgres ${L.win?"win":"lose"}">Étage ${PYR_N[L.f]} · stat cachée : <b>${CG_N[L.k]}</b> · ${L.v} contre ${L.vo} → ${L.win?"tu montes !":"une vie perdue"}</div>`:"";
   let play=""; if(!P.done){ const F=pyrFloor(G,side,P.f,P.tr); play=`<div class="cgmsg sm">Étage <b>${PYR_N[P.f]}</b> · bats cette carte sur une stat cachée</div><div class="cgduo">${cgCard(F.opp,118)}</div>
       <div class="cghand">${F.hand.map((id,i)=>`<span class="cardbtn cgc can" data-cgi="${i}">${tcgHTML(id,{w:112,evo:G.evo[side][id]||0})}</span>`).join("")}</div>`; }
-  const vs=`<div class="mute" style="font-size:12px;text-align:center;margin:6px">${cgNm(G.players[1-side])} : étage ${O.f}/5 · ${"❤️".repeat(O.lives)} · marge +${CG_ENG.pyr.margin(O)}${O.done?" (terminé)":""}<br>Toi : marge <b>+${CG_ENG.pyr.margin(P)}</b> <small>(en cas d'égalité d'étages et de vies, la plus grosse marge gagne : bats les cartes avec de l'avance !)</small></div>`;
+  const vs=`<div class="mute" style="font-size:12px;text-align:center;margin:6px">Marge : toi <b>+${CG_ENG.pyr.margin(P)}</b> · ${onm} +${CG_ENG.pyr.margin(O)} <small>(en cas d'égalité d'étages et de vies, la plus grosse marge gagne : bats les cartes avec de l'avance !)</small></div>`;
   return `<div class="cgscore"><span>${"❤️".repeat(P.lives)||"💔"}</span><small>Étage ${Math.min(P.f+1,5)}/5</small><span>${P.f}/5 ✅</span></div><div class="pyr">${steps}</div>${res}${play}${P.done&&!S.end?`<div class="cgwait">Ton ascension est finie (${P.f}/5). En attente de ${cgNm(G.players[1-side])}…</div>`:""}${vs}`; };
 let cgPick=null;
 // ↕️ PLUS OU MOINS (local)
@@ -7160,7 +7162,7 @@ function cgTeaser(){ const M=$("#cardModal"); M.innerHTML=`<div class="cm-box" s
   <button class="btn" id="cgTzX" style="margin-top:10px">J'ai hâte !</button></div>`; M.classList.add("open"); $("#cgTzX").onclick=()=>M.classList.remove("open"); M.onclick=e=>{ if(e.target===M) M.classList.remove("open"); }; cgCdTick(); }
 function openCards(from){ if(!cgLive()){ cgTeaser(); return; } cgBack=from==="online"?"online":"solo"; NAV_OF.cards=cgBack==="online"?"nOnline":"nSolo"; if(!(cgCur&&cgSel==="game")) cgSel=null; setMode("cards"); }
 
-const APP_V="2026-11-28p"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-28q"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
