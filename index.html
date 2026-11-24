@@ -1143,6 +1143,8 @@ body.lowfx .tile,body.lowfx .vt img,body.lowfx .hype,body.lowfx .pkbtn,body.lowf
 #viewCards{min-height:70vh}
 #viewCards.cgplay{background:linear-gradient(180deg,#0b1530cc,#0b153055 20%,#0b153088 80%,#0b1530),var(--cgbg) center top/cover no-repeat fixed;border-radius:18px}
 .cgwrap{padding:4px 2px 30px}
+.cgch{background:#0f1d40;border:1px solid #ffd97044;border-radius:14px;padding:8px 10px;margin:8px 0}.cgch summary{cursor:pointer;font-size:14px;list-style:none}.cgch summary small{color:var(--mute);margin-left:4px;font-size:11.5px}
+.cgchr{position:relative;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 8px;margin-top:6px;border-radius:10px;background:#ffffff0d;overflow:hidden;font-size:13px}.cgchr span{position:relative;z-index:1}.cgchr small{display:block;color:#ffd970;font-size:11px}.cgchr b{position:relative;z-index:1}.cgchr i{position:absolute;left:0;bottom:0;height:3px;background:#ffd970}.cgchr.ok{background:#1f8a4c33}.cgchr.ok i{background:#7ee2a0}
 .cghub .cgrw{display:block;color:#ffd970;font-size:10.5px;margin-top:2px}
 .cgbar{display:flex;flex-direction:column;gap:2px;background:linear-gradient(135deg,#1d4aa0,#13306b);border:1px solid #6aa8ff55;border-radius:14px;padding:9px 12px;margin:0 0 10px}
 .cgbar span{font-size:15px}.cgbar small{color:var(--mute);font-size:11px}
@@ -6715,6 +6717,7 @@ function cgFinish(X,S){ const c=W(); c.cg=c.cg||{}; c.cg.done=c.cg.done||[]; con
   let e=win?(X.cpu?1:3):draw?(X.cpu?0:1):0; if(X.g==="cbt") e*=2; const got=eclatsGain(e,!X.cpu,X.g);
   const pc=cgCoins(X.cpu?(win?40:draw?20:10):(win?80:draw?40:20),X.cpu,X.g);
   let dv=""; if(X.g==="cbt"){ dv=tcgDivAdd(win?"w":draw?"d":"l"); c.cg.kos=c.cg.kos||{}; for(const L of S.log) for(const e of (L.ev||[])) if(e.t==="a"&&e.s===side&&e.hp1<=0) c.cg.kos[tcgBase(e.id)]=(c.cg.kos[tcgBase(e.id)]||0)+1; }
+  cgChTrack(X,S,side,win);
   cgHistAdd(X,win?"w":draw?"d":"l",X.g==="cbt"?{s:S.sc[side]+"-"+S.sc[1-side]}:{});
   try{ track("play"); if(win) track("win"); }catch(_){}
   save(); setTimeout(()=>toast(`${win?"🏆 Victoire":draw?"🤝 Égalité":"😞 Défaite"} · ${CG_MODES[X.g].n} · +${pc} 🪙${X.cpu&&rwDecay(cgDayN(X.g)-1)<1?` (${rwPct(cgDayN(X.g)-1)} %)`:""}${got?` · +${got} 💠`:""}`),900); if(dv) setTimeout(()=>toast(dv),3200); }
@@ -6724,7 +6727,10 @@ function cgSettle(){ for(const x of Object.values(cgOnline)){ if(x.status!=="run
 // AFFICHAGE
 // ======================================================================
 const cgNm=u=>u===CPU?"🤖 L'ordi":esc(NAMES[u]||"?");
-const cgCard=(id,w,o={})=>`<span class="cardbtn cgc${o.cls?" "+o.cls:""}"${o.data?` ${o.data}`:""}>${tcgHTML(id,{w:w||96,evo:o.evo||0,cls:(w||96)<100?"mini":""})}</span>`;
+// 🔍 cartes en jeu agrandies selon la largeur de l'écran (×1,25 sur un téléphone, jusqu'à ×1,5)
+const CGZ=()=>Math.max(1,Math.min(1.5,(Math.min(innerWidth||390,600)-24)/292));
+const cgZ=w=>w>=100?Math.round(w*CGZ()):w;
+const cgCard=(id,w,o={})=>{ w=cgZ(w||96); return `<span class="cardbtn cgc${o.cls?" "+o.cls:""}"${o.data?` ${o.data}`:""}>${tcgHTML(id,{w,evo:o.evo||0,cls:w<100?"mini":""})}</span>`; };
 function cgStatBtns(id,evo,dis){ const s=cgStats(id,evo); return `<div class="cgstats">${CG_L.map((l,k)=>`<button class="cgsb" data-cgk="${k}" ${dis?"disabled":""}><small>${CG_N[k]}</small><b>${s[k]}</b></button>`).join("")}</div>`; }
 function cardsHomeHTML(){ const L=cgMine(); const others_=others();
   const tiles=Object.entries(CG_MODES).map(([k,m])=>`<button class="tile timg" data-cgm="${k}" style="background:linear-gradient(180deg,#0000 35%,#000d 100%),url(img/tuiles/cg-${k}.webp) center/cover no-repeat,#13306b"><span class="tw">${m.ic}</span><span class="ti">${m.ic}</span><span><b>${m.n}</b><small>${esc(m.s)}</small><small class="cgrw">🤖 ${rwNext(cgDayN(k))}</small></span></button>`).join("");
@@ -6737,8 +6743,44 @@ function cardsHomeHTML(){ const L=cgMine(); const others_=others();
   return `<div class="hubh"><h2>🃏 Jeux de cartes</h2><small>Contre l'ordi ou en ligne · avec toutes les cartes du jeu ou ta collection</small></div>
     <div class="cgbar"><span>💠 <b>${T.e||0}</b> Éclats</span><small>Gagnés en jouant (le Combat rapporte double) · ils améliorent les attaques de tes cartes TCG</small></div>
     <div class="cgbar"><span>🪙 Sans limite</span><small>Victoire en ligne 80 · contre l\'ordi 40 · nul et défaite rapportent aussi · en ligne : aucune limite · contre l'ordi, dans <b>chaque jeu</b> : 5 parties à 100 % par jour, puis 75 %, 50 %, 25 % et 10 % (pièces et Éclats)</small></div>
-    ${resume}${list}<div class="hub cghub">${tiles}</div>${cgStatsHTML()}`; }
+    ${resume}${list}${cgChHTML()}<div class="hub cghub">${tiles}</div>${cgStatsHTML()}`; }
 
+
+// 🎯 DÉFIS TCG DE LA SEMAINE : 3 défis Combat + 3 défis des autres jeux, tirés au sort chaque lundi ; tout finir = Pack Légende
+// chaque défi : f(X,S,side,win) → progression à ajouter
+const cgKOs=(S,side)=>{ let n=0; for(const L of S.log||[]) for(const e of (L.ev||[])) if(e.t==="a"&&e.s===side&&e.hp1<=0) n++; return n; };
+const cgCrits=(S,side)=>{ let n=0; for(const L of S.log||[]) for(const e of (L.ev||[])) if(e.t==="a"&&e.s===side&&e.crit) n++; return n; };
+const CG_CH={
+ cbt:[
+  {id:"cw3",t:"Gagne 3 Combats TCG",n:3,r:{coins:250,e:4},f:(X,S,s,w)=>X.g==="cbt"&&w?1:0},
+  {id:"c30",t:"Gagne un Combat TCG 3-0",n:1,r:{coins:300,e:5},f:(X,S,s,w)=>X.g==="cbt"&&w&&S.sc[1-s]===0?1:0},
+  {id:"cera",t:"Gagne un Combat avec un collectif d'époque actif (3 joueurs de la même époque)",n:1,r:{coins:250,e:5},f:(X,S,s,w)=>X.g==="cbt"&&w&&((S.mod||[])[s]||{}).eras&&S.mod[s].eras.length?1:0},
+  {id:"cact",t:"Gagne un Combat en jouant tes 3 cartes Action",n:1,r:{coins:200,e:4},f:(X,S,s,w)=>X.g==="cbt"&&w&&((S.used||[])[s]||[]).length>=3?1:0},
+  {id:"ccrit",t:"Réussis 3 frappes parfaites ⭐ en Combat",n:3,r:{coins:250,e:4},f:(X,S,s)=>X.g==="cbt"?cgCrits(S,s):0},
+  {id:"cko",t:"Mets 10 joueurs K.O. en Combat TCG",n:10,r:{coins:250,e:5},f:(X,S,s)=>X.g==="cbt"?cgKOs(S,s):0},
+  {id:"conl",t:"Gagne un Combat TCG contre un autre joueur",n:1,r:{pack:"or",e:6},f:(X,S,s,w)=>X.g==="cbt"&&w&&!X.cpu?1:0},
+  {id:"ccol",t:"Gagne un Combat avec « Ma collection »",n:1,r:{coins:250,e:4},f:(X,S,s,w)=>X.g==="cbt"&&w&&X.src==="coll"?1:0}],
+ other:[
+  {id:"bat7",t:"Gagne une Bataille de stats avec 7 manches ou plus",n:1,r:{coins:200,e:3},f:(X,S,s,w)=>X.g==="bat"&&w&&S.sc[s]>=7?1:0},
+  {id:"duel4",t:"Gagne un Duel 5 cartes 4-1 ou mieux",n:1,r:{coins:200,e:3},f:(X,S,s,w)=>X.g==="duel"&&w&&S.sc[s]>=4?1:0},
+  {id:"tabs",t:"Arrête 3 tirs aux Tirs au but",n:3,r:{coins:200,e:3},f:(X,S,s)=>X.g==="tab"?(S.log||[]).filter(l=>l.sh!==s&&l.res==="arrêt").length:0},
+  {id:"tabw",t:"Gagne 2 séances de Tirs au but",n:2,r:{coins:200,e:3},f:(X,S,s,w)=>X.g==="tab"&&w?1:0},
+  {id:"pyr4",t:"Monte jusqu'à l'étage Spéciale de la Pyramide",n:1,r:{coins:250,e:4},f:(X,S,s)=>X.g==="pyr"&&((S.p||[])[s]||{}).f>=3?1:0},
+  {id:"pom8",t:"Fais une série de 8 au Plus ou moins",n:1,r:{coins:200,e:3},f:(X,S,s,w,pom)=>pom>=8?1:0},
+  {id:"mix4",t:"Joue à 4 jeux de cartes différents",n:4,r:{coins:200,e:3},f:null},
+  {id:"win6",t:"Gagne 6 parties de jeux de cartes (tous jeux)",n:6,r:{coins:250,e:4},f:(X,S,s,w)=>w?1:0}]};
+function cgWeekCh(){ const w=WEEKN(), R=cgRng(w*7919+13), pick=(L,n)=>{ const a=L.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(R()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a.slice(0,n); };
+  return [...pick(CG_CH.cbt,3),...pick(CG_CH.other,3)]; }
+function cgChState(){ const T=tcgW(), w=WEEKN(); if(!T.ch||T.ch.w!==w) T.ch={w,p:{},done:[],modes:[]}; return T.ch; }
+function cgChTrack(X,S,side,win,pom){ try{ const C=cgChState(), T=tcgW(), g=X?X.g:"pom"; if(!C.modes.includes(g)) C.modes=[...C.modes,g]; const L=cgWeekCh(); const msgs=[];
+  for(const d of L){ if(C.done.includes(d.id)) continue; const inc=d.id==="mix4"?0:(X?d.f(X,S,side,win,0):(d.id==="pom8"||d.id==="win6"?d.f(null,null,0,win,pom):0)); C.p[d.id]=d.id==="mix4"?C.modes.length:Math.min(d.n,(C.p[d.id]||0)+(inc||0));
+    if(C.p[d.id]>=d.n){ C.done=[...C.done,d.id]; if(d.r.e) T.e=(T.e||0)+d.r.e; const r=Object.assign({},d.r); delete r.e; grant(r,`🎯 Défi TCG : ${d.t}`); msgs.push(`🎯 Défi réussi : ${d.t} ! ${d.r.e?`+${d.r.e} 💠 `:""}`); } }
+  if(!C.all&&L.every(d=>C.done.includes(d.id))){ C.all=1; grant({pack:"legende"},"🎯 Tous les défis TCG de la semaine"); msgs.push("🏆 Tous les défis TCG de la semaine : Pack Légende offert !"); }
+  msgs.forEach((m,i)=>setTimeout(()=>{ toast(m); try{ SFX.chime("gold"); }catch(e){} },4500+i*2600)); }catch(e){} }
+function cgChHTML(){ const C=cgChState(), L=cgWeekCh(), nd=L.filter(d=>C.done.includes(d.id)).length; const rt=r=>[r.coins?`${r.coins} 🪙`:"",r.pack?PACKS[r.pack].name:"",r.e?`${r.e} 💠`:""].filter(Boolean).join(" + ");
+  return `<details class="cgch" ${nd<L.length?"open":""}><summary>🎯 <b>Défis TCG de la semaine</b> <small>${nd}/${L.length} · tout finir = Pack Légende${C.all?" ✅":""}</small></summary>
+   ${L.map(d=>{ const p=Math.min(d.n,C.p[d.id]||0), ok=C.done.includes(d.id); return `<div class="cgchr${ok?" ok":""}"><span>${ok?"✅":CG_CH.cbt.includes(d)?"🔥":"🃏"} ${esc(d.t)}<small>${rt(d.r)}</small></span><b>${p}/${d.n}</b><i style="width:${Math.round(p/d.n*100)}%"></i></div>`; }).join("")}
+   <div class="mute" style="font-size:11px;margin-top:4px">Nouveaux défis chaque lundi · contre l'ordi ou en ligne</div></details>`; }
 // 🎓 Tutoriel : 3-4 écrans la 1re fois qu'on ouvre un jeu (et bouton ❓ Règles)
 const CG_TUTO={
  bat:[["⚔️ Bataille de stats","Chacun reçoit une carte par manche. Celle de l'adversaire est <b>cachée</b>."],["Qui a la main ?","Celui qui a <b>la main</b> choisit la stat : Note, PV, Attaque 1 ou Attaque 2."],["Comment gagner","La plus haute valeur gagne la manche, et le gagnant <b>garde la main</b>. 10 manches au total."]],
@@ -6959,7 +7001,7 @@ CG_FX.cbt=(G,S,side,prev)=>{ const o=1-side; const last=S.log[S.log.length-1]; c
   if(ko){ ov+=cgRing(50,Y[sD],"#ffffff",tko,true)+cgSparks(50,Y[sD],40,["#ffffff","#ff5a5a","#ffd970"],tko,170,1.5)+cgFlash("#ffffff",tko,.7); shakes.push(tko); cgAt(tko*1000,()=>{ cgSnd("thunder"); cgSnd("boom",true); pxVib([80,40,120]); }); }
   if(at.heal) ov+=`<b class="cgheal" style="top:${Y[sA]}%;animation-delay:${(A.ti+.3).toFixed(2)}s">+${at.heal} PV</b>`+cgSparks(50,Y[sA],14,CG_COL.mil,A.ti+.3,70);
   const card=(s,id,hp0,hp1,isAtk)=>{ const hpm=tcgMax(id,G,s); const pc=Math.max(0,hp1/hpm*100).toFixed(1);
-    let h=tcgHTML(id,{w:s===side?150:140,evo:G.evo[s][id]||0,lvl:(G.tl[s]||{})[id]||0,hp:hp0,hpm,cls:"act"+(ko&&!isAtk?" kofx":"")});
+    let h=tcgHTML(id,{w:cgZ(s===side?150:140),evo:G.evo[s][id]||0,lvl:(G.tl[s]||{})[id]||0,hp:hp0,hpm,cls:"act"+(ko&&!isAtk?" kofx":"")});
     if(!isAtk) h=h.replace('<i style="width:',`<i data-hpa="1" style="--to:${pc}%;--hd:${A.ti.toFixed(2)}s;width:`).replace(/<b>\d+ \/ (\d+) PV<\/b>/,`<b>${Math.round(hp1)} / $1 PV</b>`);
     return h+(isAtk?`<style>.cgcbt .s${s} .act{animation:${sp?"cgcharge .5s "+(t-.55).toFixed(2)+"s both,":""}cglunge${s===side?"U":"D"} .4s ${t.toFixed(2)}s both}</style>`:
       `<b class="cgdmg${at.sup||at.crit?" sup":""}${sp||at.crit?" big":""}" style="animation-delay:${(A.ti+.05).toFixed(2)}s">-${at.dmg}${at.crit?"<small>⭐ frappe parfaite !</small>":at.sup?"<small>super efficace !</small>":""}</b><style>.cgcbt .s${s} .act{animation:cghit .55s ${A.ti.toFixed(2)}s both}</style>`+(ko?`<b class="kostamp" style="animation-delay:${tko.toFixed(2)}s">K.O. !</b><style>.cgcbt .s${s} .kofx{--kd:${tko.toFixed(2)}s}</style>`:"")); };
@@ -7013,7 +7055,7 @@ function pomGuess(up){ const g=pomG; if(!g||g.over) return; const a=BY_ID[g.seq[
   const ok=b===a||(up?b>a:b<a); g.last={a,b,ok,eq:b===a}; g.guess=up; g.fx=1; if(ok){ if(b!==a) g.streak++; } else { g.over=1; pomEnd(); } renderCards(); }
 function pomEnd(){ const g=pomG; const c=W(); c.cg=c.cg||{}; const P=c.cg.pom=c.cg.pom||{best:0};
   if(g.src==="all"){ if(g.streak>(P.best||0)){ P.best=g.streak; setTimeout(()=>toast(`🏆 Nouveau record : ${g.streak} !`),500); } if(P.d!==today()){ P.d=today(); P.db=0; } P.db=Math.max(P.db||0,g.streak); }
-  try{ track("play"); }catch(_){} const e=g.streak>=10?2:g.streak>=5?1:0; const got=eclatsGain(e,false,"pom"); const pc=g.streak?cgCoins(Math.min(50,g.streak*3),true,"pom"):0; if(got||pc) setTimeout(()=>toast(`Série de ${g.streak} :${pc?` +${pc} 🪙`:""}${got?` +${got} 💠`:""}`),1200); save(); }
+  try{ track("play"); }catch(_){} cgChTrack(null,null,0,g.streak>=5,g.streak); const e=g.streak>=10?2:g.streak>=5?1:0; const got=eclatsGain(e,false,"pom"); const pc=g.streak?cgCoins(Math.min(50,g.streak*3),true,"pom"):0; if(got||pc) setTimeout(()=>toast(`Série de ${g.streak} :${pc?` +${pc} 🪙`:""}${got?` +${got} 💠`:""}`),1200); save(); }
 function pomHTML(){ const g=pomG; const cur=g.seq[g.i%g.seq.length];
   if(g.fx){ g.fx=0; return `<div class="cgtop"><span>↕️ <b>Plus ou moins</b></span></div>`+cgStageWrap(pomFx(g)); }
   if(g.i===0&&!g.dealt){ g.dealt=1; cgDealFx=true; cgSnd("flip"); }
@@ -7083,7 +7125,7 @@ function cgTeaser(){ const M=$("#cardModal"); M.innerHTML=`<div class="cm-box" s
   <button class="btn" id="cgTzX" style="margin-top:10px">J'ai hâte !</button></div>`; M.classList.add("open"); $("#cgTzX").onclick=()=>M.classList.remove("open"); M.onclick=e=>{ if(e.target===M) M.classList.remove("open"); }; cgCdTick(); }
 function openCards(from){ if(!cgLive()){ cgTeaser(); return; } cgBack=from==="online"?"online":"solo"; NAV_OF.cards=cgBack==="online"?"nOnline":"nSolo"; if(!(cgCur&&cgSel==="game")) cgSel=null; setMode("cards"); }
 
-const APP_V="2026-11-28i"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-28j"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
