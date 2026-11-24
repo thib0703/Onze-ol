@@ -1143,6 +1143,7 @@ body.lowfx .tile,body.lowfx .vt img,body.lowfx .hype,body.lowfx .pkbtn,body.lowf
 #viewCards{min-height:70vh}
 #viewCards.cgplay{background:linear-gradient(180deg,#0b1530cc,#0b153055 20%,#0b153088 80%,#0b1530),var(--cgbg) center top/cover no-repeat fixed;border-radius:18px}
 .cgwrap{padding:4px 2px 30px}
+.cghub .cgrw{display:block;color:#ffd970;font-size:10.5px;margin-top:2px}
 .cgbar{display:flex;flex-direction:column;gap:2px;background:linear-gradient(135deg,#1d4aa0,#13306b);border:1px solid #6aa8ff55;border-radius:14px;padding:9px 12px;margin:0 0 10px}
 .cgbar span{font-size:15px}.cgbar small{color:var(--mute);font-size:11px}
 .cghub .tile{min-height:140px}
@@ -3524,7 +3525,9 @@ const rwNext=n=>n<20?`${5-n%5} partie${5-n%5>1?"s":""} encore à ${rwPct(n)} %`:
 const CPU_MAX=5;
 const isFreeCpuH=h=>isCpuH(h)&&(!h.mode||h.mode==="cpu");
 function cpuLeft(){ const c=W(); return c.cpud&&c.cpud.d===today()?Math.max(0,CPU_MAX-c.cpud.n):CPU_MAX; }
-const mdayN=()=>{ const c=W(); return c.mday&&c.mday.d===today()?c.mday.n:0; };
+// compteur de matchs du jour PAR MODE (ordi, amical en ligne, draft, Budget, 2c2…) : 5 à 100 % dans chaque mode
+const mKey=h=>h.duo?"duo":h.draft==="budget"?"budget":h.draft?"draft":isCpuH(h)?"cpu":h.league?"league":h.cup?"cup":"pvp";
+const mdayN=(k="cpu")=>{ const c=W(); return c.mday&&c.mday.d===today()&&typeof c.mday.n==="object"?(c.mday.n[k]||0):0; };
 let trFirst=true;
 function claimRewards(){
   if(!me||!C(me)) return; try{ trophyCheck(trFirst); if(trFirst) setTimeout(()=>{ const c=W(); if((c.tuto||{}).fin&&mode!=="match"&&!document.querySelector(".modal.open,#cardModal.open,.trz,#packfx.open")) showHome(); },1500); trFirst=false; }catch(e){} const c=W(); c.claimed=c.claimed||[]; let got=0, lines=[];
@@ -3535,11 +3538,11 @@ function claimRewards(){
     if((Date.now()-h.at)/MSPEED<100&&!(mSkip===h.id&&isCpuH(h))) continue; // match pas encore fini (contre l'ordi : dès que tu as vu le résultat)
     if(h.owners[0]===h.owners[1]||h.nr){ c.claimed.push(h.id); continue; }
     const r=rewardFor(h,i); if(isCpuH(h)){ r.coins=Math.round(r.coins/2); r.res+=" vs ordi"; } try{ if(isDerbyDay(h.at)){ r.coins*=2; r.res+=" · derby ×2"; } }catch(e){} const day=new Date(h.at).toLocaleDateString("fr-CA");
-    if(!c.mday||c.mday.d!==day) c.mday={d:day,n:0}; if(!isDraftH(h)) c.mday.n++;
+    if(!c.mday||c.mday.d!==day||typeof c.mday.n!=="object") c.mday={d:day,n:{}}; const mk=mKey(h), mn=c.mday.n[mk]=(c.mday.n[mk]||0)+1, mdk=h.mode==="div"?1:rwDecay(mn-1);
     let train=false; if(isFreeCpuH(h)){ if(!c.cpud||c.cpud.d!==day) c.cpud={d:day,n:0}; c.cpud.n++; }
-    if(!train){ const kx=isDraftH(h)?2:rwDecay(c.mday.n-1); track("play",1,kx); if(r.a>r.b) track("win",1,kx); if(r.a) track("goals",r.a,kx); if(r.a>r.b&&(isDraftH(h)||isPvP(h))) track("pvp"); }
+    if(!train){ const kx=(isDraftH(h)?2:1)*mdk; track("play",1,kx); if(r.a>r.b) track("win",1,kx); if(r.a) track("goals",r.a,kx); if(r.a>r.b&&(isDraftH(h)||isPvP(h))) track("pvp"); }
     if(h.motm&&h.owners[h.motm.t]===me&&BY_ID[h.motm.pid]){ c.heroes=c.heroes||[]; c.heroes.push({id:h.id,pid:h.motm.pid,note:h.motm.note,at:h.at}); c.heroes=c.heroes.slice(-60); setTimeout(()=>toast(`⭐ Carte Héros du match : ${BY_ID[h.motm.pid].name} (${h.motm.note}/10)`),2500); }
-    const k=isDraftH(h)?1:rwDecay(c.mday.n-1); got+=Math.round(r.coins*k); lines.push(`${r.res} ${r.a}-${r.b}${k<1?` (gains à ${Math.round(k*100)} %, ${c.mday.n}e match du jour)`:""}`); c.claimed.push(h.id); }
+    const k=mdk; got+=Math.round(r.coins*k); lines.push(`${r.res} ${r.a}-${r.b}${k<1?` (gains à ${Math.round(k*100)} %, ${mn}e match du jour dans ce mode)`:""}`); c.claimed.push(h.id); }
   if(got){ c.claimed=c.claimed.slice(-300); addCoins(got,`match : ${lines.join(", ")}`); }
   claimLeague();
 }
@@ -3729,7 +3732,7 @@ function renderCollec(){
     ${Object.entries(c.freePacks||{}).filter(([k,n])=>n>0&&PACKS[k]).map(([k,n])=>`<button class="pkbtn daily" data-free="${k}" style="--pc:${PACKS[k].color}"><img class="pkimg" src="${PIMG(k)}" alt=""><b>🎁 ${PACKS[k].name} offert ×${n}</b><span>récompense</span><em>Ouvrir</em></button>`).join("")}
     <button class="pkbtn daily" data-pk="event" style="--pc:#ff9a6a;animation:none"><img class="pkimg" src="${PIMG("event")}" alt=""><b>${curEvent().name}</b><span>Pack Événement · 3 cartes du thème</span><em>🪙 600</em></button>
     <div class="shop">${Object.entries(PACKS).filter(([k])=>!["jour","event","reward","starter","rare3"].includes(k)).map(([k,P])=>`<button class="pkbtn pkbig" data-pk="${k}" style="--pc:${P.color}"><img class="pkimg" src="${PIMG(k)}" alt=""><b>${P.name}</b><span>${P.n} cartes${P.guarantee==="gold"?" · 1 Épique min.":P.guarantee==="icon"?" · 1 Légendaire min.":""}</span><em>🪙 ${P.price}</em></button>`).join("")}</div>
-    <div class="rules" style="font-size:12.5px">Gagne des pièces en jouant : <b>victoire 100</b>, nul 50, défaite 25, <b>+10 par but</b> (sans limite de matchs : 5 matchs à 100 % par jour puis gains dégressifs ; carrière, quiz et divisions gardent leur limite du jour) et <b>1 pack gratuit par jour</b>. Doublons : revente 4 / 12 / 32 / 100 / 300 🪙 (Commune → Mythique), ou échange avec les autres pour plus de valeur.</div>
+    <div class="rules" style="font-size:12.5px">Gagne des pièces en jouant : <b>victoire 100</b>, nul 50, défaite 25, <b>+10 par but</b> (sans limite de matchs : dans chaque mode, 5 matchs à 100 % par jour puis gains dégressifs ; drafts, Budget et 2c2 rapportent ×2 ; carrière, quiz et divisions gardent leur limite du jour) et <b>1 pack gratuit par jour</b>. Doublons : revente 4 / 12 / 32 / 100 / 300 🪙 (Commune → Mythique), ou échange avec les autres pour plus de valeur.</div>
     ${dupes?`<button class="btn ghost big" id="sellBtn">Vendre mes doublons (+${dupes} 🪙)</button>`:""}`;
   document.querySelectorAll(".pkbtn[data-pk]").forEach(b=>b.onclick=()=>openPack(b.dataset.pk));
   document.querySelectorAll(".pkbtn[data-free]").forEach(b=>b.onclick=()=>openPack(b.dataset.free,true));
@@ -6185,7 +6188,7 @@ const TIPS={
   Une fois les équipes finies, chacun se met « prêt » et le match se lance en direct.`},
  tab_match:{t:"🏟️ Match",x:`C'est ici que les matchs s'affichent <b>en direct en ~1 minute</b> : buts, cartons, penalties, VAR…<br><br>
   Ils se lancent depuis 🌐 En ligne (Draft, Championnats, Coupes…) et 🎮 Solo (Carrière, Défi…). En bas, tes derniers matchs se revoient avec ▶️.<br><br>
-  🪙 Victoire 100, nul 50, défaite 25, +10 par but, sans limite de matchs : 5 matchs à 100 % par jour, puis 75 %, 50 %, 25 % et 10 %. La carrière (5/jour), le quiz (3/jour) et les divisions (10/jour) gardent leur limite.`},
+  🪙 Victoire 100, nul 50, défaite 25, +10 par but, sans limite de matchs : dans chaque mode (ordi, draft, Budget, 2c2, chaque jeu de cartes…), 5 matchs à 100 % par jour, puis 75 %, 50 %, 25 % et 10 %. La carrière (5/jour), le quiz (3/jour) et les divisions (10/jour) gardent leur limite.`},
  tab_collec:{t:"🎴 Collection",x:`Ici tu gères tes cartes :<br><br>🎁 <b>Pack du jour</b> gratuit, et d'autres packs à acheter avec tes pièces.<br>
   📒 <b>Album</b> façon Panini, avec des récompenses par collection complète.<br>🔄 <b>Échanges</b>, 🏪 <b>marché</b> et 🔨 <b>enchères</b> de doublons entre joueurs.<br>
   🧩 <b>Défis SBC</b> : donne des cartes en échange de récompenses.<br><br>Touche une carte pour voir ses stats et son palmarès.`},
@@ -6355,9 +6358,9 @@ function tcgUpgrade(id){ const T=tcgW(), lv=T.lv[id]||0; if(lv>=TCG_MAXL){ toast
   const cost=TCG_COST[lv]; if((T.e||0)<cost){ toast(`Il te faut ${cost} 💠 Éclats (tu en as ${T.e||0})`,true); return false; }
   T.e-=cost; T.lv[id]=lv+1; save(); toast(`💠 ${BY_ID[id].name} : attaques niveau ${lv+1} (+${3*(lv+1)} dégâts)`); return true; }
 // 🪙 Pièces des jeux de cartes : pas de limite, gains dégressifs (5 parties à 100 % par jour, puis 75 %, 50 %, 25 %, 10 %)
-function cgDayN(){ const c=W(); c.cg=c.cg||{}; const d=today(); if(!c.cg.pc||c.cg.pc.d!==d||c.cg.pc.n==null) c.cg.pc={d,n:0}; return c.cg.pc.n; }
-function cgCoins(n,cpu){ const k=rwDecay(cgDayN()); W().cg.pc.n++; n=Math.max(1,Math.round(n*k)); const c=W(); c.coins=(c.coins||0)+n; try{ renderCoins(); }catch(e){} return n; }
-function eclatsGain(n,online){ if(!n) return 0; const T=tcgW(); if(!online){ const d=today(); if(!T.d||T.d.day!==d) T.d={day:d,n:0}; T.d.n++; n=Math.max(rwDecay(T.d.n-1)>=.5?1:0,Math.round(n*rwDecay(T.d.n-1))); }
+function cgDayN(g){ const c=W(); c.cg=c.cg||{}; const d=today(); if(!c.cg.pc||c.cg.pc.d!==d||typeof c.cg.pc.n!=="object") c.cg.pc={d,n:{}}; return c.cg.pc.n[g]||0; }
+function cgCoins(n,cpu,g){ const k=rwDecay(cgDayN(g)); W().cg.pc.n[g]=(W().cg.pc.n[g]||0)+1; n=Math.max(1,Math.round(n*k)); const c=W(); c.coins=(c.coins||0)+n; try{ renderCoins(); }catch(e){} return n; }
+function eclatsGain(n,online,g){ if(!n) return 0; const T=tcgW(); { const d=today(); if(!T.d||T.d.day!==d||typeof T.d.n!=="object") T.d={day:d,n:{}}; const m=T.d.n[g]=(T.d.n[g]||0)+1, k=rwDecay(m-1); n=Math.max(k>=.5?1:0,Math.round(n*k)); }
   if(n){ T.e=(T.e||0)+n; save(); } return n; }
 function showTcg(id){ const M=$("#cardModal"); const c=W(), own=(c.coll||{})[id], lv=(tcgW().lv||{})[id]||0;
   M.innerHTML=`<div class="cm-box"><div class="cm-card" style="display:flex;justify-content:center">${tcgHTML(id,{w:250,evo:evoOf(me,id),lvl:lv})}</div>
@@ -6709,12 +6712,12 @@ function cgCpuMoves(){ const G=cgCur; if(!G||!G.cpu) return; const X=cgG(G); con
 function cgAfter(){ const G=cgCur; if(!G) return; const X=cgG(G), S=cgReplay(X); if(!S.end) return; cgFinish(X,S); }
 function cgFinish(X,S){ const c=W(); c.cg=c.cg||{}; c.cg.done=c.cg.done||[]; const key=X.id||("cpu-"+X.seed); if(c.cg.done.includes(key)) return; c.cg.done=[...c.cg.done,key].slice(-200);
   const side=X.cpu?0:X.players.indexOf(me); const w=S.end.w; const win=w===side, draw=w===-1; c.cg.st=c.cg.st||{}; const st=c.cg.st[X.g]=c.cg.st[X.g]||{w:0,n:0,d:0}; st[win?"w":draw?"d":"n"]++;
-  let e=win?(X.cpu?1:3):draw?(X.cpu?0:1):0; if(X.g==="cbt") e*=2; const got=eclatsGain(e,!X.cpu);
-  const pc=cgCoins(X.cpu?(win?40:draw?20:10):(win?80:draw?40:20),X.cpu);
+  let e=win?(X.cpu?1:3):draw?(X.cpu?0:1):0; if(X.g==="cbt") e*=2; const got=eclatsGain(e,!X.cpu,X.g);
+  const pc=cgCoins(X.cpu?(win?40:draw?20:10):(win?80:draw?40:20),X.cpu,X.g);
   let dv=""; if(X.g==="cbt"){ dv=tcgDivAdd(win?"w":draw?"d":"l"); c.cg.kos=c.cg.kos||{}; for(const L of S.log) for(const e of (L.ev||[])) if(e.t==="a"&&e.s===side&&e.hp1<=0) c.cg.kos[tcgBase(e.id)]=(c.cg.kos[tcgBase(e.id)]||0)+1; }
   cgHistAdd(X,win?"w":draw?"d":"l",X.g==="cbt"?{s:S.sc[side]+"-"+S.sc[1-side]}:{});
   try{ track("play"); if(win) track("win"); }catch(_){}
-  save(); setTimeout(()=>toast(`${win?"🏆 Victoire":draw?"🤝 Égalité":"😞 Défaite"} · ${CG_MODES[X.g].n} · +${pc} 🪙${rwDecay(cgDayN()-1)<1?` (${rwPct(cgDayN()-1)} %)`:""}${got?` · +${got} 💠`:""}`),900); if(dv) setTimeout(()=>toast(dv),3200); }
+  save(); setTimeout(()=>toast(`${win?"🏆 Victoire":draw?"🤝 Égalité":"😞 Défaite"} · ${CG_MODES[X.g].n} · +${pc} 🪙${rwDecay(cgDayN(X.g)-1)<1?` (${rwPct(cgDayN(X.g)-1)} %)`:""}${got?` · +${got} 💠`:""}`),900); if(dv) setTimeout(()=>toast(dv),3200); }
 function cgSettle(){ for(const x of Object.values(cgOnline)){ if(x.status!=="running") continue; const X=cgG(x), S=cgReplay(X); if(S.end){ cgFinish(X,S); if(x.status!=="done") cgRef(x.id).update({status:"done"}).catch(()=>{}); } } }
 
 // ======================================================================
@@ -6724,7 +6727,7 @@ const cgNm=u=>u===CPU?"🤖 L'ordi":esc(NAMES[u]||"?");
 const cgCard=(id,w,o={})=>`<span class="cardbtn cgc${o.cls?" "+o.cls:""}"${o.data?` ${o.data}`:""}>${tcgHTML(id,{w:w||96,evo:o.evo||0,cls:(w||96)<100?"mini":""})}</span>`;
 function cgStatBtns(id,evo,dis){ const s=cgStats(id,evo); return `<div class="cgstats">${CG_L.map((l,k)=>`<button class="cgsb" data-cgk="${k}" ${dis?"disabled":""}><small>${CG_N[k]}</small><b>${s[k]}</b></button>`).join("")}</div>`; }
 function cardsHomeHTML(){ const L=cgMine(); const others_=others();
-  const tiles=Object.entries(CG_MODES).map(([k,m])=>`<button class="tile timg" data-cgm="${k}" style="background:linear-gradient(180deg,#0000 35%,#000d 100%),url(img/tuiles/cg-${k}.webp) center/cover no-repeat,#13306b"><span class="tw">${m.ic}</span><span class="ti">${m.ic}</span><span><b>${m.n}</b><small>${esc(m.s)}</small></span></button>`).join("");
+  const tiles=Object.entries(CG_MODES).map(([k,m])=>`<button class="tile timg" data-cgm="${k}" style="background:linear-gradient(180deg,#0000 35%,#000d 100%),url(img/tuiles/cg-${k}.webp) center/cover no-repeat,#13306b"><span class="tw">${m.ic}</span><span class="ti">${m.ic}</span><span><b>${m.n}</b><small>${esc(m.s)}</small><small class="cgrw">🪙 ${rwNext(cgDayN(k))}</small></span></button>`).join("");
   const T=tcgW();
   const list=L.length?`<div class="section"><h3>🌐 Tes parties en ligne</h3>${L.map(x=>{ const side=x.players.indexOf(me), o=x.players[1-side]; let st="", btn="Voir";
       if(x.status==="lobby") { st=x.by===me?"⏳ En attente de sa réponse":"📨 <b>Il t'invite !</b>"; btn=x.by===me?"Voir":"Répondre"; }
@@ -6733,7 +6736,7 @@ function cardsHomeHTML(){ const L=cgMine(); const others_=others();
   const resume=cgCur&&cgCur.cpu&&!cgReplay(cgG(cgCur)).end?`<div class="cgrow resume"><span>${CG_MODES[cgCur.g].ic} Partie en cours contre l'ordi : <b>${CG_MODES[cgCur.g].n}</b></span><button class="btn sm" id="cgResume">Reprendre</button></div>`:"";
   return `<div class="hubh"><h2>🃏 Jeux de cartes</h2><small>Contre l'ordi ou en ligne · avec toutes les cartes du jeu ou ta collection</small></div>
     <div class="cgbar"><span>💠 <b>${T.e||0}</b> Éclats</span><small>Gagnés en jouant (le Combat rapporte double) · ils améliorent les attaques de tes cartes TCG</small></div>
-    <div class="cgbar"><span>🪙 <b>${rwNext(cgDayN())}</b></span><small>Victoire en ligne 80 · contre l\'ordi 40 · nul et défaite rapportent aussi · aucune limite de parties : 5 parties à 100 % par jour, puis 75 %, 50 %, 25 % et 10 %</small></div>
+    <div class="cgbar"><span>🪙 Sans limite</span><small>Victoire en ligne 80 · contre l\'ordi 40 · nul et défaite rapportent aussi · dans <b>chaque jeu</b> : 5 parties à 100 % par jour, puis 75 %, 50 %, 25 % et 10 % (pièces et Éclats)</small></div>
     ${resume}${list}<div class="hub cghub">${tiles}</div>${cgStatsHTML()}`; }
 
 // 🎓 Tutoriel : 3-4 écrans la 1re fois qu'on ouvre un jeu (et bouton ❓ Règles)
@@ -7010,7 +7013,7 @@ function pomGuess(up){ const g=pomG; if(!g||g.over) return; const a=BY_ID[g.seq[
   const ok=b===a||(up?b>a:b<a); g.last={a,b,ok,eq:b===a}; g.guess=up; g.fx=1; if(ok){ if(b!==a) g.streak++; } else { g.over=1; pomEnd(); } renderCards(); }
 function pomEnd(){ const g=pomG; const c=W(); c.cg=c.cg||{}; const P=c.cg.pom=c.cg.pom||{best:0};
   if(g.src==="all"){ if(g.streak>(P.best||0)){ P.best=g.streak; setTimeout(()=>toast(`🏆 Nouveau record : ${g.streak} !`),500); } if(P.d!==today()){ P.d=today(); P.db=0; } P.db=Math.max(P.db||0,g.streak); }
-  try{ track("play"); }catch(_){} const e=g.streak>=10?2:g.streak>=5?1:0; const got=eclatsGain(e,false); const pc=g.streak?cgCoins(Math.min(50,g.streak*3),true):0; if(got||pc) setTimeout(()=>toast(`Série de ${g.streak} :${pc?` +${pc} 🪙`:""}${got?` +${got} 💠`:""}`),1200); save(); }
+  try{ track("play"); }catch(_){} const e=g.streak>=10?2:g.streak>=5?1:0; const got=eclatsGain(e,false,"pom"); const pc=g.streak?cgCoins(Math.min(50,g.streak*3),true,"pom"):0; if(got||pc) setTimeout(()=>toast(`Série de ${g.streak} :${pc?` +${pc} 🪙`:""}${got?` +${got} 💠`:""}`),1200); save(); }
 function pomHTML(){ const g=pomG; const cur=g.seq[g.i%g.seq.length];
   if(g.fx){ g.fx=0; return `<div class="cgtop"><span>↕️ <b>Plus ou moins</b></span></div>`+cgStageWrap(pomFx(g)); }
   if(g.i===0&&!g.dealt){ g.dealt=1; cgDealFx=true; cgSnd("flip"); }
@@ -7080,7 +7083,7 @@ function cgTeaser(){ const M=$("#cardModal"); M.innerHTML=`<div class="cm-box" s
   <button class="btn" id="cgTzX" style="margin-top:10px">J'ai hâte !</button></div>`; M.classList.add("open"); $("#cgTzX").onclick=()=>M.classList.remove("open"); M.onclick=e=>{ if(e.target===M) M.classList.remove("open"); }; cgCdTick(); }
 function openCards(from){ if(!cgLive()){ cgTeaser(); return; } cgBack=from==="online"?"online":"solo"; NAV_OF.cards=cgBack==="online"?"nOnline":"nSolo"; if(!(cgCur&&cgSel==="game")) cgSel=null; setMode("cards"); }
 
-const APP_V="2026-11-28g"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-28h"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
