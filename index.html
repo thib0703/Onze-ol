@@ -6744,7 +6744,7 @@ const cgZ=w=>w>=100?Math.round(w*CGZ()):w;
 const cgCard=(id,w,o={})=>{ w=cgZ(w||96); return `<span class="cardbtn cgc${o.cls?" "+o.cls:""}"${o.data?` ${o.data}`:""}>${tcgHTML(id,{w,evo:o.evo||0,cls:w<100?"mini":""})}</span>`; };
 function cgStatBtns(id,evo,dis){ const s=cgStats(id,evo); return `<div class="cgstats">${CG_L.map((l,k)=>`<button class="cgsb" data-cgk="${k}" ${dis?"disabled":""}><small>${CG_N[k]}</small><b>${s[k]}</b></button>`).join("")}</div>`; }
 function cardsHomeHTML(){ const L=cgMine(); const others_=others();
-  const tiles=Object.entries(CG_MODES).map(([k,m])=>`<button class="tile timg" data-cgm="${k}" style="background:linear-gradient(180deg,#0000 35%,#000d 100%),url(img/tuiles/cg-${k}.webp) center/cover no-repeat,#13306b"><span class="tw">${m.ic}</span><span class="ti">${m.ic}</span><span><b>${m.n}</b><small>${esc(m.s)}</small><small class="cgrw">🤖 ${rwNext(cgDayN(k))}</small></span></button>`).join("");
+  const tiles=Object.entries(CG_MODES).map(([k,m])=>`<button class="tile timg" data-cgm="${k}" style="background:linear-gradient(180deg,#0000 35%,#000d 100%),url(img/tuiles/cg-${k}.webp) center/cover no-repeat,#13306b"><span class="tw">${m.ic}</span><span class="ti">${m.ic}</span><span><b>${m.n}</b><small>${esc(m.s)}</small><small class="cgrw">${k==="pom"?"♾️ Parties illimitées":`🤖 ${rwNext(cgDayN(k))}`}</small></span></button>`).join("");
   const T=tcgW();
   const list=L.length?`<div class="section"><h3>🌐 Tes parties en ligne</h3>${L.map(x=>{ const side=x.players.indexOf(me), o=x.players[1-side]; let st="", btn="Voir";
       if(x.status==="lobby") { st=x.by===me?"⏳ En attente de sa réponse":"📨 <b>Il t'invite !</b>"; btn=x.by===me?"Voir":"Répondre"; }
@@ -7082,7 +7082,7 @@ function pomGuess(up){ const g=pomG; if(!g||g.over) return; const a=BY_ID[g.seq[
   const ok=b===a||(up?b>a:b<a); g.last={a,b,ok,eq:b===a}; g.guess=up; g.fx=1; if(ok){ if(b!==a) g.streak++; } else { g.over=1; pomEnd(); } renderCards(); }
 function pomEnd(){ const g=pomG; const c=W(); c.cg=c.cg||{}; const P=c.cg.pom=c.cg.pom||{best:0};
   if(g.src==="all"){ if(g.streak>(P.best||0)){ P.best=g.streak; setTimeout(()=>toast(`🏆 Nouveau record : ${g.streak} !`),500); } if(P.d!==today()){ P.d=today(); P.db=0; } P.db=Math.max(P.db||0,g.streak); }
-  try{ track("play"); }catch(_){} cgChTrack(null,null,0,g.streak>=5,g.streak); const e=pomEcl(g.streak); const got=eclatsGain(e,false,"pom"); const pc=g.streak?cgCoins(pomCoins(g.streak),true,"pom"):0; if(got||pc) setTimeout(()=>toast(`Série de ${g.streak} :${pc?` +${pc} 🪙`:""}${got?` +${got} 💠`:""}`),1200); save(); }
+  try{ track("play"); }catch(_){} cgChTrack(null,null,0,g.streak>=5,g.streak); const e=pomEcl(g.streak); const got=eclatsGain(e,true,"pom"); const pc=g.streak?cgCoins(pomCoins(g.streak),false,"pom"):0; /* ↕️ rapporte peu : jamais de baisse, parties illimitées */ if(got||pc) setTimeout(()=>toast(`Série de ${g.streak} :${pc?` +${pc} 🪙`:""}${got?` +${got} 💠`:""}`),1200); save(); }
 // ↕️ chaque carte bien devinée rapporte plus que la précédente : la n-ième vaut (n+2) × le multiplicateur de palier
 // (1-4 ×1, 5-9 ×2, 10-14 ×3, 15-19 ×4, 20+ ×5) → 3, 4, 5, 6, puis 14, 16… : la cagnotte grimpe de plus en plus vite
 const pomMul=n=>n<5?1:n<10?2:n<15?3:n<20?4:5;
@@ -7160,7 +7160,7 @@ function cgTeaser(){ const M=$("#cardModal"); M.innerHTML=`<div class="cm-box" s
   <button class="btn" id="cgTzX" style="margin-top:10px">J'ai hâte !</button></div>`; M.classList.add("open"); $("#cgTzX").onclick=()=>M.classList.remove("open"); M.onclick=e=>{ if(e.target===M) M.classList.remove("open"); }; cgCdTick(); }
 function openCards(from){ if(!cgLive()){ cgTeaser(); return; } cgBack=from==="online"?"online":"solo"; NAV_OF.cards=cgBack==="online"?"nOnline":"nSolo"; if(!(cgCur&&cgSel==="game")) cgSel=null; setMode("cards"); }
 
-const APP_V="2026-11-28o"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-28p"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
