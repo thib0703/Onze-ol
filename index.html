@@ -4651,6 +4651,9 @@ function objState(){
   const c=W(); c.obj=c.obj||{};
   if(!c.obj.day||c.obj.day.d!==DAYK()) c.obj.day={d:DAYK(),p:{},done:[]};
   if(!c.obj.week||c.obj.week.w!==WEEKN()) c.obj.week={w:WEEKN(),p:{},done:[]};
+  // ⚔️ victoires en ligne de la semaine recalculées depuis l'historique des matchs (fiable même si un gain n'a pas été compté)
+  try{ const w=WEEKN(); let n=0; for(const h of matches){ if(!h||!h.owners||!h.score||h.nr||WEEKN(h.at)!==w||(Date.now()-h.at)/MSPEED<100) continue; const i=h.owners.indexOf(me); if(i<0||!(isDraftH(h)||isPvP(h))) continue;
+      const [a,b]=i===0?h.score:[h.score[1],h.score[0]]; if(a>b) n++; } if(n>(c.obj.week.p.pvp||0)) c.obj.week.p.pvp=n; }catch(e){}
   return c.obj;
 }
 function track(k,n=1,kx=1){ if(!me) return; const o=objState(); for(const s of [o.day,o.week]) s.p[k]=(s.p[k]||0)+n; try{ passXP(Math.round(((passNew()?{play:70,win:40,goals:10,pack:25,deal:30,sbc:60,pvp:100}:{play:100,win:60,goals:15,pack:40,deal:50,sbc:80,pvp:100})[k]||0)*n*(passNew()?kx:Math.max(1,kx)))); }catch(e){} save(); badgeLigue(); }
@@ -6977,7 +6980,7 @@ function cgTeaser(){ const M=$("#cardModal"); M.innerHTML=`<div class="cm-box" s
   <button class="btn" id="cgTzX" style="margin-top:10px">J'ai hâte !</button></div>`; M.classList.add("open"); $("#cgTzX").onclick=()=>M.classList.remove("open"); M.onclick=e=>{ if(e.target===M) M.classList.remove("open"); }; cgCdTick(); }
 function openCards(from){ if(!cgLive()){ cgTeaser(); return; } cgBack=from==="online"?"online":"solo"; NAV_OF.cards=cgBack==="online"?"nOnline":"nSolo"; if(!(cgCur&&cgSel==="game")) cgSel=null; setMode("cards"); }
 
-const APP_V="2026-11-28e"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-28f"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
