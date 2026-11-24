@@ -3510,7 +3510,7 @@ function addCoins(n,why){ const c=W(); c.coins=(c.coins||0)+n; save(); renderCoi
 function renderCoins(){ const el=$("#coins"); if(!el) return; if(!me){el.style.display="none";return;} el.style.display=""; el.textContent=`🪙 ${(W().coins||0).toLocaleString("fr-FR")}`; }
 // matchs de Draft / Budget / 2 contre 2 : longs à préparer (même gain que les autres modes)
 const isDraftH=h=>!!(h&&(h.draft==="budget"||h.draft==="classic"||h.duo));
-function rewardFor(h,i){ const [a,b]=i===0?h.score:[h.score[1],h.score[0]]; const base=a>b?100:a===b?50:25, x=1; /* même gain pour tous les modes */ return {coins:(base+10*a)*x,res:(a>b?"victoire":a===b?"nul":"défaite")+(x>1?(h.duo?" 2c2":h.draft==="budget"?" Budget":" Draft")+" ×2":""),a,b}; }
+function rewardFor(h,i){ const [a,b]=i===0?h.score:[h.score[1],h.score[0]]; const base=a>b?100:a===b?50:25, x=isDraftH(h)?2:1; /* ⚔️ affrontements en ligne (draft, Budget, 2c2) : gains ×2 */ return {coins:(base+10*a)*x,res:(a>b?"victoire":a===b?"nul":"défaite")+(x>1?(h.duo?" 2c2":h.draft==="budget"?" Budget":" Draft")+" ×2":""),a,b}; }
 // 🎚️ Récompenses dégressives (aucune limite de jeu) : par mode et par jour, 5 parties à 100 %, 5 à 75 %, 5 à 50 %, 5 à 25 %, puis 10 %
 const rwDecay=n=>n<5?1:n<10?.75:n<15?.5:n<20?.25:.1;
 const rwPct=n=>Math.round(rwDecay(n)*100);
@@ -3532,7 +3532,7 @@ function claimRewards(){
     const r=rewardFor(h,i); if(isCpuH(h)){ r.coins=Math.round(r.coins/2); r.res+=" vs ordi"; } try{ if(isDerbyDay(h.at)){ r.coins*=2; r.res+=" · derby ×2"; } }catch(e){} const day=new Date(h.at).toLocaleDateString("fr-CA");
     if(!c.mday||c.mday.d!==day) c.mday={d:day,n:0}; if(!isDraftH(h)) c.mday.n++;
     let train=false; if(isFreeCpuH(h)){ if(!c.cpud||c.cpud.d!==day) c.cpud={d:day,n:0}; c.cpud.n++; }
-    if(!train){ const kx=isDraftH(h)?1:rwDecay(c.mday.n-1); track("play",1,kx); if(r.a>r.b) track("win",1,kx); if(r.a) track("goals",r.a,kx); }
+    if(!train){ const kx=isDraftH(h)?2:rwDecay(c.mday.n-1); track("play",1,kx); if(r.a>r.b) track("win",1,kx); if(r.a) track("goals",r.a,kx); if(r.a>r.b&&(isDraftH(h)||isPvP(h))) track("pvp"); }
     if(h.motm&&h.owners[h.motm.t]===me&&BY_ID[h.motm.pid]){ c.heroes=c.heroes||[]; c.heroes.push({id:h.id,pid:h.motm.pid,note:h.motm.note,at:h.at}); c.heroes=c.heroes.slice(-60); setTimeout(()=>toast(`⭐ Carte Héros du match : ${BY_ID[h.motm.pid].name} (${h.motm.note}/10)`),2500); }
     const k=isDraftH(h)?1:rwDecay(c.mday.n-1); got+=Math.round(r.coins*k); lines.push(`${r.res} ${r.a}-${r.b}${k<1?` (gains à ${Math.round(k*100)} %, ${c.mday.n}e match du jour)`:""}`); c.claimed.push(h.id); }
   if(got){ c.claimed=c.claimed.slice(-300); addCoins(got,`match : ${lines.join(", ")}`); }
@@ -4308,7 +4308,7 @@ function bindDuo(){ const on=(s,f)=>{ const e=$(s); if(e) e.onclick=f; }; const 
 
 // =================== 🏅 Classement du mois, confrontations, badges ===================
 let RANK={};
-const RANK_R=[{pack:"legende"},{pack:"or"},{pack:"bronze"}], RANK_MIN=3;
+const RANK_R=[{pack:"legende",n:2,coins:1500},{pack:"legende",coins:800},{pack:"or",n:2,coins:400}], RANK_MIN=3; // classement du mois = affrontements en ligne seulement (drafts, championnats, coupes)
 const monthName=k=>{ const [y,m]=k.split("-"); return new Date(+y,+m-1,1).toLocaleDateString("fr-FR",{month:"long",year:"numeric"}); };
 let rankAll=false;
 function rankAllM(){ const T={}; for(const M of Object.values(RANK.months||{})) for(const [u,r] of Object.entries(M||{})){ const t=T[u]=T[u]||{p:0,w:0,d:0,l:0,j:0,bp:0,bc:0}; for(const k in t) t[k]+=+r[k]||0; } return T; }
@@ -4346,8 +4346,8 @@ function rankHTML(){ const mk=MONTHK(); const R=rankRows(rankAll?"all":mk); cons
   ${R.length?`<table class="rk"><tr><th></th><th>Joueur</th><th>Pts</th><th>J</th><th>V-N-D</th><th>Diff</th></tr>${R.map(([u,r],i)=>`<tr class="${u===me?"me":""}"><td>${["🥇","🥈","🥉"][i]||i+1}</td><td><button class="lnk" data-prof="${u}">${crestMini(u)}${esc(NAMES[u])}</button></td><td><b>${r.p}</b></td><td>${r.j}</td><td>${r.w}-${r.d}-${r.l}</td><td>${r.bp-r.bc>0?"+":""}${r.bp-r.bc}</td></tr>`).join("")}</table>`:`<div class="mute" style="font-size:13px">Aucun match entre joueurs pour l'instant.</div>`}
   ${h2hAllHTML()}`;
   return `<h3>🏅 Classement du mois <small>${monthName(mk)} · fin dans ${dl} j</small></h3>${tg}
-  <div class="rules" style="font-size:12px;margin-top:0">Tous les matchs contre d'autres joueurs comptent (match, draft, championnat, coupe) : victoire 3 pts, nul 1 pt. Le 1er du mois gagne un <b>Pack Légende</b>, le 2e un <b>Pack Épique</b>, le 3e un <b>Pack Classique</b> (${RANK_MIN} matchs minimum). Remise à zéro chaque mois.</div>
-  ${R.length?`<table class="rk"><tr><th></th><th>Joueur</th><th>Pts</th><th>J</th><th>V-N-D</th><th>Diff</th></tr>${R.map(([u,r],i)=>`<tr class="${u===me?"me":""}"><td>${["🥇","🥈","🥉"][i]||i+1}</td><td><button class="lnk" data-prof="${u}">${crestMini(u)}${esc(NAMES[u])}</button></td><td><b>${r.p}</b></td><td>${r.j}</td><td>${r.w}-${r.d}-${r.l}</td><td>${r.bp-r.bc>0?"+":""}${r.bp-r.bc}</td></tr>`).join("")}</table>`:`<div class="mute" style="font-size:13px">Aucun match entre joueurs ce mois-ci. Lance un défi !</div>`}
+  <div class="rules" style="font-size:12px;margin-top:0">Seuls les vrais affrontements en ligne comptent (draft, Budget, championnat, coupe) : victoire 3 pts, nul 1 pt. Les matchs amicaux et contre l'ordi ne comptent pas. 🥇 2 Packs Légende + 1 500 🪙 · 🥈 1 Pack Légende + 800 🪙 · 🥉 2 Packs Épiques + 400 🪙 (${RANK_MIN} matchs minimum). Remise à zéro chaque mois.</div>
+  ${R.length?`<table class="rk"><tr><th></th><th>Joueur</th><th>Pts</th><th>J</th><th>V-N-D</th><th>Diff</th></tr>${R.map(([u,r],i)=>`<tr class="${u===me?"me":""}"><td>${["🥇","🥈","🥉"][i]||i+1}</td><td><button class="lnk" data-prof="${u}">${crestMini(u)}${esc(NAMES[u])}</button></td><td><b>${r.p}</b></td><td>${r.j}</td><td>${r.w}-${r.d}-${r.l}</td><td>${r.bp-r.bc>0?"+":""}${r.bp-r.bc}</td></tr>`).join("")}</table>`:`<div class="mute" style="font-size:13px">Aucun affrontement en ligne ce mois-ci. Lance un draft !</div>`}
   ${P.length?`<div class="mute" style="font-size:12px;margin-top:8px">Podium de ${monthName(pm)} : ${P.map(([u,r],i)=>`${["🥇","🥈","🥉"][i]} ${esc(NAMES[u])} (${r.p} pts)`).join(" · ")}</div>`:""}`; }
 function h2hAllHTML(){ const L=Object.keys(NAMES).filter(u=>u!==me&&u!==CPU&&(RANK.h2h||{})[[me,u].sort().join("__")]);
   if(!L.length) return ""; return `<h4 style="margin:12px 0 4px">⚔️ Mes face-à-face</h4>${L.map(u=>{ const H=RANK.h2h[[me,u].sort().join("__")]; const v=H[me]||0, d=H[u]||0, n=H.d||0; return `<div class="dh"><div><b>vs ${esc(NAMES[u])}</b><small>${v+n+d} matchs</small></div><b class="${v>d?"win":v<d?"lose":""}">${v} V · ${n} N · ${d} D</b></div>`; }).join("")}`; }
@@ -4623,14 +4623,14 @@ function missionCheck(m,extra){ if(!me||!C(me)||!m||!m.teams||(extra&&extra.nr))
 function missionsHTML(){ const S=misState(), L=missionsOf(S.w); const n=L.filter(M=>S.done[M.id]).length; const end=new Date(); end.setDate(end.getDate()+((8-end.getDay())%7||7)); end.setHours(0,0,0,0); const dl=Math.ceil((end-Date.now())/86400000);
   return `<div class="mis"><h3>🗺️ Missions de la semaine <small>${n}/3 · nouvelles dans ${dl} j</small></h3>${L.map(M=>`<div class="misr${S.done[M.id]?" ok":""}"><span>${S.done[M.id]?"✅":"🎯"}</span><b>${esc(M.t)}</b><em>${S.done[M.id]?"Réussie":"Pack Épique"}</em></div>`).join("")}<div class="mute" style="font-size:11.5px;margin-top:6px">Les 3 réussies : un <b>Pack Légende</b> en plus. Tous les matchs comptent, sauf les amicaux.</div></div>`; }
 const DAILY=[{k:"play",t:"Joue 2 matchs",n:2,r:{coins:80}},{k:"win",t:"Gagne 1 match",n:1,r:{coins:100}},{k:"goals",t:"Marque 3 buts",n:3,r:{coins:60}},{k:"pack",t:"Ouvre 1 pack",n:1,r:{coins:40}}];
-const WEEKLY=[{k:"win",t:"Gagne 7 matchs",n:7,r:{pack:"or"}},{k:"goals",t:"Marque 20 buts",n:20,r:{coins:400}},{k:"pack",t:"Ouvre 7 packs",n:7,r:{coins:300}},{k:"deal",t:"Fais 2 échanges, ventes ou enchères",n:2,r:{coins:300}},{k:"sbc",t:"Termine 1 défi d'équipe",n:1,r:{pack:"bronze"}}];
+const WEEKLY=[{k:"pvp",t:"Gagne 3 affrontements en ligne (draft, Budget, 2c2…)",n:3,r:{pack:"legende"}},{k:"win",t:"Gagne 7 matchs",n:7,r:{pack:"or"}},{k:"goals",t:"Marque 20 buts",n:20,r:{coins:400}},{k:"pack",t:"Ouvre 7 packs",n:7,r:{coins:300}},{k:"deal",t:"Fais 2 échanges, ventes ou enchères",n:2,r:{coins:300}},{k:"sbc",t:"Termine 1 défi d'équipe",n:1,r:{pack:"bronze"}}];
 function objState(){
   const c=W(); c.obj=c.obj||{};
   if(!c.obj.day||c.obj.day.d!==DAYK()) c.obj.day={d:DAYK(),p:{},done:[]};
   if(!c.obj.week||c.obj.week.w!==WEEKN()) c.obj.week={w:WEEKN(),p:{},done:[]};
   return c.obj;
 }
-function track(k,n=1,kx=1){ if(!me) return; const o=objState(); for(const s of [o.day,o.week]) s.p[k]=(s.p[k]||0)+n; try{ passXP(Math.round((passNew()?{play:70,win:40,goals:10,pack:25,deal:30,sbc:60}:{play:100,win:60,goals:15,pack:40,deal:50,sbc:80})[k]*n*(passNew()?kx:1)||0)); }catch(e){} save(); badgeLigue(); }
+function track(k,n=1,kx=1){ if(!me) return; const o=objState(); for(const s of [o.day,o.week]) s.p[k]=(s.p[k]||0)+n; try{ passXP(Math.round(((passNew()?{play:70,win:40,goals:10,pack:25,deal:30,sbc:60,pvp:100}:{play:100,win:60,goals:15,pack:40,deal:50,sbc:80,pvp:100})[k]||0)*n*(passNew()?kx:Math.max(1,kx)))); }catch(e){} save(); badgeLigue(); }
 function objClaimable(){ const o=objState(); return DAILY.filter(x=>(o.day.p[x.k]||0)>=x.n&&!o.day.done.includes(x.k)).length+WEEKLY.filter(x=>(o.week.p[x.k]||0)>=x.n&&!o.week.done.includes(x.k)).length; }
 function claimObj(scope,k){ const o=objState(); const s=o[scope]; const L=scope==="day"?DAILY:WEEKLY; const x=L.find(y=>y.k===k); if(!x||s.done.includes(k)||(s.p[k]||0)<x.n) return; s.done.push(k); grant(x.r,`Objectif « ${x.t} »`); renderLigue(); }
 
@@ -6954,7 +6954,7 @@ function cgTeaser(){ const M=$("#cardModal"); M.innerHTML=`<div class="cm-box" s
   <button class="btn" id="cgTzX" style="margin-top:10px">J'ai hâte !</button></div>`; M.classList.add("open"); $("#cgTzX").onclick=()=>M.classList.remove("open"); M.onclick=e=>{ if(e.target===M) M.classList.remove("open"); }; cgCdTick(); }
 function openCards(from){ if(!cgLive()){ cgTeaser(); return; } cgBack=from==="online"?"online":"solo"; NAV_OF.cards=cgBack==="online"?"nOnline":"nSolo"; if(!(cgCur&&cgSel==="game")) cgSel=null; setMode("cards"); }
 
-const APP_V="2026-11-27y"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-27z"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
