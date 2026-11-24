@@ -1,5 +1,5 @@
 {
-  "updated": "23/11/2026",
+  "updated": "24/11/2026",
   "matches": "Brest 2-0 OL (08/11), Lille 0-1 OL (21/11) — notes Maxifoot",
   "rules": "Blessé -3 à -6 selon la durée, suspendu -2 ; moyenne des 2 derniers matchs : >=7.5 +3, >=7 +2, >=6.5 +1, <=4 -2, <=5 -1",
   "players": {
@@ -16,7 +16,7 @@
     "lois-openda": {
       "st": "inj",
       "mod": -3,
-      "note": "Fissure du péroné (09/10), absent au moins jusqu'à la trêve selon le club"
+      "note": "Fissure du péroné, de retour à l'entraînement collectif le 23/11 mais pas encore apte à jouer"
     },
     "clinton-mata": {
       "st": "inj",
@@ -112,8 +112,40 @@
       "score": null
     }
   ],
-  "newsUpdated": "23/11/2026",
+  "newsUpdated": "24/11/2026",
   "news": [
+    {
+      "d": "2026-11-24T09:25",
+      "tag": "match",
+      "t": "Jérôme Brisard au sifflet pour OL – Monaco",
+      "s": "La LFP a désigné Jérôme Brisard pour diriger la réception de Monaco dimanche au Groupama Stadium, dans le cadre de la 12e journée.",
+      "src": "Olympique-et-Lyonnais",
+      "url": "https://www.olympique-et-lyonnais.com/ol-monaco-avec-jerome-brisard-aux-commandes,414669.html"
+    },
+    {
+      "d": "2026-11-24T06:40",
+      "tag": "match",
+      "t": "OL – Lillestrøm : Lyon grand favori jeudi",
+      "s": "Les Lyonnais reçoivent le club norvégien en Ligue Europa sans Openda, Morton, Sulc ni Mata, mais avec les retours de Nuamah et Niakhaté dans le groupe.",
+      "src": "But! Football Club",
+      "url": "https://www.butfootballclub.fr/1716152-pronostic-ol-lillestrom-26-11-prono-cotes-et-compos/"
+    },
+    {
+      "d": "2026-11-23T17:37",
+      "tag": "infirmerie",
+      "t": "Openda a retrouvé le groupe à l'entraînement",
+      "s": "Blessé au péroné depuis la mi-octobre, l'attaquant belge a participé lundi à la séance collective. Le club ne prendra aucun risque et son retour à la compétition se fera progressivement.",
+      "src": "Olympique-et-Lyonnais",
+      "url": "https://www.olympique-et-lyonnais.com/ol-lois-openda-a-fait-son-retour-a-lentrainement,414611.html"
+    },
+    {
+      "d": "2026-11-23T11:50",
+      "tag": "match",
+      "t": "Lillestrøm se relance avant de venir à Lyon",
+      "s": "Le prochain adversaire européen de l'OL s'est imposé 2-0 à Sarpsborg en championnat, mais ne compte qu'un point en quatre journées de Ligue Europa.",
+      "src": "Olympique-et-Lyonnais",
+      "url": "https://www.olympique-et-lyonnais.com/avant-daffronter-lol-lillestrom-simpose-en-championnat,414522.html"
+    },
     {
       "d": "2026-11-23T07:30",
       "tag": "joueurs",
@@ -321,30 +353,6 @@
       "s": "Le club a pris une position forte face aux problèmes de racisme autour de ses matchs.",
       "src": "Foot Mercato",
       "url": "https://www.footmercato.net/a3595163184488081937-limmense-coup-de-gueule-de-lol-contre-ses-problemes-de-racisme"
-    },
-    {
-      "d": "2026-11-18T12:00",
-      "tag": "infirmerie",
-      "t": "Pavel Sulc raconte son opération du genou",
-      "s": "Le Tchèque, opéré du ménisque, décrit une convalescence très douloureuse. Retour espéré fin février.",
-      "src": "Foot Mercato",
-      "url": "https://www.footmercato.net/a4670410249574000832-ca-fait-un-mal-de-chien-les-mots-de-pavel-sulc-apres-son-operation"
-    },
-    {
-      "d": "2026-11-17T18:00",
-      "tag": "infirmerie",
-      "t": "Longue absence confirmée pour Tyler Morton",
-      "s": "Opéré de l'adducteur, le milieu anglais ne reviendra pas avant février.",
-      "src": "Foot Mercato",
-      "url": "https://www.footmercato.net/a4309897884366693620-lol-annonce-une-longue-absence-pour-tyler-morton"
-    },
-    {
-      "d": "2026-11-17T12:00",
-      "tag": "club",
-      "t": "Supporters lyonnais interdits de déplacement à Lille",
-      "s": "Les fans de l'OL n'ont pas pu se rendre au stade Pierre-Mauroy.",
-      "src": "Foot Mercato",
-      "url": "https://www.footmercato.net/a4272267414343191560-les-supporters-de-lol-interdits-de-deplacement-a-lille"
     }
   ],
   "table": {
