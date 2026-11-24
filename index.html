@@ -6564,10 +6564,10 @@ CG_ENG.cbt={
         for(const b of (m.b||[])){ if(S.bench[s].length>=TCG_BENCH) break; if(H.includes(b)&&b!==a&&!S.bench[s].some(c=>c.id===b)) S.bench[s].push(tcgNew(b,G,s)); }
         for(const b of H){ if(S.bench[s].length>=TCG_BENCH) break; if(b!==a&&!S.bench[s].some(c=>c.id===b)) S.bench[s].push(tcgNew(b,G,s)); } S.hand[s]=[];
         if(G.cap){ const sorted=H.slice().sort((x,y)=>BY_ID[x].ovr-BY_ID[y].ovr); while(tcgTeamOvr([S.act[s].id,...S.bench[s].map(c=>c.id)],G,s)>TCG_CAP){ let hi=0; S.bench[s].forEach((c,i)=>{ if(BY_ID[c.id].ovr>BY_ID[S.bench[s][hi].id].ovr) hi=i; }); const lo=sorted.find(x=>x!==S.act[s].id&&!S.bench[s].some(c=>c.id===x)); if(!lo||BY_ID[lo].ovr>=BY_ID[S.bench[s][hi].id].ovr) break; S.bench[s][hi]=tcgNew(lo,G,s); } } }
-      for(const s of [0,1]){ const m=M[s]||{}; const okCo=tcgCoaches(G.src,G.players[s]); const co=okCo.includes(m.co)||(G.src!=="coll"&&BY_ID[m.co]&&BY_ID[m.co].pos[0]==="COACH")?m.co:null;
+      for(const s of [0,1]){ const m=M[s]||{}; const co=BY_ID[m.co]&&BY_ID[m.co].pos[0]==="COACH"?m.co:null;
         tcgSetupMods(S,G,s,co,TCG_STAD[m.st]?m.st:null); S.acts[s]=[...new Set((m.ac||[]).filter(k=>TCG_ACT[k]))].slice(0,TCG_ACT_N); }
       S.phase="play"; S.turn=S.first; S.log.push({start:1,ev}); tcgStartTurn(S,S.turn); return; }
-    const s=S.turn; for(const A of ((M[s]||{}).x||[])){ if(S.end||S.done) break; tcgAct(S,G,s,A,ev); }
+    const s=S.turn; for(const A0 of ((M[s]||{}).x||[])){ if(S.end||S.done) break; const A=typeof A0==="string"?A0.split("|"):A0; tcgAct(S,G,s,A,ev); }
     if(!S.end&&S.act[s]===null){ if(S.bench[s].length) tcgAct(S,G,s,["p",0],ev); else S.end={w:1-s,why:"ko"}; }
     S.log.push({s,ev}); if(S.end) return;
     S.turn=1-s; S.n++; const o=S.turn; if(S.act[o]===null){ if(!S.bench[o].length){ S.end={w:s,why:"ko"}; return; } }
@@ -6715,8 +6715,9 @@ async function cgAnswer(id,yes){ try{ await db.runTransaction(async tx=>{ const 
 async function cgPlay(m){ const G=cgCur; if(!G) return; const X=cgG(G); const S=cgReplay(X); const side=G.cpu?0:G.players.indexOf(me); if(!cgNeedMe(X,S,side)) return;
   const key=cgKey(X,S,side); cgAnim={id:G.id||"cpu",key};
   if(G.cpu){ G.mv[key]=m; cgCpuMoves(); cgSaveCpu(); cgAfter(); renderCards(); return; }
+  if(m&&Array.isArray(m.x)) m=Object.assign({},m,{x:m.x.map(A=>Array.isArray(A)?A.join("|"):A)}); // Firestore n'accepte pas les tableaux de tableaux
   G.mv=Object.assign({},G.mv,{[key]:m}); renderCards();
-  try{ await cgRef(G.id).update({["mv."+key]:m,at:Date.now(),nx:cgNext(cgG(G))}); }catch(e){ toast("Coup non envoyé : vérifie ta connexion",true); } }
+  try{ await cgRef(G.id).update({["mv."+key]:m,at:Date.now(),nx:cgNext(cgG(G))}); }catch(e){ console.warn(e); const L=Object.assign({},G.mv); delete L[key]; G.mv=L; renderCards(); toast("Coup non envoyé : vérifie ta connexion et rejoue",true); } }
 // qui doit jouer maintenant (sert aux notifications push côté serveur)
 function cgNext(X){ const S=cgReplay(X); if(S.end) return []; return [0,1].filter(s=>cgNeedMe(X,S,s)).map(s=>X.players[s]); }
 function cgCpuMoves(){ const G=cgCur; if(!G||!G.cpu) return; const X=cgG(G); const E=CG_ENG[G.g];
@@ -7184,7 +7185,7 @@ function cgTeaser(){ const M=$("#cardModal"); M.innerHTML=`<div class="cm-box" s
   <button class="btn" id="cgTzX" style="margin-top:10px">J'ai hâte !</button></div>`; M.classList.add("open"); $("#cgTzX").onclick=()=>M.classList.remove("open"); M.onclick=e=>{ if(e.target===M) M.classList.remove("open"); }; cgCdTick(); }
 function openCards(from){ if(!cgLive()){ cgTeaser(); return; } cgBack=from==="online"?"online":"solo"; NAV_OF.cards=cgBack==="online"?"nOnline":"nSolo"; if(!(cgCur&&cgSel==="game")) cgSel=null; setMode("cards"); }
 
-const APP_V="2026-11-28s"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-28t"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
