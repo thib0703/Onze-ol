@@ -6664,7 +6664,9 @@ CG_ENG.pyr={ solo:true, init(G){ return {p:[{f:0,tr:0,lives:3,log:[]},{f:0,tr:0,
   stepS(S,s,m,G){ const P=S.p[s]; const F=pyrFloor(G,s,P.f,P.tr); const id=F.hand[+m.i]; const v=cgStats(id,G.evo[s][id]||0)[F.k], vo=cgStats(F.opp)[F.k];
     const win=v>=vo; P.log.push({f:P.f,id,opp:F.opp,k:F.k,v,vo,win}); P.tr++;
     if(win){ P.f++; if(P.f>=5) P.done=1; } else { P.lives--; if(P.lives<=0) P.done=1; } },
-  score(P){ return P.f*10+P.lives; },
+  // classement : étages, puis vies restantes, puis « marge » (total des écarts gagnés) — quasiment plus d'égalités
+  score(P){ const mg=(P.log||[]).reduce((t,l)=>t+(l.win?Math.min(99,l.v-l.vo):0),0); return P.f*1e6+P.lives*1e4+mg; },
+  margin(P){ return (P.log||[]).reduce((t,l)=>t+(l.win?Math.min(99,l.v-l.vo):0),0); },
   cpu(S,G,side){ const P=S.p[side], F=pyrFloor(G,side,P.f,P.tr); const so=cgStats(F.opp); let best=0,bv=-1e9;
     F.hand.forEach((id,i)=>{ const s=cgStats(id,G.evo[side][id]||0); const v=s.reduce((a,x,j)=>a+(x>=so[j]?1:0),0)+Math.random()*.5; if(v>bv){bv=v;best=i;} }); return {i:best}; } };
 // rejouer une partie depuis ses coups
@@ -6796,7 +6798,7 @@ const CG_TUTO={
  duel:[["🃏 Duel 5 cartes","Tu as <b>6 cartes</b> en main pour 5 manches."],["Stats connues d'avance","La stat de chaque manche est affichée dès le début : garde tes meilleures cartes pour les bonnes manches."],["Comment gagner","Chacun pose une carte en secret, la plus haute valeur gagne la manche."]],
  tab:[["🥅 Tirs au but","5 tireurs et 1 gardien chacun, on tire chacun son tour."],["Le tireur","Choisis ton côté et ta frappe : <b>placée</b> (sûre) ou <b>puissante</b> (dure à arrêter mais peut partir au-dessus)."],["Le gardien","Choisis où plonger. Bon côté = tes réflexes peuvent arrêter le tir. Mort subite en cas d'égalité."]],
  cbt:[["🔥 Combat TCG","Choisis <b>5 joueurs</b> : 1 titulaire et 4 sur le banc."],["À chaque tour","Ton titulaire gagne <b>1 ⚽</b>, puis tu choisis : <b>Attaque 1</b> (1 ⚽), <b>Attaque 2</b> (3 ⚽) ou <b>Changer de joueur</b>."],["Les types","🔥 Attaquant > 🧤 Gardien > ⚽ Milieu > 🛡️ Défenseur > 🔥<br>Le bon type frappe ×1,25 💥"],["Comment gagner","Chaque K.O. = <b>1 but</b>, le premier à <b>3 buts</b> gagne. Compétences de carrière et liens entre coéquipiers = bonus automatiques."]],
- pyr:[["🔺 Pyramide de rareté","5 étages : Épique, Légendaire, Mythique, Spéciale et Légende Ultime."],["À chaque étage","Une carte adverse est visible, mais la stat du duel est <b>cachée</b>."],["Comment gagner","Choisis parmi tes 3 cartes la plus complète. Gagné : tu montes. Perdu : une vie en moins (3 vies)."]],
+ pyr:[["🔺 Pyramide de rareté","5 étages : Épique, Légendaire, Mythique, Spéciale et Légende Ultime."],["À chaque étage","Une carte adverse est visible, mais la stat du duel est <b>cachée</b>."],["Comment gagner","Choisis parmi tes 3 cartes la plus complète. Gagné : tu montes. Perdu : une vie en moins (3 vies)."],["Le départage","Le plus haut étage gagne, puis le plus de vies. Si c'est encore égal : la plus grosse <b>marge</b> (total de l'avance sur chaque carte battue)."]],
  pom:[["↕️ Plus ou moins","Une carte est affichée avec sa note."],["Ton pari","La carte suivante a-t-elle une note <b>plus haute</b> ou <b>plus basse</b> ?"],["Le but","Fais la plus longue série ! Égalité = on continue. Classement des records entre joueurs."],["🔥 Cagnotte qui grimpe","Chaque bonne réponse rapporte <b>plus que la précédente</b> : +3, +4, +5, +6…<br>Et le multiplicateur s'envole avec la série : 5-9 <b>×2</b> · 10-14 <b>×3</b> · 15-19 <b>×4</b> · 20+ <b>×5</b>"]]};
 function cgTutoSeen(g){ try{ if(localStorage.getItem("gl_cgtuto_"+g)) return true; }catch(_){} return !!(((W()||{}).cg||{}).tuto||{})[g]; }
 function cgTuto(g){ const L=CG_TUTO[g]; if(!L) return; let i=0; let el=document.getElementById("cgTutoBox"); if(!el){ el=document.createElement("div"); el.id="cgTutoBox"; document.body.appendChild(el); }
@@ -7070,7 +7072,7 @@ CG_VIEW.pyr=(G,S,side,need)=>{ const P=S.p[side], O=S.p[1-side];
   const L=P.log[P.log.length-1]; const res=L?`<div class="cgres ${L.win?"win":"lose"}">Étage ${PYR_N[L.f]} · stat cachée : <b>${CG_N[L.k]}</b> · ${L.v} contre ${L.vo} → ${L.win?"tu montes !":"une vie perdue"}</div>`:"";
   let play=""; if(!P.done){ const F=pyrFloor(G,side,P.f,P.tr); play=`<div class="cgmsg sm">Étage <b>${PYR_N[P.f]}</b> · bats cette carte sur une stat cachée</div><div class="cgduo">${cgCard(F.opp,118)}</div>
       <div class="cghand">${F.hand.map((id,i)=>`<span class="cardbtn cgc can" data-cgi="${i}">${tcgHTML(id,{w:112,evo:G.evo[side][id]||0})}</span>`).join("")}</div>`; }
-  const vs=`<div class="mute" style="font-size:12px;text-align:center;margin:6px">${cgNm(G.players[1-side])} : étage ${O.f}/5 · ${"❤️".repeat(O.lives)}${O.done?" (terminé)":""}</div>`;
+  const vs=`<div class="mute" style="font-size:12px;text-align:center;margin:6px">${cgNm(G.players[1-side])} : étage ${O.f}/5 · ${"❤️".repeat(O.lives)} · marge +${CG_ENG.pyr.margin(O)}${O.done?" (terminé)":""}<br>Toi : marge <b>+${CG_ENG.pyr.margin(P)}</b> <small>(en cas d'égalité d'étages et de vies, la plus grosse marge gagne : bats les cartes avec de l'avance !)</small></div>`;
   return `<div class="cgscore"><span>${"❤️".repeat(P.lives)||"💔"}</span><small>Étage ${Math.min(P.f+1,5)}/5</small><span>${P.f}/5 ✅</span></div><div class="pyr">${steps}</div>${res}${play}${P.done&&!S.end?`<div class="cgwait">Ton ascension est finie (${P.f}/5). En attente de ${cgNm(G.players[1-side])}…</div>`:""}${vs}`; };
 let cgPick=null;
 // ↕️ PLUS OU MOINS (local)
@@ -7158,7 +7160,7 @@ function cgTeaser(){ const M=$("#cardModal"); M.innerHTML=`<div class="cm-box" s
   <button class="btn" id="cgTzX" style="margin-top:10px">J'ai hâte !</button></div>`; M.classList.add("open"); $("#cgTzX").onclick=()=>M.classList.remove("open"); M.onclick=e=>{ if(e.target===M) M.classList.remove("open"); }; cgCdTick(); }
 function openCards(from){ if(!cgLive()){ cgTeaser(); return; } cgBack=from==="online"?"online":"solo"; NAV_OF.cards=cgBack==="online"?"nOnline":"nSolo"; if(!(cgCur&&cgSel==="game")) cgSel=null; setMode("cards"); }
 
-const APP_V="2026-11-28n"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-28o"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
