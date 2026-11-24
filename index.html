@@ -2090,7 +2090,7 @@ let resetArm=false;
 $("#reset").onclick=e=>{ if(!resetArm){resetArm=true;e.target.textContent="Sûr ?";setTimeout(()=>{resetArm=false;e.target.textContent="🗑️ Vider";},3000);return;}
   resetArm=false;e.target.textContent="🗑️ Vider"; const o=W(); o.slots={}; o.bench={}; o.coach=null; o.loadedId=null; render(); save(); toast("11 type vidé (ta collection et ta progression sont gardées)"); };
 
-function toast(t,bad){ const el=$("#toast"); el.textContent=t; el.style.background=bad?"#b4432b":"#1f8a4c"; el.style.display="block"; clearTimeout(toast.t); toast.t=setTimeout(()=>el.style.display="none",2500); }
+let lastToast=""; function toast(t,bad){ lastToast=String(t||""); const el=$("#toast"); el.textContent=t; el.style.background=bad?"#b4432b":"#1f8a4c"; el.style.display="block"; clearTimeout(toast.t); toast.t=setTimeout(()=>el.style.display="none",2500); }
 async function saveNow(msg){
   const b=$("#saveBtn"); b.disabled=true; b.textContent="Sauvegarde…";
   compos[me].savedAt=Date.now(); cache(); clearTimeout(saveT); dirty=true;
@@ -3507,7 +3507,7 @@ const poolTier=p=>cardTier(p);
 const POOL={bronze:[],silver:[],gold:[],icon:[],myth:[]}; for(const p of ALL_CARDS) if(p.v!=="tf"&&p.v!=="xm"&&p.v!=="gf"&&p.v!=="ul"&&p.v!=="lm") POOL[poolTier(p)].push(p.id);
 const W=()=>C(me);
 function addCoins(n,why){ const c=W(); c.coins=(c.coins||0)+n; save(); renderCoins(); if(why) toast(`${n>0?"+":""}${n} 🪙 ${why}`); }
-function renderCoins(){ const el=$("#coins"); if(!el) return; if(!me){el.style.display="none";return;} el.style.display=""; el.textContent=`🪙 ${(W().coins||0).toLocaleString("fr-FR")}`; }
+function renderCoins(){ const el=$("#coins"); if(!el) return; el.onclick=showCoinLog; if(!me){el.style.display="none";return;} el.style.display=""; el.textContent=`🪙 ${(W().coins||0).toLocaleString("fr-FR")}`; }
 // matchs de Draft / Budget / 2 contre 2 : longs à préparer (même gain que les autres modes)
 const isDraftH=h=>!!(h&&(h.draft==="budget"||h.draft==="classic"||h.duo));
 function rewardFor(h,i){ const [a,b]=i===0?h.score:[h.score[1],h.score[0]]; const base=a>b?100:a===b?50:25, x=isDraftH(h)?2:1; /* ⚔️ affrontements en ligne (draft, Budget, 2c2) : gains ×2 */ return {coins:(base+10*a)*x,res:(a>b?"victoire":a===b?"nul":"défaite")+(x>1?(h.duo?" 2c2":h.draft==="budget"?" Budget":" Draft")+" ×2":""),a,b}; }
@@ -6954,7 +6954,7 @@ function cgTeaser(){ const M=$("#cardModal"); M.innerHTML=`<div class="cm-box" s
   <button class="btn" id="cgTzX" style="margin-top:10px">J'ai hâte !</button></div>`; M.classList.add("open"); $("#cgTzX").onclick=()=>M.classList.remove("open"); M.onclick=e=>{ if(e.target===M) M.classList.remove("open"); }; cgCdTick(); }
 function openCards(from){ if(!cgLive()){ cgTeaser(); return; } cgBack=from==="online"?"online":"solo"; NAV_OF.cards=cgBack==="online"?"nOnline":"nSolo"; if(!(cgCur&&cgSel==="game")) cgSel=null; setMode("cards"); }
 
-const APP_V="2026-11-27z"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-28a"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
@@ -6986,7 +6986,14 @@ document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==
 let db=null, saveT=null, dirty=false, unsubs=[];
 function setSync(t,cls){ const s=$("#sync"); s.textContent=t; s.className="sync "+(cls||""); }
 function cache(){ try{localStorage.setItem("onze-ol-cache2",JSON.stringify(compos));}catch(e){} }
-function save(){ cache(); dirty=true; clearTimeout(saveT); saveT=setTimeout(push,400); }
+// 🪙 Historique des pièces : chaque variation est notée avec le dernier message affiché (toucher le compteur de pièces)
+function coinTrack(){ try{ if(!me) return; const c=W(); if(!c||typeof c.coins!=="number") return; if(c.cl0==null){ c.cl0=c.coins; return; } const d=c.coins-c.cl0; if(!d) return;
+  c.cLog=[{at:Date.now(),n:d,w:/🪙|pièce|Pack|vend|achet|enchère|Pass|Objectif|Classement|Défi|Carrière|Quiz|victoire|nul|défaite/i.test(lastToast)?lastToast.slice(0,90):"",s:c.coins},...(c.cLog||[])].slice(0,80); c.cl0=c.coins; }catch(e){} }
+function showCoinLog(){ const c=W(), L=c.cLog||[]; const M=$("#cardModal");
+  M.innerHTML=`<div class="cm-box"><h3 style="margin:0 0 6px">🪙 Historique des pièces</h3><div class="cm-note">Solde : <b>${(c.coins||0).toLocaleString("fr-FR")} 🪙</b></div>
+    <div style="text-align:left;max-height:55vh;overflow:auto;font-size:12.5px">${L.length?L.map(x=>`<div style="display:flex;gap:8px;padding:5px 0;border-bottom:1px solid #ffffff14"><b style="min-width:58px;color:${x.n>0?"#7ee2a0":"#ff8a8a"}">${x.n>0?"+":""}${x.n.toLocaleString("fr-FR")}</b><span style="flex:1">${esc(x.w||"—")}</span><small class="mute">${new Date(x.at).toLocaleString("fr-FR",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</small></div>`).join(""):`<div class="mute">Rien encore : l'historique démarre maintenant.</div>`}</div>
+    <div class="mbtns"><button class="btn ghost" id="clX">Fermer</button></div></div>`; M.classList.add("open"); $("#clX").onclick=()=>M.classList.remove("open"); }
+function save(){ setTimeout(coinTrack,60); cache(); dirty=true; clearTimeout(saveT); saveT=setTimeout(push,400); }
 async function push(){
   if(!db||!me){ return false; }
   const data={...C(me), name:NAMES[me]||"?", updated:Date.now()};
