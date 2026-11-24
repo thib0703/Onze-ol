@@ -1150,6 +1150,7 @@ body.lowfx .tile,body.lowfx .vt img,body.lowfx .hype,body.lowfx .pkbtn,body.lowf
 .tuse2.can{opacity:1;border-color:#ffd97088;background:linear-gradient(90deg,#ffd9701a,#0000);animation:tuglow 2s infinite}.tuse2.used{filter:grayscale(1)}
 .tuse2 .tuc{flex:none}.tuse2 .tut b{display:block;font-size:12px}.tuse2 .tut small{display:block;font-size:10.5px;color:#c8d6ff;line-height:1.25;margin-top:2px}
 @keyframes tuglow{50%{box-shadow:0 0 12px #ffd97055}}
+.pommul{font-weight:900;font-size:20px;color:#7ee2a0;text-align:right}.pommul small{display:block;font-size:11px;color:#ffd970;font-weight:700}.pommul.m2{color:#ffd970}.pommul.m3{color:#ff9f43}.pommul.m4{color:#ff5a5a}.pommul.m5{color:#d98cff;text-shadow:0 0 10px #d98cff}
 .cgch{background:#0f1d40;border:1px solid #ffd97044;border-radius:14px;padding:8px 10px;margin:8px 0}.cgch summary{cursor:pointer;font-size:14px;list-style:none}.cgch summary small{color:var(--mute);margin-left:4px;font-size:11.5px}
 .cgchr{position:relative;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 8px;margin-top:6px;border-radius:10px;background:#ffffff0d;overflow:hidden;font-size:13px}.cgchr span{position:relative;z-index:1}.cgchr small{display:block;color:#ffd970;font-size:11px}.cgchr b{position:relative;z-index:1}.cgchr i{position:absolute;left:0;bottom:0;height:3px;background:#ffd970}.cgchr.ok{background:#1f8a4c33}.cgchr.ok i{background:#7ee2a0}
 .cghub .cgrw{display:block;color:#ffd970;font-size:10.5px;margin-top:2px}
@@ -6795,7 +6796,7 @@ const CG_TUTO={
  tab:[["🥅 Tirs au but","5 tireurs et 1 gardien chacun, on tire chacun son tour."],["Le tireur","Choisis ton côté et ta frappe : <b>placée</b> (sûre) ou <b>puissante</b> (dure à arrêter mais peut partir au-dessus)."],["Le gardien","Choisis où plonger. Bon côté = tes réflexes peuvent arrêter le tir. Mort subite en cas d'égalité."]],
  cbt:[["🔥 Combat TCG","Choisis <b>5 joueurs</b> : 1 titulaire et 4 sur le banc."],["À chaque tour","Ton titulaire gagne <b>1 ⚽</b>, puis tu choisis : <b>Attaque 1</b> (1 ⚽), <b>Attaque 2</b> (3 ⚽) ou <b>Changer de joueur</b>."],["Les types","🔥 Attaquant > 🧤 Gardien > ⚽ Milieu > 🛡️ Défenseur > 🔥<br>Le bon type frappe ×1,25 💥"],["Comment gagner","Chaque K.O. = <b>1 but</b>, le premier à <b>3 buts</b> gagne. Compétences de carrière et liens entre coéquipiers = bonus automatiques."]],
  pyr:[["🔺 Pyramide de rareté","5 étages : Épique, Légendaire, Mythique, Spéciale et Légende Ultime."],["À chaque étage","Une carte adverse est visible, mais la stat du duel est <b>cachée</b>."],["Comment gagner","Choisis parmi tes 3 cartes la plus complète. Gagné : tu montes. Perdu : une vie en moins (3 vies)."]],
- pom:[["↕️ Plus ou moins","Une carte est affichée avec sa note."],["Ton pari","La carte suivante a-t-elle une note <b>plus haute</b> ou <b>plus basse</b> ?"],["Le but","Fais la plus longue série ! Égalité = on continue. Classement des records entre joueurs."]]};
+ pom:[["↕️ Plus ou moins","Une carte est affichée avec sa note."],["Ton pari","La carte suivante a-t-elle une note <b>plus haute</b> ou <b>plus basse</b> ?"],["Le but","Fais la plus longue série ! Égalité = on continue. Classement des records entre joueurs."],["🔥 Multiplicateur","Plus ta série est longue, plus chaque bonne réponse rapporte :<br>1-4 ×1 · 5-9 <b>×2</b> · 10-14 <b>×3</b> · 15-19 <b>×4</b> · 20+ <b>×5</b>"]]};
 function cgTutoSeen(g){ try{ if(localStorage.getItem("gl_cgtuto_"+g)) return true; }catch(_){} return !!(((W()||{}).cg||{}).tuto||{})[g]; }
 function cgTuto(g){ const L=CG_TUTO[g]; if(!L) return; let i=0; let el=document.getElementById("cgTutoBox"); if(!el){ el=document.createElement("div"); el.id="cgTutoBox"; document.body.appendChild(el); }
   const done=()=>{ el.classList.remove("open"); try{ localStorage.setItem("gl_cgtuto_"+g,"1"); }catch(_){} try{ const c=W(); c.cg=c.cg||{}; c.cg.tuto=c.cg.tuto||{}; if(!c.cg.tuto[g]){ c.cg.tuto[g]=1; save(); } }catch(_){} };
@@ -6900,7 +6901,7 @@ function pomFx(g){ const L=g.last; const prevId=g.seq[(g.i-1)%g.seq.length], cur
   return {d:L.ok?1700:2100,html:`<div class="cgstage rvst"><div class="stg-t">${g.guess?"⬆️ Plus haute ?":"⬇️ Plus basse ?"}</div>
     <div class="rv"><div class="rvc me">${cgCard(prevId,110)}<b class="rvn">${L.a}</b></div><i class="cgvs big">${g.guess?"⬆️":"⬇️"}</i>
     <div class="rvc opp ${L.ok?"w":"l"}"><div class="flip3"><div class="fb">${tcgBackHTML(110)}</div><div class="ff">${cgCard(cur,110)}</div></div><b class="rvn">${L.b}</b></div></div>
-    <div class="stg-r ${L.ok?"w":"l"}">${L.eq?"🤝 Égalité, on continue":L.ok?`✅ Bien vu ! Série ${g.streak}`:"❌ Raté…"}</div></div>`}; }
+    <div class="stg-r ${L.ok?"w":"l"}">${L.eq?"🤝 Égalité, on continue":L.ok?`✅ Bien vu ! Série ${g.streak}${g.streak%5===0&&g.streak<=20?` · 🔥 multiplicateur ×${pomMul(g.streak)} !`:""}`:"❌ Raté…"}</div></div>`}; }
 // scène affichée ? → on bloque les nouveaux rendus pendant l'animation, puis on revient à l'écran normal
 function cgStageWrap(stage){ clearTimeout(cgFxT); cgBusyTill=Date.now()+stage.d; cgFxT=setTimeout(()=>{ cgBusyTill=0; renderCards(); },stage.d); return stage.html; }
 function cgCountOf(G,S,side){ return G.g==="pyr"?S.p[side].log.length:S.log.length; }
@@ -7078,12 +7079,17 @@ function pomGuess(up){ const g=pomG; if(!g||g.over) return; const a=BY_ID[g.seq[
   const ok=b===a||(up?b>a:b<a); g.last={a,b,ok,eq:b===a}; g.guess=up; g.fx=1; if(ok){ if(b!==a) g.streak++; } else { g.over=1; pomEnd(); } renderCards(); }
 function pomEnd(){ const g=pomG; const c=W(); c.cg=c.cg||{}; const P=c.cg.pom=c.cg.pom||{best:0};
   if(g.src==="all"){ if(g.streak>(P.best||0)){ P.best=g.streak; setTimeout(()=>toast(`🏆 Nouveau record : ${g.streak} !`),500); } if(P.d!==today()){ P.d=today(); P.db=0; } P.db=Math.max(P.db||0,g.streak); }
-  try{ track("play"); }catch(_){} cgChTrack(null,null,0,g.streak>=5,g.streak); const e=g.streak>=10?2:g.streak>=5?1:0; const got=eclatsGain(e,false,"pom"); const pc=g.streak?cgCoins(Math.min(50,g.streak*3),true,"pom"):0; if(got||pc) setTimeout(()=>toast(`Série de ${g.streak} :${pc?` +${pc} 🪙`:""}${got?` +${got} 💠`:""}`),1200); save(); }
+  try{ track("play"); }catch(_){} cgChTrack(null,null,0,g.streak>=5,g.streak); const e=pomEcl(g.streak); const got=eclatsGain(e,false,"pom"); const pc=g.streak?cgCoins(pomCoins(g.streak),true,"pom"):0; if(got||pc) setTimeout(()=>toast(`Série de ${g.streak} :${pc?` +${pc} 🪙`:""}${got?` +${got} 💠`:""}`),1200); save(); }
+// ↕️ multiplicateur de série : chaque bonne réponse vaut 4 🪙 × le palier (1-4 ×1, 5-9 ×2, 10-14 ×3, 15-19 ×4, 20+ ×5)
+const pomMul=n=>n<5?1:n<10?2:n<15?3:n<20?4:5;
+const pomCoins=n=>{ let t=0; for(let i=0;i<n;i++) t+=4*pomMul(i); return t; };
+const pomEcl=n=>n>=25?8:n>=20?6:n>=15?4:n>=10?2:n>=5?1:0;
 function pomHTML(){ const g=pomG; const cur=g.seq[g.i%g.seq.length];
   if(g.fx){ g.fx=0; return `<div class="cgtop"><span>↕️ <b>Plus ou moins</b></span></div>`+cgStageWrap(pomFx(g)); }
   if(g.i===0&&!g.dealt){ g.dealt=1; cgDealFx=true; cgSnd("flip"); }
   return `<div class="cgtop"><span>↕️ <b>Plus ou moins</b></span><small>${g.src==="coll"?"🎴 ta collection (hors classement)":"🌍 toutes les cartes"}</small></div>
-    <div class="cgscore"><span>Série <b>${g.streak}</b></span><small>Record ${((W().cg||{}).pom||{}).best||0}</small><span></span></div>
+    <div class="cgscore"><span>Série <b>${g.streak}</b></span><small>Record ${((W().cg||{}).pom||{}).best||0}</small><span class="pommul m${pomMul(g.streak)}">×${pomMul(g.streak)}<small>${pomCoins(g.streak)} 🪙</small></span></div>
+    ${!g.over&&g.streak%5===4&&g.streak<20?`<div class="mute" style="text-align:center;font-size:12px">🔥 Encore 1 bonne réponse : multiplicateur ×${pomMul(g.streak+1)} !</div>`:""}
     ${g.last?`<div class="cgres ${g.last.ok?"win":"lose"}">${g.last.a} → ${g.last.b} · ${g.last.eq?"égalité, on continue":g.last.ok?"bien vu !":"raté…"}</div>`:""}
     <div class="cgduo">${cgCard(cur,150)}</div>
     ${g.over?`<div class="cgend lose"><b>Série terminée : ${g.streak}</b><div class="dbtns"><button class="btn" id="pomAgain">🔁 Rejouer</button><button class="btn ghost" id="cgQuit">Retour aux jeux</button></div></div>`:
@@ -7149,7 +7155,7 @@ function cgTeaser(){ const M=$("#cardModal"); M.innerHTML=`<div class="cm-box" s
   <button class="btn" id="cgTzX" style="margin-top:10px">J'ai hâte !</button></div>`; M.classList.add("open"); $("#cgTzX").onclick=()=>M.classList.remove("open"); M.onclick=e=>{ if(e.target===M) M.classList.remove("open"); }; cgCdTick(); }
 function openCards(from){ if(!cgLive()){ cgTeaser(); return; } cgBack=from==="online"?"online":"solo"; NAV_OF.cards=cgBack==="online"?"nOnline":"nSolo"; if(!(cgCur&&cgSel==="game")) cgSel=null; setMode("cards"); }
 
-const APP_V="2026-11-28k"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-28l"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
