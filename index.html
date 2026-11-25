@@ -1341,6 +1341,10 @@ body.lowfx .cgstage *{animation-duration:.01s!important;animation-delay:0s!impor
 .tzone{background:#0009;border:1px solid #ffffff1f;border-radius:16px;padding:6px;display:grid;grid-template-columns:auto auto;justify-content:center;align-items:center;gap:6px}.tzone .tbar,.tzone .tchips{grid-column:1/-1}.tzone .tbench{flex-direction:column;flex-wrap:wrap;max-height:180px}
 .tzone.opp{border-color:#ff5a5a44}.tzone.me{border-color:#7ee2a044}
 .tbar{display:flex;justify-content:space-between;width:100%;font-size:12px;color:#cfd9f5;padding:0 4px}
+.tdtile{display:block;margin-top:4px;font-size:11px;color:#ffd970}.tdtile .trk{display:block;height:5px;border-radius:9px;background:#ffffff26;overflow:hidden;margin-top:3px}.tdtile .trk i{display:block;height:100%;background:linear-gradient(90deg,#ffd970,#ff9a3c);border-radius:9px}
+.sntip .snsec{background:#ffffff0d;border:1px solid #ffffff1a;border-radius:12px;padding:8px 10px;margin:8px 0;font-size:12.5px;line-height:1.45}.sntip .snsec>b{display:block;color:#ffd970;margin-bottom:3px;font-size:13.5px}
+.decban{background:linear-gradient(135deg,#e3002b33,#1d4ed855);border:1px solid #ffd97077;border-radius:14px;padding:10px 12px;margin:8px 0 12px;font-size:12.5px;line-height:1.4}.decban .dbh{display:flex;justify-content:space-between;align-items:baseline;gap:8px}.decban .dbh b{color:#ffd970;font-size:14.5px}.decban .dbh small{color:#ffd970;font-weight:700;white-space:nowrap}.decban ul{margin:6px 0 8px;padding-left:4px;list-style:none}.decban li{margin:4px 0}
+.tdtag{font-size:10.5px;font-weight:700;color:#ffd970;background:#ffd97022;border:1px solid #ffd97055;border-radius:999px;padding:1px 6px;margin-left:5px;white-space:nowrap}
 .tgoals i{font-style:normal;opacity:.25;filter:grayscale(1);margin-right:2px}.tgoals i.on{opacity:1;filter:none}
 .tbench{display:flex;gap:5px;justify-content:center;min-height:40px}
 .tslot{width:54px;height:81px;border:2px dashed #ffffff22;border-radius:8px}
@@ -2301,7 +2305,7 @@ function homeHTML(){ const c=W(); const L=todoList(); TODO_CUR=[]; const PG={onl
   let nx=""; try{ const f=fxOf().find(f=>!f.score&&new Date(f.date).getTime()>Date.now()); if(f) nx=`<div class="todor"><span class="tdi">🔴🔵</span><span class="tdt">Prochain match de l'OL : <b>${esc(f.home)}-${esc(f.away)}</b> · ${new Date(f.date).toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})} à ${new Date(f.date).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})}</span><button class="btn sm ghost" data-home="prono">Prono</button></div>`; }catch(e){}
   const h=new Date().getHours(), hi=h<5?"Bonne nuit":h<12?"Bonjour":h<18?"Salut":"Bonsoir";
   return `<div class="tui-box home"><div class="tui-head"><b>${h<18?"☀️":"🌙"} ${hi} ${esc(NAMES[me]||"")} !</b><button class="btn sm ghost" id="homeX">Fermer</button></div>
-    <div class="topstrip" style="margin:6px 0 10px">${topStripHTML()}</div>
+    <div class="topstrip" style="margin:6px 0 10px">${topStripHTML()}</div>${decBanner()}
     ${L.length?`<h4 style="margin:4px 0">📌 Ce qui t'attend <small class="mute">${L.length}</small></h4>${L.map(x=>{ const i=TODO_CUR.push(x)-1; return `<div class="todor"><span class="tdi">${x.ic}</span><span class="tdt">${x.txt} <small class="mute">${PG[x.pg]||""}</small></span><button class="btn sm" data-todo="${i}">${x.btn}</button></div>`; }).join("")}`:`<div class="mute" style="font-size:13px;margin:6px 0">✅ Rien d'urgent : lance un match ou ouvre un pack !</div>`}
     ${last||nx?`<h4 style="margin:10px 0 4px">⚽ Côté terrain</h4>${last}${nx}`:""}
     <button class="btn big" id="homeGo" style="margin-top:12px">C'est parti !</button></div>`; }
@@ -2364,7 +2368,7 @@ function renderHubs(){ if(!me) return;
     const dl=duoMine(), dt=dl.find(d=>duoTodo(d)>=3); const duoS=dt?(dt.status==="lobby"?["📨 Invitation de "+(NAMES[dt.by]||"?"),"📨"]:dt.status==="running"?["⚡ À toi de choisir !","À toi !"]:["🏁 Prêts ?","Prêt ?"]):dl.length?["⏳ "+dl.length+" partie"+(dl.length>1?"s":"")+" en cours",null]:[null,null];
     const Lm=Object.values(leagues||{}).filter(L=>(L.members||[]).includes(me)&&L.status!=="done"), Li=Object.values(leagues||{}).filter(invitedMe);
     const Km=Object.values(cups||{}).filter(K=>(K.members||[]).includes(me)&&K.status!=="done"), Ki=Object.values(cups||{}).filter(invitedMe);
-    const html=`<div class="hubh"><h2>🌐 En ligne</h2><small>Affronte tes potes : drafts, championnats, coupes…</small></div>
+    const html=`<div class="hubh"><h2>🌐 En ligne</h2><small>Affronte tes potes : drafts, championnats, coupes…</small></div>${decBanner()}
       ${live?hubTile("live","🔴","Match en direct","Touche pour regarder","linear-gradient(135deg,#e3002b,#7a0018)","LIVE",true):""}
       <div class="hub">
       ${(()=>{ try{ const n=cgTodo(); if(!cgLive()){ cgCdTick(); return hubTile("cards","🃏","Jeux de cartes",`🔒 Ouverture dans <b data-cgcd>${cgCountTxt()}</b>`,"linear-gradient(135deg,#7c3aed,#13306b)","Bientôt",true); } return hubTile("cards","🃏","Jeux de cartes",n?`⚡ ${n} partie${n>1?"s":""} t'attend${n>1?"ent":""}`:"Bataille, Duel, Tirs au but, Combat TCG, Plus ou moins, Pyramide","linear-gradient(135deg,#7c3aed,#13306b)",n?"À toi !":"Nouveau",true); }catch(e){ return ""; } })()}
@@ -2381,13 +2385,13 @@ function renderHubs(){ if(!me) return;
     try{ const D=c.dch; df=D&&D.day===today()&&D.done?`✅ Joué aujourd'hui : ${D.score.join("-")}`:"🎯 À jouer aujourd'hui · 1 essai"; }catch(e){}
     try{ const n=c.quiz&&c.quiz.d===today()?c.quiz.n:0; qz=`${n}/${QUIZ_MAX} quiz récompensés aujourd'hui`; }catch(e){}
     const defiTodo=!(c.dch&&c.dch.day===today()&&c.dch.done), quizTodo=!(c.quiz&&c.quiz.d===today()&&c.quiz.n>=QUIZ_MAX);
-    const html=`<div class="hubh"><h2>🎮 Solo</h2><small>Joue seul, ou à deux sur ce téléphone</small></div><div class="hub">
+    const html=`<div class="hubh"><h2>🎮 Solo</h2><small>Joue seul, ou à deux sur ce téléphone</small></div>${decBanner()}<div class="hub">
       ${(()=>{ try{ const n=cgTodo(); if(!cgLive()){ cgCdTick(); return hubTile("cards","🃏","Jeux de cartes",`🔒 Ouverture dans <b data-cgcd>${cgCountTxt()}</b>`,"linear-gradient(135deg,#7c3aed,#13306b)","Bientôt",true); } return hubTile("cards","🃏","Jeux de cartes",n?`⚡ ${n} partie${n>1?"s":""} t'attend${n>1?"ent":""}`:"Bataille, Duel, Tirs au but, Combat TCG, Plus ou moins, Pyramide","linear-gradient(135deg,#7c3aed,#13306b)",n?"À toi !":"Nouveau",true); }catch(e){ return ""; } })()}
       ${hubTile("career","🧗","Carrière",car,"linear-gradient(135deg,#0369a1,#082f49)",null)}
       ${hubTile("defi","🎯","Défi du jour",df,"linear-gradient(135deg,#ea580c,#7c2d12)",defiTodo?"À jouer":null)}
       ${hubTile("quiz","🧠","Quiz OL",qz,"linear-gradient(135deg,#9333ea,#3b0764)",quizTodo?"Dispo":null)}
       ${hubTile("sofa","🛋️","Canapé",sofa?"⏳ Partie en cours":"2 joueurs, 1 téléphone","linear-gradient(135deg,#15803d,#052e16)",null)}
-      ${(()=>{ try{ const D=divState(); return hubTile("div",DIV_IC(D.d),"Divisions",`${DIV_NAME(D.d)} · ${divLeft()}/${DIV_MAX} matchs aujourd'hui`,"linear-gradient(135deg,#e3002b,#1d4ed8)",divLeft()>0?"Jouer":null,true); }catch(e){ return ""; } })()}
+      ${(()=>{ try{ const D=divState(); return hubTile("div",D.pl?"🎯":DIV_IC(D.d),"Divisions",`${D.pl?`Placement ${D.pl.n}/${PL_N}`:DIV_NAME(D.d)+(D.d===-1?` · ${D.p} pts`:"")} · ${divLeft()}/${DIV_MAX} matchs aujourd'hui`,"linear-gradient(135deg,#e3002b,#1d4ed8)",divLeft()>0?"Jouer":null,true); }catch(e){ return ""; } })()}
       ${hubTile("cpu","🤖","Contre l'ordi",(()=>{ try{ const n=cpuLeft(); return `Ton 11 type contre l'ordinateur · ${rwNext(mdayN())}`; }catch(e){ return "Ton 11 type contre l'ordinateur"; } })(),"linear-gradient(135deg,#475569,#0f172a)",null,true)}
       </div>`;
     if(setHub(H,html)){ H.querySelectorAll("[data-tile]").forEach(b=>b.onclick=()=>openTile(b.dataset.tile)); bindObjMini(H); } } }
@@ -4421,21 +4425,23 @@ function bindDuo(){ const on=(s,f)=>{ const e=$(s); if(e) e.onclick=f; }; const 
 
 // =================== 🏅 Classement du mois, confrontations, badges ===================
 let RANK={};
+const RANK_START="2026-12"; // 🧹 les anciens mois sont faussés (des matchs non joués en ligne comptaient) : tout repart du 1er décembre 2026
 const RANK_R=[{pack:"legende",n:2,coins:1500},{pack:"legende",coins:800},{pack:"or",n:2,coins:400}], RANK_MIN=3; // classement du mois = affrontements en ligne seulement (drafts, championnats, coupes)
 const monthName=k=>{ const [y,m]=k.split("-"); return new Date(+y,+m-1,1).toLocaleDateString("fr-FR",{month:"long",year:"numeric"}); };
 let rankAll=false;
-function rankAllM(){ const T={}; for(const M of Object.values(RANK.months||{})) for(const [u,r] of Object.entries(M||{})){ const t=T[u]=T[u]||{p:0,w:0,d:0,l:0,j:0,bp:0,bc:0}; for(const k in t) t[k]+=+r[k]||0; } return T; }
+function rankAllM(){ const T={}; for(const [mk,M] of Object.entries(RANK.months||{})) if(mk>=RANK_START) for(const [u,r] of Object.entries(M||{})){ const t=T[u]=T[u]||{p:0,w:0,d:0,l:0,j:0,bp:0,bc:0}; for(const k in t) t[k]+=+r[k]||0; } return T; }
 function rankRows(mk){ const M=mk==="all"?rankAllM():(RANK.months||{})[mk]||{}; return Object.entries(M).filter(([u])=>NAMES[u]).sort((a,b)=>b[1].p-a[1].p||(b[1].bp-b[1].bc)-(a[1].bp-a[1].bc)||b[1].bp-a[1].bp); }
 function prevMonth(){ const d=new Date(); d.setDate(1); d.setMonth(d.getMonth()-1); return MONTHK(d.getTime()); }
-function claimRank(){ if(!me||!compos[me]) return; const pm=prevMonth(); const c=W(); c.rankDone=c.rankDone||{}; if(c.rankDone[pm]) return;
+function claimRank(){ if(!me||!compos[me]) return; const pm=prevMonth(); if(pm<RANK_START) return; const c=W(); c.rankDone=c.rankDone||{}; if(c.rankDone[pm]) return;
   const R=rankRows(pm).filter(([,r])=>r.j>=RANK_MIN); if(!R.length) return; const i=R.findIndex(([u])=>u===me); c.rankDone[pm]=i<0?"-":i+1; save();
-  if(i>=0&&i<3) setTimeout(()=>grant(RANK_R[i],`${["🥇","🥈","🥉"][i]} Classement de ${monthName(pm)}`),1500); }
+  if(i>=0&&i<3) setTimeout(()=>grant(RANK_R[i],`${["🥇","🥈","🥉"][i]} Classement de ${monthName(pm)}`),1500);
+  if(i===0&&pm>=LAD_START){ const T=c.trophies=c.trophies||[]; if(!T.some(x=>x.id==="mo-"+pm)){ T.push({id:"mo-"+pm,k:"mo",n:`Champion du mois · ${monthName(pm)}`,at:Date.now()}); save(); setTimeout(()=>toast(`🏆 Nouveau trophée : Champion du mois · ${monthName(pm)}`),3000); } } }
 // 🍂 SAISONS : 3 mois de classement entre joueurs, podium récompensé + trophée
 const SEASON_MIN=6, SEASON_R=[{pack:"legende",n:2,coins:3000},{pack:"legende",coins:1500},{pack:"or",n:2,coins:800}];
 const SEASONK=t=>{ const d=new Date(t||Date.now()); return d.getFullYear()+"-S"+(Math.floor(d.getMonth()/3)+1); };
 const seasonName=k=>{ const [y,q]=k.split("-S"); return `${["Hiver","Printemps","Été","Automne"][+q-1]} ${y}`; };
 const seasonEnd=k=>{ const [y,q]=k.split("-S"); return new Date(+y,(+q)*3,1); };
-function seasonRows(sk){ const T={}; for(const [mk,M] of Object.entries(RANK.months||{})){ const [y,m]=mk.split("-"); if(SEASONK(new Date(+y,+m-1,15).getTime())!==sk) continue;
+function seasonRows(sk){ const T={}; for(const [mk,M] of Object.entries(RANK.months||{})){ const [y,m]=mk.split("-"); if(SEASONK(new Date(+y,+m-1,15).getTime())!==sk||mk<RANK_START) continue;
     for(const [u,r] of Object.entries(M||{})){ const t=T[u]=T[u]||{p:0,w:0,d:0,l:0,j:0,bp:0,bc:0}; for(const k in t) t[k]+=+r[k]||0; } }
   return Object.entries(T).filter(([u])=>NAMES[u]).sort((a,b)=>b[1].p-a[1].p||(b[1].bp-b[1].bc)-(a[1].bp-a[1].bc)||b[1].bp-a[1].bp); }
 function prevSeason(){ const d=new Date(); d.setDate(1); d.setMonth(d.getMonth()-3); return SEASONK(d.getTime()); }
@@ -4447,24 +4453,27 @@ function claimSeason(){ if(!me||!compos[me]) return; const ps=prevSeason(); if(p
   save(); }
 function seasonHTML(tg){ const sk=SEASONK(), R=seasonRows(sk), dl=Math.ceil((seasonEnd(sk)-Date.now())/86400000); const ps=prevSeason(), P=seasonRows(ps).filter(([,r])=>r.j>=SEASON_MIN).slice(0,3);
   return `<h3>🍂 Saison ${seasonName(sk)} <small>fin dans ${dl} j</small></h3>${tg}
-  <div class="rules" style="font-size:12px;margin-top:0">Une saison dure 3 mois : on additionne tous tes matchs entre joueurs (victoire 3 pts, nul 1 pt). À la fin, le podium gagne un trophée « Saison » dans sa vitrine : 🥇 <b>2 Packs Légende + 3 000 🪙</b>, 🥈 <b>Pack Légende + 1 500 🪙</b>, 🥉 <b>2 Packs Épiques + 800 🪙</b> (${SEASON_MIN} matchs minimum). Tes cartes restent, seul le classement repart à zéro.</div>
+  <div class="rules" style="font-size:12px;margin-top:0">Une saison dure 3 mois : on additionne tous tes matchs entre joueurs (victoire 3 pts, nul 1 pt). À la fin, le podium gagne un trophée « Saison » dans sa vitrine : 🥇 <b>2 Packs Légende + 3 000 🪙</b>, 🥈 <b>Pack Légende + 1 500 🪙</b>, 🥉 <b>2 Packs Épiques + 800 🪙</b> (${SEASON_MIN} matchs minimum). Tes cartes restent, seul le classement repart à zéro.${sk==="2026-S4"?" 🧹 Pour cette saison, seuls les affrontements en ligne de <b>décembre</b> comptent (les mois d'avant étaient faussés).":""}</div>
   ${R.length?`<table class="rk"><tr><th></th><th>Joueur</th><th>Pts</th><th>J</th><th>V-N-D</th><th>Diff</th></tr>${R.map(([u,r],i)=>`<tr class="${u===me?"me":""}"><td>${["🥇","🥈","🥉"][i]||i+1}</td><td><button class="lnk" data-prof="${u}">${crestMini(u)}${esc(NAMES[u])}</button>${r.j<SEASON_MIN?` <small class="mute">(${r.j}/${SEASON_MIN})</small>`:""}</td><td><b>${r.p}</b></td><td>${r.j}</td><td>${r.w}-${r.d}-${r.l}</td><td>${r.bp-r.bc>0?"+":""}${r.bp-r.bc}</td></tr>`).join("")}</table>`:`<div class="mute" style="font-size:13px">Aucun match entre joueurs cette saison. Lance un défi !</div>`}
   ${P.length?`<div class="mute" style="font-size:12px;margin-top:8px">Podium de la saison ${seasonName(ps)} : ${P.map(([u,r],i)=>`${["🥇","🥈","🥉"][i]} ${esc(NAMES[u])} (${r.p} pts)`).join(" · ")}</div>`:""}`; }
-let rankSeason=false;
+let rankSeason=false, rankLad=null;
 function rankHTML(){ const mk=MONTHK(); const R=rankRows(rankAll?"all":mk); const end=new Date(); end.setMonth(end.getMonth()+1,1); end.setHours(0,0,0,0); const dl=Math.ceil((end-Date.now())/86400000);
   const pm=prevMonth(), P=rankRows(pm).filter(([,r])=>r.j>=RANK_MIN).slice(0,3);
-  const v=rankAll?"1":rankSeason?"s":"0"; const tg=`<div class="arow" style="margin:0 0 8px">${[["0","📅 Ce mois"],["s","🍂 Saison"],["1","🏛️ Depuis le début"]].map(([k,l])=>`<button class="btn sm${v===k?"":" ghost"}" data-rka="${k}">${l}</button>`).join("")}</div>`;
+  const v=rankLad?(rankLad==="solo"?"dv":"tc"):rankAll?"1":rankSeason?"s":"0"; const tg=`<div class="arow" style="margin:0 0 8px">${[["0","📅 En ligne"],["dv","🏅 Divisions"],["tc","🔥 TCG"],["s","🍂 Saison"],["1","🏛️ Depuis le début"]].map(([k,l])=>`<button class="btn sm${v===k?"":" ghost"}" data-rka="${k}">${l}</button>`).join("")}<button class="btn sm ghost" data-snews="1">ℹ️ Règles & récompenses</button></div>${decBanner()}`;
+  if(rankLad) return ladHTML(rankLad,tg);
   if(rankSeason&&!rankAll) return seasonHTML(tg);
   if(rankAll) return `<h3>🏛️ Classement depuis le début</h3>${tg}<div class="rules" style="font-size:12px;margin-top:0">Tous les matchs entre joueurs depuis le lancement du classement (victoire 3 pts, nul 1 pt). Ton bilan face à chacun : touche son nom.</div>
   ${R.length?`<table class="rk"><tr><th></th><th>Joueur</th><th>Pts</th><th>J</th><th>V-N-D</th><th>Diff</th></tr>${R.map(([u,r],i)=>`<tr class="${u===me?"me":""}"><td>${["🥇","🥈","🥉"][i]||i+1}</td><td><button class="lnk" data-prof="${u}">${crestMini(u)}${esc(NAMES[u])}</button></td><td><b>${r.p}</b></td><td>${r.j}</td><td>${r.w}-${r.d}-${r.l}</td><td>${r.bp-r.bc>0?"+":""}${r.bp-r.bc}</td></tr>`).join("")}</table>`:`<div class="mute" style="font-size:13px">Aucun match entre joueurs pour l'instant.</div>`}
   ${h2hAllHTML()}`;
-  return `<h3>🏅 Classement du mois <small>${monthName(mk)} · fin dans ${dl} j</small></h3>${tg}
-  <div class="rules" style="font-size:12px;margin-top:0">Seuls les vrais affrontements en ligne comptent (draft, Budget, championnat, coupe) : victoire 3 pts, nul 1 pt. Les matchs amicaux et contre l'ordi ne comptent pas. 🥇 2 Packs Légende + 1 500 🪙 · 🥈 1 Pack Légende + 800 🪙 · 🥉 2 Packs Épiques + 400 🪙 (${RANK_MIN} matchs minimum). Remise à zéro chaque mois.</div>
+  if(mk<RANK_START) return `<h3>📅 Affrontements en ligne</h3>${tg}<div class="rules" style="font-size:12px;margin-top:0">🧹 <b>Pas de classement entre joueurs en novembre.</b> Avant, des matchs qui n'étaient pas de vrais affrontements en ligne comptaient aussi, donc tous les compteurs repartent à zéro le <b>1er décembre</b>. Ensuite, seuls les vrais affrontements en ligne compteront : 1 contre 1 (draft, Budget, championnat, coupe), 👥 2 contre 2 et 🃏 tous les jeux de cartes en ligne. 🥇 trophée « Champion du mois » + ${rTxt(RANK_R[0])} · 🥈 ${rTxt(RANK_R[1])} · 🥉 ${rTxt(RANK_R[2])}.</div>${h2hAllHTML()}`;
+  return `<h3>📅 Affrontements en ligne <small>${monthName(mk)} · fin dans ${dl} j</small></h3>${tg}
+  <div class="rules" style="font-size:12px;margin-top:0">Seuls les vrais affrontements en ligne comptent : matchs 1 contre 1 (draft, Budget, championnat, coupe)${ladOn()?", 👥 2 contre 2 (chaque joueur de l'équipe) et 🃏 tous les jeux de cartes en ligne":" ; dès le 1er décembre, le 👥 2 contre 2 et 🃏 tous les jeux de cartes en ligne compteront aussi"}. Victoire 3 pts, nul 1 pt.${ladOn()?" Le 1er gagne aussi le trophée « Champion du mois ».":""} Les matchs amicaux et contre l'ordi ne comptent pas. 🥇 2 Packs Légende + 1 500 🪙 · 🥈 1 Pack Légende + 800 🪙 · 🥉 2 Packs Épiques + 400 🪙 (${RANK_MIN} matchs minimum). Remise à zéro chaque mois.</div>
   ${R.length?`<table class="rk"><tr><th></th><th>Joueur</th><th>Pts</th><th>J</th><th>V-N-D</th><th>Diff</th></tr>${R.map(([u,r],i)=>`<tr class="${u===me?"me":""}"><td>${["🥇","🥈","🥉"][i]||i+1}</td><td><button class="lnk" data-prof="${u}">${crestMini(u)}${esc(NAMES[u])}</button></td><td><b>${r.p}</b></td><td>${r.j}</td><td>${r.w}-${r.d}-${r.l}</td><td>${r.bp-r.bc>0?"+":""}${r.bp-r.bc}</td></tr>`).join("")}</table>`:`<div class="mute" style="font-size:13px">Aucun affrontement en ligne ce mois-ci. Lance un draft !</div>`}
   ${P.length?`<div class="mute" style="font-size:12px;margin-top:8px">Podium de ${monthName(pm)} : ${P.map(([u,r],i)=>`${["🥇","🥈","🥉"][i]} ${esc(NAMES[u])} (${r.p} pts)`).join(" · ")}</div>`:""}`; }
-function h2hAllHTML(){ const L=Object.keys(NAMES).filter(u=>u!==me&&u!==CPU&&(RANK.h2h||{})[[me,u].sort().join("__")]);
-  if(!L.length) return ""; return `<h4 style="margin:12px 0 4px">⚔️ Mes face-à-face</h4>${L.map(u=>{ const H=RANK.h2h[[me,u].sort().join("__")]; const v=H[me]||0, d=H[u]||0, n=H.d||0; return `<div class="dh"><div><b>vs ${esc(NAMES[u])}</b><small>${v+n+d} matchs</small></div><b class="${v>d?"win":v<d?"lose":""}">${v} V · ${n} N · ${d} D</b></div>`; }).join("")}`; }
-function h2hHTML(id){ if(id===me) return ""; const H=(RANK.h2h||{})[[me,id].sort().join("__")]; if(!H) return `<div class="h2h mute">⚔️ Jamais affrontés en match entre joueurs.</div>`;
+const H2H=()=>RANK.h2hReset===RANK_START?(RANK.h2h||{}):{};
+function h2hAllHTML(){ const L=Object.keys(NAMES).filter(u=>u!==me&&u!==CPU&&H2H()[[me,u].sort().join("__")]);
+  if(!L.length) return ""; return `<h4 style="margin:12px 0 4px">⚔️ Mes face-à-face</h4>${L.map(u=>{ const H=H2H()[[me,u].sort().join("__")]; const v=H[me]||0, d=H[u]||0, n=H.d||0; return `<div class="dh"><div><b>vs ${esc(NAMES[u])}</b><small>${v+n+d} matchs</small></div><b class="${v>d?"win":v<d?"lose":""}">${v} V · ${n} N · ${d} D</b></div>`; }).join("")}`; }
+function h2hHTML(id){ if(id===me) return ""; const H=H2H()[[me,id].sort().join("__")]; if(!H) return `<div class="h2h mute">⚔️ ${MONTHK()<RANK_START?"Face-à-face remis à zéro : ils repartent le 1er décembre.":"Pas encore affrontés en ligne depuis le 1er décembre."}</div>`;
   const v=H[me]||0, d=H[id]||0, n=H.d||0; return `<div class="h2h"><b>⚔️ Toi contre ${esc(NAMES[id])}</b><div class="h2hb"><span class="v">${v} V</span><span class="n">${n} N</span><span class="d">${d} D</span></div></div>`; }
 const BADGES=[
   {id:"car",ic:"🧗",n:"Carriériste",d:"Finir la Carrière solo",ok:c=>(c.career||{}).best>=CAREER.length,pr:c=>[(c.career||{}).best||0,CAREER.length]},
@@ -4479,7 +4488,7 @@ const BADGES=[
   {id:"rich",ic:"💰",n:"Riche",d:"Avoir 3000 pièces",ok:c=>(c.coins||0)>=3000,pr:c=>[c.coins||0,3000]},
   {id:"str",ic:"🔥",n:"Fidèle",d:"7 jours de connexion d'affilée",ok:c=>(c.streak||{}).n>=7,pr:c=>[(c.streak||{}).n||0,7]},
   {id:"str30",ic:"📅",n:"Inséparable",d:"30 jours de connexion d'affilée",ok:c=>(c.streak||{}).n>=30,pr:c=>[(c.streak||{}).n||0,30]},
-  {id:"ldc",ic:"⭐",n:"Ligue des Champions",d:"Atteindre la Ligue des Champions en Divisions",ok:c=>((c.div||{}).best??10)===0,pr:c=>[10-((c.div||{}).best??10),10]},
+  {id:"ldc",ic:"⭐",n:"Ligue des Champions",d:"Atteindre la Ligue des Champions en Divisions",ok:c=>((c.div||{}).best??10)<=0,pr:c=>[Math.min(10,10-((c.div||{}).best??10)),10]},
   {id:"gold",ic:"✨",n:"Chanceux",d:"Ouvrir un Gold Pack",ok:c=>(c.goldPacks||0)>0},
   {id:"ulc",ic:"👑",n:"Légendaire parmi les légendes",d:"Avoir une Légende Ultime",ok:c=>VARIANTS.some(p=>p.v==="ul"&&(c.coll||{})[p.id])},
   {id:"evo3",ic:"⬆️",n:"Entraîneur de l'année",d:"Faire évoluer une carte au +3",ok:c=>Object.values(c.evo||{}).some(v=>v>=3)},
@@ -5181,7 +5190,7 @@ function renderLigue(){
   $("#lLeague").querySelectorAll("[data-ld]").forEach(b=>b.onclick=()=>deleteLeague(b.dataset.ld));
   $("#lLeague").querySelectorAll("[data-ls]").forEach(b=>b.onclick=()=>startLeague(b.dataset.ls));
   $("#lLeague").querySelectorAll("[data-rp]").forEach(b=>b.onclick=()=>openReplay(b.dataset.rp));
-  $("#lRank").innerHTML=rankHTML(); $("#lRank").querySelectorAll("[data-rka]").forEach(b=>b.onclick=()=>{ rankAll=b.dataset.rka==="1"; rankSeason=b.dataset.rka==="s"; renderLigue(); }); $("#lRank").querySelectorAll("[data-prof]").forEach(b=>b.onclick=()=>showProfile(b.dataset.prof));
+  $("#lRank").innerHTML=rankHTML(); $("#lRank").querySelectorAll("[data-rka]").forEach(b=>b.onclick=()=>{ rankAll=b.dataset.rka==="1"; rankSeason=b.dataset.rka==="s"; rankLad=b.dataset.rka==="dv"?"solo":b.dataset.rka==="tc"?"tcg":null; renderLigue(); }); $("#lRank").querySelectorAll("[data-prof]").forEach(b=>b.onclick=()=>showProfile(b.dataset.prof)); $("#lRank").querySelectorAll("[data-snews]").forEach(b=>b.onclick=()=>seasonNews(true));
   $("#lFeed").innerHTML=`<h3>📰 Fil d'actu</h3>${feed.length?feed.slice(0,25).map(f=>`<div class="fd"><span>${esc(f.text)}</span><small>${new Date(f.at).toLocaleDateString("fr-FR",{day:"numeric",month:"short"})} ${new Date(f.at).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})}</small></div>`).join(""):`<div class="mute" style="font-size:13px">Rien pour l'instant.</div>`}`;
   $("#lPlayers").innerHTML=`<h3>👥 Joueurs</h3><div class="plrs">${Object.keys(NAMES).map(id=>`<button class="plr${id===me?" me":""}" data-prof="${id}">${crestMini(id,28)}<b>${esc(NAMES[id])}</b><small>${ALL_CARDS.filter(p=>(C(id).coll||{})[p.id]).length}/${ALL_CARDS.length}</small></button>`).join("")}</div>`;
   $("#lPlayers").querySelectorAll("[data-prof]").forEach(b=>b.onclick=()=>showProfile(b.dataset.prof));
@@ -5495,8 +5504,8 @@ function adventHTML(){ if(!me||!adventOn()) return ""; const A=adventState(), td
 const TROPHY={cup:{ic:"🏆",img:"coupe",t:"Coupe",c:"gold"},cup2:{ic:"🥈",img:"finaliste",t:"Finaliste",c:"silver"},lg:{ic:"👑",img:"champion",t:"Champion",c:"gold"},lg2:{ic:"🥈",img:"vice-champion",t:"Vice-champion",c:"silver"},lg3:{ic:"🥉",img:"troisieme",t:"3e du championnat",c:"bronze"},
   wk:{ic:"🗓️",img:"coupe-weekend",t:"Coupe du week-end",c:"gold"},ss:{ic:"🍂",img:"saison",t:"Champion de saison",c:"gold"},ss2:{ic:"🥈",img:"saison-2",t:"2e de la saison",c:"silver"},ss3:{ic:"🥉",img:"saison-3",t:"3e de la saison",c:"bronze"},ldc:{ic:"⭐",img:"ldc",t:"Ligue des Champions",c:"gold"},up:{ic:"🛡️",img:"montee",t:"Divisions",c:"gold"},
   car:{ic:"🧗",img:"carriere",t:"Carrière",c:"gold"},pass:{ic:"🎟️",img:"pass",t:"Pass de saison",c:"gold"},noel:{ic:"🎄",img:"noel",t:"Calendrier de l'Avent",c:"gold"},
-  alb:{ic:"📒",img:"album",t:"Album",c:"gold"},gold:{ic:"✨",img:"gold-pack",t:"Gold Pack",c:"gold"},gf:{ic:"🔥",img:"grande-forme",t:"Grande Forme",c:"gold"},ul:{ic:"👑",img:"ultime",t:"Légende Ultime",c:"gold"}};
-const TBIG=k=>["cup","lg","wk","ldc","ss"].includes(k);
+  alb:{ic:"📒",img:"album",t:"Album",c:"gold"},gold:{ic:"✨",img:"gold-pack",t:"Gold Pack",c:"gold"},gf:{ic:"🔥",img:"grande-forme",t:"Grande Forme",c:"gold"},ul:{ic:"👑",img:"ultime",t:"Légende Ultime",c:"gold"},tcg:{ic:"🔥",img:"champion",t:"Champion TCG du mois",c:"gold"},dv:{ic:"🏅",img:"montee",t:"Champion des Divisions du mois",c:"gold"},mo:{ic:"📅",img:"champion",t:"Champion du mois",c:"gold"}};
+const TBIG=k=>["cup","lg","wk","ldc","ss","tcg","dv","mo"].includes(k);
 // 🏆 Trophées de progression : vérifiés en continu (et rattrapés pour ce qui a déjà été accompli)
 function trophyCheck(quiet){ if(!me||!C(me)) return; const c=W(); const T=c.trophies=c.trophies||[]; const add=[];
   const has=id=>T.some(x=>x.id===id); const put=(id,k,n,extra)=>{ if(has(id)) return; const x={id,k,n,at:Date.now(),...(extra||{})}; T.push(x); add.push(x); };
@@ -5504,9 +5513,10 @@ function trophyCheck(quiet){ if(!me||!C(me)) return; const c=W(); const T=c.trop
   T.forEach(x=>{ if(x.k==="cup"&&String(x.id).startsWith("wk-")) x.k="wk"; });
   const D=c.div; if(D){ { const i0=T.findIndex(x=>x.id==="div-up"); if(i0>=0) T.splice(i0,1); // ancien bouclier unique → un bouclier par montée
       for(let d=9;d>=(D.best??10);d--) put("div-up-"+d,"up",`Montée en ${DIV_NAME(d)}`); }
-    if(D.d===0&&D.p>=DIV_UP) put("ldc-"+D.w,"ldc","Titre en Ligue des Champions"); }
+    if(D.d===0&&D.p>=DIV_UP) put("ldc-"+D.w,"ldc","Titre en Ligue des Champions"); if(D.ldcw) put("ldc-"+D.ldcw,"ldc","Titre en Ligue des Champions"); }
   const K=c.career; if(K){ const i0=T.findIndex(x=>x.id==="car"); if(i0>=0) T.splice(i0,1); // un trophée par compétition remportée en Carrière
-    Object.keys(CAREER_END).map(Number).forEach(i=>{ if((K.best||0)>=i+1) put("car-"+i,"car",`Carrière : ${CAREER[i].comp} remportée`); }); }
+    Object.keys(CAREER_END).map(Number).forEach(i=>{ if((K.best||0)>=i+1) put("car-"+i,"car",`Carrière : ${CAREER[i].comp} remportée`); });
+    const LG=K.leg; if(LG) Object.keys(LEGEND_END).map(Number).forEach(i=>{ if((LG.best||0)>=i+1) put("carl-"+i,"car",`Carrière Légende : ${LEGEND[i].comp} remportée`); }); }
   const P=c.pass; if(P&&P.lv>=PASS_N) put("pass-"+P.s,"pass",`Pass ${(()=>{ const [y,m]=String(P.s).split("-").map(Number); return y&&m?new Date(y,m-1,1).toLocaleDateString("fr-FR",{month:"long",year:"numeric"}):PASS_NAME(); })()}`);
   const A=c.advent; if(A&&Object.keys(A.o||{}).length>=24) put("noel-"+A.y,"noel",`Noël ${A.y} : 24/24`);
   (c.albumDone||[]).forEach(id=>{ const st=SETS.find(x=>x.id===id); if(st) put("alb-"+id,"alb",st.t.replace(/ \(.*\)$/,"")); });
@@ -5522,9 +5532,9 @@ function trImg(k,id){ const D=TROPHY[k]||TROPHY.cup; if(!/^ss/.test(k)) return `
   const m=String(id||"").match(/S(\d)$/), q=m?+m[1]:+SEASONK().split("-S")[1]; const base=["","saison-hiver","saison-printemps","saison-ete","saison"][q]||"saison"; return `img/trophees/${base}${k==="ss2"?"-2":k==="ss3"?"-3":""}.webp`; }
 const trIcon=D=>D.img?`<img class="trimg" src="img/trophees/${D.img}.webp" alt="" loading="lazy">`:D.ic;
 // 🏆 Salle des trophées : vitrine (fond, plaque, étagères par catégorie), regroupement ×N, silhouettes à débloquer, zoom 3D
-const VIT_CATS=[["Titres",["ss","lg","ldc","cup","wk"]],["Places d'honneur",["ss2","ss3","cup2","lg2","lg3"]],["Divisions",["up"]],["Parcours",["car","pass","noel"]],["Collection",["alb","gold","gf","ul"]]];
-const TR_HOW={ss:"Finis 1er d'une saison (3 mois de matchs entre joueurs)",ss2:"Finis 2e d'une saison",ss3:"Finis 3e d'une saison",lg:"Finis 1er d'un championnat entre joueurs",ldc:"Finis 1er de la Ligue des Champions en Divisions",cup:"Gagne une coupe entre joueurs",wk:"Gagne la coupe du week-end (samedi soir)",
-  cup2:"Atteins la finale d'une coupe",lg2:"Finis 2e d'un championnat",lg3:"Finis 3e d'un championnat",up:"Monte d'une division (Solo › Divisions)",car:"Remporte une compétition en Carrière",
+const VIT_CATS=[["Titres",["ss","mo","dv","tcg","lg","ldc","cup","wk"]],["Places d'honneur",["ss2","ss3","cup2","lg2","lg3"]],["Divisions",["up"]],["Parcours",["car","pass","noel"]],["Collection",["alb","gold","gf","ul"]]];
+const TR_HOW={tcg:"Finis 1er du classement mensuel du Combat TCG",dv:"Finis 1er du classement mensuel des Divisions",mo:"Finis 1er du classement mensuel des affrontements en ligne",ss:"Finis 1er d'une saison (3 mois de matchs entre joueurs)",ss2:"Finis 2e d'une saison",ss3:"Finis 3e d'une saison",lg:"Finis 1er d'un championnat entre joueurs",ldc:"Gagne la Ligue des Champions en Divisions (monte en Division Ultime)",cup:"Gagne une coupe entre joueurs",wk:"Gagne la coupe du week-end (samedi soir)",
+  cup2:"Atteins la finale d'une coupe",lg2:"Finis 2e d'un championnat",lg3:"Finis 3e d'un championnat",up:"Monte d'une division (Solo › Divisions)",car:"Remporte une compétition en Carrière (ou en Carrière Légende)",
   pass:"Termine le pass de saison du mois",noel:"Ouvre les 24 cases du calendrier de l'Avent",alb:"Complète une collection de l'album",gold:"Ouvre un Gold Pack",gf:"Obtiens une carte Grande Forme",ul:"Obtiens une Légende Ultime"};
 const GROUP_K=new Set(["lg","ldc","cup","wk","cup2","lg2","lg3","pass","noel"]);
 window.__vit={};
@@ -5571,22 +5581,38 @@ function bracketHTML(K){ const nR=Math.round(Math.log2(K.size||4)); const N=x=>x
 // ou des clubs gérés par l'ordi, du niveau de ta division. Monte jusqu'à la Ligue des Champions !
 // ======================================================================
 const DIV_MAX=10, DIV_UP=9;
-const DIV_NAME=d=>d===0?"Ligue des Champions":`Division ${d}`;
-const DIV_IC=d=>d===0?"⭐":d===1?"💎":d<=4?"🥇":d<=7?"🥈":"🥉";
-const DIV_COL=d=>d===0?["#7fb2ff","#1d4ed8"]:d===1?["#d39bff","#6b2bb0"]:d<=4?["#ffd970","#b0841f"]:d<=7?["#e9edf2","#7d8794"]:["#e2a774","#8a4b1c"];
-const DIV_RANGE=d=>d===0?[88,97]:[60+(10-d)*3,66+(10-d)*3];
-const DIV_REWARD=d=>d===0?{pack:"legende",coins:1000}:d===1?{pack:"legende"}:d<=4?{pack:"or",n:2}:d<=7?{pack:"or"}:{pack:"bronze"};
+// 🗓️ Chaque mois : 5 matchs de placement (difficulté adaptative), puis classement mensuel par meilleure division atteinte
+const LAD_START="2026-12"; const ladOn=()=>MONTHK()>=LAD_START; // 🗓️ les nouveaux classements démarrent le 1er décembre 2026
+const PL_N=5; const PL_START=6; // le placement commence contre un niveau Division 6
+const plTarget=P=>{ const s=P.v+P.dr/2; return s>=5?2:s>=4?3:s>=3?5:s>=2?6:s>=1?8:10; }; // jamais mieux que la Division 2
+const plNew=()=>({n:0,v:0,dr:0,lv:PL_START});
+function plStep(D,win,draw){ const P=D.pl; P.n++; if(win){ P.v++; P.lv=Math.max(2,P.lv-1); } else if(draw) P.dr++; else P.lv=Math.min(10,P.lv+1);
+  if(P.n<PL_N) return null; const t=plTarget(P); D.d=t; D.p=0; D.pl=null; D.mb=t; D.mbp=0; return t; }
+const plTxt=P=>`🎯 Placement ${P.n}/${PL_N} · ${P.v} V ${P.dr} N ${P.n-P.v-P.dr} D`;
+const ULT_STEP=9; // Division Ultime : un palier tous les 9 points, adversaires de plus en plus forts
+const ultPal=p=>Math.floor(Math.max(0,p||0)/ULT_STEP);
+const DIV_SEASON_RW=d=>d===-1?{pack:"legende",n:2,coins:3000}:d===0?{pack:"legende",n:2,coins:2000}:d===1?{pack:"legende",coins:1000}:d<=4?{pack:"or",n:2,coins:500}:d<=7?{pack:"or",coins:300}:{pack:"bronze",coins:150};
+const monthEndTxt=()=>{ const n=new Date(), e=new Date(n.getFullYear(),n.getMonth()+1,1), j=Math.ceil((e-n)/86400000); return j<=1?"demain":`dans ${j} jours`; };
+const DIV_NAME=d=>d===-1?"Division Ultime":d===0?"Ligue des Champions":`Division ${d}`;
+const DIV_IC=d=>d===-1?"👑":d===0?"⭐":d===1?"💎":d<=4?"🥇":d<=7?"🥈":"🥉";
+const DIV_COL=d=>d===-1?["#ffcf4a","#b3121f"]:d===0?["#7fb2ff","#1d4ed8"]:d===1?["#d39bff","#6b2bb0"]:d<=4?["#ffd970","#b0841f"]:d<=7?["#e9edf2","#7d8794"]:["#e2a774","#8a4b1c"];
+const DIV_RANGE=(d,p)=>d===-1?(k=>[Math.min(97,91+k),Math.min(99,96+k)])(ultPal(p)):d===0?[90,97]:d===1?[87,94]:[60+(10-d)*3,66+(10-d)*3];
+const DIV_REWARD=d=>d===-1?{pack:"legende",n:2,coins:1500}:d===0?{pack:"legende",coins:1000}:d===1?{pack:"legende"}:d<=4?{pack:"or",n:2}:d<=7?{pack:"or"}:{pack:"bronze"};
 const DIV_CLUBS=["AS Gerland","Racing Fourvière","FC Croix-Rousse","Olympique Confluence","US Part-Dieu","Stade Bellecour","AC Vaise","Sporting Villeurbanne","Real Saint-Jean","Inter Guillotière","Dynamo Monplaisir","Athletic Brotteaux"];
 function divState(){ const c=W(); const D=c.div=c.div||{d:10,p:0,best:10,wb:10,w:WEEKN(),log:[]};
   if(D.w!==WEEKN()){ // 🎁 récompense de la semaine écoulée selon la meilleure division atteinte
     if(D.played){ const r=DIV_REWARD(D.wb); grant(r,`🏅 Récompense hebdo : ${DIV_NAME(D.wb)}`); }
     D.w=WEEKN(); D.wb=D.d; D.played=0; save(); }
+  if(D.m!==MONTHK()){ // 🗓️ nouveau mois : récompense selon la meilleure division, archive pour le classement, puis 5 matchs de placement
+    if(D.m){ const done=!D.pl&&D.mp, mb=D.mb??D.d; if(done&&D.m>=LAD_START){ setTimeout(()=>grant(DIV_SEASON_RW(mb),`🗓️ Fin du mois des Divisions : ${DIV_NAME(mb)}`),1200); D.hist=D.hist||{}; D.hist[D.m]={d:mb,p:D.mbp||0}; D.hist=Object.fromEntries(Object.entries(D.hist).sort().slice(-3)); }
+      D.pl=plNew(); D.d=10; D.p=0; setTimeout(()=>toast(`🎯 Nouveau mois des Divisions : joue tes ${PL_N} matchs de placement !`),3800); }
+    D.m=MONTHK(); D.mb=D.pl?10:D.d; D.mbp=D.pl?0:D.p; D.mp=0; save(); }
   return D; }
 function divLeft(){ const D=divState(); if(D.day!==DAYK()){ D.day=DAYK(); D.n=0; } return Math.max(0,DIV_MAX-(D.n||0)); }
-function divOpponent(d){ const [lo,hi]=DIV_RANGE(d);
+function divOpponent(d,p){ const [lo,hi]=DIV_RANGE(d,p);
   // 1) un vrai joueur de ton niveau (en priorité, 1 fois sur 2 s'il y en a)
   const real=Object.keys(NAMES).filter(u=>u!==me&&u!==CPU&&compos[u]).map(u=>{ let r=null; try{ const S=strength(C(u),u,true); if(!enough(S)) return null; r=teamRate(C(u),u,true,false).global; }catch(e){} return r==null?null:{u,r}; }).filter(x=>x&&x.r>=lo-4&&x.r<=hi+4);
-  if(real.length&&Math.random()<.55){ const x=real[Math.floor(Math.random()*real.length)]; return {owner:x.u,name:NAMES[x.u],c:C(x.u),club:true,r:x.r}; }
+  if(real.length&&Math.random()<(d===-1?.25:.55)){ const x=real[Math.floor(Math.random()*real.length)]; return {owner:x.u,name:NAMES[x.u],c:C(x.u),club:true,r:x.r}; }
   // 2) un vrai club du niveau
   const clubs=Object.keys(CLUB_XI).filter(k=>{ const r=clubRate(k); return r>=lo-2&&r<=hi+2; });
   if(clubs.length&&Math.random()<.6){ const k=clubs[Math.floor(Math.random()*clubs.length)]; return {owner:CPU,name:k,c:clubTeam(k),club:false,r:clubRate(k)}; }
@@ -5594,38 +5620,41 @@ function divOpponent(d){ const [lo,hi]=DIV_RANGE(d);
   const n=DIV_CLUBS[Math.floor(Math.random()*DIV_CLUBS.length)]; return {owner:CPU,name:n,c:genTeam(lo,hi),club:false,r:null}; }
 function divApply(D,res){ // res : "v" | "n" | "d"
   const before={d:D.d,p:D.p}; let ev=null;
-  if(res==="v") D.p+=3; else if(res==="n") D.p+=1; else if(D.d<=7) D.p-=1;
-  if(D.p>=DIV_UP&&D.d>0){ D.d--; D.p=0; ev="up"; }
-  else if(D.p<0){ if(D.d<10&&D.d<=7){ D.d++; D.p=6; ev="down"; } else D.p=0; }
-  if(D.d===0&&D.p>=DIV_UP) D.p=DIV_UP;
-  D.best=Math.min(D.best??10,D.d); D.wb=Math.min(D.wb??10,D.d); return {before,ev}; }
+  if(D.pl){ const t=plStep(D,res==="v",res==="n"); if(t!=null) ev="placed"; }
+  else { if(res==="v") D.p+=3; else if(res==="n") D.p+=1; else if(D.d<=7) D.p-=1;
+    if(D.p>=DIV_UP&&D.d>-1){ if(D.d===0) D.ldcw=D.w; D.d--; D.p=0; ev="up"; } // LDC → Division Ultime
+    else if(D.p<0){ if(D.d===-1) D.p=0; else if(D.d<10&&D.d<=7){ D.d++; D.p=6; ev="down"; } else D.p=0; }
+    if(D.d<(D.mb??10)){ D.mb=D.d; D.mbp=D.p; } else if(D.d===D.mb) D.mbp=Math.max(D.mbp||0,D.p); }
+  if(!D.pl){ D.best=Math.min(D.best??10,D.d); D.wb=Math.min(D.wb??10,D.d); } return {before,ev}; }
 async function divPlay(){
   const D=divState(); if(divLeft()<=0){ toast(`Plus de match classé aujourd'hui (${DIV_MAX}/jour) : reviens demain !`,true); return; }
   const mine=W(), A=strength(mine,me,true); if(!enough(A)){ toast("Il te faut au moins 7 joueurs possédés dans ton 11 type",true); return; }
-  const O=divOpponent(D.d); const B=strength(O.c,O.owner===CPU?null:O.owner,O.club);
-  const m=buildMatch([{c:mine,S:A,label:DIV_NAME(D.d),owner:me,name:NAMES[me]},{c:O.c,S:B,label:O.owner===CPU?"🤖 Ordi":"Classé",owner:O.owner,name:O.name}]);
-  D.n=(D.n||0)+1; D.played=(D.played||0)+1; const snap=JSON.parse(JSON.stringify({d:D.d,p:D.p,best:D.best,wb:D.wb}));
+  const O=D.pl?divOpponent(D.pl.lv):divOpponent(D.d,D.p); const B=strength(O.c,O.owner===CPU?null:O.owner,O.club); const lab=D.pl?`🎯 Placement ${D.pl.n+1}/${PL_N}`:DIV_NAME(D.d);
+  const m=buildMatch([{c:mine,S:A,label:lab,owner:me,name:NAMES[me]},{c:O.c,S:B,label:O.owner===CPU?"🤖 Ordi":"Classé",owner:O.owner,name:O.name}]);
+  D.n=(D.n||0)+1; D.played=(D.played||0)+1; D.mp=(D.mp||0)+1; const snap=JSON.parse(JSON.stringify({d:D.d,p:D.p,best:D.best,wb:D.wb,mb:D.mb,mbp:D.mbp||0,pl:D.pl||null,ldcw:D.ldcw||null}));
   let out=null; const apply=m=>{ const [a,b]=m.score; const res=a>b?"v":a<b?"d":"n"; out=divApply(D,res);
-    later({coins:(res==="v"?120:res==="n"?60:30)+10*a},`🏅 ${DIV_NAME(snap.d)} : ${res==="v"?"victoire":res==="n"?"nul":"défaite"} ${a}-${b} contre ${O.name}`,m);
-    D.log=[{at:Date.now(),o:O.name,s:[a,b],res,d:snap.d},...(D.log||[])].slice(0,10);
+    later({coins:(res==="v"?120:res==="n"?60:30)+10*a},`🏅 ${lab} : ${res==="v"?"victoire":res==="n"?"nul":"défaite"} ${a}-${b} contre ${O.name}`,m);
+    D.log=[{at:Date.now(),o:O.name,s:[a,b],res,d:snap.d,pl:snap.pl?1:0},...(D.log||[])].slice(0,10);
     track("play"); if(res==="v") track("win"); if(a) track("goals",a); };
   apply(m); save();
   const showEv=()=>{ if(!out||!out.ev) return; setTimeout(()=>divFx(out.ev,D.d),endDelay(m)+800); };
   showEv();
   playLocal(m,{t:0,c:mine,w:me,club:true,oc:O.c,OS:B,fin:(m2,changed)=>{ if(changed){ Object.assign(D,snap); D.log=(D.log||[]).slice(1); const c=W(); c.pend=(c.pend||[]).filter(p=>p.mid!==m2.id); apply(m2); showEv(); } save(); saveReplay(m2); addHist(histOf(m2,{nr:1,mode:"div"})); }});
 }
-function divFx(ev,d){ const up=ev==="up"; const [c1,c2]=DIV_COL(d); const el=document.createElement("div"); el.className="tipov divfx"; el.style.cssText=`--c1:${c1};--c2:${c2}`;
-  el.innerHTML=`<div class="divbox ${up?"up":"down"}"><div class="divrays"></div><div class="divbadge"><span>${DIV_IC(d)}</span></div><div class="divk">${up?"PROMOTION !":"RELÉGATION"}</div><h2>${DIV_NAME(d)}</h2><div class="mute" style="font-size:13px">${up?(d===0?"Tu es au sommet : la Ligue des Champions ! 🏆":"Continue comme ça pour monter encore !"):"Accroche-toi, tu vas remonter !"}</div><button class="btn big" id="divOk">${up?"Allez l'OL ! 🔴🔵":"Compris"}</button></div>`;
+function divFx(ev,d){ const up=ev!=="down", pl=ev==="placed"; const [c1,c2]=DIV_COL(d); const el=document.createElement("div"); el.className="tipov divfx"; el.style.cssText=`--c1:${c1};--c2:${c2}`;
+  el.innerHTML=`<div class="divbox ${up?"up":"down"}"><div class="divrays"></div><div class="divbadge"><span>${DIV_IC(d)}</span></div><div class="divk">${pl?"PLACEMENT TERMINÉ":up?"PROMOTION !":"RELÉGATION"}</div><h2>${DIV_NAME(d)}</h2><div class="mute" style="font-size:13px">${pl?"Tu démarres le mois ici. À toi de monter !":up?(d===-1?"La Division Ultime ! Les points sont infinis, mais chaque palier est plus dur 👑":d===0?"La Ligue des Champions ! Encore 9 points pour la Division Ultime 🏆":"Continue comme ça pour monter encore !"):"Accroche-toi, tu vas remonter !"}</div><button class="btn big" id="divOk">${up?"Allez l'OL ! 🔴🔵":"Compris"}</button></div>`;
   document.body.appendChild(el); try{ if(up){ SFX.boom(true); SFX.fanfare(); SFX.cheer(); } else SFX.thump(); }catch(_){}
   el.querySelector("#divOk").onclick=()=>{ el.remove(); if(mode==="solo") renderSolo(); }; }
-function divHTML(){ const D=divState(), left=divLeft(), [c1,c2]=DIV_COL(D.d), [lo,hi]=DIV_RANGE(D.d);
-  const ladder=Array.from({length:DIV_UP},(_,i)=>`<i class="${i<D.p?"on":""}"></i>`).join("");
-  const others=Object.keys(NAMES).filter(u=>compos[u]&&C(u).div).map(u=>({u,d:C(u).div.d,p:C(u).div.p||0})).sort((a,b)=>a.d-b.d||b.p-a.p).slice(0,10);
-  return `<div class="divhead" style="--c1:${c1};--c2:${c2}"><div class="divbadge big"><span>${DIV_IC(D.d)}</span></div><div><small>Ta division</small><h3>${DIV_NAME(D.d)}</h3><div class="divlad">${ladder}</div><small>${D.d===0?"Tu es au sommet !":`${D.p}/${DIV_UP} points pour monter`}${D.d<=7&&D.d>0?" · une défaite retire 1 point":""}</small></div></div>
-    <button class="btn big" id="jDivGo" ${left?"":"disabled"} style="margin:10px 0 4px">${left?`⚔️ Match classé <small style="opacity:.8">(${left}/${DIV_MAX} aujourd'hui)</small>`:"⏳ Reviens demain pour d'autres matchs classés"}</button>
-    <div class="rules" style="font-size:12px">Tu affrontes le <b>11 type d'un autre joueur</b> de ton niveau, ou un <b>club géré par l'ordi</b> (niveau ${lo}-${hi}). Victoire +3, nul +1${D.d<=7?", défaite −1":""}. ${DIV_UP} points = <b>promotion</b>. Gains : victoire 120 🪙, nul 60, défaite 30, +10 par but. <b>Chaque lundi</b>, récompense selon ta meilleure division de la semaine : ${rTxt(DIV_REWARD(D.wb??D.d))} pour l'instant.</div>
-    ${(D.log||[]).length?`<h4>Derniers matchs classés</h4>${D.log.map(x=>`<div class="resr"><span class="rk ${x.res}">${x.res==="v"?"V":x.res==="d"?"D":"N"}</span><span class="rt">contre <b>${esc(x.o)}</b><small>${DIV_NAME(x.d)} · ${new Date(x.at).toLocaleDateString("fr-FR",{day:"numeric",month:"short"})}</small></span><span class="rs">${x.s[0]} - ${x.s[1]}</span></div>`).join("")}`:""}
-    ${others.length>1?`<h4>Classement des joueurs</h4>${others.map((x,i)=>`<div class="resr"><span class="rk n">${i+1}</span><span class="rt"><b>${esc(NAMES[x.u]||"?")}</b>${x.u===me?" <small style='display:inline'>(toi)</small>":""}</span><span class="rs" style="font-size:13px">${DIV_IC(x.d)} ${DIV_NAME(x.d)}</span></div>`).join("")}`:""}`; }
+function divHTML(){ const D=divState(), left=divLeft(), dd=D.pl?D.pl.lv:D.d, [c1,c2]=DIV_COL(D.pl?10:D.d), [lo,hi]=DIV_RANGE(dd,D.p);
+  const ult=D.d===-1&&!D.pl, pal=ultPal(D.p);
+  const ladder=D.pl?Array.from({length:PL_N},(_,i)=>`<i class="${i<D.pl.n?"on":""}"></i>`).join(""):Array.from({length:DIV_UP},(_,i)=>`<i class="${i<(ult?D.p%ULT_STEP:D.p)?"on":""}"></i>`).join("");
+  const sub=D.pl?`${D.pl.v} V · ${D.pl.dr} N · ${D.pl.n-D.pl.v-D.pl.dr} D · prochain adversaire niveau ${DIV_NAME(D.pl.lv)}`:ult?`Palier ${pal+1} · <b>${D.p} pts</b> · adversaire ${lo}-${hi} · une défaite retire 1 point`:`${D.p}/${DIV_UP} points pour monter${D.d<=7?" · une défaite retire 1 point":""}`;
+  return `<div class="divhead" style="--c1:${c1};--c2:${c2}"><div class="divbadge big"><span>${D.pl?"🎯":DIV_IC(D.d)}</span></div><div><small>${D.pl?"Matchs de placement":"Ta division"}</small><h3>${D.pl?`Placement ${D.pl.n}/${PL_N}`:DIV_NAME(D.d)}</h3><div class="divlad">${ladder}</div><small>${sub}</small></div></div>
+    <button class="btn big" id="jDivGo" ${left?"":"disabled"} style="margin:10px 0 4px">${left?`⚔️ ${D.pl?`Match de placement ${D.pl.n+1}/${PL_N}`:"Match classé"} <small style="opacity:.8">(${left}/${DIV_MAX} aujourd'hui)</small>`:"⏳ Reviens demain pour d'autres matchs classés"}</button>
+    <div class="rules" style="font-size:12px">${D.pl?`🎯 <b>Placement du mois</b> : ${PL_N} matchs, la difficulté s'adapte (une victoire = adversaire plus fort, une défaite = plus faible). Placement final selon tes victoires (un nul = une demi) : 5 → Division 2, 4 → Division 3, 3 → Division 5, 2 → Division 6, 1 → Division 8, 0 → Division 10. Personne n'est placé plus haut que la Division 2. `:""}Tu affrontes le <b>11 type d'un autre joueur</b> de ton niveau, ou un <b>club géré par l'ordi</b> (niveau ${lo}-${hi}). Victoire +3, nul +1, défaite −1 à partir de la Division 7. ${DIV_UP} points = <b>promotion</b>. Au-dessus de la Ligue des Champions : la <b>👑 Division Ultime</b>, points infinis, adversaire plus fort tous les ${ULT_STEP} points. Gains : victoire 120 🪙, nul 60, défaite 30, +10 par but. <b>Chaque lundi</b>, récompense selon ta meilleure division de la semaine : ${rTxt(DIV_REWARD(D.wb??D.d))} pour l'instant.</div>
+    ${!ladOn()?`<div class="rules" style="font-size:12px">🆕 <b>Dès le 1er décembre</b> : 5 matchs de placement chaque début de mois et un <b>classement mensuel des Divisions</b> (1er : trophée + ${rTxt(LAD_RW[0])}). Pas de classement en novembre.</div>`:""}<div class="rules" style="font-size:12px${ladOn()?"":";display:none"}">🗓️ <b>Fin du mois</b> (${monthEndTxt()}) : récompense selon ta meilleure division du mois (${rTxt(DIV_SEASON_RW(D.mb??D.d))} pour l'instant) et <b>podium du classement des Divisions</b> (1er : trophée + ${rTxt(LAD_RW[0])}). Le 1er du mois, tout le monde rejoue ses matchs de placement.</div>
+    ${(D.log||[]).length?`<h4>Derniers matchs classés</h4>${D.log.map(x=>`<div class="resr"><span class="rk ${x.res}">${x.res==="v"?"V":x.res==="d"?"D":"N"}</span><span class="rt">contre <b>${esc(x.o)}</b><small>${x.pl?"Placement":DIV_NAME(x.d)} · ${new Date(x.at).toLocaleDateString("fr-FR",{day:"numeric",month:"short"})}</small></span><span class="rs">${x.s[0]} - ${x.s[1]}</span></div>`).join("")}`:""}
+    ${ladMini("solo")}`; }
 
 // ======================================================================
 // 🎓 PREMIERS PAS : 5 étapes guidées pour les nouveaux (récompensées), affichées en haut de « Mon 11 »
@@ -5666,7 +5695,7 @@ function passXP(x){ if(!x||!me||!compos[me]) return; const P=passState(); P.xp+=
 function passHTML(){ const P=passState(), cur=P.xp-P.lv*PASS_XP_(), d=new Date(), end=new Date(d.getFullYear(),d.getMonth()+1,1), left=Math.ceil((end-d)/86400000);
   return `<h3>🎟️ Pass de saison <small>${PASS_NAME()} · encore ${left} j</small></h3>
     <div class="passh"><div class="passlv"><b>${P.lv}</b><small>palier</small></div><div style="flex:1"><div class="track" style="height:10px"><i style="width:${P.lv>=PASS_N?100:cur/PASS_XP_()*100}%"></i></div><small class="mute">${P.lv>=PASS_N?"Pass terminé, bravo ! 🏆":`${cur}/${PASS_XP_()} XP pour le palier ${P.lv+1}`}</small></div></div>
-    <div class="rules" style="font-size:12px">${passNew()?"De l'XP à chaque action : match joué 70, victoire +40, but +10, pack ouvert 25, échange/vente 30, défi d'équipe 60 (après 5 matchs dans la journée, l'XP des matchs baisse comme les pièces).":"De l'XP à chaque action : match joué 100, victoire +60, but +15, pack ouvert 40, échange/vente 50, défi d'équipe 80."} Les récompenses arrivent toutes seules à chaque palier. Nouvelle saison chaque mois !</div>
+    <div class="rules" style="font-size:12px">${passNew()?"De l'XP à chaque action : match joué 70, victoire +40, but +10, pack ouvert 25, échange/vente 30, défi d'équipe 60 (après 5 matchs dans la journée, l'XP des matchs baisse comme les pièces).":"De l'XP à chaque action : match joué 100, victoire +60, but +15, pack ouvert 40, échange/vente 50, défi d'équipe 80."} Les récompenses arrivent toutes seules à chaque palier. Nouvelle saison chaque mois !${passNew()?"":`<br>🆕 <b>Dès le 1er décembre</b> : nouveau pass plus long (${PASS_N} paliers à 700 XP au lieu de 500), réalisable dans le mois en jouant un peu chaque jour. L'XP des matchs baisse après 5 matchs dans la journée.`}</div>
     <div class="passg">${Array.from({length:PASS_N},(_,i)=>{ const r=PASS_R(i), ok=i<P.lv, nx=i===P.lv; return `<div class="passc${ok?" ok":""}${nx?" nx":""}${(i+1)%10===0?" big":""}"><small>${i+1}</small><span>${r.pack==="legende"?"🌟":r.pack==="or"?"💛":r.pack?"🎴":"🪙"}</span><em>${r.pack?(PACKS[r.pack].name.replace("Pack ","")+(r.n>1?" ×"+r.n:"")):r.coins}</em></div>`; }).join("")}</div>`; }
 
 // 🏟️ Matchs lancés par d'autres avec/contre moi : en direct → « Regarder », terminés → « Revoir » (le résumé est gardé)
@@ -5711,9 +5740,10 @@ function buildMatch(sides){
   const m={id:Date.now().toString(36)+Math.random().toString(36).slice(2,4),at:Date.now()+1500,by:me,teams:sides.map(snap),...r}; delete m.played; return m;
 }
 function histOf(m,extra){ try{ missionCheck(m,extra); }catch(e){} return Object.assign({id:m.id,at:m.at,score:m.score,labels:m.teams.map(t=>t.label),owners:m.teams.map(t=>t.owner),names:m.teams.map(t=>t.ownerName),motm:m.motm?{pid:m.motm.pid,t:m.motm.t,note:m.notes[m.motm.t][m.motm.pid]}:null,st:mStats(m)},extra||{}); }
-const isPvP=h=>h&&!h.nr&&h.owners&&h.owners.length===2&&h.owners[0]&&h.owners[1]&&h.owners[0]!==h.owners[1]&&!h.owners.includes(CPU)&&!h.duo&&h.mode!=="div"; // les amicaux (nr) ne comptent nulle part
+const isPvP=h=>{ if(!h||h.nr||h.mode==="div") return false; if(h.duo){ const o=h.owners4||[]; if(MONTHK(h.at)<LAD_START) return false; return o.length===4&&o.every(Boolean)&&new Set(o).size===4&&!o.includes(CPU); } return !!(h.owners&&h.owners.length===2&&h.owners[0]&&h.owners[1]&&h.owners[0]!==h.owners[1]&&!h.owners.includes(CPU)); }; // tous les affrontements en ligne : 1c1, 2c2 et jeux de cartes // les amicaux (nr) ne comptent nulle part
 const MONTHK=t=>new Date(t||Date.now()).toLocaleDateString("fr-CA").slice(0,7);
-function rankApply(R,h){ R.months=R.months||{}; R.h2h=R.h2h||{}; const mk=MONTHK(h.at); const M=R.months[mk]=R.months[mk]||{};
+function rankApply(R,h){ R.months=R.months||{}; R.h2h=R.h2h||{}; const mk=MONTHK(h.at); if(mk>=RANK_START&&R.h2hReset!==RANK_START){ R.h2h={}; R.h2hReset=RANK_START; } // 🧹 face-à-face remis à zéro au 1er décembre const M=R.months[mk]=R.months[mk]||{};
+  if(h.duo&&h.owners4){ const o=h.owners4, [x,y]=h.score; for(const [u,gf,ga] of [[o[0],x,y],[o[1],x,y],[o[2],y,x],[o[3],y,x]]){ const r=M[u]=M[u]||{p:0,w:0,d:0,l:0,j:0,bp:0,bc:0}; r.j++; r.bp+=gf; r.bc+=ga; if(gf>ga){r.w++;r.p+=3;} else if(gf===ga){r.d++;r.p+=1;} else r.l++; } return; }
   const [a,b]=h.owners, [x,y]=h.score; for(const [u,gf,ga] of [[a,x,y],[b,y,x]]){ const r=M[u]=M[u]||{p:0,w:0,d:0,l:0,j:0,bp:0,bc:0}; r.j++; r.bp+=gf; r.bc+=ga; if(gf>ga){r.w++;r.p+=3;} else if(gf===ga){r.d++;r.p+=1;} else r.l++; }
   const k=[a,b].sort().join("__"); const H=R.h2h[k]=R.h2h[k]||{d:0}; if(x>y) H[a]=(H[a]||0)+1; else if(y>x) H[b]=(H[b]||0)+1; else H.d++; }
 // 🧹 correctif (une fois) : retire du classement et des face-à-face les matchs amicaux comptés par erreur
@@ -5724,6 +5754,10 @@ async function rankFixNr(){ try{ if(RANK&&RANK.nrFix) return; const ref=db.colle
   await db.runTransaction(async tx=>{ const d=await tx.get(ref), rd=await tx.get(rref); const R=rd.exists?rd.data():{}; if(R.nrFix) return;
     const L=((d.exists&&d.data().matches)||[]).filter(h=>h&&h.nr&&h.score&&h.owners&&h.owners.length===2&&h.owners[0]!==h.owners[1]&&!h.owners.includes(CPU)&&!h.duo&&h.mode!=="div");
     for(const h of L) rankUnapply(R,h); R.nrFix=Date.now(); tx.set(rref,R); }); }catch(e){} }
+// 🃏 jeux de cartes en ligne : comptent dans le classement des affrontements (une seule fois par partie)
+async function rankCardGame(X,S){ if(!db||X.cpu||!X.id||!S||!S.end||!ladOn()) return; const [a,b]=X.players||[]; if(!a||!b||a===b||a===CPU||b===CPU) return;
+  const w=S.end.w, sc=X.g==="cbt"&&S.sc?[S.sc[0]||0,S.sc[1]||0]:[w===0?1:0,w===1?1:0]; const h={id:X.id,at:Date.now(),owners:[a,b],score:sc}; const rref=db.collection("onzeol_meta").doc("rank");
+  try{ await db.runTransaction(async tx=>{ const rd=await tx.get(rref); const R=rd.exists?rd.data():{}; R.cgIds=R.cgIds||[]; if(R.cgIds.includes(X.id)) return; R.cgIds=[...R.cgIds,X.id].slice(-300); rankApply(R,h); tx.set(rref,R); }); }catch(e){} }
 async function addHist(h,shared){ if(shared){ h.by=shared.by||me; if(shared.duo&&!h.owners4) h.owners4=(shared.teams||[]).flatMap(t=>t.owners||[t.owner]); saveReplay(shared); }
   try{ const ref=db.collection("onzeol_meta").doc("main"), rref=db.collection("onzeol_meta").doc("rank");
   await db.runTransaction(async tx=>{ const d=await tx.get(ref); const rd=isPvP(h)?await tx.get(rref):null; const cur=(d.exists&&d.data().matches)||[]; if(cur.some(x=>x.id===h.id)) return;
@@ -5834,6 +5868,21 @@ const CLUB_XI={ // vérifié sur les compos probables de novembre 2026
  "FC Barcelone":["Hansi Flick|87","Joan García|85","João Cancelo|82","Pau Cubarsí|85","Gerard Martín|78","Brian Fariñas|72","Pedri|91","Marc Bernal|78","Fermín López|83","Anthony Gordon|83","Raphinha|89","Lamine Yamal|92"],
  "Real Madrid":["José Mourinho|85","Thibaut Courtois|89","Marc Cucurella|83","Dean Huijsen|84","Ibrahima Konaté|85","Federico Valverde|88","Bernardo Silva|85","Aurélien Tchouaméni|86","Jude Bellingham|90","Arda Güler|86","Kylian Mbappé|92","Yan Diomandé|80"]
 };
+// 🌟 Carrière Légende (débloquée après la Carrière) : les plus grandes équipes européennes de l'histoire
+Object.assign(CLUB_XI,{
+ "Ajax 1995":["Louis van Gaal|86","Edwin van der Sar|86","Frank de Boer|85","Danny Blind|84","Frank Rijkaard|86","Michael Reiziger|82","Clarence Seedorf|86","Edgar Davids|86","Jari Litmanen|89","Marc Overmars|87","Patrick Kluivert|85","Finidi George|84"],
+ "Manchester United 1999":["Alex Ferguson|92","Peter Schmeichel|90","Denis Irwin|84","Jaap Stam|88","Ronny Johnsen|83","Gary Neville|84","Paul Scholes|87","Roy Keane|89","David Beckham|88","Ryan Giggs|88","Andy Cole|86","Dwight Yorke|86"],
+ "Inter 2010":["José Mourinho|92","Júlio César|89","Cristian Chivu|83","Lúcio|88","Walter Samuel|87","Maicon|90","Javier Zanetti|88","Esteban Cambiasso|87","Wesley Sneijder|91","Goran Pandev|83","Diego Milito|90","Samuel Eto'o|90"],
+ "Liverpool 2019":["Jürgen Klopp|92","Alisson|91","Andy Robertson|87","Virgil van Dijk|93","Joël Matip|85","Trent Alexander-Arnold|87","Georginio Wijnaldum|85","Fabinho|87","Jordan Henderson|86","Sadio Mané|91","Roberto Firmino|88","Mohamed Salah|92"],
+ "Bayern Munich 2020":["Hansi Flick|91","Manuel Neuer|92","Alphonso Davies|87","David Alaba|88","Jérôme Boateng|86","Joshua Kimmich|91","Leon Goretzka|87","Thiago Alcántara|89","Thomas Müller|89","Kingsley Coman|87","Robert Lewandowski|94","Serge Gnabry|88"],
+ "Real Madrid 2017":["Zinédine Zidane|92","Keylor Navas|88","Marcelo|89","Sergio Ramos|91","Raphaël Varane|88","Dani Carvajal|86","Luka Modrić|92","Casemiro|89","Toni Kroos|91","Isco|88","Karim Benzema|90","Cristiano Ronaldo|95"],
+ "AC Milan 1989":["Arrigo Sacchi|91","Giovanni Galli|83","Paolo Maldini|91","Franco Baresi|93","Alessandro Costacurta|86","Mauro Tassotti|85","Carlo Ancelotti|85","Frank Rijkaard|90","Roberto Donadoni|86","Ruud Gullit|93","Marco van Basten|95","Angelo Colombo|80"],
+ "FC Barcelone 2011":["Pep Guardiola|94","Víctor Valdés|88","Éric Abidal|85","Gerard Piqué|89","Javier Mascherano|87","Dani Alves|90","Xavi|94","Sergio Busquets|89","Andrés Iniesta|93","David Villa|89","Lionel Messi|97","Pedro|86"]
+});
+const LEGEND=[{comp:"Quarts de finale",n:"Ajax 1995",r:[84,89]},{comp:"Quarts de finale",n:"Manchester United 1999",r:[85,90]},{comp:"Quarts de finale",n:"Inter 2010",r:[86,91]},
+ {comp:"Demi-finales",n:"Liverpool 2019",r:[87,92]},{comp:"Demi-finales",n:"Bayern Munich 2020",r:[88,93]},{comp:"Demi-finales",n:"Real Madrid 2017",r:[89,94]},
+ {comp:"Finale",n:"AC Milan 1989",r:[89,95]},{comp:"Finale",n:"FC Barcelone 2011",r:[90,97]}];
+const LEGEND_END={2:{pack:"or",n:2,coins:500},5:{pack:"legende",coins:1000},7:{pack:"legende",n:2,coins:2500}};
 const CLUB_ROLES=["GB","DG","DC","DC","DD","MC","MDC","MC","AG","BU","AD"];
 const clubSlug=t=>t.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
 function clubTeam(club){
@@ -5849,6 +5898,24 @@ const clubAvg=club=>{ const L=CLUB_XI[club]; return L?Math.round(L.slice(1).redu
 const careerOpp=i=>clubTeam(CAREER[i].n)||genTeam(CAREER[i].r[0],CAREER[i].r[1],rng(hashS("carriere"+i)));
 const CAREER_MAX=5; // matchs de carrière par jour
 function careerState(){ const c=W(); return c.career=c.career||{lvl:0,best:0}; }
+function legState(){ const k=careerState(); return k.leg=k.leg||{lvl:0,best:0}; }
+const legOpp=i=>clubTeam(LEGEND[i].n)||genTeam(LEGEND[i].r[0],LEGEND[i].r[1],rng(hashS("legende"+i)));
+async function legPlay(){
+  const k=careerState(), L=legState(); if((k.best||0)<CAREER.length||L.lvl>=LEGEND.length) return; if(careerLeft()<=0){ toast(`Plus de match de carrière aujourd'hui (${CAREER_MAX}/jour) : reviens demain !`,true); return; } const i=L.lvl, O=LEGEND[i];
+  const mine=W(), A=strength(mine,me,true); if(!enough(A)){ toast("Il te faut au moins 7 joueurs possédés dans ton 11 type",true); return; }
+  const oc=legOpp(i), B=strength(oc,null,false);
+  const m=buildMatch([{c:mine,S:A,label:"11 type",owner:me,name:NAMES[me]},{c:oc,S:B,label:"🌟 "+O.comp,owner:CPU,name:O.n}]);
+  k.n=(k.n||0)+1; const snap={lvl:L.lvl,best:L.best};
+  const apply=m=>{ const [a,b]=m.score; if(a>b){ L.lvl=i+1; if(i+1>L.best){ L.best=i+1; later({coins:150+25*i},`🌟 Carrière Légende : victoire contre ${O.n}`,m); if(LEGEND_END[i]) later(LEGEND_END[i],`🌟 Légende : ${O.comp} remportée`,m); if(i===LEGEND.length-1) post(`🌟 ${NAMES[me]} a terminé la Carrière Légende en battant le Barça 2011 !`); } } };
+  apply(m); save();
+  playLocal(m,{t:0,c:mine,w:me,club:true,oc,OS:B,fin:(m2,changed)=>{ if(changed){ L.lvl=snap.lvl; L.best=snap.best; const c=W(); c.pend=(c.pend||[]).filter(p=>p.mid!==m2.id); apply(m2); } save(); saveReplay(m2); addHist(histOf(m2,{nr:1,mode:"carriere"})); try{ trophyCheck(); }catch(_){} }});
+}
+function legHTML(){ const L=legState(), i=L.lvl, fin=i>=LEGEND.length; const comps=[...new Set(LEGEND.map(x=>x.comp))];
+  return `<h3 style="margin-top:16px">🌟 Carrière Légende <small>${Math.min(i,LEGEND.length)}/${LEGEND.length}</small></h3>
+  <div class="rules" style="font-size:12px;margin-top:0">Les plus grandes équipes européennes de l'histoire, du Milan de Sacchi au Barça de Guardiola. Mêmes règles que la Carrière (${CAREER_MAX} matchs par jour au total) mais des récompenses bien plus grosses : ${rTxt(LEGEND_END[7])} au bout.</div>
+  ${comps.map(cp=>`<h4>${cp}</h4><div class="car">${LEGEND.map((x,j)=>x.comp!==cp?"":`<span class="${j<i?"ok":j===i?"cur":""}" title="${esc(x.n)}">${j<i?"✅":j===i?"⚔️":"🔒"} ${esc(x.n)} <small style="opacity:.75">${clubRate(x.n)}</small></span>`).join("")}</div>`).join("")}
+  ${fin?`<div class="motm">🌟 Carrière Légende terminée ! Tu as battu le Barça 2011. Tu es une légende du foot européen.</div><button class="btn ghost big" id="jLegReset">🔁 Recommencer la Légende (sans récompenses déjà gagnées)</button>`
+   :careerLeft()<=0?`<div class="motm">⏳ Tes ${CAREER_MAX} matchs de carrière du jour sont joués. Reviens demain pour affronter ${esc(LEGEND[i].n)} !</div>`:`<button class="btn big" id="jLegGo">🌟 Affronter ${esc(LEGEND[i].n)} <small style="opacity:.8">(${careerLeft()}/${CAREER_MAX} aujourd'hui)</small></button>${(()=>{ const ta=(()=>{ try{ return teamRate(W(),me,true,false).global; }catch(e){ return null; } })(), oa=(()=>{ try{ return teamRate(legOpp(i),null,false,false).global; }catch(e){ return clubAvg(LEGEND[i].n); } })(); return `<div class="vsavg"><div><small>Ton 11</small><b>${ta||"–"}</b></div><span>VS</span><div><small>${esc(LEGEND[i].n)}</small><b>${oa}</b></div></div><div class="mute" style="font-size:12px;text-align:center">${ta?cmpTag(ta,oa):"Complète ton 11 type"}</div>`; })()}`}`; }
 function careerLeft(){ const k=careerState(); if(k.day!==DAYK()){ k.day=DAYK(); k.n=0; } return CAREER_MAX-(k.n||0); }
 async function careerPlay(){
   const k=careerState(); if(k.lvl>=CAREER.length) return; if(careerLeft()<=0){ toast(`Plus de match de carrière aujourd'hui (${CAREER_MAX}/jour) : reviens demain !`,true); return; } const i=k.lvl, O=CAREER[i];
@@ -5863,11 +5930,12 @@ async function careerPlay(){
 function careerHTML(){
   const k=careerState(); const i=k.lvl; const fin=i>=CAREER.length;
   const comps=[...new Set(CAREER.map(x=>x.comp))];
+  const legOn=(k.best||0)>=CAREER.length;
   return `<h3>🧗 Carrière solo <small>${Math.min(i,CAREER.length)}/${CAREER.length}</small></h3>
   <div class="rules" style="font-size:12px;margin-top:0">Ton 11 type (cartes possédées) affronte le vrai 11 de clubs de plus en plus forts. Gagne pour passer au suivant (nul ou défaite : tu rejoues). Ta progression est gardée, mais tu as ${CAREER_MAX} matchs par jour. Pièces à chaque première victoire, pack à la fin de chaque compétition.</div>
   ${comps.map(cp=>`<h4>${cp}</h4><div class="car">${CAREER.map((x,j)=>x.comp!==cp?"":`<span class="${j<i?"ok":j===i?"cur":""}" title="${esc(x.n)}">${j<i?"✅":j===i?"⚔️":"🔒"} ${esc(x.n)} <small style="opacity:.75">${clubRate(x.n)}</small></span>`).join("")}</div>`).join("")}
-  ${fin?`<div class="motm">🏆 Carrière terminée ! Tu as battu le Real Madrid.</div><button class="btn ghost big" id="jCarReset">🔁 Recommencer (sans récompenses déjà gagnées)</button>`
-   :careerLeft()<=0?`<div class="motm">⏳ Tes ${CAREER_MAX} matchs de carrière du jour sont joués. Reviens demain pour affronter ${esc(CAREER[i].n)} !</div>`:`<button class="btn big" id="jCarGo">▶️ Affronter ${esc(CAREER[i].n)} <small style="opacity:.8">(${careerLeft()}/${CAREER_MAX} aujourd'hui)</small></button>${(()=>{ const ta=(()=>{ try{ return teamRate(W(),me,true,false).global; }catch(e){ return null; } })(), oa=(()=>{ try{ return teamRate(careerOpp(i),null,false,false).global; }catch(e){ return clubAvg(CAREER[i].n); } })(); return `<div class="vsavg"><div><small>Ton 11</small><b>${ta||"–"}</b></div><span>VS</span><div><small>${esc(CAREER[i].n)}</small><b>${oa}</b></div></div><div class="mute" style="font-size:12px;text-align:center">${ta?cmpTag(ta,oa):"Complète ton 11 type"}</div>`; })()}`}`;
+  ${fin?`<div class="motm">🏆 Carrière terminée ! Tu as battu le Real Madrid. La <b>🌟 Carrière Légende</b> est débloquée.</div><button class="btn ghost" id="jCarReset" style="width:100%">🔁 Recommencer la Carrière (sans récompenses déjà gagnées)</button>`
+   :careerLeft()<=0?`<div class="motm">⏳ Tes ${CAREER_MAX} matchs de carrière du jour sont joués. Reviens demain pour affronter ${esc(CAREER[i].n)} !</div>`:`<button class="btn big" id="jCarGo">▶️ Affronter ${esc(CAREER[i].n)} <small style="opacity:.8">(${careerLeft()}/${CAREER_MAX} aujourd'hui)</small></button>${(()=>{ const ta=(()=>{ try{ return teamRate(W(),me,true,false).global; }catch(e){ return null; } })(), oa=(()=>{ try{ return teamRate(careerOpp(i),null,false,false).global; }catch(e){ return clubAvg(CAREER[i].n); } })(); return `<div class="vsavg"><div><small>Ton 11</small><b>${ta||"–"}</b></div><span>VS</span><div><small>${esc(CAREER[i].n)}</small><b>${oa}</b></div></div><div class="mute" style="font-size:12px;text-align:center">${ta?cmpTag(ta,oa):"Complète ton 11 type"}</div>`; })()}`}${legOn?legHTML():""}`;
 }
 
 // ---------- 🏆 Coupe à élimination ----------
@@ -6158,7 +6226,7 @@ function renderJeux(){
   try{ $("#jDiv").innerHTML=divHTML(); const dg=$("#jDivGo"); if(dg) dg.onclick=divPlay; }catch(e){}
   $("#jCareer").innerHTML=careerHTML(); $("#jCup").innerHTML=cupHTML(); $("#jDefi").innerHTML=defiHTML(); $("#jQuizS").innerHTML=quizHTML(); $("#jSofa").innerHTML=sofaHTML(); $("#jStats").innerHTML=statsHTML();
   const on=(s,f)=>{ const e=$(s); if(e) e.onclick=f; };
-  on("#jCarGo",careerPlay); on("#jCarReset",()=>{ careerState().lvl=0; save(); renderJeux(); });
+  on("#jCarGo",careerPlay); on("#jLegGo",legPlay); on("#jLegReset",()=>{ legState().lvl=0; save(); renderJeux(); }); on("#jCarReset",()=>{ careerState().lvl=0; save(); renderJeux(); });
   on("#jCupNew",createCup);
   const J=document; // les sections sont maintenant réparties dans plusieurs pages
   J.querySelectorAll("[data-cj]").forEach(b=>b.onclick=()=>joinCup(b.dataset.cj,true));
@@ -6239,6 +6307,33 @@ const TIP_CLICK=[
  [".slotc[data-id]","card"]];
 const tipSeen=k=>{ const c=me&&C(me); return !c||!!(c.seen||{})[k]; };
 let tipQ=[], tipOpen=false;
+// 📅 Bandeau d'annonce visible jusqu'au 30 novembre : ce qui change le 1er décembre
+function decBanner(){ try{ if(ladOn()) return ""; const n=new Date(), j=Math.ceil((new Date(n.getFullYear(),n.getMonth()+1,1)-n)/86400000);
+  return `<div class="decban"><div class="dbh"><b>📅 À partir du 1er décembre</b><small>${j<=1?"demain !":`dans ${j} jours`}</small></div>
+  <ul><li>🧹 <b>Tous les classements entre joueurs repartent à zéro</b> : classement du mois, Saison, depuis le début et face-à-face. En novembre, il n'y a pas de classement entre nous.</li>
+  <li>📅 <b>Classement des affrontements en ligne</b> : seuls les vrais matchs en ligne comptent (1 contre 1, 👥 2 contre 2 et 🃏 tous les jeux de cartes en ligne).</li>
+  <li>🎯 <b>5 matchs de placement</b> chaque début de mois en Divisions et en Combat TCG. Au mieux, tu démarres en Division 2.</li>
+  <li>👑 <b>Division Ultime</b> au-dessus de la Ligue des Champions : points infinis, adversaires de plus en plus durs.</li>
+  <li>🔥 <b>Combat TCG</b> : 10 divisions + Division Ultime, avec un ordi de plus en plus coriace.</li>
+  <li>🏆 <b>3 classements mensuels</b> (En ligne, Divisions, TCG) : le 1er gagne un trophée et des packs, le podium et les autres aussi.</li>
+  <li>🎟️ <b>Nouveau pass de saison</b> : toujours ${PASS_N} paliers, mais plus long (${(PASS_N*700).toLocaleString("fr-FR")} XP au lieu de ${(PASS_N*500).toLocaleString("fr-FR")}), pensé pour être fini en un mois en jouant un peu chaque jour.</li></ul>
+  <button class="btn sm" data-decnews="1" style="width:100%">📖 Tout lire : règles et récompenses</button></div>`; }catch(e){ return ""; } }
+document.addEventListener("click",e=>{ const b=e.target.closest&&e.target.closest("[data-decnews]"); if(b){ e.stopPropagation(); seasonNews(true); } },true);
+// 📣 Chaque début de mois : « Nouvelle saison » avec tous les classements et leurs récompenses (réouvrable depuis Ligue › Classements)
+function seasonNewsHTML(){ const M=MONTHK(), mn=monthName(M), tn=TCG_NEW(), sk=SEASONK(), sd=Math.ceil((seasonEnd(sk)-Date.now())/86400000);
+  const sec=(t,x)=>`<div class="snsec"><b>${t}</b><div>${x}</div></div>`;
+  return `<h3>${tn?`🗓️ Nouvelle saison : ${mn}`:"🆕 Nouveaux classements"}</h3><div class="tipx">
+  ${sec("🎯 Matchs de placement",`${tn?"":"<b>À partir du 1er décembre</b> : "}En <b>Divisions</b> et en <b>Combat TCG</b>, tout le monde rejoue <b>${PL_N} matchs de placement</b> au début du mois. La difficulté s'adapte : une victoire, l'adversaire suivant est plus fort ; une défaite, il est plus faible. Placement selon tes victoires (un nul = une demi) : <b>5 → Division 2</b>, 4 → 3, 3 → 5, 2 → 6, 1 → 8, 0 → 10. Personne ne démarre plus haut que la Division 2.`)}
+  ${tn?"":`<div class="snsec" style="border-color:#ffd97066"><b>📅 Quand ?</b><div>Tout démarre le <b>1er décembre</b>. En novembre, il n'y a <b>aucun classement entre joueurs</b> : tous les modes restent jouables normalement (Divisions, Combat TCG, Carrière, jeux de cartes…), profites-en pour t'entraîner !<br>🧹 Le 1er décembre, <b>tous les compteurs entre joueurs repartent à zéro</b> (classement du mois, Saison, « depuis le début », face-à-face), parce qu'avant, des matchs qui n'étaient pas de vrais affrontements en ligne comptaient aussi.</div></div>`}
+  ${sec("🏅 Divisions (Solo › Divisions)",`Victoire +3, nul +1, défaite −1 à partir de la Division 7, ${DIV_UP} pts pour monter. Au-dessus de la ⭐ Ligue des Champions : la <b>👑 Division Ultime</b>, points infinis, adversaire plus fort tous les ${ULT_STEP} pts. ${DIV_MAX} matchs classés par jour.<br>🏆 <b>Classement du mois</b> : meilleure division atteinte, puis points dans cette division. 🥇 trophée « Champion des Divisions » + ${rTxt(LAD_RW[0])} · 🥈 ${rTxt(LAD_RW[1])} · 🥉 ${rTxt(LAD_RW[2])} · les autres ${rTxt(LAD_RW_X)}.<br>🎁 En plus, pour chacun : récompense selon ta meilleure division du mois (jusqu'à ${rTxt(DIV_SEASON_RW(-1))} en Ultime) et récompense chaque lundi selon ta meilleure division de la semaine.`)}
+  ${sec("🔥 Combat TCG",tn?`<b>10 divisions + 👑 Division Ultime</b>, mêmes règles qu'en Divisions. Plus tu montes, plus l'ordi est coriace : meilleures cartes, coups plus précis, frappes plus fortes. Récompense à ta 1re montée du mois dans chaque division (de ${rTxt(TL_RW[9])} jusqu'à ${rTxt(TL_RW[0])} pour l'Ultime).<br>🏆 <b>Classement du mois</b> : même calcul qu'en Divisions. 🥇 trophée « Champion TCG » + ${rTxt(LAD_RW[0])} · 🥈 ${rTxt(LAD_RW[1])} · 🥉 ${rTxt(LAD_RW[2])} · les autres ${rTxt(LAD_RW_X)}.`:`🆕 <b>Dès le 1er décembre</b> : 10 divisions + 👑 Division Ultime, placement chaque mois et l'ordi de plus en plus coriace. Récompense à ta 1re montée du mois dans chaque division (de ${rTxt(TL_RW[9])} jusqu'à ${rTxt(TL_RW[0])} pour l'Ultime).<br>🏆 <b>Classement du mois</b> : 🥇 trophée « Champion TCG » + ${rTxt(LAD_RW[0])} · 🥈 ${rTxt(LAD_RW[1])} · 🥉 ${rTxt(LAD_RW[2])} · les autres ${rTxt(LAD_RW_X)}.`)}
+  ${sec("🎟️ "+(tn?"Pass de saison":"Nouveau pass de saison (dès le 1er décembre)"),`${PASS_N} paliers à ${tn?PASS_XP_():700} XP (${(PASS_N*700).toLocaleString("fr-FR")} XP en tout${tn?"":`, contre ${(PASS_N*500).toLocaleString("fr-FR")} avant`}). Plus long, mais <b>réalisable dans le mois</b> : en jouant un peu chaque jour (environ 5 matchs et ton pack gratuit), tu gagnes à peu près un palier par jour. XP : match joué 70, victoire +40, but +10, match contre un joueur 100, pack ouvert 25, échange ou vente 30, défi d'équipe 60. Après 5 matchs dans la journée, l'XP des matchs baisse comme les pièces, donc mieux vaut jouer un peu tous les jours que tout d'un coup. Récompenses à chaque palier, jusqu'à ${rTxt(PASS_R(PASS_N-1))} au palier ${PASS_N}, plus un trophée « Pass » dans ta vitrine.`)}
+  ${sec("📅 Affrontements en ligne",`${tn?"Tous":"Dès le 1er décembre, tous"} les matchs contre un vrai joueur comptent : 1 contre 1 (draft, Budget, championnat, coupe), 👥 2 contre 2 et 🃏 tous les jeux de cartes en ligne. Victoire 3 pts, nul 1 pt, ${RANK_MIN} matchs minimum. 🥇 trophée « Champion du mois » + ${rTxt(RANK_R[0])} · 🥈 ${rTxt(RANK_R[1])} · 🥉 ${rTxt(RANK_R[2])}.`)}
+  ${sec(`🍂 Saison ${seasonName(sk)} (fin dans ${sd} j)`,`Les affrontements en ligne s'additionnent sur 3 mois (${SEASON_MIN} matchs minimum). 🥇 trophée « Saison » + ${rTxt(SEASON_R[0])} · 🥈 ${rTxt(SEASON_R[1])} · 🥉 ${rTxt(SEASON_R[2])}.`)}
+  <div class="mute" style="font-size:12px;margin-top:6px">Tous les classements sont en direct dans <b>Ligue › Classements</b>. Les récompenses du mois passé se récupèrent toutes seules à ta première connexion du mois.</div></div>`; }
+function seasonNews(force){ if(!me||!C(me)) return; const c=W(), M=MONTHK(); if(!force&&c.newsM===M) return; if(tipOpen&&!force){ setTimeout(()=>seasonNews(),6000); return; }
+  c.newsM=M; save(); tipOpen=true; const el=document.createElement("div"); el.className="tipov"; el.innerHTML=`<div class="tipbox sntip">${seasonNewsHTML()}<button class="btn big" id="snOk">C'est parti ! 🔴🔵</button></div>`;
+  document.body.appendChild(el); try{ SFX.fanfare(); }catch(_){} el.querySelector("#snOk").onclick=()=>{ el.remove(); tipOpen=false; const nx=tipQ.shift(); if(nx) setTimeout(()=>tip(nx[0],nx[1]),250); }; }
 function tip(k,then){
   if(!me||!C(me)||!TIPS[k]||tipSeen(k)){ if(then) then(); return; }
   if(tipOpen){ if(!tipQ.some(x=>x[0]===k)) tipQ.push([k,then]); return; }
@@ -6390,9 +6485,9 @@ function cgPool(src,u){ if(src==="all") return cgAll(); const own=(C(u)||{}).col
 // Combat « Ma collection » contre l'ordi : la note ne reflète pas la force TCG (PV, attaques, capacités, types).
 // L'ordi reçoit donc un « miroir » de tes 8 meilleures cartes : même type, puissance TCG un peu plus faible (~92 %).
 function tcgPow(id){ const T=tcgOf(id,0,0); if(!T) return 0; return T.hp/(T.ab.def||1)+1.4*T.a[1].d*(T.ab.dmg||1)+(T.ab.e0?12:0); }
-function tcgCpuMirror(pA){ const seen={}, mine=[]; for(const id of pA.filter(tcgOk).sort((a,b)=>tcgPow(b)-tcgPow(a))){ const b=tcgBase(id); if(seen[b]) continue; seen[b]=1; mine.push(id); if(mine.length>=8) break; }
+function tcgCpuMirror(pA,f=.92){ const seen={}, mine=[]; for(const id of pA.filter(tcgOk).sort((a,b)=>tcgPow(b)-tcgPow(a))){ const b=tcgBase(id); if(seen[b]) continue; seen[b]=1; mine.push(id); if(mine.length>=8) break; }
   const all=cgShuffle(cgAll(),Math.random), used={}, out=[];
-  for(const m of mine){ const g=tcgOf(m).g, tg=tcgPow(m)*.92; const L=all.filter(id=>!used[tcgBase(id)]&&tcgOf(id).g===g);
+  for(const m of mine){ const g=tcgOf(m).g, tg=tcgPow(m)*f; const L=all.filter(id=>!used[tcgBase(id)]&&tcgOf(id).g===g);
     let best=null,bv=1e9; for(const id of L){ const v=Math.abs(tcgPow(id)-tg)+(tcgPow(id)>tg?15:0); if(v<bv){ bv=v; best=id; } }
     if(!best) best=all.find(id=>!used[tcgBase(id)]); if(best){ used[tcgBase(best)]=1; out.push(best); } }
   return out; }
@@ -6499,7 +6594,7 @@ function tcgDmg(S,G,s,ai){ const a=S.act[s], d=S.act[1-s]; const T=tcgOf(a.id,G.
   if(Ms&&Ms.dmg){ x+=Ms.dmg; parts.push(`Collectif +${Ms.dmg}`); }
   if(S.boost&&S.boost[s]){ x+=S.boost[s]; parts.push(`Action +${S.boost[s]}`); }
   if(x-base>TCG_BONUS_MAX){ x=base+TCG_BONUS_MAX; parts.push(`(bonus plafonnés à +${TCG_BONUS_MAX})`); }
-  x*=(T.ab.dmg||1); const sup=CG_BEATS[T.g]===D.g; if(sup) x*=1.25; if(G.cpu&&s===1) x*=TCG_CPU_DMG; /* 🤖 l'ordi tape un peu moins fort */
+  x*=(T.ab.dmg||1); const sup=CG_BEATS[T.g]===D.g; if(sup) x*=1.25; if(G.cpu&&s===1) x*=(G.cdm??TCG_CPU_DMG); /* 🤖 l'ordi tape un peu moins fort */
   let red=(Md&&Md.red)||0; const TCG_RED_MAX=25; if(S.shield&&S.shield[1-s]) red+=S.shield[1-s]; if(tcgHas(d.id,"ucl")) red+=10; if(tcgHas(d.id,"mur")) red+=10; if(LD.comp) red+=5*LD.comp; red=Math.min(red,TCG_RED_MAX); x=x*(D.ab.def||1)-red;
   return {dmg:Math.max(10,Math.round(x)),sup,parts,red}; }
 
@@ -6590,7 +6685,7 @@ CG_ENG.cbt={
       const cos=tcgCoaches(G.src,G.players[side]); let co=null,cv=0; for(const c of cos){ const v=pick.filter(id=>tcgCoachOk(c,id)).length; if(v>cv){ cv=v; co=c; } }
       const g=pick.filter(id=>TCG_STAD.gerland.f(BY_ID[tcgBase(id)]||BY_ID[id])).length;
       return {a:pick[0],b:pick.slice(1,5),co,st:g>=3?"gerland":"groupama",ac:G.dumb?["soin","cf","jaune"]:["cf","soin","mur"]}; }
-    if(!G.dumb&&!(G.cpu&&side===1&&Math.random()<TCG_CPU_ERR)) return tcgCpuSmart(S,G,side); // 🤖 contre l'ordi : il joue parfois « au feeling » (coup simple)
+    if(!G.dumb&&!(G.cpu&&side===1&&Math.random()<(G.cer??TCG_CPU_ERR))) return tcgCpuSmart(S,G,side); // 🤖 contre l'ordi : il joue parfois « au feeling » (coup simple)
     const T=JSON.parse(JSON.stringify(S)), x=[]; const go=A=>{ if(tcgAct(T,G,side,A,[])) x.push(A); };
     if(T.act[side]===null){ let bi=0; T.bench[side].forEach((c,i)=>{ if(c.hp+c.e*20>T.bench[side][bi].hp+T.bench[side][bi].e*20) bi=i; }); go(["p",bi]); if(T.act[side]&&T.act[side].e<1) T.act[side].e=0; }
     const a=T.act[side], d=T.act[1-side]; if(!a) return {x:[["x"]]};
@@ -6618,14 +6713,91 @@ const tcgTeamOvr=(ids,G,s)=>ids.reduce((a,id)=>a+BY_ID[id].ovr+((G&&G.evo[s][id]
 const TCGD=[{n:"Division 5",ic:"🥉",r:{coins:300}},{n:"Division 4",ic:"🥈",r:{coins:500}},{n:"Division 3",ic:"🥇",r:{coins:700,pack:"or"}},{n:"Division 2",ic:"💎",r:{coins:1000,pack:"or"}},{n:"Division 1",ic:"👑",r:{coins:1500,pack:"legende"}},{n:"Élite",ic:"🔥",r:{coins:2500,pack:"legende"}}];
 const TCGD_UP=9;
 function tcgDiv(u){ const c=C(u||me)||{}; const d=((c.cg||{}).div)||{d:0,p:0}; return {d:Math.min(d.d||0,TCGD.length-1),p:d.p||0,best:d.best||0}; }
-function tcgDivAdd(res){ const c=W(); c.cg=c.cg||{}; const D=c.cg.div=c.cg.div||{d:0,p:0,best:0}; const add=res==="w"?3:res==="d"?1:0; let msg="";
-  if(D.d>=TCGD.length-1){ D.p=(D.p||0)+add; return `🔥 Élite · ${D.p} pts`; }
+function tcgDivAddOld(res){ const c=W(); c.cg=c.cg||{}; const D=c.cg.div=c.cg.div||{d:0,p:0,best:0}; const add=res==="w"?3:res==="d"?1:0; let msg="";
+  if(D.d>=TCGD.length-1){ D.p=(D.p||0)+add; const E=tcgEp(D); E.p+=add; return `🔥 Élite · ${E.p} pts ce mois-ci`; }
   D.p=(D.p||0)+add; if(D.p>=TCGD_UP){ D.d++; D.p=0; const T=TCGD[D.d]; msg=`⬆️ Montée en ${T.ic} ${T.n} !`; if(D.d>(D.best||0)){ D.best=D.d; setTimeout(()=>grant(T.r,`🔥 TCG : ${T.n}`),1800); } try{ cgSnd("fanfare"); }catch(_){} }
   return msg||`${TCGD[D.d].ic} ${TCGD[D.d].n} · ${D.p}/${TCGD_UP} pts`; }
-function tcgDivHTML(){ const D=tcgDiv(); const T=TCGD[D.d], N=TCGD[D.d+1];
-  return `<div class="cgbar tdiv"><span>${T.ic} <b>${T.n}</b> · Combat TCG</span><i class="trk"><i style="width:${D.d>=TCGD.length-1?100:D.p/TCGD_UP*100}%"></i></i><small>${N?`${D.p}/${TCGD_UP} pts pour monter en ${N.ic} ${N.n} (victoire +3, nul +1) · récompense : ${N.r.coins} 🪙${N.r.pack?" + "+PACKS[N.r.pack].name:""}`:`Tu es au sommet ! ${D.p} pts`}</small></div>`; }
+// 🔥 Élite : classement du mois, le 1er devient « Champion TCG du mois »
+const TCG_ELITE_RW=[{pack:"legende",n:2,coins:3000},{pack:"legende",coins:1500},{pack:"or",n:2,coins:800}], TCG_ELITE_RW_X={coins:300};
+function tcgEp(D){ const M=MONTHK(); if(!D.ep||D.ep.m!==M){ if(D.ep&&D.ep.m) D.eprev={m:D.ep.m,p:D.ep.p||0}; D.ep={m:M,p:0}; } return D.ep; }
+function tcgEpOf(u,M){ const D=(((C(u)||{}).cg)||{}).div||{}; if(D.ep&&D.ep.m===M) return D.ep.p||0; if(D.eprev&&D.eprev.m===M) return D.eprev.p||0; return 0; }
+const prevMonthK=()=>{ const n=new Date(); return MONTHK(new Date(n.getFullYear(),n.getMonth(),0,12).getTime()); };
+function tcgEliteRank(M){ return Object.keys(NAMES).filter(u=>u!==CPU&&compos[u]).map(u=>({u,p:tcgEpOf(u,M)})).filter(x=>x.p>0).sort((a,b)=>b.p-a.p); }
+function tcgEliteClaim(){ return; /* pas de classement en novembre : tout démarre en décembre */ try{ if(!me) return; if(!Object.keys(NAMES).some(u=>u!==me&&u!==CPU&&compos[u])) return; const c=W(); const D=(c.cg||{}).div; if(!D) return;
+  const PM=prevMonthK(); if(D.ecl===PM) return; const mine=tcgEpOf(me,PM); D.ecl=PM; if(!mine){ save(); return; }
+  const rk=1+tcgEliteRank(PM).filter(x=>x.p>mine).length, mn=monthName(PM);
+  grant(TCG_ELITE_RW[rk-1]||TCG_ELITE_RW_X,`🔥 Élite TCG de ${mn} : ${rk}${rk===1?"er":"e"} avec ${mine} pts`);
+  if(rk===1){ const T=c.trophies=c.trophies||[]; if(!T.some(x=>x.id==="tcg-"+PM)){ T.push({id:"tcg-"+PM,k:"tcg",n:`Champion TCG · ${mn}`,at:Date.now()}); setTimeout(()=>toast(`🏆 Nouveau trophée : Champion TCG du mois · ${mn}`),2600); post(`🔥 ${NAMES[me]} est Champion TCG de ${mn} !`); } }
+  save(); }catch(e){} }
+function tcgEliteBoard(){ return "";  const top=tcgDiv().d>=TCGD.length-1, M=MONTHK(), E=tcgEliteRank(M); if(!top&&!E.length) return "";
+  return `<div class="cgrules">🔥 <b>Élite · classement de ${new Date().toLocaleDateString("fr-FR",{month:"long"})}</b> <small>(fin ${monthEndTxt()})</small>${E.length?E.slice(0,8).map((x,i)=>`<div class="cgrk${x.u===me?" me":""}"><span>${i===0?"👑":i+1+"."} ${esc(NAMES[x.u])}</span><b>${x.p} pts</b></div>`).join(""):`<div class="mute" style="font-size:12px">Personne n'a encore marqué de points en Élite ce mois-ci.</div>`}
+    <small style="display:block;margin-top:4px">Points du mois en Élite (victoire +3, nul +1). À la fin du mois : 1er = <b>🏆 Champion TCG du mois</b> + ${rTxt(TCG_ELITE_RW[0])} · 2e : ${rTxt(TCG_ELITE_RW[1])} · 3e : ${rTxt(TCG_ELITE_RW[2])} · les autres : ${rTxt(TCG_ELITE_RW_X)}.</small></div>`; }
+function tcgDivHTMLOld(){ const D=tcgDiv(); const T=TCGD[D.d], N=TCGD[D.d+1];
+  return `<div class="cgbar tdiv"><span>${T.ic} <b>${T.n}</b> · Combat TCG</span><i class="trk"><i style="width:${D.d>=TCGD.length-1?100:D.p/TCGD_UP*100}%"></i></i><small>${N?`${D.p}/${TCGD_UP} pts pour monter en ${N.ic} ${N.n} (victoire +3, nul +1) · récompense : ${N.r.coins} 🪙${N.r.pack?" + "+PACKS[N.r.pack].name:""}`:`🔥 Tu es au sommet ! ${D.p} pts. Dès le 1er décembre : 10 divisions + 👑 Division Ultime`}</small></div>`; }
+const tcgDivTagOld=u=>{ if(!u||u===CPU||!NAMES[u]) return ""; try{ const D=tcgDiv(u); return ` <small class="tdtag">${TCGD[D.d].ic} ${TCGD[D.d].n}</small>`; }catch(e){ return ""; } };
+function tcgDivTileOld(){ try{ const D=tcgDiv(), T=TCGD[D.d], N=TCGD[D.d+1]; return `<small class="tdtile"><span>${T.ic} <b>${T.n}</b>${N?` · ${D.p}/${TCGD_UP} pts`:` · ${D.p} pts`}</span><i class="trk"><i style="width:${N?D.p/TCGD_UP*100:100}%"></i></i></small>`; }catch(e){ return ""; } }
 function tcgDivBoard(){ const L=Object.keys(NAMES).map(u=>({u,...tcgDiv(u)})).filter(x=>x.d>0||x.p>0).sort((a,b)=>b.d-a.d||b.p-a.p).slice(0,8);
   return L.length?`<div class="cgrules">🏅 <b>Classement TCG</b>${L.map((x,i)=>`<div class="cgrk${x.u===me?" me":""}"><span>${i+1}. ${esc(NAMES[x.u])}</span><b>${TCGD[x.d].ic} ${TCGD[x.d].n} · ${x.p} pts</b></div>`).join("")}</div>`:""; }
+const tcgDivBoardAll=()=>TCG_NEW()?ladMini("tcg"):tcgEliteBoard()+tcgDivBoard();
+// ======================================================================
+// 🔥 DIVISIONS TCG (à partir de décembre 2026) : 10 divisions + 👑 Division Ultime, placement chaque mois
+// ======================================================================
+const TCG_NEW=()=>MONTHK()>="2026-12";
+const TL_NAME=d=>d===0?"Division Ultime":`Division ${d}`;
+const TL_IC=d=>d===0?"👑":d===1?"💎":d<=4?"🥇":d<=7?"🥈":"🥉";
+const TL_RW={9:{coins:200},8:{coins:300},7:{coins:400},6:{coins:500},5:{coins:700},4:{coins:800,pack:"or"},3:{coins:1000,pack:"or"},2:{coins:1200,pack:"or"},1:{coins:1500,pack:"legende"},0:{coins:2500,pack:"legende"}}; // récompense à la 1re montée du mois dans chaque division
+function tclState(){ const c=W(); c.cg=c.cg||{}; const M=MONTHK(); let D=c.cg.lad;
+  if(!D){ D=c.cg.lad={m:M,d:10,p:0,mb:10,mbp:0,mp:0,pl:plNew(),hist:{},got:[]}; save(); }
+  if(D.m!==M){ D.hist=D.hist||{}; if(!D.pl&&D.mp){ D.hist[D.m]={d:D.mb,p:D.mbp||0}; D.hist=Object.fromEntries(Object.entries(D.hist).sort().slice(-3)); }
+    Object.assign(D,{m:M,d:10,p:0,mb:10,mbp:0,mp:0,pl:plNew(),got:[]}); save(); }
+  return D; }
+// niveau de difficulté de l'ordi : placement → niveau adaptatif, Ultime → un cran de plus tous les 9 pts
+function tcgHard(){ const D=tclState(); const L=D.pl?D.pl.lv:D.d===0?-ultPal(D.p):D.d; const h=10-L;
+  return {mir:Math.min(1.25,.82+.02*h),dmg:Math.min(1.35,.75+.035*h),err:Math.max(0,.6-.065*h),q:Math.min(.85,.075*h)}; }
+function tcgTopPool(q){ const A=cgAll().sort((a,b)=>tcgPow(b)-tcgPow(a)); return A.slice(0,Math.max(15,Math.round(A.length*(1-q)))); }
+function tclAdd(res){ const D=tclState(); D.mp=(D.mp||0)+1; let msg="";
+  if(D.pl){ const t=plStep(D,res==="w",res==="d"); if(t!=null){ try{ cgSnd("fanfare"); }catch(_){} return `🎯 Placement terminé : ${TL_IC(t)} ${TL_NAME(t)} !`; } return plTxt(D.pl); }
+  D.p+=res==="w"?3:res==="d"?1:(D.d<=7?-1:0);
+  if(D.p>=TCGD_UP&&D.d>0){ D.d--; D.p=0; msg=`⬆️ Montée en ${TL_IC(D.d)} ${TL_NAME(D.d)} !`; D.got=D.got||[]; if(!D.got.includes(D.d)&&TL_RW[D.d]){ D.got.push(D.d); const d=D.d; setTimeout(()=>grant(TL_RW[d],`🔥 TCG : ${TL_NAME(d)}`),1800); } try{ cgSnd("fanfare"); }catch(_){} }
+  else if(D.p<0){ if(D.d===0) D.p=0; else if(D.d<10&&D.d<=7){ D.d++; D.p=6; msg=`⬇️ Descente en ${TL_IC(D.d)} ${TL_NAME(D.d)}`; } else D.p=0; }
+  if(D.d<D.mb){ D.mb=D.d; D.mbp=D.p; } else if(D.d===D.mb) D.mbp=Math.max(D.mbp||0,D.p);
+  return msg||(D.d===0?`👑 Ultime · ${D.p} pts (palier ${ultPal(D.p)+1})`:`${TL_IC(D.d)} ${TL_NAME(D.d)} · ${D.p}/${TCGD_UP} pts`); }
+function tcgDivAdd(res){ return TCG_NEW()?tclAdd(res):tcgDivAddOld(res); }
+function tcgDivHTML(){ if(!TCG_NEW()) return tcgDivHTMLOld(); const D=tclState();
+  if(D.pl) return `<div class="cgbar tdiv"><span>🎯 <b>Placement ${D.pl.n}/${PL_N}</b> · Combat TCG</span><i class="trk"><i style="width:${D.pl.n/PL_N*100}%"></i></i><small>${D.pl.v} V · ${D.pl.dr} N · ${D.pl.n-D.pl.v-D.pl.dr} D · chaque victoire rend le combat suivant plus dur. 5 V → Division 2, 4 → 3, 3 → 5, 2 → 6, 1 → 8, 0 → 10.</small></div>`;
+  if(D.d===0) return `<div class="cgbar tdiv"><span>👑 <b>Division Ultime</b> · palier ${ultPal(D.p)+1}</span><i class="trk"><i style="width:${D.p%ULT_STEP/ULT_STEP*100}%"></i></i><small><b>${D.p} pts</b> · points infinis, l'ordi se renforce tous les ${ULT_STEP} pts · une défaite retire 1 point</small></div>`;
+  const N=D.d-1, R=!(D.got||[]).includes(N)&&TL_RW[N];
+  return `<div class="cgbar tdiv"><span>${TL_IC(D.d)} <b>${TL_NAME(D.d)}</b> · Combat TCG</span><i class="trk"><i style="width:${D.p/TCGD_UP*100}%"></i></i><small>${D.p}/${TCGD_UP} pts pour monter en ${TL_IC(N)} ${TL_NAME(N)} (victoire +3, nul +1${D.d<=7?", défaite −1":""})${R?` · récompense : ${rTxt(R)}`:""}</small></div>`; }
+const tcgDivTag=u=>{ if(!TCG_NEW()) return tcgDivTagOld(u); if(!u||u===CPU||!NAMES[u]) return ""; const D=(((C(u)||{}).cg)||{}).lad; if(!D||D.m!==MONTHK()) return ""; return ` <small class="tdtag">${D.pl?`🎯 Placement ${D.pl.n}/${PL_N}`:`${TL_IC(D.d)} ${TL_NAME(D.d)}`}</small>`; };
+function tcgDivTile(){ if(!TCG_NEW()) return tcgDivTileOld(); try{ const D=tclState(); const w=D.pl?D.pl.n/PL_N*100:D.d===0?D.p%ULT_STEP/ULT_STEP*100:D.p/TCGD_UP*100;
+  return `<small class="tdtile"><span>${D.pl?`🎯 <b>Placement ${D.pl.n}/${PL_N}</b> · ${D.pl.v} V`:D.d===0?`👑 <b>Ultime</b> · ${D.p} pts`:`${TL_IC(D.d)} <b>${TL_NAME(D.d)}</b> · ${D.p}/${TCGD_UP} pts`}</span><i class="trk"><i style="width:${w}%"></i></i></small>`; }catch(e){ return ""; } }
+
+// ======================================================================
+// 📊 CLASSEMENTS MENSUELS DES DIVISIONS (solo et TCG) : meilleure division du mois, puis points dans cette division
+// ======================================================================
+const LAD_RW=[{pack:"legende",n:2,coins:3000},{pack:"legende",coins:1500},{pack:"or",n:2,coins:800}], LAD_RW_X={coins:300};
+const LADK={solo:{get:u=>(C(u)||{}).div,nm:d=>DIV_NAME(d),ic:d=>DIV_IC(d),tk:"dv",tn:"Champion des Divisions",lbl:"🏅 Divisions",from:LAD_START},
+  tcg:{get:u=>(((C(u)||{}).cg)||{}).lad,nm:d=>TL_NAME(d),ic:d=>TL_IC(d),tk:"tcg",tn:"Champion TCG",lbl:"🔥 Combat TCG",from:LAD_START}};
+function ladVal(k,u,M){ const D=LADK[k].get(u); if(!D) return null; if(D.m===M) return (D.pl||!D.mp)?null:{d:D.mb??D.d,p:D.mbp||0}; return (D.hist||{})[M]||null; }
+const ladBetter=(a,b)=>a.d<b.d||(a.d===b.d&&a.p>b.p);
+function ladRank(k,M){ return Object.keys(NAMES).filter(u=>u!==CPU&&compos[u]).map(u=>({u,...(ladVal(k,u,M)||{})})).filter(x=>x.d!=null).sort((a,b)=>a.d-b.d||b.p-a.p); }
+function ladPlacing(k){ const M=MONTHK(); return Object.keys(NAMES).filter(u=>u!==CPU&&compos[u]).map(u=>({u,D:LADK[k].get(u)})).filter(x=>x.D&&x.D.m===M&&x.D.pl&&x.D.pl.n>0); }
+function ladClaim(k){ try{ if(!me||!compos[me]) return; if(!Object.keys(NAMES).some(u=>u!==me&&u!==CPU&&compos[u])) return; const K=LADK[k], PM=prevMonthK(); if(PM<K.from) return;
+  if(k==="solo") divState(); else if(TCG_NEW()) tclState(); const D=K.get(me); if(!D||D.rcl===PM) return; D.rcl=PM; const v=ladVal(k,me,PM); if(!v){ save(); return; }
+  const rk=1+ladRank(k,PM).filter(x=>x.u!==me&&ladBetter(x,v)).length, mn=monthName(PM);
+  grant(LAD_RW[rk-1]||LAD_RW_X,`${K.lbl} · classement de ${mn} : ${rk}${rk===1?"er":"e"} (${K.ic(v.d)} ${K.nm(v.d)}, ${v.p} pts)`);
+  if(rk===1){ const c=W(), T=c.trophies=c.trophies||[], id=K.tk+"-"+PM; if(!T.some(x=>x.id===id)){ T.push({id,k:K.tk,n:`${K.tn} · ${mn}`,at:Date.now()}); setTimeout(()=>toast(`🏆 Nouveau trophée : ${K.tn} du mois · ${mn}`),2600); post(`🏆 ${NAMES[me]} est ${K.tn} de ${mn} !`); } }
+  save(); }catch(e){} }
+const ladRowTxt=(k,x)=>{ const K=LADK[k]; return `${K.ic(x.d)} ${K.nm(x.d)} · ${x.p} pts`; };
+function ladMini(k){ if(!ladOn()) return `<div class="cgrules">📊 <b>Classement mensuel</b> : il démarre le <b>1er décembre</b>, avec 5 matchs de placement pour tout le monde.</div>`; const R=ladRank(k,MONTHK()), P=ladPlacing(k); if(!R.length&&!P.length) return "";
+  return `<div class="cgrules">📊 <b>Classement de ${new Date().toLocaleDateString("fr-FR",{month:"long"})}</b> <small>(fin ${monthEndTxt()})</small>${R.slice(0,5).map((x,i)=>`<div class="cgrk${x.u===me?" me":""}"><span>${["🥇","🥈","🥉"][i]||i+1+"."} ${esc(NAMES[x.u])}</span><b>${ladRowTxt(k,x)}</b></div>`).join("")}${P.length?`<small style="display:block;margin-top:4px">🎯 En placement : ${P.map(x=>`${esc(NAMES[x.u])} (${x.D.pl.n}/${PL_N})`).join(", ")}</small>`:""}<small style="display:block;margin-top:4px">Meilleure division du mois, puis points dans cette division. Classement complet : Ligue › Classements.</small></div>`; }
+function ladHTML(k,tg){ const K=LADK[k], M=MONTHK(), R=ladRank(k,M), P=ladPlacing(k), PM=prevMonthK(), PP=PM>=K.from?ladRank(k,PM).slice(0,3):[];
+  if(!ladOn()) return `<h3>${K.lbl}</h3>${tg}<div class="rules" style="font-size:12px;margin-top:0">🆕 Le classement mensuel ${k==="tcg"?"du Combat TCG":"des Divisions"} démarre le <b>1er décembre</b> : 5 matchs de placement pour tout le monde${k==="tcg"?", 10 divisions + 👑 Division Ultime":", puis la course jusqu'à la 👑 Division Ultime"}. On classe par meilleure division du mois, puis par points dans cette division. 🥇 Trophée « ${K.tn} du mois » + ${rTxt(LAD_RW[0])} · 🥈 ${rTxt(LAD_RW[1])} · 🥉 ${rTxt(LAD_RW[2])} · les autres : ${rTxt(LAD_RW_X)}.</div>`;
+  return `<h3>${K.lbl} <small>${monthName(M)} · fin ${monthEndTxt()}</small></h3>${tg}
+  <div class="rules" style="font-size:12px;margin-top:0">On classe par <b>meilleure division atteinte dans le mois</b>, puis par <b>points dans cette division</b> (en Division Ultime, les points sont infinis). Il faut avoir fini ses ${PL_N} matchs de placement. 🥇 Trophée « ${K.tn} du mois » + ${rTxt(LAD_RW[0])} · 🥈 ${rTxt(LAD_RW[1])} · 🥉 ${rTxt(LAD_RW[2])} · les autres : ${rTxt(LAD_RW_X)}.</div>
+  ${R.length?`<table class="rk"><tr><th></th><th>Joueur</th><th>Meilleure division</th><th>Pts</th></tr>${R.map((x,i)=>`<tr class="${x.u===me?"me":""}"><td>${["🥇","🥈","🥉"][i]||i+1}</td><td><button class="lnk" data-prof="${x.u}">${crestMini(x.u)}${esc(NAMES[x.u])}</button></td><td>${K.ic(x.d)} ${K.nm(x.d)}</td><td><b>${x.p}</b></td></tr>`).join("")}</table>`:`<div class="mute" style="font-size:13px">Personne n'est encore classé ce mois-ci : finis tes matchs de placement !</div>`}
+  ${P.length?`<div class="mute" style="font-size:12px;margin-top:6px">🎯 En placement : ${P.map(x=>`${esc(NAMES[x.u])} (${x.D.pl.n}/${PL_N})`).join(", ")}</div>`:""}
+  ${PP.length?`<div class="mute" style="font-size:12px;margin-top:8px">Podium de ${monthName(PM)} : ${PP.map((x,i)=>`${["🥇","🥈","🥉"][i]} ${esc(NAMES[x.u])} (${ladRowTxt(k,x)})`).join(" · ")}</div>`:""}`; }
 // 📜 historique et statistiques
 function cgHistAdd(X,res,extra){ const c=W(); c.cg=c.cg||{}; const opp=X.cpu?"cpu":X.players.find(u=>u!==me); c.cg.hist=[{g:X.g,o:opp,r:res,at:Date.now(),...(extra||{})},...(c.cg.hist||[])].slice(0,25); }
 function cgStatsHTML(){ const c=W(), st=(c.cg||{}).st||{}, H=(c.cg||{}).hist||[], K=(c.cg||{}).kos||{};
@@ -6710,11 +6882,12 @@ function cgMine(){ return Object.values(cgOnline).filter(x=>x.status!=="cancelle
 function cgTodo(){ if(!cgLive()) return 0; let n=0; for(const x of cgMine()){ const side=x.players.indexOf(me); if(x.status==="lobby"&&x.by!==me) n++; else if(x.status==="running"){ const S=cgReplay(x); if(cgNeedMe(x,S,side)) n++; } } return n; }
 function cgNewGame(g,src,opp){ const seed=(Math.random()*2**31)>>>0;
   const pA=cgPool(src,me); if(!cgPoolOk(g,pA)){ toast(cgPoolMsg(g)+(src==="coll"?" dans ta collection : essaie « Toutes les cartes »":""),true); return null; }
-  let pB; if(opp==="cpu") pB=src==="coll"?(g==="cbt"?tcgCpuMirror(pA):cgCpuPool(pA,0)):cgAll(); else { pB=cgPool(src,opp); if(!cgPoolOk(g,pB)){ toast(`${NAMES[opp]} n'a pas assez de cartes dans sa collection pour ce jeu (${cgPoolMsg(g).toLowerCase()})`,true); return null; } }
+  const H=g==="cbt"&&opp==="cpu"&&TCG_NEW()?tcgHard():null;
+  let pB; if(opp==="cpu") pB=src==="coll"?(g==="cbt"?tcgCpuMirror(pA,H?H.mir:.92):cgCpuPool(pA,0)):(H?tcgTopPool(H.q):cgAll()); else { pB=cgPool(src,opp); if(!cgPoolOk(g,pB)){ toast(`${NAMES[opp]} n'a pas assez de cartes dans sa collection pour ce jeu (${cgPoolMsg(g).toLowerCase()})`,true); return null; } }
   const deck=cgDeal(g,seed,pA,pB,src); const players=[me,opp==="cpu"?CPU:opp];
   const ev=s=>{ const o={}; if(src!=="coll"||players[s]===CPU) return o; for(const id of deck[s]) { const v=evoOf(players[s],id); if(v) o[id]=v; } return o; };
   const tl=s=>{ if(players[s]===CPU) return {}; const o={}, L=(C(players[s]).tcg||{}).lv||{}; if(src==="coll") for(const id of deck[s]) if(L[id]) o[id]=L[id]; return o; };
-  return {mode:"cards",g,src,seed,cap:g==="cbt"&&src==="coll"&&cgCap?1:0,players,by:me,deck:{0:deck[0],1:deck[1]},evo:{0:ev(0),1:ev(1)},tl:{0:tl(0),1:tl(1)},mv:{},status:opp==="cpu"?"running":"lobby",at:Date.now(),cpu:opp==="cpu"}; }
+  return {mode:"cards",g,src,seed,cap:g==="cbt"&&src==="coll"&&cgCap?1:0,players,by:me,deck:{0:deck[0],1:deck[1]},evo:{0:ev(0),1:ev(1)},tl:{0:tl(0),1:tl(1)},mv:{},status:opp==="cpu"?"running":"lobby",at:Date.now(),cpu:opp==="cpu",...(H?{cdm:H.dmg,cer:H.err}:{})}; }
 // la donne est stockée en {0:[],1:[]} (Firestore n'accepte pas les tableaux de tableaux)
 const cgG=x=>Object.assign({},x,{deck:[x.deck[0]||x.deck["0"],x.deck[1]||x.deck["1"]],evo:[(x.evo||{})[0]||{},(x.evo||{})[1]||{}],tl:[(x.tl||{})[0]||{},(x.tl||{})[1]||{}]});
 async function cgStart(g){ const opp=CG_MODES[g].on?cgOpp:"cpu"; const x=cgNewGame(g,cgSrc,opp); if(!x) return;
@@ -6740,7 +6913,7 @@ function cgFinish(X,S){ const c=W(); c.cg=c.cg||{}; c.cg.done=c.cg.done||[]; con
   let e=win?(X.cpu?1:3):draw?(X.cpu?0:1):0; if(X.g==="cbt") e*=2; const got=eclatsGain(e,!X.cpu,X.g);
   const pc=cgCoins(X.cpu?(win?40:draw?20:10):(win?80:draw?40:20),X.cpu,X.g);
   let dv=""; if(X.g==="cbt"){ dv=tcgDivAdd(win?"w":draw?"d":"l"); c.cg.kos=c.cg.kos||{}; for(const L of S.log) for(const e of (L.ev||[])) if(e.t==="a"&&e.s===side&&e.hp1<=0) c.cg.kos[tcgBase(e.id)]=(c.cg.kos[tcgBase(e.id)]||0)+1; }
-  cgChTrack(X,S,side,win);
+  cgChTrack(X,S,side,win); if(!X.cpu) rankCardGame(X,S);
   cgHistAdd(X,win?"w":draw?"d":"l",X.g==="cbt"?{s:S.sc[side]+"-"+S.sc[1-side]}:{});
   try{ track("play"); if(win) track("win"); }catch(_){}
   save(); setTimeout(()=>toast(`${win?"🏆 Victoire":draw?"🤝 Égalité":"😞 Défaite"} · ${CG_MODES[X.g].n} · +${pc} 🪙${X.cpu&&rwDecay(cgDayN(X.g)-1)<1?` (${rwPct(cgDayN(X.g)-1)} %)`:""}${got?` · +${got} 💠`:""}`),900); if(dv) setTimeout(()=>toast(dv),3200); }
@@ -6756,14 +6929,14 @@ const cgZ=w=>w>=100?Math.round(w*CGZ()):w;
 const cgCard=(id,w,o={})=>{ w=cgZ(w||96); return `<span class="cardbtn cgc${o.cls?" "+o.cls:""}"${o.data?` ${o.data}`:""}>${tcgHTML(id,{w,evo:o.evo||0,cls:w<100?"mini":""})}</span>`; };
 function cgStatBtns(id,evo,dis){ const s=cgStats(id,evo); return `<div class="cgstats">${CG_L.map((l,k)=>`<button class="cgsb" data-cgk="${k}" ${dis?"disabled":""}><small>${CG_N[k]}</small><b>${s[k]}</b></button>`).join("")}</div>`; }
 function cardsHomeHTML(){ const L=cgMine(); const others_=others();
-  const tiles=Object.entries(CG_MODES).map(([k,m])=>`<button class="tile timg" data-cgm="${k}" style="background:linear-gradient(180deg,#0000 35%,#000d 100%),url(img/tuiles/cg-${k}.webp) center/cover no-repeat,#13306b"><span class="tw">${m.ic}</span><span class="ti">${m.ic}</span><span><b>${m.n}</b><small>${esc(m.s)}</small><small class="cgrw">${k==="pom"?"♾️ Parties illimitées":`🤖 ${rwNext(cgDayN(k))}`}</small></span></button>`).join("");
+  const tiles=Object.entries(CG_MODES).map(([k,m])=>`<button class="tile timg" data-cgm="${k}" style="background:linear-gradient(180deg,#0000 35%,#000d 100%),url(img/tuiles/cg-${k}.webp) center/cover no-repeat,#13306b"><span class="tw">${m.ic}</span><span class="ti">${m.ic}</span><span><b>${m.n}</b><small>${esc(m.s)}</small><small class="cgrw">${k==="pom"?"♾️ Parties illimitées":`🤖 ${rwNext(cgDayN(k))}`}</small>${k==="cbt"?tcgDivTile():""}</span></button>`).join("");
   const T=tcgW();
   const list=L.length?`<div class="section"><h3>🌐 Tes parties en ligne</h3>${L.map(x=>{ const side=x.players.indexOf(me), o=x.players[1-side]; let st="", btn="Voir";
       if(x.status==="lobby") { st=x.by===me?"⏳ En attente de sa réponse":"📨 <b>Il t'invite !</b>"; btn=x.by===me?"Voir":"Répondre"; }
       else { const X=cgG(x), S=cgReplay(X); if(S.end){ const w=S.end.w; st=w===-1?"🤝 Égalité":w===side?"🏆 Gagné":"😞 Perdu"; } else if(cgNeedMe(X,S,side)){ st="⚡ <b>À toi de jouer</b>"; btn="Jouer"; } else st="⏳ À lui de jouer"; }
       return `<div class="cgrow"><span>${CG_MODES[x.g].ic} <b>${CG_MODES[x.g].n}</b> contre ${cgNm(o)}<small>${st} · ${x.src==="coll"?"🎴 collections":"🌍 toutes les cartes"}</small></span><button class="btn sm" data-cgo="${x.id}">${btn}</button></div>`; }).join("")}</div>`:"";
   const resume=cgCur&&cgCur.cpu&&!cgReplay(cgG(cgCur)).end?`<div class="cgrow resume"><span>${CG_MODES[cgCur.g].ic} Partie en cours contre l'ordi : <b>${CG_MODES[cgCur.g].n}</b></span><button class="btn sm" id="cgResume">Reprendre</button></div>`:"";
-  return `<div class="hubh"><h2>🃏 Jeux de cartes</h2><small>Contre l'ordi ou en ligne · avec toutes les cartes du jeu ou ta collection</small></div>
+  return `<div class="hubh"><h2>🃏 Jeux de cartes</h2><small>Contre l'ordi ou en ligne · avec toutes les cartes du jeu ou ta collection</small></div>${decBanner()}
     <div class="cgbar"><span>💠 <b>${T.e||0}</b> Éclats</span><small>Gagnés en jouant (le Combat rapporte double) · ils améliorent les attaques de tes cartes TCG</small></div>
     <div class="cgbar"><span>🪙 Sans limite</span><small>Victoire en ligne 80 · contre l\'ordi 40 · nul et défaite rapportent aussi · en ligne : aucune limite · contre l'ordi, dans <b>chaque jeu</b> : 5 parties à 100 % par jour, puis 75 %, 50 %, 25 % et 10 % (pièces et Éclats)</small></div>
     ${resume}${list}${cgChHTML()}<div class="hub cghub">${tiles}</div>${cgStatsHTML()}`; }
@@ -6830,7 +7003,7 @@ function cardsSetupHTML(g){ const m=CG_MODES[g]; const ops=others(); const pA=cg
     <div class="cgseg"><button class="${cgSrc==="all"?"on":""}" data-cgsrc="all">🌍 Toutes les cartes</button><button class="${cgSrc==="coll"?"on":""}" data-cgsrc="coll">🎴 Ma collection</button></div>
     <div class="mute" style="font-size:12px;margin:6px 2px">${cgSrc==="all"?"Cartes TCG (Épique et plus) tirées au hasard parmi tout le jeu : tout le monde à égalité.":`Tes cartes TCG (Épique et plus, ${pA.length}) avec leurs évolutions${g==="cbt"?" et améliorations 💠":""}.${ok?"":` <b style="color:#ff9a8a">${cgPoolMsg(g)}.</b>`}`}${cgOpp!=="cpu"&&cgSrc==="coll"?` ${esc(NAMES[cgOpp])} joue avec sa collection.`:""}</div>
     ${capOpt}<button class="btn big" id="cgGo" ${ok?"":"disabled"}>${cgOpp==="cpu"||!m.on?"▶️ Jouer":"📨 Inviter "+esc(NAMES[cgOpp]||"")}</button>
-    ${g==="pom"?pomBoardHTML():""}${g==="cbt"?`<div class="cgrules">🔥 <b>Règles</b> : choisis 5 joueurs (1 titulaire + 4 au banc). À chaque tour, ton titulaire gagne <b>1 ⚽</b>, puis tu choisis : <b>Attaque 1</b> (1 ⚽), <b>Attaque 2</b> (3 ⚽) ou <b>Changer de joueur</b>. Chaque K.O. = 1 but : <b>3 buts</b> pour gagner.<br>🔥 Attaquant > 🧤 Gardien > ⚽ Milieu > 🛡️ Défenseur > 🔥 Attaquant (×1,25).<br>🏅 Les compétences de carrière et 🤝 les liens entre coéquipiers s'appliquent tout seuls.</div>`+tcgDivBoard():""}
+    ${g==="pom"?pomBoardHTML():""}${g==="cbt"?`<div class="cgrules">🔥 <b>Règles</b> : choisis 5 joueurs (1 titulaire + 4 au banc). À chaque tour, ton titulaire gagne <b>1 ⚽</b>, puis tu choisis : <b>Attaque 1</b> (1 ⚽), <b>Attaque 2</b> (3 ⚽) ou <b>Changer de joueur</b>. Chaque K.O. = 1 but : <b>3 buts</b> pour gagner.<br>🔥 Attaquant > 🧤 Gardien > ⚽ Milieu > 🛡️ Défenseur > 🔥 Attaquant (×1,25).<br>🏅 Les compétences de carrière et 🤝 les liens entre coéquipiers s'appliquent tout seuls.</div>`+tcgDivBoardAll():""}
     ${g==="tab"?`<div class="cgrules">🥅 Le tireur choisit son côté et sa frappe (placée = précise, puissante = dure à arrêter mais peut s'envoler). Le gardien choisit où plonger. Le TIR du tireur et les réflexes du gardien comptent. Mort subite en cas d'égalité.</div>`:""}
     ${g==="pyr"?`<div class="cgrules">🔺 5 étages : Épique, Légendaire, Mythique, Spéciale, Légende Ultime. À chaque étage, une carte adverse visible et une <b>stat cachée</b> : choisis parmi tes 3 cartes celle qui a le plus de chances de faire au moins aussi bien. 3 vies.${m.on?" En ligne : vous grimpez la même pyramide, le plus haut gagne.":""}</div>`:""}
   </div>`; }
@@ -7036,9 +7209,9 @@ CG_VIEW.cbt=(G,S,side,need)=>{ const o=1-side; const key=(G.id||G.seed)+"_"+(S.i
     ctrl=`${tip}${acts?`<div class="tacts2"><div class="tah">🃏 Tes cartes Action <small>${T.acted?"✅ action jouée ce tour":"1 par tour, avant d'attaquer · touche pour voir"}</small></div><div class="tag">${acts}</div></div>`:""}<div class="tatks">${atk}</div>${firstT?`<div class="mute" style="font-size:11px;text-align:center">Tu commences : pas d'attaque au 1er tour</div>`:a.e<1?"":""}
       <div class="tbtns"><button class="btn sm ghost${recAll[0]&&recAll[0][0]==="r"?" best":""}" id="tcgRet" ${T.bench[side].length?"":"disabled"}>🔄 Changer de joueur</button><button class="btn sm ghost${best(["x"])?" best":""}" id="tcgEnd">⏭️ Passer</button></div>`; }
   return `<div class="tboard">
-    <div class="tzone opp"><div class="tbar">${goals(o)}<span>${cgNm(G.players[o])}</span></div><div class="tbench">${bench(o,false)}</div>${tcgStaff(T,G,o,false)}<div class="tact">${tcgPlayHTML(T.act[o],G,o,cgZ(104),"act opp")}</div></div>
+    <div class="tzone opp"><div class="tbar">${goals(o)}<span>${cgNm(G.players[o])}${tcgDivTag(G.players[o])}</span></div><div class="tbench">${bench(o,false)}</div>${tcgStaff(T,G,o,false)}<div class="tact">${tcgPlayHTML(T.act[o],G,o,cgZ(104),"act opp")}</div></div>
     ${info?`<div class="tinfo">${info}</div>`:""}
-    <div class="tzone me"><div class="tact">${tcgPlayHTML(T.act[side],G,side,cgZ(120),"act me")}</div><div class="tbench">${bench(side,true)}</div>${tcgStaff(T,G,side,true)}${tcgChips(T,G,side,T.act[side])}<div class="tbar">${goals(side)}<span>Toi${myTurn&&T.act[side]?` · ⚽ ${T.act[side].e}`:""}</span></div></div>
+    <div class="tzone me"><div class="tact">${tcgPlayHTML(T.act[side],G,side,cgZ(120),"act me")}</div><div class="tbench">${bench(side,true)}</div>${tcgStaff(T,G,side,true)}${tcgChips(T,G,side,T.act[side])}<div class="tbar">${goals(side)}<span>Toi${tcgDivTag(me)}${myTurn&&T.act[side]?` · ⚽ ${T.act[side].e}`:""}</span></div></div>
     ${ctrl}</div>`; };
 function tcgEvText(ev,side){ const N=id=>esc(short(BY_ID[id].name)); return ev.map(e=>{ const w=e.s===side?"Tu":"Il";
   if(e.t==="b") return `📥 ${N(e.id)} sur le banc`; if(e.t==="e") return `⚽ Ballon pour ${N(e.id)}`; if(e.t==="r") return `🔄 ${N(e.id)} remplace ${N(e.out)}`; if(e.t==="p") return `➡️ ${N(e.id)} entre en jeu`;
@@ -7196,7 +7369,7 @@ function cgTeaser(){ const M=$("#cardModal"); M.innerHTML=`<div class="cm-box" s
   <button class="btn" id="cgTzX" style="margin-top:10px">J'ai hâte !</button></div>`; M.classList.add("open"); $("#cgTzX").onclick=()=>M.classList.remove("open"); M.onclick=e=>{ if(e.target===M) M.classList.remove("open"); }; cgCdTick(); }
 function openCards(from){ if(!cgLive()){ cgTeaser(); return; } cgBack=from==="online"?"online":"solo"; NAV_OF.cards=cgBack==="online"?"nOnline":"nSolo"; if(!(cgCur&&cgSel==="game")) cgSel=null; setMode("cards"); }
 
-const APP_V="2026-11-28v"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-29e"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
@@ -7302,7 +7475,7 @@ try{
       else { NAMES[me]=pendingName||($("#aName").value.trim())||user.email.split("@")[0]; compos[me]=blank(); compos[me].coins=300; await push(); await importLegacy(NAMES[me]); setTimeout(()=>toast("Bienvenue ! 300 🪙 offertes pour ton premier pack"),800); }
     }catch(e){ setSync("⚠️ Accès refusé : règles Firebase à mettre à jour","err"); }
     pendingName=null; $("#aPass").value="";
-    choose(me); startListeners(); setTimeout(()=>{ if(me){ starterPack(); loginStreak(); dailyBonus(); claimRewards(); refreshNotifToken(); try{ checkBirthday(); }catch(e){} try{ checkHolidays(); }catch(e){} setTimeout(()=>{ try{ askBirthday(); }catch(e){} },9000); renderCoins(); badgeLigue(); tip("welcome",()=>starterPrompt(()=>tip("tab_"+mode))); } },1500);
+    choose(me); startListeners(); setTimeout(()=>{ if(me){ starterPack(); loginStreak(); dailyBonus(); claimRewards(); refreshNotifToken(); try{ checkBirthday(); }catch(e){} try{ checkHolidays(); }catch(e){} setTimeout(()=>{ try{ tcgEliteClaim(); }catch(e){} try{ ladClaim("solo"); }catch(e){} try{ ladClaim("tcg"); }catch(e){} try{ seasonNews(); }catch(e){} },8000); setTimeout(()=>{ try{ askBirthday(); }catch(e){} },9000); renderCoins(); badgeLigue(); tip("welcome",()=>starterPrompt(()=>tip("tab_"+mode))); } },1500);
   });
 }catch(e){ setSync("⚠️ Synchro indisponible","err"); }
 </script>

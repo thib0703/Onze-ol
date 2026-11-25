@@ -258,7 +258,7 @@ exports.nightlyBackup = onSchedule({ schedule: "15 3 * * *", timeZone: "Europe/P
 const UL_OLD_IDS = {"fleury-di-nallo": "Fleury Di Nallo", "serge-chiesa": "Serge Chiesa", "bernard-lacombe": "Bernard Lacombe", "nestor-combin": "Néstor Combin", "angel-rambert": "Ángel Rambert", "yves-chauveau": "Yves Chauveau", "aime-mignot": "Aimé Mignot", "raymond-domenech": "Raymond Domenech", "jean-djorkaeff": "Jean Djorkaeff", "jean-tigana": "Jean Tigana", "remi-garde": "Rémi Garde"};
 const SET_T = {"bronze": "Toutes les Communes", "silver": "Toutes les Rares", "gold": "Toutes les Épiques", "icon": "Toutes les Légendaires", "myth": "Toutes les Mythiques", "coach": "Tous les entraîneurs", "bresil": "Les Brésiliens", "septuple": "Les champions du septuplé", "actuel": "L'effectif actuel", "e2000": "Les années 2000", "e2010": "Les années 2010", "e2020": "La nouvelle génération", "france": "Les Bleus de l'OL 🇫🇷", "lmod": "Toutes les Légendes modernes ⭐", "ultime": "Toutes les Légendes Ultimes 👑", "all": "L'album complet"};
 const CAREER_STAGES = [[7, "Ligue 1"], [11, "Europa League"], [15, "Ligue des champions"]];
-const DIV_NAME = d => d === 0 ? "Ligue des Champions" : `Division ${d}`;
+const DIV_NAME = d => d === -1 ? "Division Ultime" : d === 0 ? "Ligue des Champions" : `Division ${d}`;
 const prettyId = id => id.replace(/--\w+$/, "").split("-").map(w => w ? w[0].toUpperCase() + w.slice(1) : w).join(" ");
 function trophiesFor(c) {
   const T = (c.trophies || []).map(x => ({ ...x })); let ch = false; const now = Date.now();
