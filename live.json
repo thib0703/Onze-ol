@@ -1,5 +1,5 @@
 {
-  "updated": "24/11/2026",
+  "updated": "25/11/2026",
   "matches": "Brest 2-0 OL (08/11), Lille 0-1 OL (21/11) — notes Maxifoot",
   "rules": "Blessé -3 à -6 selon la durée, suspendu -2 ; moyenne des 2 derniers matchs : >=7.5 +3, >=7 +2, >=6.5 +1, <=4 -2, <=5 -1",
   "players": {
@@ -112,8 +112,48 @@
       "score": null
     }
   ],
-  "newsUpdated": "24/11/2026",
+  "newsUpdated": "25/11/2026",
   "news": [
+    {
+      "d": "2026-11-25T09:00",
+      "tag": "match",
+      "t": "OL – Lillestrøm : un arbitre autrichien et des billets encore disponibles",
+      "s": "L'Autrichien Sebastian Gishamer dirigera la rencontre de Ligue Europa jeudi à 21 h au Groupama Stadium, où des places restent en vente.",
+      "src": "LyonFoot",
+      "url": "https://www.lyonfoot.com/article/14961/ol-lillestrom-un-arbitre-autrichien-au-sifflet-des-places-encore-en-vente"
+    },
+    {
+      "d": "2026-11-25T08:45",
+      "tag": "feminines",
+      "t": "Hegerberg rejoint Dumornay en tête des buteuses de D1",
+      "s": "Avec son but contre Strasbourg, Ada Hegerberg atteint 11 réalisations, à égalité avec sa coéquipière Melchie Dumornay ; Katoto complète un podium 100 % lyonnais.",
+      "src": "Olympique-et-Lyonnais",
+      "url": "https://www.olympique-et-lyonnais.com/meilleures-buteuses-de-d1-ol-lyonnes-sans-concurrence,414759.html"
+    },
+    {
+      "d": "2026-11-25T08:11",
+      "tag": "match",
+      "t": "But refusé à Lille : l'arbitrage donne raison à la VAR",
+      "s": "La Direction technique de l'arbitrage confirme la faute de Bidstrup sur le gardien lillois avant le but de Nuamah, annulé à la 40e minute.",
+      "src": "LyonFoot",
+      "url": "https://www.lyonfoot.com/article/14960/lille-ol-l-arbitrage-confirme-la-faute-de-bidstrup-sur-le-but-refuse-a-nuamah"
+    },
+    {
+      "d": "2026-11-25T07:30",
+      "tag": "club",
+      "t": "Fonseca ne veut pas relancer la polémique avec Tolisso",
+      "s": "Désormais au Sporting, l'ancien entraîneur lyonnais estime qu'il y aurait beaucoup à dire sur les critiques de son ex-capitaine, mais préfère tourner la page.",
+      "src": "Olympique-et-Lyonnais",
+      "url": "https://www.olympique-et-lyonnais.com/ol-fonseca-repond-a-la-prise-de-parole-de-tolisso,414786.html"
+    },
+    {
+      "d": "2026-11-24T17:30",
+      "tag": "mercato",
+      "t": "Tagliafico, Akouokou, Openda, Athekame : quatre départs envisagés",
+      "s": "Dans un contexte d'économies, plusieurs joueurs pourraient quitter l'OL d'ici l'été ; Tagliafico serait le plus proche d'un départ dès janvier. Rien n'est officiel.",
+      "src": "LyonFoot",
+      "url": "https://www.lyonfoot.com/article/14956/mercato-ol-tagliafico-akouokou-openda-athekame-quatre-departs-se-profileraient"
+    },
     {
       "d": "2026-11-24T09:25",
       "tag": "match",
@@ -137,6 +177,14 @@
       "s": "Blessé au péroné depuis la mi-octobre, l'attaquant belge a participé lundi à la séance collective. Le club ne prendra aucun risque et son retour à la compétition se fera progressivement.",
       "src": "Olympique-et-Lyonnais",
       "url": "https://www.olympique-et-lyonnais.com/ol-lois-openda-a-fait-son-retour-a-lentrainement,414611.html"
+    },
+    {
+      "d": "2026-11-23T16:00",
+      "tag": "joueurs",
+      "t": "Bidstrup dans l'équipe type de la 11e journée",
+      "s": "Buteur décisif à Lille, le milieu danois est récompensé par une place dans le onze type de la journée de Ligue 1.",
+      "src": "LyonFoot",
+      "url": "https://www.lyonfoot.com/article/14946/ol-buteur-a-lille-mads-bidstrup-integre-l-equipe-type-de-la-11e-journee"
     },
     {
       "d": "2026-11-23T11:50",
@@ -305,54 +353,6 @@
       "s": "Le coach et la direction sportive ont commencé à préparer janvier.",
       "src": "Olympique-et-Lyonnais",
       "url": "https://www.olympique-et-lyonnais.com/ol-vicens-et-louis-jean-ont-deja-echange-sur-le-mercato-hivernal,414062.html"
-    },
-    {
-      "d": "2026-11-19T14:12",
-      "tag": "infirmerie",
-      "t": "Clinton Mata forfait pour Lille",
-      "s": "Le défenseur angolais, gêné physiquement, a manqué le déplacement dans le Nord.",
-      "src": "Olympique-et-Lyonnais",
-      "url": "https://www.olympique-et-lyonnais.com/ligue-1-clinton-mata-forfait-pour-lille-ol,414054.html"
-    },
-    {
-      "d": "2026-11-19T12:00",
-      "tag": "club",
-      "t": "Tolisso tacle encore Paulo Fonseca",
-      "s": "Le capitaine lyonnais reproche à son ancien entraîneur d'avoir abandonné le groupe en partant au Sporting.",
-      "src": "Foot Mercato",
-      "url": "https://www.footmercato.net/a2506182578587322711-cest-vous-qui-nous-abandonnez-corentin-tolisso-dezingue-encore-paulo-fonseca"
-    },
-    {
-      "d": "2026-11-18T21:00",
-      "tag": "club",
-      "t": "Michele Kang déçue par le départ de Fonseca",
-      "s": "En conférence de presse, la présidente est revenue sur le départ surprise du coach portugais.",
-      "src": "Foot Mercato",
-      "url": "https://www.footmercato.net/a2400783925860134737-ol-paulo-fonseca-a-decu-michele-kang"
-    },
-    {
-      "d": "2026-11-18T20:00",
-      "tag": "mercato",
-      "t": "Gerlinger n'exclut pas des recrues cet hiver",
-      "s": "Le directeur général laisse la porte ouverte à des arrivées en janvier.",
-      "src": "Foot Mercato",
-      "url": "https://www.footmercato.net/a4109918147763215985-ol-michael-gerlinger-ouvre-la-porte-a-des-arrivees-au-mercato-hivernal"
-    },
-    {
-      "d": "2026-11-18T19:00",
-      "tag": "club",
-      "t": "Michele Kang s'exprime sur une vente de l'OL",
-      "s": "La présidente a répondu aux questions sur l'avenir de l'actionnariat du club.",
-      "src": "Foot Mercato",
-      "url": "https://www.footmercato.net/a5838048748079823278-la-declaration-de-michele-kang-sur-la-vente-de-lol"
-    },
-    {
-      "d": "2026-11-18T18:00",
-      "tag": "club",
-      "t": "L'OL hausse le ton contre le racisme",
-      "s": "Le club a pris une position forte face aux problèmes de racisme autour de ses matchs.",
-      "src": "Foot Mercato",
-      "url": "https://www.footmercato.net/a3595163184488081937-limmense-coup-de-gueule-de-lol-contre-ses-problemes-de-racisme"
     }
   ],
   "table": {
