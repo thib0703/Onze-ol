@@ -1,6 +1,6 @@
 {
-  "updated": "25/11/2026",
-  "matches": "Brest 2-0 OL (08/11), Lille 0-1 OL (21/11) — notes Maxifoot",
+  "updated": "27/11/2026",
+  "matches": "Lille 0-1 OL (21/11, L1), OL 0-0 Lillestrøm (26/11, C3) — notes Maxifoot",
   "rules": "Blessé -3 à -6 selon la durée, suspendu -2 ; moyenne des 2 derniers matchs : >=7.5 +3, >=7 +2, >=6.5 +1, <=4 -2, <=5 -1",
   "players": {
     "pavel-sulc": {
@@ -13,50 +13,55 @@
       "mod": -5,
       "note": "Opéré de l'adducteur gauche (17/11), retour prévu courant février"
     },
-    "lois-openda": {
-      "st": "inj",
-      "mod": -3,
-      "note": "Fissure du péroné, de retour à l'entraînement collectif le 23/11 mais pas encore apte à jouer"
-    },
     "clinton-mata": {
       "st": "inj",
       "mod": -3,
-      "note": "Gêne musculaire, forfait à Lille, incertain pour Lillestrøm (26/11)"
+      "note": "Toujours gêné musculairement, forfait contre Lillestrøm"
     },
     "mads-bidstrup": {
+      "st": "inj",
+      "mod": -3,
+      "note": "Gêne au pied, ménagé contre Lillestrøm, incertain pour Monaco"
+    },
+    "tanner-tessmann": {
       "st": "up",
       "mod": 2,
-      "note": "Buteur et homme du match à Lille (7/10)"
+      "note": "7/10 à Lille, entré contre Lillestrøm"
     },
-    "ruben-kluivert": {
-      "st": "down",
-      "mod": -1,
-      "note": "5/10 à Brest"
+    "moussa-niakhate": {
+      "st": "up",
+      "mod": 1,
+      "note": "6,5/10 à Lille"
     },
-    "nicolas-tagliafico": {
-      "st": "down",
-      "mod": -1,
-      "note": "5/10 à Brest"
-    },
-    "keito-nakamura": {
-      "st": "down",
-      "mod": -1,
-      "note": "5/10 de moyenne sur les 2 derniers matchs"
+    "zachary-athekame": {
+      "st": "up",
+      "mod": 1,
+      "note": "6,5/10 à Lille, entré contre Lillestrøm"
     },
     "ernest-nuamah": {
       "st": "down",
       "mod": -1,
-      "note": "5/10 à Lille, but refusé par la VAR"
+      "note": "5/10 à Lille, entré contre Lillestrøm"
+    },
+    "remi-himbert": {
+      "st": "down",
+      "mod": -1,
+      "note": "4,5/10 contre Lillestrøm, but refusé"
     },
     "noah-nartey": {
       "st": "down",
       "mod": -2,
-      "note": "4/10 à Brest"
+      "note": "4/10 contre Lillestrøm"
     },
     "kail-boudache": {
       "st": "down",
       "mod": -2,
-      "note": "3/10 à Brest"
+      "note": "4/10 contre Lillestrøm"
+    },
+    "julien-duranville": {
+      "st": "down",
+      "mod": -2,
+      "note": "4/10 contre Lillestrøm"
     }
   },
   "fixtures": [
@@ -77,7 +82,10 @@
       "home": "OL",
       "away": "Lillestrøm",
       "comp": "Ligue Europa · J5",
-      "score": null
+      "score": [
+        0,
+        0
+      ]
     },
     {
       "id": "2026-11-29-ol-monaco",
@@ -97,7 +105,7 @@
     },
     {
       "id": "2026-12-10-ol-union-saint-gilloise",
-      "date": "2026-12-10T17:00:00+01:00",
+      "date": "2026-12-10T21:00:00+01:00",
       "home": "OL",
       "away": "Union Saint-Gilloise",
       "comp": "Ligue Europa · J6",
@@ -112,8 +120,104 @@
       "score": null
     }
   ],
-  "newsUpdated": "25/11/2026",
+  "newsUpdated": "27/11/2026",
   "news": [
+    {
+      "d": "2026-11-27T00:59",
+      "tag": "match",
+      "t": "Les notes de Lyon-Lillestrøm : Merah au-dessus du lot",
+      "s": "Pour Homme du Match, Khalis Merah (7) a été le Lyonnais le plus en vue d'un match nul terne, tandis que le gardien norvégien Dahlberg a été élu homme du match.",
+      "src": "Homme du Match",
+      "url": "https://www.hommedumatch.fr/lyon-lillestrom-0-0-les-notes-completes-europa-league-5e-journee-2954831/"
+    },
+    {
+      "d": "2026-11-27T00:10",
+      "tag": "match",
+      "t": "Nartey et Boudache à côté, Merah omniprésent",
+      "s": "433foot note durement l'attaque lyonnaise après le 0-0 contre Lillestrøm, avec des 4/10 pour Nartey, Boudache et Duranville.",
+      "src": "433foot",
+      "url": "https://www.433foot.fr/les-notes-de-lyon-lillestrom-0-0-nartey-4-et-boudache-4-manquent-loccasion-merah-6-omnipresent/"
+    },
+    {
+      "d": "2026-11-27T00:03",
+      "tag": "match",
+      "t": "Le penalty annulé de l'OL fait polémique",
+      "s": "L'arbitre a annulé après visionnage VAR le penalty accordé à Lyon pour une faute sur Openda en fin de match, estimant que le ballon avait été touché avant. La décision fait débat.",
+      "src": "Foot Mercato",
+      "url": "https://footmercato.net/a1793959235814781656-ligue-europa-le-penalty-annule-de-lol-provoque-une-grosse-polemique"
+    },
+    {
+      "d": "2026-11-26T23:43",
+      "tag": "match",
+      "t": "Tops et flops : Merah tient la baraque, l'attaque muette",
+      "s": "Ferveur Lyonnaise retient la prestation de Merah et pointe l'inefficacité offensive ainsi qu'un arbitrage très critiqué face à Lillestrøm.",
+      "src": "Ferveur Lyonnaise",
+      "url": "https://www.ferveurlyonnaise.fr/ligue-europa-j5-ol-sk-lillestrom-0-0-merah-tient-son-rang-une-attaque-muette-un-arbitrage-indigne-du-haut-niveau-les-tops-et-flops/"
+    },
+    {
+      "d": "2026-11-26T23:20",
+      "tag": "match",
+      "t": "OL-Lillestrøm (0-0) : Lyon 14e de la phase de ligue",
+      "s": "Accroché à domicile malgré sept changements dans le onze, l'OL reste 14e avec 8 points, à deux longueurs du top 8 avant la réception de l'Union Saint-Gilloise.",
+      "src": "LyonFoot",
+      "url": "https://www.lyonfoot.com/article/14969/ol-lillestrom-0-0-lyon-accroche-en-ligue-europa-un-penalty-annule-par-la-var-fait-polemique"
+    },
+    {
+      "d": "2026-11-26T22:59",
+      "tag": "match",
+      "t": "Maxifoot : « À l'arrêt complet »",
+      "s": "Dans son débrief, Maxifoot donne 7 à Merah mais seulement 4 à Nartey, Boudache et Duranville, et note le match lui-même 4/10.",
+      "src": "Maxifoot",
+      "url": "https://www.maxifoot.fr/football/article-66687.htm"
+    },
+    {
+      "d": "2026-11-26T22:53",
+      "tag": "match",
+      "t": "L'OL bute sur Lillestrøm et la VAR",
+      "s": "But de Himbert refusé, poteau de Nakamura, penalty annulé : Lyon a buté sur le gardien Dahlberg et n'a pas pu faire mieux qu'un nul.",
+      "src": "Foot01",
+      "url": "https://www.foot01.com/ol/el-lol-bute-sur-lillestrom-et-la-var"
+    },
+    {
+      "d": "2026-11-26T21:33",
+      "tag": "joueurs",
+      "t": "Kluivert veut gagner sa place avec Vicens",
+      "s": "Troisième dans la hiérarchie en défense centrale derrière Niakhaté et Bacher, Ruben Kluivert mise sur sa polyvalence pour s'imposer.",
+      "src": "Foot-sur7",
+      "url": "https://www.foot-sur7.fr/797353-ol-kluivert-negocie-une-place-dans-lequipe-de-vicens"
+    },
+    {
+      "d": "2026-11-26T19:14",
+      "tag": "mercato",
+      "t": "Pas de successeur à Tagliafico cet hiver",
+      "s": "Selon la presse italienne, Lyon ne compte pas recruter de latéral gauche : le club s'appuie sur Abner, puis sur Mohamed Ouédraogo à son retour de blessure.",
+      "src": "Daily Mercato",
+      "url": "https://www.dailymercato.com/news/mercato-ol-nicolas-tagliafico-pas-remplace-abner-ouedraogo-juventus"
+    },
+    {
+      "d": "2026-11-25T19:26",
+      "tag": "infirmerie",
+      "t": "Mata forfait, Bidstrup ménagé, Openda de retour",
+      "s": "Pour Lillestrøm, Vicens se passait de Mata, encore gêné musculairement, et ménageait Bidstrup (pied) en vue de Monaco ; Openda retrouvait le groupe.",
+      "src": "Maxifoot",
+      "url": "https://news.maxifoot.fr/lyon/2-forfaits-et-1-retour-contre-lillestrom-foot-468354.htm"
+    },
+    {
+      "d": "2026-11-25T17:30",
+      "tag": "club",
+      "t": "Vicens s'appuie sur le staff hérité de Fonseca",
+      "s": "Pour ses débuts, le nouvel entraîneur a pu compter sur les adjoints restés au club, dont Adrien Tarascon.",
+      "src": "Foot01",
+      "url": "https://www.foot01.com/ol/ol-vicens-est-sauve-par-le-staff-de-fonseca"
+    },
+    {
+      "d": "2026-11-25T14:48",
+      "tag": "joueurs",
+      "t": "Kluivert décrit un Vicens énergique et exigeant",
+      "s": "En conférence de presse, le défenseur a expliqué que le coach n'avait pas encore tout bouleversé, faute de temps avec le groupe.",
+      "src": "Foot Mercato",
+      "url": "https://www.footmercato.net/a5216804006721784517-ol-ruben-kluivert-juge-les-debuts-de-carlos-vicens"
+    },
     {
       "d": "2026-11-25T09:00",
       "tag": "match",
@@ -257,102 +361,6 @@
       "s": "Le nouveau coach a demandé à ses joueurs d'être agressifs et de presser Lille sans relâche, et ça a payé.",
       "src": "Olympique-et-Lyonnais",
       "url": "https://www.olympique-et-lyonnais.com/vicens-apres-lille-ol-0-1-ne-pas-leur-laisser-de-temps-et-etre-agressifs,414326.html"
-    },
-    {
-      "d": "2026-11-21T23:05",
-      "tag": "match",
-      "t": "Les notes de LyonFoot : Bidstrup en patron",
-      "s": "La rédaction met en avant le buteur danois et l'entraîneur, et se montre sévère avec Tanner Tessmann.",
-      "src": "LyonFoot",
-      "url": "https://www.lyonfoot.com/article/14934/les-notes-de-lille-ol-mads-bidstrup-buteur-harceleur-et-heroique"
-    },
-    {
-      "d": "2026-11-21T23:00",
-      "tag": "match",
-      "t": "Lille 0-1 OL : fin de la série noire à l'extérieur",
-      "s": "Lyon met fin à trois défaites de suite en déplacement et revient à un point du LOSC au classement.",
-      "src": "Tonic Radio",
-      "url": "https://www.tonicradio.fr/lille-ol-0-1-carlos-vicens-reussit-sa-premiere-lyon-frappe-un-grand-coup/"
-    },
-    {
-      "d": "2026-11-21T22:50",
-      "tag": "match",
-      "t": "Bidstrup débloque son compteur, Lyon se rapproche du podium",
-      "s": "Premier but du Danois avec l'OL, à la 40e minute. Seul Tolisso a été averti côté lyonnais.",
-      "src": "LyonFoot",
-      "url": "https://www.lyonfoot.com/article/14917/lille-ol-lyon-et-carlos-vicens-deja-d-attaque-0-1"
-    },
-    {
-      "d": "2026-11-21T22:41",
-      "tag": "match",
-      "t": "L'OL gagne à Lille pour la première de Carlos Vicens (0-1)",
-      "s": "Victoire chez le 2e de Ligue 1, qui n'avait perdu que deux fois en 24 matchs de championnat.",
-      "src": "Olympique-et-Lyonnais",
-      "url": "https://www.olympique-et-lyonnais.com/grace-a-mads-bidstrup-lol-gagne-a-lille-pour-la-premiere-de-carlos-vicens-0-1,414314.html"
-    },
-    {
-      "d": "2026-11-21T17:35",
-      "tag": "feminines",
-      "t": "Première sélection en Bleues pour Liana Joseph",
-      "s": "L'attaquante d'OL Lyonnes, 20 ans, est appelée en équipe de France pour les amicaux contre le Venezuela et le Maroc. Giráldez s'en félicite.",
-      "src": "Olympique-et-Lyonnais",
-      "url": "https://www.olympique-et-lyonnais.com/jonatan-giraldez-tres-heureux-de-la-selection-de-liana-joseph-ol-lyonnes-avec-la-france,414270.html"
-    },
-    {
-      "d": "2026-11-21T11:50",
-      "tag": "match",
-      "t": "Monaco privé de Mamadou Coulibaly à Lyon",
-      "s": "Suspendu après son geste contre Le Mans, le milieu monégasque manquera le déplacement au Groupama Stadium le 29 novembre.",
-      "src": "Olympique-et-Lyonnais",
-      "url": "https://www.olympique-et-lyonnais.com/monaco-devra-faire-sans-mamadou-coulibaly-contre-lol,414194.html"
-    },
-    {
-      "d": "2026-11-21T07:30",
-      "tag": "academie",
-      "t": "OL Académie : le programme du week-end",
-      "s": "Les matchs des équipes de jeunes lyonnaises ce week-end.",
-      "src": "Olympique-et-Lyonnais",
-      "url": "https://www.olympique-et-lyonnais.com/ol-academie-le-programme-du-week-end-111,414039.html"
-    },
-    {
-      "d": "2026-11-20T19:03",
-      "tag": "joueurs",
-      "t": "Tagliafico dans le premier groupe de Vicens",
-      "s": "Absent à l'entraînement jeudi, l'Argentin a finalement été retenu pour Lille.",
-      "src": "Olympique-et-Lyonnais",
-      "url": "https://www.olympique-et-lyonnais.com/lille-ol-vicens-devoile-son-premier-groupe-avec-tagliafico,414226.html"
-    },
-    {
-      "d": "2026-11-20T16:50",
-      "tag": "joueurs",
-      "t": "Tessmann rêve de la sélection américaine",
-      "s": "Le milieu de l'OL veut retrouver l'équipe nationale des États-Unis.",
-      "src": "Olympique-et-Lyonnais",
-      "url": "https://www.olympique-et-lyonnais.com/tessmann-ol-je-veux-jouer-avec-lequipe-nationale,414068.html"
-    },
-    {
-      "d": "2026-11-20T11:50",
-      "tag": "club",
-      "t": "Benzema relance les rumeurs d'un retour à l'OL",
-      "s": "Une simple photo publiée par l'ancien attaquant a suffi à enflammer les réseaux.",
-      "src": "Olympique-et-Lyonnais",
-      "url": "https://www.olympique-et-lyonnais.com/avec-une-simple-photo-benzema-enflamme-les-reseaux-autour-dun-retour-a-lol,414191.html"
-    },
-    {
-      "d": "2026-11-19T22:52",
-      "tag": "feminines",
-      "t": "OL Lyonnes s'impose 2-0 à Arsenal en Ligue des champions",
-      "s": "Les Lyonnaises sont assurées de finir dans le top 4 et visent maintenant la première place.",
-      "src": "Olympique-et-Lyonnais",
-      "url": "https://www.olympique-et-lyonnais.com/ligue-des-champions-ol-lyonnes-a-repondu-a-lappel-de-londres,414123.html"
-    },
-    {
-      "d": "2026-11-19T15:45",
-      "tag": "mercato",
-      "t": "Vicens et Louis-Jean ont déjà parlé du mercato d'hiver",
-      "s": "Le coach et la direction sportive ont commencé à préparer janvier.",
-      "src": "Olympique-et-Lyonnais",
-      "url": "https://www.olympique-et-lyonnais.com/ol-vicens-et-louis-jean-ont-deja-echange-sur-le-mercato-hivernal,414062.html"
     }
   ],
   "table": {
