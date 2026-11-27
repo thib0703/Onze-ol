@@ -5050,36 +5050,49 @@ function leagueHTML(id,L){
 }
 
 // ---------- ✅ Les deux joueurs « prêts » → le match se lance en direct chez les deux ----------
-function readyHTML(d,id){ const o=d.players.find(x=>x!==me); const R=d.ready||{};
-  return `<div class="readyrow"><span>${esc(NAMES[me]||"Toi")} : ${R[me]?"prêt ✅":"en attente ⏳"}</span><span>${esc(NAMES[o]||"?")} : ${R[o]?"prêt ✅":"en attente ⏳"}</span></div>${R[me]?`<div class="mute" style="text-align:center;font-size:13px">En attente de ${esc(NAMES[o]||"l'adversaire")}…</div>`:`<button class="btn big" id="${id}">✅ Je suis prêt</button>`}`; }
+function readyHTML(d,id){ const o=d.players.find(x=>x!==me); const R=d.ready||{}; const both=d.players.every(w=>R[w]);
+  return `<div class="readyrow"><span>${esc(NAMES[me]||"Toi")} : ${R[me]?"prêt ✅":"en attente ⏳"}</span><span>${esc(NAMES[o]||"?")} : ${R[o]?"prêt ✅":"en attente ⏳"}</span></div>${both?`<div class="mute" style="text-align:center;font-size:13px">Vous êtes prêts tous les deux. Si le match ne démarre pas tout seul :</div><button class="btn big" id="${id}">▶️ Lancer le match</button>`:R[me]?`<div class="mute" style="text-align:center;font-size:13px">En attente de ${esc(NAMES[o]||"l'adversaire")}…</div>`:`<button class="btn big" id="${id}">✅ Je suis prêt</button>`}`; }
+// lancement verrouillé 90 s (pour ne pas jouer 2 fois le même match), puis relançable si le téléphone qui lançait a raté
+// (anciens drafts : launched:true sans heure = bloqué pour toujours → considéré comme expiré)
+const dLaunchFresh=x=>typeof x.launched==="number"&&Date.now()-x.launched<90000;
 async function setReady(kind){
-  const ref=db.collection("onzeol_drafts").doc(kind==="budget"?bKey():dKey()); let go=false;
+  const ref=db.collection("onzeol_drafts").doc(kind==="budget"?bKey():dKey()); let go=false, snap=null, busy=false;
   try{ await db.runTransaction(async tx=>{ const sn=await tx.get(ref); if(!sn.exists) throw new Error("Draft introuvable"); const x=sn.data(); if(x.status!=="done") throw new Error("Le draft n'est pas terminé");
-      const R=Object.assign({},x.ready||{}); R[me]=true; const both=x.players.every(w=>R[w]); go=both&&!x.launched; tx.update(ref,go?{ready:R,launched:true}:{ready:R}); }); }
+      if(x.played) throw new Error("Ce match a déjà été joué : lance un nouveau draft");
+      const R=Object.assign({},x.ready||{}); R[me]=true; const both=x.players.every(w=>R[w]); busy=both&&dLaunchFresh(x); go=both&&!busy;
+      snap=Object.assign({},x,{ready:R}); tx.update(ref,go?{ready:R,launched:Date.now(),launchedBy:me}:{ready:R}); }); }
   catch(e){ toast(e.message||"Raté",true); return; }
-  if(go) playDraftMatch(kind,true); else toast("✅ Prêt ! Le match démarre dès que l'autre est prêt.");
+  if(go) playDraftMatch(kind,true,snap,ref); else if(busy) toast("⏳ Le match est en train d'être lancé, patiente quelques secondes"); else toast("✅ Prêt ! Le match démarre dès que l'autre est prêt.");
 }
 
 // ---------- ⚡ Fin de draft : match direct, puis l'équipe part dans l'historique ----------
 let draftHist=[];
-async function playDraftMatch(kind,force){
+async function playDraftMatch(kind,force,doc,ref){
   if(sharedLive()&&!force){ toast("Un match est déjà en cours, attends la fin",true); return; }
-  const o=dOpp; let teams;
-  if(kind==="budget"){ const d=bNorm(budgets[bKey()],me,o); if(d.status!=="done") return;
-    teams=d.players.map(w=>({w,c:{formation:bForm(d,w),slots:d.teams[w].slots,bench:{},coach:d.teams[w].coach}})); }
-  else { const d=dNorm(draft,me,o); if(d.status!=="done") return;
-    teams=d.players.map(w=>({w,c:{formation:d.form[w],slots:d.teams[w].slots,bench:d.teams[w].bench,coach:d.teams[w].coach}})); }
-  const label=kind==="budget"?"💰 Budget":"⚡ Draft";
-  const sides=teams.map(t=>({c:t.c,S:strength(t.c,t.w,false,true),label,owner:t.w,name:NAMES[t.w]||"?"}));
-  const m=buildMatch(sides);
-  await saveReplay(m);
-  if(!(await addHist(histOf(m,{draft:kind}),m))){ toast("Pas de connexion, réessaie",true); return; }
-  try{ await db.collection("onzeol_drafthist").doc(m.id).set({players:teams.map(t=>t.w),mode:kind,at:Date.now(),score:m.score,mid:m.id,
-    teams:Object.fromEntries(teams.map(t=>[t.w,{formation:t.c.formation,slots:t.c.slots,bench:t.c.bench||{},coach:t.c.coach||null}]))}); }catch(e){}
-  // l'équipe de draft est remise à zéro (elle reste dans l'historique)
-  if(kind==="budget"){ const d=bNorm(budgets[bKey()],me,o); bWrite({...bNorm(null,me,o),players:d.players,budget:d.budget,formation:d.formation,myForm:{}},true); } else dRestart();
-  post(`${label} : ${NAMES[teams[0].w]} ${m.score[0]}-${m.score[1]} ${NAMES[teams[1].w]}`); setTimeout(()=>toast("Après le match : nouveau draft contre qui tu veux dans ⚡ Draft"),4000);
-  setMode("match"); window.scrollTo(0,0);
+  const unlock=()=>{ if(ref) ref.update({launched:null}).catch(()=>{}); };
+  try{
+    // on part de l'état lu dans la transaction (pas de la copie locale, qui peut être en retard ou viser un autre adversaire)
+    let teams, d;
+    if(kind==="budget"){ d=bNorm(doc||budgets[bKey()],me,dOpp); if(d.status!=="done") throw new Error("Le draft n'est pas terminé");
+      teams=d.players.map(w=>({w,c:{formation:bForm(d,w),slots:d.teams[w].slots,bench:{},coach:d.teams[w].coach}})); }
+    else { d=dNorm(doc||draft,me,dOpp); if(d.status!=="done") throw new Error("Le draft n'est pas terminé");
+      teams=d.players.map(w=>({w,c:{formation:d.form[w],slots:d.teams[w].slots,bench:d.teams[w].bench,coach:d.teams[w].coach}})); }
+    const o=d.players.find(x=>x!==me);
+    const label=kind==="budget"?"💰 Budget":"⚡ Draft";
+    const sides=teams.map(t=>({c:t.c,S:strength(t.c,t.w,false,true),label,owner:t.w,name:NAMES[t.w]||"?"}));
+    const m=buildMatch(sides);
+    await saveReplay(m);
+    if(!(await addHist(histOf(m,{draft:kind}),m))){ toast("Pas de connexion : le match n'a pas pu se lancer, retouche « Lancer le match »",true); unlock(); return; }
+    if(ref) try{ await ref.update({played:m.id}); }catch(_){}
+    try{ await db.collection("onzeol_drafthist").doc(m.id).set({players:teams.map(t=>t.w),mode:kind,at:Date.now(),score:m.score,mid:m.id,
+      teams:Object.fromEntries(teams.map(t=>[t.w,{formation:t.c.formation,slots:t.c.slots,bench:t.c.bench||{},coach:t.c.coach||null}]))}); }catch(e){}
+    // l'équipe de draft est remise à zéro (elle reste dans l'historique)
+    if(kind==="budget") bWrite({...bNorm(null,me,o),players:d.players,budget:d.budget,formation:d.formation,myForm:{}},true);
+    else if(ref) ref.set({...dDefault(d.players[0],d.players[1]),players:d.players,format:d.format,form:d.form}).catch(()=>{});
+    else dRestart();
+    post(`${label} : ${NAMES[teams[0].w]} ${m.score[0]}-${m.score[1]} ${NAMES[teams[1].w]}`); setTimeout(()=>toast("Après le match : nouveau draft contre qui tu veux dans ⚡ Draft"),4000);
+    setMode("match"); window.scrollTo(0,0);
+  }catch(e){ console.error(e); toast("Le match n'a pas pu se lancer ("+(e.message||"erreur")+"), retouche « Lancer le match »",true); unlock(); }
 }
 function onDraftHist(all){ draftHist=all.filter(h=>h&&(h.players||[]).includes(me)).sort((a,b)=>b.at-a.at); if(mode==="draft") renderDraftHist(); }
 function renderDraftHist(){
@@ -7373,7 +7386,7 @@ function cgTeaser(){ const M=$("#cardModal"); M.innerHTML=`<div class="cm-box" s
   <button class="btn" id="cgTzX" style="margin-top:10px">J'ai hâte !</button></div>`; M.classList.add("open"); $("#cgTzX").onclick=()=>M.classList.remove("open"); M.onclick=e=>{ if(e.target===M) M.classList.remove("open"); }; cgCdTick(); }
 function openCards(from){ if(!cgLive()){ cgTeaser(); return; } cgBack=from==="online"?"online":"solo"; NAV_OF.cards=cgBack==="online"?"nOnline":"nSolo"; if(!(cgCur&&cgSel==="game")) cgSel=null; setMode("cards"); }
 
-const APP_V="2026-11-29e"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-29f"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
