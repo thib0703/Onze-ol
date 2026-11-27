@@ -4649,7 +4649,9 @@ async function redis2000(manual){ try{ if(me!==ADMIN) return; const c=W(); if(c.
 async function adminOp(o){ try{ await db.collection("onzeol_admin").add({...o,by:me,at:Date.now(),done:false}); }catch(e){ toast("Admin refusé ("+(e.code||e.message)+") : les règles Firestore ne sont peut-être pas publiées",true); throw e; } }
 async function adminPanel(){ if(me!==ADMIN) return; const T=$("#tradeUI"); T.classList.add("open");
   const users=Object.keys(NAMES).filter(u=>u!==CPU).sort((a,b)=>(NAMES[a]||"").localeCompare(NAMES[b]||"","fr"));
-  let bks=[]; try{ const qs=await db.collection("onzeol_backups").get(); qs.forEach(d=>bks.push(d.id)); bks.sort().reverse(); }catch(e){}
+  // 💾 liste des sauvegardes calculée sur les dates (le serveur garde 21 jours) : sans télécharger leur contenu
+  // (avant : .get() de toute la collection = toutes les données de tous les joueurs × 21 jours → le panneau ne s'ouvrait plus)
+  const bks=Array.from({length:22},(_,i)=>new Date(Date.now()-i*86400000).toLocaleDateString("fr-CA"));
   const opt=users.map(u=>`<option value="${u}">${esc(NAMES[u])}</option>`).join("");
   T.innerHTML=`<div class="tui-box"><div class="tui-head"><b>🛠️ Panneau admin</b><button class="btn sm ghost" id="tClose">Fermer</button></div>
    <div class="adm"><label>Joueur</label><select id="aU">${opt}</select><div id="aInfo" class="mute" style="font-size:12.5px;margin:6px 0"></div>
@@ -4670,14 +4672,14 @@ async function adminPanel(){ if(me!==ADMIN) return; const T=$("#tradeUI"); T.cla
   const cardRow=(id,own)=>{ const p=BY_ID[id]; if(!p) return ""; return `<div class="sgl"><span>${esc(p.name)} <small>${TIER_NAME[cardTier(p)]} · ${p.ovr} · possède ${own[id]||0}</small></span><span><button class="btn sm ghost" data-rm="${id}" ${own[id]?"":"disabled"}>−1</button></span></div>`; };
   const bindRm=box=>box.querySelectorAll("[data-rm]").forEach(b=>b.onclick=async()=>{ b.disabled=true; await adminOp({to:U(),type:"card",card:b.dataset.rm,n:-1}); done(`−1 ${BY_ID[b.dataset.rm].name} pour ${NAMES[U()]}`); });
   const pks=()=>{ const c=compos[U()]||{}, own=c.coll||{}, L=(c.packLog||[]).slice().reverse(), box=$("#aPk");
-    box.innerHTML=L.map((x,i)=>`<div style="margin:6px 0;padding:6px;border:1px solid #fff2;border-radius:8px"><b>${esc((PACKS[x.p]||{}).name||x.p)}</b> <small class="mute">${new Date(x.at).toLocaleString("fr-FR")}${x.paid?` · payé ${x.paid} 🪙`:" · offert"}</small>${x.ids.map(id=>cardRow(id,own)).join("")}<button class="btn sm" data-undo="${i}">↩️ Annuler ce pack (retire les ${x.ids.length} cartes${x.paid?` + rembourse ${x.paid} 🪙`:" + le réoffre"})</button></div>`).join("")||`<div class="mute" style="font-size:12.5px">Aucun pack enregistré (l'historique existe depuis la version 2026-11-20y). Utilise la comparaison avec une sauvegarde ci-dessous.</div>`;
+    box.innerHTML=L.map((x,i)=>`<div style="margin:6px 0;padding:6px;border:1px solid #fff2;border-radius:8px"><b>${esc((PACKS[x.p]||{}).name||x.p)}</b> <small class="mute">${new Date(x.at).toLocaleString("fr-FR")}${x.paid?` · payé ${x.paid} 🪙`:" · offert"}</small>${(x.ids||[]).map(id=>cardRow(id,own)).join("")}<button class="btn sm" data-undo="${i}">↩️ Annuler ce pack (retire les ${(x.ids||[]).length} cartes${x.paid?` + rembourse ${x.paid} 🪙`:" + le réoffre"})</button></div>`).join("")||`<div class="mute" style="font-size:12.5px">Aucun pack enregistré (l'historique existe depuis la version 2026-11-20y). Utilise la comparaison avec une sauvegarde ci-dessous.</div>`;
     bindRm(box);
     box.querySelectorAll("[data-undo]").forEach(b=>{ let arm=false; b.onclick=async()=>{ if(!arm){ arm=true; b.textContent="Sûr ? Re-touche"; return; } b.disabled=true; const x=L[+b.dataset.undo];
-      for(const id of x.ids) await adminOp({to:U(),type:"card",card:id,n:-1});
+      for(const id of (x.ids||[])) await adminOp({to:U(),type:"card",card:id,n:-1});
       if(x.paid) await adminOp({to:U(),type:"coins",n:x.paid}); else await adminOp({to:U(),type:"pack",pack:x.p,n:1});
       done(`Pack annulé pour ${NAMES[U()]}`); }; }); };
   $("#aDiffGo").onclick=async()=>{ const d=$("#aDiffBk").value, box=$("#aDiffL"); if(!d) return; box.innerHTML=`<div class="mute">Chargement…</div>`;
-    const sn=await db.collection("onzeol_backups").doc(d).get(); const OB=(sn.exists&&sn.data().users[U()])||{}, NB=compos[U()]||{}; const old=OB.coll||{}; const own=NB.coll||{};
+    const sn=await db.collection("onzeol_backups").doc(d).get().catch(()=>null); if(!sn||!sn.exists){ box.innerHTML=`<div class="mute">Pas de sauvegarde le ${d}.</div>`; return; } const OB=((sn.data().users||{})[U()])||{}, NB=compos[U()]||{}; const old=OB.coll||{}; const own=NB.coll||{};
     const add=Object.keys(own).filter(id=>(own[id]||0)>(old[id]||0));
     // 🔎 ce qui a changé d'autre (pièces, pass, albums, trophées, classements…)
     const SKIP=new Set(["coll","packLog","cLog","cl0","claimed","updated","fcm","heroes","compo","formation","lineup","bench","evo","tuto","obj","mis","mday","cpud","seen","cg","tcg","pend","daily"]);
@@ -4720,7 +4722,7 @@ async function adminPanel(){ if(me!==ADMIN) return; const T=$("#tradeUI"); T.cla
     L.innerHTML=ALL_CARDS.filter(p=>p.id.includes(q)).slice(0,8).map(p=>`<div class="sgl"><span>${esc(p.name)} <small>${TIER_NAME[cardTier(p)]} · ${p.ovr} · possède ${own[p.id]||0}</small></span><span><button class="btn sm" data-ac="${p.id}" data-n="1">+1</button> <button class="btn sm ghost" data-ac="${p.id}" data-n="-1" ${own[p.id]?"":"disabled"}>−1</button></span></div>`).join("")||`<div class="mute">Aucune carte.</div>`;
     L.querySelectorAll("[data-ac]").forEach(b=>b.onclick=async()=>{ await adminOp({to:U(),type:"card",card:b.dataset.ac,n:+b.dataset.n}); done(`${b.dataset.n>0?"+1":"−1"} ${BY_ID[b.dataset.ac].name} pour ${NAMES[U()]}`); }); };
   let arm=false; $("#aBkGo").onclick=async e=>{ const d=$("#aBk").value; if(!d) return; if(!arm){ arm=true; e.target.textContent="Sûr ?"; return; } arm=false; e.target.textContent="Restaurer ce joueur";
-    const sn=await db.collection("onzeol_backups").doc(d).get(); const data=sn.exists&&sn.data().users[U()]; if(!data){ toast("Ce joueur n'est pas dans cette sauvegarde",true); return; }
+    const sn=await db.collection("onzeol_backups").doc(d).get().catch(()=>null); const data=sn&&sn.exists&&(sn.data().users||{})[U()]; if(!data){ toast("Ce joueur n'est pas dans cette sauvegarde",true); return; }
     await adminOp({to:U(),type:"restore",date:d,data}); done(`Compte de ${NAMES[U()]} restauré au ${d}`); };
   $("#aBkNow").onclick=async()=>{ try{ const n=await makeBackup(true); toast(`💾 Sauvegarde faite (${n} comptes)`); }catch(e){ toast("Sauvegarde impossible : "+(e.code||e.message),true); } };
 }
@@ -7386,7 +7388,7 @@ function cgTeaser(){ const M=$("#cardModal"); M.innerHTML=`<div class="cm-box" s
   <button class="btn" id="cgTzX" style="margin-top:10px">J'ai hâte !</button></div>`; M.classList.add("open"); $("#cgTzX").onclick=()=>M.classList.remove("open"); M.onclick=e=>{ if(e.target===M) M.classList.remove("open"); }; cgCdTick(); }
 function openCards(from){ if(!cgLive()){ cgTeaser(); return; } cgBack=from==="online"?"online":"solo"; NAV_OF.cards=cgBack==="online"?"nOnline":"nSolo"; if(!(cgCur&&cgSel==="game")) cgSel=null; setMode("cards"); }
 
-const APP_V="2026-11-29f"; // affichage seulement : la détection des mises à jour est automatique
+const APP_V="2026-11-29g"; // affichage seulement : la détection des mises à jour est automatique
 let updShown=false, lastUpdCheck=0, pageTag=null;
 // Demande seulement l'en-tête de la page (requête HEAD, quelques octets) : si GitHub a publié une nouvelle
 // version, son ETag / date de modification change. Rien à mettre à jour à la main.
