@@ -1,5 +1,5 @@
 {
-  "updated": "27/11/2026",
+  "updated": "28/11/2026",
   "matches": "Lille 0-1 OL (21/11, L1), OL 0-0 Lillestrøm (26/11, C3) — notes Maxifoot",
   "rules": "Blessé -3 à -6 selon la durée, suspendu -2 ; moyenne des 2 derniers matchs : >=7.5 +3, >=7 +2, >=6.5 +1, <=4 -2, <=5 -1",
   "players": {
@@ -120,8 +120,136 @@
       "score": null
     }
   ],
-  "newsUpdated": "27/11/2026",
+  "newsUpdated": "28/11/2026",
   "news": [
+    {
+      "d": "2026-11-28T09:30",
+      "tag": "club",
+      "t": "En 2026, seul le PSG a pris plus de points que l'OL en L1",
+      "s": "Sur l'année civile 2026, Lyon totalise 53 points en Ligue 1, deuxième total derrière Paris (66), avant de recevoir Monaco.",
+      "src": "Olympique-et-Lyonnais",
+      "url": "https://www.olympique-et-lyonnais.com/ligue-1-lol-toujours-deuxieme-derriere-le-psg-en-2026,414721.html"
+    },
+    {
+      "d": "2026-11-28T08:45",
+      "tag": "feminines",
+      "t": "Bacha, Sangaré et Katoto titulaires dans le succès des Bleues",
+      "s": "Menées 2-0 rapidement à Nancy, les Bleues ont battu le Venezuela 4-2 en amical, avec une passe décisive de Selma Bacha.",
+      "src": "Olympique-et-Lyonnais",
+      "url": "https://www.olympique-et-lyonnais.com/sangare-bacha-et-katoto-ol-lyonnes-titulaires-dans-la-victoire-des-bleues,415284.html"
+    },
+    {
+      "d": "2026-11-28T07:30",
+      "tag": "joueurs",
+      "t": "Les Lyonnais parmi ceux qui courent le plus en Europe",
+      "s": "D'après le CIES, l'OL parcourt en moyenne 11 km par joueur et par match, derrière le seul Bayern dans les cinq grands championnats. Vicens attend désormais plus de justesse devant.",
+      "src": "Olympique-et-Lyonnais",
+      "url": "https://www.olympique-et-lyonnais.com/ol-les-lyonnais-ne-sont-pas-avares-defforts,415231.html"
+    },
+    {
+      "d": "2026-11-28T06:30",
+      "tag": "match",
+      "t": "Brest passe devant, l'OL 5e avant Monaco",
+      "s": "Vainqueur du Paris FC (1-0) vendredi, Brest grimpe à 21 points et repousse Lyon (20 pts) au 5e rang avant la réception de Monaco dimanche.",
+      "src": "LyonFoot",
+      "url": "https://www.lyonfoot.com/article/14987/ligue-1-double-par-brest-l-ol-glisse-a-la-5e-place-avant-la-reception-de-monaco"
+    },
+    {
+      "d": "2026-11-27T21:30",
+      "tag": "joueurs",
+      "t": "Merah en sentinelle, premier pari gagnant de Vicens",
+      "s": "Replacé devant la défense en l'absence de Morton, Khalis Merah a beaucoup pesé contre Lillestrøm, même si le retour d'Openda pourrait rebattre les cartes.",
+      "src": "Foot01",
+      "url": "https://www.foot01.com/ol/ol-le-premier-pari-reussi-de-carlos-vicens"
+    },
+    {
+      "d": "2026-11-27T18:48",
+      "tag": "match",
+      "t": "Après Lillestrøm, l'OL bascule déjà sur Monaco",
+      "s": "Pas le temps de ruminer le nul européen : les Lyonnais préparent la réception de Monaco, adversaire direct en haut du tableau.",
+      "src": "Foot-sur7",
+      "url": "https://www.foot-sur7.fr/797551-ol-apres-lillestrom-lyon-se-tourne-immediatement-vers-monaco"
+    },
+    {
+      "d": "2026-11-27T18:20",
+      "tag": "academie",
+      "t": "Académie : U19 à Montfermeil, U17 à Annecy",
+      "s": "Dimanche, les U19 se déplacent à Montfermeil et les U17 à Annecy ; la réserve est au repos ce week-end.",
+      "src": "Olympique-et-Lyonnais",
+      "url": "https://www.olympique-et-lyonnais.com/ol-academie-le-programme-du-week-end-112,414956.html"
+    },
+    {
+      "d": "2026-11-27T17:35",
+      "tag": "joueurs",
+      "t": "Mangala revient sur ses regrets lyonnais",
+      "s": "Prêté à Getafe, Orel Mangala estime que blessures et temps de jeu irrégulier l'ont freiné à Lyon, où il reste sous contrat jusqu'en 2028.",
+      "src": "Olympique-et-Lyonnais",
+      "url": "https://www.olympique-et-lyonnais.com/ol-orel-mangala-revient-sur-les-regrets-de-son-passage-a-lyon,414964.html"
+    },
+    {
+      "d": "2026-11-27T17:00",
+      "tag": "club",
+      "t": "Moins de 30 000 spectateurs contre Lillestrøm",
+      "s": "Avec 29 821 personnes, OL-Lillestrøm a réuni la plus faible affluence de la saison au Groupama Stadium.",
+      "src": "LyonFoot",
+      "url": "https://www.lyonfoot.com/article/14984/ol-lillestrom-moins-de-30-000-spectateurs-la-plus-faible-affluence-de-la-saison-au-groupama-stadium"
+    },
+    {
+      "d": "2026-11-27T16:50",
+      "tag": "club",
+      "t": "Les signes de l'OL interdits pour ASSE-Villefranche",
+      "s": "La préfecture de la Loire interdit les couleurs lyonnaises dans et autour du stade pour le match de Coupe de France de samedi soir.",
+      "src": "Olympique-et-Lyonnais",
+      "url": "https://www.olympique-et-lyonnais.com/coupe-de-france-les-fans-de-lol-interdits-pour-saint-etienne-villefranche,415216.html"
+    },
+    {
+      "d": "2026-11-27T15:10",
+      "tag": "feminines",
+      "t": "« L'Empreinte des Lyonnes » débarque sur Canal+",
+      "s": "Le documentaire consacré à OL Lyonnes démarre samedi à 19h avec un premier épisode intitulé « Dynastie ».",
+      "src": "Olympique-et-Lyonnais",
+      "url": "https://www.olympique-et-lyonnais.com/canal-devoile-son-documentaire-sur-ol-lyonnes-samedi,414865.html"
+    },
+    {
+      "d": "2026-11-27T14:20",
+      "tag": "mercato",
+      "t": "Florian Maurice nommé directeur sportif de Troyes",
+      "s": "L'ancien responsable du recrutement lyonnais (2014-2020) prend les commandes sportives de l'ESTAC, prochain adversaire de l'OL, à partir du 1er décembre.",
+      "src": "Olympique-et-Lyonnais",
+      "url": "https://www.olympique-et-lyonnais.com/mercato-florian-maurice-ex-ol-retrouve-un-poste-en-ligue-1,414992.html"
+    },
+    {
+      "d": "2026-11-27T11:00",
+      "tag": "club",
+      "t": "Une banderole des Bad Gones contre Sidney Govou",
+      "s": "Pendant OL-Lillestrøm, le groupe de supporters a visé l'ancien joueur après ses propos sur le racisme au stade, une sortie critiquée.",
+      "src": "Olympique-et-Lyonnais",
+      "url": "https://www.olympique-et-lyonnais.com/ol-les-bad-gones-sen-prennent-a-sidney-govou-apres-sa-sortie-sur-le-racisme,415112.html"
+    },
+    {
+      "d": "2026-11-27T10:10",
+      "tag": "infirmerie",
+      "t": "Openda de retour, son rôle face à Monaco à définir",
+      "s": "Remis d'une fissure du péroné, Loïs Openda a rejoué quelques minutes contre Lillestrøm ; Vicens tranchera après les dernières séances.",
+      "src": "Olympique-et-Lyonnais",
+      "url": "https://www.olympique-et-lyonnais.com/ol-lillestrom-0-0-openda-un-mois-et-demi-plus-tard,415092.html"
+    },
+    {
+      "d": "2026-11-27T09:25",
+      "tag": "joueurs",
+      "t": "Vicens soutient Rémi Himbert",
+      "s": "Après une soirée compliquée contre Lillestrøm et un but refusé, le jeune attaquant a reçu le soutien de son entraîneur.",
+      "src": "Olympique-et-Lyonnais",
+      "url": "https://www.olympique-et-lyonnais.com/ol-carlos-vicens-au-soutien-de-remi-himbert,415083.html"
+    },
+    {
+      "d": "2026-11-27T08:00",
+      "tag": "match",
+      "t": "Ligue Europa : l'OL 14e, le top 8 à deux points",
+      "s": "Avec 8 points, Lyon pointe à deux longueurs du 8e avant de recevoir l'Union Saint-Gilloise le 10 décembre.",
+      "src": "LyonFoot",
+      "url": "https://www.lyonfoot.com/article/14979/ligue-europa-apres-le-nul-contre-lillestrom-l-ol-recule-au-14e-rang-et-le-top-8-s-eloigne"
+    },
     {
       "d": "2026-11-27T00:59",
       "tag": "match",
@@ -233,139 +361,11 @@
       "s": "Avec son but contre Strasbourg, Ada Hegerberg atteint 11 réalisations, à égalité avec sa coéquipière Melchie Dumornay ; Katoto complète un podium 100 % lyonnais.",
       "src": "Olympique-et-Lyonnais",
       "url": "https://www.olympique-et-lyonnais.com/meilleures-buteuses-de-d1-ol-lyonnes-sans-concurrence,414759.html"
-    },
-    {
-      "d": "2026-11-25T08:11",
-      "tag": "match",
-      "t": "But refusé à Lille : l'arbitrage donne raison à la VAR",
-      "s": "La Direction technique de l'arbitrage confirme la faute de Bidstrup sur le gardien lillois avant le but de Nuamah, annulé à la 40e minute.",
-      "src": "LyonFoot",
-      "url": "https://www.lyonfoot.com/article/14960/lille-ol-l-arbitrage-confirme-la-faute-de-bidstrup-sur-le-but-refuse-a-nuamah"
-    },
-    {
-      "d": "2026-11-25T07:30",
-      "tag": "club",
-      "t": "Fonseca ne veut pas relancer la polémique avec Tolisso",
-      "s": "Désormais au Sporting, l'ancien entraîneur lyonnais estime qu'il y aurait beaucoup à dire sur les critiques de son ex-capitaine, mais préfère tourner la page.",
-      "src": "Olympique-et-Lyonnais",
-      "url": "https://www.olympique-et-lyonnais.com/ol-fonseca-repond-a-la-prise-de-parole-de-tolisso,414786.html"
-    },
-    {
-      "d": "2026-11-24T17:30",
-      "tag": "mercato",
-      "t": "Tagliafico, Akouokou, Openda, Athekame : quatre départs envisagés",
-      "s": "Dans un contexte d'économies, plusieurs joueurs pourraient quitter l'OL d'ici l'été ; Tagliafico serait le plus proche d'un départ dès janvier. Rien n'est officiel.",
-      "src": "LyonFoot",
-      "url": "https://www.lyonfoot.com/article/14956/mercato-ol-tagliafico-akouokou-openda-athekame-quatre-departs-se-profileraient"
-    },
-    {
-      "d": "2026-11-24T09:25",
-      "tag": "match",
-      "t": "Jérôme Brisard au sifflet pour OL – Monaco",
-      "s": "La LFP a désigné Jérôme Brisard pour diriger la réception de Monaco dimanche au Groupama Stadium, dans le cadre de la 12e journée.",
-      "src": "Olympique-et-Lyonnais",
-      "url": "https://www.olympique-et-lyonnais.com/ol-monaco-avec-jerome-brisard-aux-commandes,414669.html"
-    },
-    {
-      "d": "2026-11-24T06:40",
-      "tag": "match",
-      "t": "OL – Lillestrøm : Lyon grand favori jeudi",
-      "s": "Les Lyonnais reçoivent le club norvégien en Ligue Europa sans Openda, Morton, Sulc ni Mata, mais avec les retours de Nuamah et Niakhaté dans le groupe.",
-      "src": "But! Football Club",
-      "url": "https://www.butfootballclub.fr/1716152-pronostic-ol-lillestrom-26-11-prono-cotes-et-compos/"
-    },
-    {
-      "d": "2026-11-23T17:37",
-      "tag": "infirmerie",
-      "t": "Openda a retrouvé le groupe à l'entraînement",
-      "s": "Blessé au péroné depuis la mi-octobre, l'attaquant belge a participé lundi à la séance collective. Le club ne prendra aucun risque et son retour à la compétition se fera progressivement.",
-      "src": "Olympique-et-Lyonnais",
-      "url": "https://www.olympique-et-lyonnais.com/ol-lois-openda-a-fait-son-retour-a-lentrainement,414611.html"
-    },
-    {
-      "d": "2026-11-23T16:00",
-      "tag": "joueurs",
-      "t": "Bidstrup dans l'équipe type de la 11e journée",
-      "s": "Buteur décisif à Lille, le milieu danois est récompensé par une place dans le onze type de la journée de Ligue 1.",
-      "src": "LyonFoot",
-      "url": "https://www.lyonfoot.com/article/14946/ol-buteur-a-lille-mads-bidstrup-integre-l-equipe-type-de-la-11e-journee"
-    },
-    {
-      "d": "2026-11-23T11:50",
-      "tag": "match",
-      "t": "Lillestrøm se relance avant de venir à Lyon",
-      "s": "Le prochain adversaire européen de l'OL s'est imposé 2-0 à Sarpsborg en championnat, mais ne compte qu'un point en quatre journées de Ligue Europa.",
-      "src": "Olympique-et-Lyonnais",
-      "url": "https://www.olympique-et-lyonnais.com/avant-daffronter-lol-lillestrom-simpose-en-championnat,414522.html"
-    },
-    {
-      "d": "2026-11-23T07:30",
-      "tag": "joueurs",
-      "t": "Abner recentré, pressing très haut : les premières touches de Vicens",
-      "s": "À Lille, le nouveau coach a déjà modifié quelques réglages, avec un Abner qui rentre dans l'axe près de Tessmann et un bloc qui presse très haut. D'autres changements viendront par petites touches.",
-      "src": "Olympique-et-Lyonnais",
-      "url": "https://www.olympique-et-lyonnais.com/abner-plus-axial-pressing-tres-haut-vicens-a-deja-accentue-certains-points-a-lol,414434.html"
-    },
-    {
-      "d": "2026-11-23T07:00",
-      "tag": "match",
-      "t": "Ligue 1 : l'OL remonte au 4e rang",
-      "s": "Avec 20 points après onze journées, Lyon pointe à une longueur de Lille, troisième, avant de recevoir Monaco dimanche.",
-      "src": "LyonFoot",
-      "url": "https://www.lyonfoot.com/article/14941/ligue-1-l-ol-4e-apres-son-succes-a-lille-a-un-point-du-podium"
-    },
-    {
-      "d": "2026-11-22T17:22",
-      "tag": "feminines",
-      "t": "OL Lyonnes : 5-2 contre Strasbourg, dix sur dix",
-      "s": "Les Lyonnaises enchaînent un dixième succès de rang en championnat et gardent cinq points d'avance sur le PSG avant la trêve internationale.",
-      "src": "LyonFoot",
-      "url": "https://www.lyonfoot.com/article/14918/ol-lyonnes-strasbourg-cinq-buts-et-une-dixieme-victoire-consecutive-les-lyonnaises-poursuivent-leur-sans-faute"
-    },
-    {
-      "d": "2026-11-22T11:00",
-      "tag": "club",
-      "t": "Vicens assume le risque de son pressing haut",
-      "s": "Le technicien reconnaît que son plan aurait pu se retourner contre lui en cas d'égalisation lilloise, mais estime que cette manière de jouer donne plus de chances de gagner.",
-      "src": "Olympique-et-Lyonnais",
-      "url": "https://www.olympique-et-lyonnais.com/vicens-ol-aujourdhui-je-vais-etre-le-meilleur-coach-du-monde,414412.html"
-    },
-    {
-      "d": "2026-11-22T09:30",
-      "tag": "joueurs",
-      "t": "Bidstrup salue l'esprit collectif après Lille",
-      "s": "Unique buteur à Pierre-Mauroy, le milieu danois se dit fier du groupe et de son nouvel entraîneur. L'OL revient à un point du LOSC.",
-      "src": "Olympique-et-Lyonnais",
-      "url": "https://www.olympique-et-lyonnais.com/bidstrup-fier-du-coach-et-de-lequipe-apres-lille-ol-0-1,414409.html"
-    },
-    {
-      "d": "2026-11-22T08:40",
-      "tag": "match",
-      "t": "Nuamah et Nakamura à la traîne pour la première de Vicens",
-      "s": "Les deux ailiers ont reçu les plus mauvaises notes de L'Équipe à Lille, alors que Greif, Athekame et Bidstrup ont été les mieux notés.",
-      "src": "Foot01",
-      "url": "https://www.foot01.com/ol/ol-deux-mauvais-eleves-se-ratent-pour-la-premiere-de-vicens"
-    },
-    {
-      "d": "2026-11-21T23:35",
-      "tag": "match",
-      "t": "Lille-OL : ce qu'il faut retenir du succès lyonnais",
-      "s": "Une victoire solide portée par un Khalis Merah précieux dans les liaisons, mais une dernière demi-heure plus poussive après l'heure de jeu.",
-      "src": "Olympique-et-Lyonnais",
-      "url": "https://www.olympique-et-lyonnais.com/lille-ol-0-1-le-barometre-du-match-ce-quil-faut-retenir,414332.html"
-    },
-    {
-      "d": "2026-11-21T23:15",
-      "tag": "match",
-      "t": "Vicens savoure sa première : « Ne pas leur laisser de temps »",
-      "s": "Le nouveau coach a demandé à ses joueurs d'être agressifs et de presser Lille sans relâche, et ça a payé.",
-      "src": "Olympique-et-Lyonnais",
-      "url": "https://www.olympique-et-lyonnais.com/vicens-apres-lille-ol-0-1-ne-pas-leur-laisser-de-temps-et-etre-agressifs,414326.html"
     }
   ],
   "table": {
-    "updated": "23/11/2026",
-    "round": "J11",
+    "updated": "28/11/2026",
+    "round": "J12 (en cours)",
     "rows": [
       {
         "t": "Paris SG",
@@ -380,12 +380,22 @@
       {
         "t": "Paris FC",
         "pts": 23,
-        "j": 11,
+        "j": 12,
         "g": 7,
         "n": 2,
-        "p": 2,
+        "p": 3,
         "bp": 21,
-        "bc": 10
+        "bc": 11
+      },
+      {
+        "t": "Brest",
+        "pts": 21,
+        "j": 12,
+        "g": 6,
+        "n": 3,
+        "p": 3,
+        "bp": 20,
+        "bc": 12
       },
       {
         "t": "Lille",
@@ -416,16 +426,6 @@
         "p": 5,
         "bp": 24,
         "bc": 17
-      },
-      {
-        "t": "Brest",
-        "pts": 18,
-        "j": 11,
-        "g": 5,
-        "n": 3,
-        "p": 3,
-        "bp": 19,
-        "bc": 12
       },
       {
         "t": "Nice",
